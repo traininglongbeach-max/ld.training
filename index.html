@@ -5,629 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة التعليم والتطوير</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome (external, required) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase (external, required) -->
-    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
-
-    <style>
-        /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: #f5f9fe;
-            color: #1e3a5f;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        #app {
-            flex: 1;
-        }
-        a {
-            text-decoration: none;
-        }
-        /* ===== NAVBAR ===== */
-        .navbar {
-            background: #ffffff;
-            padding: 0 2rem;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .logo h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #1e3a5f;
-        }
-        .logo h2 span {
-            font-weight: 300;
-        }
-        .logo h2 i {
-            margin-left: 6px;
-        }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        .nav-links a {
-            color: #1e3a5f;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .nav-links a:hover {
-            color: #2a73b0;
-        }
-        .nav-links .btn-logout {
-            background: #e74c3c;
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            border: none;
-            cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            transition: 0.2s;
-        }
-        .nav-links .btn-logout:hover {
-            background: #c0392b;
-        }
-        /* ===== HERO ===== */
-        .hero {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2a73b0 100%);
-            color: #fff;
-            padding: 3rem 2rem;
-            text-align: center;
-        }
-        .hero h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-        }
-        .hero p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        /* ===== SEARCH ===== */
-        .search-container {
-            max-width: 700px;
-            margin: 1.5rem auto 0.5rem;
-            padding: 0 1.5rem;
-            position: relative;
-        }
-        .search-box {
-            background: #fff;
-            border-radius: 60px;
-            padding: 0.2rem 0.2rem 0.2rem 1.2rem;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #e6edf4;
-        }
-        .search-icon {
-            font-size: 1.2rem;
-            color: #8899aa;
-            margin-left: 8px;
-        }
-        .search-box input {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 0.8rem 0;
-            font-size: 1rem;
-            font-family: 'Tajawal', sans-serif;
-            background: transparent;
-            color: #1e3a5f;
-        }
-        .search-box input::placeholder {
-            color: #a0b3c9;
-        }
-        #searchResults {
-            background: #fff;
-            border-radius: 16px;
-            margin-top: 8px;
-            padding: 0.5rem 0;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-        #searchResults .search-item {
-            padding: 0.7rem 1.5rem;
-            cursor: pointer;
-            transition: 0.15s;
-            border-bottom: 1px solid #f0f4fa;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        #searchResults .search-item:last-child {
-            border-bottom: none;
-        }
-        #searchResults .search-item:hover {
-            background: #f0f7ff;
-        }
-        #searchResults .search-item i {
-            color: #2a73b0;
-            width: 20px;
-        }
-        /* ===== SECTIONS GRID ===== */
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 1.5rem 1.5rem 3rem;
-        }
-        .sections-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.8rem;
-        }
-        .section-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 1.8rem 1.5rem;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.04);
-            transition: 0.25s ease;
-            border: 1px solid #eef3f9;
-            display: flex;
-            flex-direction: column;
-        }
-        .section-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-            border-color: #d4e2f0;
-        }
-        .section-card h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .section-card h3 i {
-            color: #2a73b0;
-            font-size: 1.5rem;
-        }
-        .section-card p {
-            color: #4a607a;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            flex: 1;
-            margin-bottom: 1.2rem;
-        }
-        .section-card .links-list {
-            list-style: none;
-            margin-top: 0.2rem;
-        }
-        .section-card .links-list li {
-            margin: 0.5rem 0;
-        }
-        .section-card .links-list a {
-            color: #1e3a5f;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0.4rem 0.8rem;
-            border-radius: 30px;
-            transition: 0.15s;
-            background: #f7faff;
-            border: 1px solid #ecf3fa;
-        }
-        .section-card .links-list a:hover {
-            background: #e6f0fe;
-            border-color: #b8d2eb;
-            color: #1a4b78;
-        }
-        .section-card .links-list a i {
-            font-size: 0.9rem;
-            color: #2a73b0;
-            width: 24px;
-        }
-        /* ===== FOOTER ===== */
-        .footer {
-            background: #ffffff;
-            padding: 1.2rem 2rem;
-            text-align: center;
-            border-top: 1px solid #e6edf4;
-            color: #5a748e;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-        }
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 992px) {
-            .navbar {
-                padding: 0 1.2rem;
-                height: 65px;
-            }
-            .hero h1 {
-                font-size: 2rem;
-            }
-        }
-        @media (max-width: 768px) {
-            .navbar {
-                flex-wrap: wrap;
-                height: auto;
-                padding: 0.8rem 1rem;
-                gap: 0.5rem;
-            }
-            .logo h2 {
-                font-size: 1.1rem;
-            }
-            .nav-links {
-                flex-wrap: wrap;
-                gap: 0.8rem;
-                justify-content: center;
-            }
-            .nav-links a {
-                font-size: 0.85rem;
-            }
-            .hero {
-                padding: 2rem 1rem;
-            }
-            .hero h1 {
-                font-size: 1.6rem;
-            }
-            .hero p {
-                font-size: 1rem;
-            }
-            .sections-grid {
-                grid-template-columns: 1fr;
-                gap: 1.2rem;
-            }
-            .container {
-                padding: 1rem;
-            }
-            .search-container {
-                padding: 0 1rem;
-                margin-top: 1rem;
-            }
-            .section-card {
-                padding: 1.2rem;
-            }
-        }
-        @media (max-width: 480px) {
-            .navbar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.3rem;
-            }
-            .logo h2 {
-                font-size: 1rem;
-                text-align: center;
-            }
-            .nav-links {
-                justify-content: center;
-                gap: 0.5rem;
-            }
-            .nav-links a {
-                font-size: 0.8rem;
-            }
-            .hero h1 {
-                font-size: 1.3rem;
-            }
-            .search-box input {
-                font-size: 0.9rem;
-                padding: 0.6rem 0;
-            }
-            .section-card h3 {
-                font-size: 1.1rem;
-            }
-        }
-        /* ===== LOADING ===== */
-        .loading-placeholder {
-            text-align: center;
-            padding: 100px 20px;
-            font-family: 'Tajawal', sans-serif;
-            color: #1e3a5f;
-        }
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #eef3f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #b8d2eb;
-            border-radius: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- تحويل ملفات الجافاسكريبت لتعمل بنظام Modules -->
+    <script type="module" src="database.js"></script>
+    <script type="module" src="auth-guard.js"></script>
 </head>
 <body>
     <div id="app">
-        <!-- سيتم استبدال هذا المحتوى عبر JavaScript -->
-        <div class="loading-placeholder">
+        <!-- شاشة انتظار بسيطة لحين رد سيرفر Firebase بحالة المصادقة -->
+        <div style="text-align:center; padding:100px 20px; font-family:'Tajawal', sans-serif; color:#1e3a5f;">
             <h2>جاري تهيئة مساحة العمل والتحقق من الصلاحيات... ⏳</h2>
         </div>
     </div>
 
-    <script>
-        // ============================================================
-        //  FIREBASE CONFIG & INIT (self-contained)
-        // ============================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-2j_9S17wYwQBZRc7K0hZsXrU5iWz4Tg",
-            authDomain: "edu-dev-system.firebaseapp.com",
-            projectId: "edu-dev-system",
-            storageBucket: "edu-dev-system.appspot.com",
-            messagingSenderId: "1012345678901",
-            appId: "1:1012345678901:web:abcdef1234567890"
-        };
+    <!-- استدعاء سكريبت العمليات الأساسية -->
+    <script type="module" src="script.js"></script>
+    
+    <script type="module">
+        import { auth } from './database.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const appContainer = document.getElementById('app');
 
-        // ============================================================
-        //  GLOBAL STATE
-        // ============================================================
-        let currentUser = null;
-        let sectionsData = [];
-        let allLinks = [];
-
-        // ============================================================
-        //  AUTH GUARD (redirect if not logged in)
-        // ============================================================
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                // توجيه لصفحة تسجيل الدخول (ملف خارجي، لكننا نحافظ على السلوك)
-                window.location.href = 'login.html';
-                return;
-            }
-            currentUser = user;
-            // بناء الواجهة بعد تسجيل الدخول
-            buildAppUI();
-            // تحميل البيانات
-            loadSections();
-        });
-
-        // ============================================================
-        //  BUILD UI
-        // ============================================================
-        function buildAppUI() {
-            const app = document.getElementById('app');
-            app.innerHTML = `
-                <div class="navbar">
-                    <div class="logo">
-                        <h2><i class="fas fa-graduation-cap"></i> <span>نظام</span> إدارة التعليم والتطوير</h2>
+        // الاستماع لحالة المستخدم من Firebase
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // المستخدم مسجل الدخول، يتم بناء وعرض الواجهة
+                appContainer.innerHTML = `
+                    <div class="navbar">
+                        <div class="logo">
+                            <h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2>
+                        </div>
+                        <div class="nav-links" id="navLinks"></div>
                     </div>
-                    <div class="nav-links" id="navLinks">
-                        <a href="#" id="dashboardLink"><i class="fas fa-chart-pie"></i> لوحة التحكم</a>
-                        <a href="#" id="reportsLink"><i class="fas fa-file-alt"></i> التقارير</a>
-                        <a href="#" id="usersLink"><i class="fas fa-users"></i> المستخدمين</a>
-                        <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+
+                    <div class="hero">
+                        <h1>نظام إدارة التعليم والتطوير</h1>
+                        <p>منصة متكاملة لإدارة التدريب</p>
                     </div>
-                </div>
 
-                <div class="hero">
-                    <h1>نظام إدارة التعليم والتطوير</h1>
-                    <p>منصة متكاملة لإدارة التدريب</p>
-                </div>
-
-                <div class="search-container">
-                    <div class="search-box">
-                        <span class="search-icon"><i class="fas fa-search"></i></span>
-                        <input type="text" id="searchInput" placeholder="ابحث عن قسم أو رابط...">
+                    <!-- شريط البحث -->
+                    <div class="search-container">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="searchInput" placeholder="ابحث عن قسم أو رابط...">
+                        </div>
+                        <div id="searchResults"></div>
                     </div>
-                    <div id="searchResults"></div>
-                </div>
 
-                <div class="container">
-                    <div class="sections-grid" id="sectionsContainer"></div>
-                </div>
+                    <div class="container">
+                        <div class="sections-grid" id="sectionsContainer"></div>
+                    </div>
 
-                <div class="footer">
-                    <p>© 2026 نظام إدارة التعليم والتطوير - جميع الحقوق محفوظة</p>
-                </div>
-            `;
-
-            // ربط الأحداث
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                });
-            });
-
-            // أزرار وهمية للتنقل (تحافظ على الوظيفة)
-            document.getElementById('dashboardLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                alert('لوحة التحكم - قيد التطوير');
-            });
-            document.getElementById('reportsLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                alert('التقارير - قيد التطوير');
-            });
-            document.getElementById('usersLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                alert('إدارة المستخدمين - قيد التطوير');
-            });
-
-            // ربط البحث
-            document.getElementById('searchInput').addEventListener('keyup', searchContent);
-        }
-
-        // ============================================================
-        //  LOAD SECTIONS FROM FIRESTORE
-        // ============================================================
-        function loadSections() {
-            db.collection('sections').orderBy('order', 'asc').get()
-                .then(snapshot => {
-                    sectionsData = [];
-                    allLinks = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const id = doc.id;
-                        const section = {
-                            id: id,
-                            title: data.title || 'قسم',
-                            icon: data.icon || 'fa-folder',
-                            description: data.description || '',
-                            links: data.links || []
-                        };
-                        sectionsData.push(section);
-                        // تجميع الروابط للبحث
-                        section.links.forEach(link => {
-                            allLinks.push({
-                                sectionTitle: section.title,
-                                linkTitle: link.title || 'رابط',
-                                url: link.url || '#',
-                                icon: link.icon || 'fa-link'
-                            });
-                        });
-                    });
-                    renderSections();
-                })
-                .catch(err => {
-                    console.error('Error loading sections:', err);
-                    // بيانات افتراضية للاختبار في حالة عدم وجود Firestore
-                    sectionsData = [
-                        {
-                            id: '1',
-                            title: 'التدريب التقني',
-                            icon: 'fa-laptop-code',
-                            description: 'دورات في البرمجة وقواعد البيانات',
-                            links: [
-                                { title: 'JavaScript المتقدم', url: '#', icon: 'fa-js' },
-                                { title: 'Firebase العملي', url: '#', icon: 'fa-fire' }
-                            ]
-                        },
-                        {
-                            id: '2',
-                            title: 'المهارات الإدارية',
-                            icon: 'fa-users-cog',
-                            description: 'تطوير المهارات القيادية والإدارية',
-                            links: [
-                                { title: 'إدارة الفرق', url: '#', icon: 'fa-people-arrows' },
-                                { title: 'التخطيط الاستراتيجي', url: '#', icon: 'fa-map' }
-                            ]
-                        }
-                    ];
-                    allLinks = [];
-                    sectionsData.forEach(s => {
-                        s.links.forEach(l => {
-                            allLinks.push({
-                                sectionTitle: s.title,
-                                linkTitle: l.title,
-                                url: l.url,
-                                icon: l.icon || 'fa-link'
-                            });
-                        });
-                    });
-                    renderSections();
-                });
-        }
-
-        // ============================================================
-        //  RENDER SECTIONS
-        // ============================================================
-        function renderSections() {
-            const container = document.getElementById('sectionsContainer');
-            if (!container) return;
-            if (sectionsData.length === 0) {
-                container.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#5a748e;">لا توجد أقسام لعرضها حالياً</p>`;
-                return;
-            }
-            let html = '';
-            sectionsData.forEach(section => {
-                const iconClass = section.icon.startsWith('fa-') ? section.icon : 'fa-folder';
-                html += `
-                    <div class="section-card" data-section-id="${section.id}">
-                        <h3><i class="fas ${iconClass}"></i> ${section.title}</h3>
-                        <p>${section.description || ''}</p>
-                        <ul class="links-list">
+                    <div class="footer">
+                        <p>© 2026 نظام إدارة التعليم والتطوير - جميع الحقوق محفوظة</p>
+                    </div>
                 `;
-                if (section.links && section.links.length > 0) {
-                    section.links.forEach(link => {
-                        const linkIcon = link.icon && link.icon.startsWith('fa-') ? link.icon : 'fa-link';
-                        html += `
-                            <li><a href="${link.url || '#'}" target="_blank"><i class="fas ${linkIcon}"></i> ${link.title || 'رابط'}</a></li>
-                        `;
+                
+                // ربط حدث البحث عبر EventListener (لأن onkeyup في HTML المدمج لا يتعرف على الـ Modules بسهولة)
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('keyup', () => {
+                        if (typeof window.searchContent === 'function') window.searchContent();
                     });
-                } else {
-                    html += `<li style="color:#8899aa; font-size:0.9rem;">لا توجد روابط</li>`;
                 }
-                html += `
-                        </ul>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
 
-        // ============================================================
-        //  SEARCH FUNCTIONALITY
-        // ============================================================
-        function searchContent() {
-            const input = document.getElementById('searchInput');
-            const resultsBox = document.getElementById('searchResults');
-            const query = input.value.trim().toLowerCase();
-            if (!query) {
-                resultsBox.style.display = 'none';
-                resultsBox.innerHTML = '';
-                return;
+                // تهيئة محتويات الصفحة بالاعتماد على الدوال الموجودة في script.js
+                // ملاحظة: تأكد أن script.js يقوم بتصدير هذه الدوال أو إضافتها لـ window
+                setTimeout(() => {
+                    if (typeof window.updateNavbar === 'function') window.updateNavbar();
+                    if (typeof window.renderSections === 'function') window.renderSections();
+                }, 100);
             }
-            // بحث في العناوين والأقسام
-            const matches = allLinks.filter(item =>
-                item.linkTitle.toLowerCase().includes(query) ||
-                item.sectionTitle.toLowerCase().includes(query)
-            );
-            if (matches.length === 0) {
-                resultsBox.innerHTML = `<div class="search-item" style="color:#8899aa;">لا توجد نتائج</div>`;
-                resultsBox.style.display = 'block';
-                return;
-            }
-            let html = '';
-            matches.slice(0, 8).forEach(m => {
-                const icon = m.icon && m.icon.startsWith('fa-') ? m.icon : 'fa-link';
-                html += `
-                    <div class="search-item" onclick="window.open('${m.url || '#'}', '_blank')">
-                        <i class="fas ${icon}"></i>
-                        <span><strong>${m.linkTitle}</strong> <span style="color:#8899aa; font-size:0.85rem;"> - ${m.sectionTitle}</span></span>
-                    </div>
-                `;
-            });
-            resultsBox.innerHTML = html;
-            resultsBox.style.display = 'block';
-        }
-
-        // ============================================================
-        //  UPDATE NAVBAR (placeholder for compatibility)
-        // ============================================================
-        function updateNavbar() {
-            // تم تضمينها مسبقاً في buildAppUI
-        }
-
-        // ============================================================
-        //  EXPOSE GLOBALS FOR EXTERNAL CALLS (compatibility)
-        // ============================================================
-        window.updateNavbar = updateNavbar;
-        window.renderSections = renderSections;
-        window.searchContent = searchContent;
-        window.auth = auth;
-        window.db = db;
-
-        // ============================================================
-        //  INITIAL GUARD (already handled by onAuthStateChanged)
-        // ============================================================
-        console.log('✅ نظام إدارة التعليم والتطوير - تم التحميل بالكامل');
+            // إذا لم يكن مسجلاً، ملف auth-guard.js سيقوم تلقائياً بالتوجيه لصفحة login.html
+        });
     </script>
 </body>
 </html>
