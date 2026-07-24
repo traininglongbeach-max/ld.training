@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام إدارة التعليم والتطوير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* تم الاحتفاظ بجميع التنسيقات الأصلية كما هي */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 2rem;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-card h1 {
+            color: #1e3a5f;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-card p {
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.8rem 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2b7a4b;
+            box-shadow: 0 0 0 3px rgba(43, 122, 75, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+        }
+
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">🎓</div>
+        <h1>نظام إدارة التعليم والتطوير</h1>
+        <p>سجل دخولك للوصول إلى النظام</p>
+        
+        <!-- تم تغيير الـ ID وتعديل الـ Placeholder ليتناسب مع البريد الإلكتروني -->
+        <input type="email" id="email" placeholder="📧 البريد الإلكتروني" autocomplete="off">
+        <input type="password" id="password" placeholder="🔒 كلمة المرور">
+        <button id="loginBtn">دخول</button>
+        
+        <div id="errorMsg" class="error"></div>
+    </div>
+
+    <!-- تفعيل ملف الـ Guard للحماية -->
+    <script type="module" src="auth-guard.js"></script>
+
+    <script type="module">
+        import { auth } from './database.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ربط عناصر واجهة المستخدم
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorDiv = document.getElementById('errorMsg');
+
+        // دالة عرض الأخطاء
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // دالة تسجيل الدخول
+        async function performLogin() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                showError('❌ الرجاء إدخال البريد الإلكتروني وكلمة المرور');
+                return;
+            }
+
+            // تغيير حالة الزر أثناء التحميل
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'جاري الدخول...';
+            
+            try {
+                // محاولة تسجيل الدخول عبر خوادم Firebase
+                await signInWithEmailAndPassword(auth, email, password);
+                
+                // في حال النجاح، سيتم التوجيه فوراً
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error("Login Error:", error.code);
+                
+                // رسائل خطأ مخصصة بناءً على استجابة فير بيز
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    showError('❌ البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                } else if (error.code === 'auth/invalid-email') {
+                    showError('❌ صيغة البريد الإلكتروني غير صحيحة');
+                } else {
+                    showError('❌ حدث خطأ في الاتصال، يرجى المحاولة لاحقاً');
+                }
+                
+                // إعادة الزر لحالته الطبيعية
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'دخول';
+            }
+        }
+
+        // ربط حدث النقر على الزر
+        loginBtn.addEventListener('click', performLogin);
+
+        // ربط حدث الضغط على زر Enter داخل حقل كلمة المرور
+        passwordInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                performLogin();
+            }
+        });
+    </script>
+</body>
+</html>

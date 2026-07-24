@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Performers Analysis - L&D Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <!-- السكريبتات بنظام Modules -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; }
+
+        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 15px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo h2 { color: #1e3a5f; font-size: 1.4rem; }
+        .logo span { background: linear-gradient(135deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1.2rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .nav-links .home { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .nav-links .logout { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+
+        .container { max-width: 1500px; margin: 2rem auto; padding: 0 1.5rem; }
+        .page-header { margin-bottom: 2rem; text-align: center; }
+        .page-header h1 { color: #1e3a5f; font-size: 2.4rem; font-weight: 800; }
+        .page-header h1 span { background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .page-header p { color: #718096; font-size: 1.1rem; margin-top: 0.5rem; }
+
+        .diagnostic-box { background: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; direction: rtl; }
+        .diagnostic-box.show { display: block; }
+        .diagnostic-box h3 { color: #d97706; margin-bottom: 1rem; font-size: 1.3rem; }
+        .diagnostic-box .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .diagnostic-box .stat-item { background: #fffbeb; padding: 1rem; border-radius: 1rem; text-align: center; }
+        .diagnostic-box .stat-value { font-size: 1.5rem; font-weight: bold; color: #d97706; }
+        .diagnostic-box .stat-label { font-size: 0.8rem; color: #92400e; margin-top: 0.3rem; font-weight: bold;}
+        .diagnostic-box .mismatch-list { max-height: 250px; overflow-y: auto; background: #fef2f2; padding: 1rem; border-radius: 1rem; font-size: 0.85rem; color: #991b1b; margin-top: 1rem; }
+        .diagnostic-box .mismatch-list div { padding: 0.5rem 0; border-bottom: 1px solid #fecaca; }
+        .diagnostic-box .mismatch-list .found { color: #065f46; background: #ecfdf5; padding: 0.3rem 0.5rem; border-radius: 0.5rem; margin: 2px 0; }
+
+        .filter-bar { background: white; border-radius: 1.5rem; padding: 1.2rem 1.5rem; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+        .filter-group { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .filter-group label { font-weight: bold; color: #1e3a5f; font-size: 0.9rem; }
+        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.9rem; background: white; color: #1e3a5f; cursor: pointer; transition: 0.3s; }
+        .filter-select:focus { border-color: #f59e0b; outline: none; }
+        .filter-info { color: #f59e0b; font-weight: bold; font-size: 1rem; }
+
+        .section-title { font-size: 1.6rem; color: #1e3a5f; margin: 2.5rem 0 1.5rem 0; padding-left: 15px; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; }
+        .section-title.employees { border-left: 5px solid #f59e0b; }
+        .section-title.dept { border-left: 5px solid #8b5cf6; }
+        .section-title.courses { border-left: 5px solid #10b981; }
+
+        .top-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .top-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 20px rgba(0,0,0,0.08); transition: 0.3s; width: 630px; }
+        .top-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+        .top-card h3 { font-size: 1.3rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #f1f5f9; color: #1e3a5f; display: flex; align-items: center; gap: 0.5rem; }
+
+        .top-list { display: flex; flex-direction: column; gap: 0.8rem; }
+        .top-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; transition: 0.3s; position: relative; overflow: hidden; }
+        .top-item::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 0 4px 4px 0; }
+        .top-item:hover { transform: translateX(8px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .top-item.color-0 { background: linear-gradient(135deg, #fffbeb, #fef3c7); } .top-item.color-1 { background: linear-gradient(135deg, #eff6ff, #dbeafe); } .top-item.color-2 { background: linear-gradient(135deg, #ecfdf5, #d1fae5); } .top-item.color-3 { background: linear-gradient(135deg, #fdf2f8, #fce7f3); } .top-item.color-4 { background: linear-gradient(135deg, #fefce8, #fef9c3); }
+        .top-item.color-0::before { background: linear-gradient(180deg, #f59e0b, #ef4444); } .top-item.color-1::before { background: linear-gradient(180deg, #3b82f6, #8b5cf6); } .top-item.color-2::before { background: linear-gradient(180deg, #10b981, #06b6d4); } .top-item.color-3::before { background: linear-gradient(180deg, #ec4899, #f472b6); } .top-item.color-4::before { background: linear-gradient(180deg, #eab308, #facc15); }
+
+        .top-rank { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem; color: white; flex-shrink: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .top-rank.gold { background: linear-gradient(135deg, #f59e0b, #d97706); } .top-rank.silver { background: linear-gradient(135deg, #94a3b8, #64748b); } .top-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); } .top-rank.normal { background: linear-gradient(135deg, #64748b, #475569); }
+
+        .top-info { flex: 1; min-width: 0; }
+        .top-name { font-weight: 700; color: #1e3a5f; font-size: 1rem; margin-bottom: 6px; }
+        .top-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem; }
+        .top-meta span { padding: 0.25rem 0.7rem; border-radius: 1rem; font-weight: 500; }
+        .meta-id { background: #dbeafe; color: #1e40af; } .meta-dept { background: #ede9fe; color: #5b21b6; } .meta-pos { background: #d1fae5; color: #065f46; }
+
+        .top-stats { text-align: right; flex-shrink: 0; }
+        .top-value { font-weight: 800; font-size: 1.5rem; }
+        .top-value.hours { color: #10b981; } .top-value.sessions { color: #3b82f6; } .top-value.completions { color: #8b5cf6; }
+        .top-label { font-size: 0.75rem; color: #718096; margin-top: 2px; }
+
+        .dept-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .dept-card { background: white; border-radius: 1rem; padding: 1.2rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 3px 15px rgba(0,0,0,0.05); border-left: 5px solid #8b5cf6; transition: 0.3s; }
+        .dept-card:hover { transform: translateX(5px); box-shadow: 0 5px 20px rgba(139, 92, 246, 0.2); }
+        .dept-rank-badge { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 0.5rem 1rem; border-radius: 1.5rem; font-weight: bold; font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); }
+        .dept-info { flex: 1; }
+        .dept-name { font-weight: 700; color: #1e3a5f; font-size: 1.05rem; }
+        .dept-details { color: #718096; font-size: 0.8rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .chart-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; padding-left: 1rem; border-left: 4px solid #8b5cf6; }
+        .chart-wrapper { position: relative; width: 100%; min-height: 400px; }
+        canvas { max-height: 400px !important; width: 100% !important; }
+
+        .excluded-note { background: #fef5e7; padding: 1rem 1.5rem; border-radius: 1rem; text-align: center; margin-top: 2rem; font-size: 0.9rem; color: #718096; border: 1px solid #fde68a; }
+        .footer { text-align: center; padding: 2rem; color: #a0aec0; margin-top: 2rem; }
+
+        @media (max-width: 768px) {
+            .top-cards { grid-template-columns: 1fr; }
+            .charts-row { grid-template-columns: 1fr; }
+            .dept-cards { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .chart-wrapper { min-height: 300px; }
+            canvas { max-height: 300px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">
+            ⏳ Fetching global records and generating insights...
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ========== إعدادات الرسوم البيانية ==========
+        const CHART_SIZES = {
+            main: { height: 450, titleFont: 1.5, dataFont: 20, axisFont: 18, padding: { top: 40, bottom: 20, left: 20, right: 30 } }
+        };
+
+        // ========== Storage Variables ==========
+        let offJobData = { courses: [], sessions: [], enrollments: [] };
+        let onJobData = { courses: [], sessions: [], enrollments: [] };
+        let allEmployees = [];
+        let activeEmployees = [];
+        
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth().toString(); // 'all' or string num
+        let currentType = "offjob";
+        
+        let chartInstances = {}; // Track instances to prevent Memory Leaks
+        
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const EXCLUDED_COURSES = ['new hire induction', 'تعريف الموظفين الجدد', 'الهاسب'];
+
+        // ================= دوال مساعدة ذكية =================
+        function parseDateSafely(dateValue) {
+            if (!dateValue) return new Date(NaN);
+            if (typeof dateValue === 'number') return new Date((dateValue - 25569) * 86400000);
+            return new Date(dateValue);
+        }
+
+        function isExcludedCourse(courseName) {
+            if (!courseName) return false;
+            const cn = courseName.toLowerCase();
+            return EXCLUDED_COURSES.some(ex => cn.includes(ex));
+        }
+
+        function calculateHoursFromTime(startTime, endTime) {
+            if (!startTime || !endTime) return 0;
+            const startParts = startTime.toString().split(':');
+            const endParts = endTime.toString().split(':');
+            let startHour = parseInt(startParts[0]), startMinute = parseInt(startParts[1]) || 0;
+            let endHour = parseInt(endParts[0]), endMinute = parseInt(endParts[1]) || 0;
+            let diffHours = endHour - startHour;
+            let diffMinutes = endMinute - startMinute;
+            if (diffHours < 0) diffHours = 24 + diffHours;
+            return parseFloat((diffHours + (diffMinutes / 60)).toFixed(2));
+        }
+
+        function getSessionHours(session) {
+            if (session.start_time == null || session.end_time == null) return 0;
+            if (typeof session.start_time === "number" && typeof session.end_time === "number") {
+                let hours = (session.end_time - session.start_time) * 24;
+                return Number((hours < 0 ? hours + 24 : hours).toFixed(2));
+            }
+            return calculateHoursFromTime(session.start_time, session.end_time);
+        }
+
+        function destroyChart(id) {
+            if (chartInstances[id]) {
+                chartInstances[id].destroy();
+                delete chartInstances[id];
+            }
+        }
+
+        // ================= جلب البيانات لمرة واحدة =================
+        async function loadAllDataFromServer() {
+            try {
+                const employeesData = await DB.getAll('employees');
+                allEmployees = employeesData || [];
+                activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
+                
+                offJobData.courses = await DB.getAll('offjob_courses') || [];
+                offJobData.sessions = await DB.getAll('offjob_sessions') || [];
+                offJobData.enrollments = await DB.getAll('offjob_enrollments') || [];
+                
+                onJobData.courses = await DB.getAll('onjob_courses') || [];
+                onJobData.sessions = await DB.getAll('onjob_sessions') || [];
+                onJobData.enrollments = await DB.getAll('onjob_enrollments') || [];
+            } catch (error) {
+                console.error("❌ Failed to fetch data from Firestore:", error);
+            }
+        }
+
+        function findEmployee(empId, activeOnly = false) {
+            if (!empId) return null;
+            const idStr = empId.toString().trim();
+            const searchIn = activeOnly ? activeEmployees : allEmployees;
+            return searchIn.find(e => e.id?.toString().trim() === idStr) || null;
+        }
+
+        // ================= دوال التحليل والحسابات =================
+        function filterByMonthAndYear(items, dateField) {
+            return items.filter(item => {
+                if (!item[dateField]) return false;
+                const d = parseDateSafely(item[dateField]);
+                if (isNaN(d.getTime()) || d.getFullYear() !== currentYear) return false;
+                if (currentMonth !== 'all' && d.getMonth() !== parseInt(currentMonth)) return false;
+                return true;
+            });
+        }
+
+        function getActiveData() {
+            let courses = [], sessions = [], enrollments = [];
+            if (currentType === 'onjob') {
+                courses = [...onJobData.courses]; sessions = [...onJobData.sessions]; enrollments = [...onJobData.enrollments];
+            } else if (currentType === 'offjob') {
+                courses = [...offJobData.courses]; sessions = [...offJobData.sessions]; enrollments = [...offJobData.enrollments];
+            } else {
+                const uc = new Map(), us = new Map();
+                [...offJobData.courses, ...onJobData.courses].forEach(c => { if (c.course_code) uc.set(c.course_code.toString(), c); });
+                [...offJobData.sessions, ...onJobData.sessions].forEach(s => { if (s.session_code) us.set(s.session_code.toString(), s); });
+                courses = Array.from(uc.values());
+                sessions = Array.from(us.values());
+                enrollments = [...offJobData.enrollments, ...onJobData.enrollments];
+            }
+            return { courses, sessions, enrollments };
+        }
+
+        function excludeSpecialEmployees(empIds) {
+            const excludedLevels = ['HODs', 'GM', 'Director'];
+            const excludedPositions = ['General Manager', 'Hotel Manager', 'Department Head'];
+            return empIds.filter(id => {
+                const emp = findEmployee(id, true); // نستثني الموظف لو مستقيل (لأننا بنبحث في Active فقط)
+                if (!emp) return false;
+                if (excludedLevels.includes(emp.level)) return false;
+                if (excludedPositions.some(p => emp.position?.includes(p))) return false;
+                return true;
+            });
+        }
+
+        function calculateEmployeeStats() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const filteredSessions = filterByMonthAndYear(sessions, 'session_date');
+            const sessionCodes = new Set(filteredSessions.map(s => s.session_code?.toString()));
+            const completedEnrollments = enrollments.filter(e => sessionCodes.has(e.session_code?.toString()) && e.enrollment_status === 'Completed');
+            
+            const empMap = new Map();
+            
+            completedEnrollments.forEach(enrollment => {
+                const empId = enrollment.employee_id?.toString().trim();
+                if (!empId) return;
+                
+                const session = filteredSessions.find(s => s.session_code == enrollment.session_code);
+                const course = courses.find(c => c.course_code == session?.course_code);
+                
+                if (!empMap.has(empId)) empMap.set(empId, { sessions: 0, hours: 0, coursesSet: new Set() });
+                const stats = empMap.get(empId);
+                
+                stats.sessions++;
+                if (course) stats.coursesSet.add(course.course_name);
+                
+                if (!isExcludedCourse(course?.course_name)) {
+                    stats.hours += getSessionHours(session);
+                }
+            });
+            
+            let result = Array.from(empMap.keys()).map(empId => {
+                const emp = findEmployee(empId, true); // Active Only for Top performers
+                if (!emp) return null;
+                const s = empMap.get(empId);
+                return {
+                    id: empId, name: emp.fullName || `Employee #${empId}`, department: emp.department || 'Not Assigned',
+                    position: emp.position || '-', sessions: s.sessions, courses: s.coursesSet.size, hours: parseFloat(s.hours.toFixed(1))
+                };
+            }).filter(e => e !== null);
+            
+            result = result.filter(e => excludeSpecialEmployees([e.id]).length > 0);
+            
+            return {
+                topBySessions: [...result].sort((a, b) => b.sessions - a.sessions).slice(0, 5),
+                topByHours: [...result].sort((a, b) => b.hours - a.hours).slice(0, 5)
+            };
+        }
+
+        function calculateTopCourses() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const filteredSessions = filterByMonthAndYear(sessions, 'session_date');
+            const courseCompletions = new Map();
+            
+            courses.forEach(c => {
+                if (c.course_code) courseCompletions.set(c.course_code.toString(), { course_code: c.course_code, course_name: c.course_name || 'Unnamed Course', completions: 0 });
+            });
+            
+            filteredSessions.forEach(session => {
+                const courseCode = session.course_code?.toString();
+                if (!courseCode) return;
+                const attendees = enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
+                if (courseCompletions.has(courseCode)) {
+                    const data = courseCompletions.get(courseCode);
+                    data.completions += attendees.length;
+                    courseCompletions.set(courseCode, data);
+                }
+            });
+            
+            return Array.from(courseCompletions.values()).sort((a, b) => b.completions - a.completions).slice(0, 5);
+        }
+
+        function calculateDepartmentStats() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const filteredSessions = filterByMonthAndYear(sessions, 'session_date');
+            const deptMap = new Map();
+            
+            filteredSessions.forEach(session => {
+                const sc = session.session_code;
+                const attendees = enrollments.filter(e => e.session_code == sc && e.enrollment_status === 'Completed');
+                
+                attendees.forEach(a => {
+                    const empId = a.employee_id?.toString().trim();
+                    const emp = findEmployee(empId, false); // All employees (Active + Left) for Dept stats
+                    const dept = emp?.department || 'Not Assigned';
+                    
+                    if (!deptMap.has(dept)) deptMap.set(dept, { employees: new Set(), sessions: new Set(), hours: 0 });
+                    const ds = deptMap.get(dept);
+                    
+                    ds.employees.add(empId);
+                    ds.sessions.add(sc);
+                    ds.hours += getSessionHours(session);
+                });
+            });
+            
+            return Array.from(deptMap.keys()).map(d => ({
+                department: d, uniqueEmployees: deptMap.get(d).employees.size, sessions: deptMap.get(d).sessions.size, hours: parseFloat(deptMap.get(d).hours.toFixed(1))
+            })).sort((a, b) => b.uniqueEmployees - a.uniqueEmployees);
+        }
+
+        // ================= أداة التشخيص المحسنة =================
+        function runDiagnostic() {
+            const allEnrollments = [...offJobData.enrollments, ...onJobData.enrollments];
+            const trainingIds = [...new Set(allEnrollments.map(e => e.employee_id?.toString().trim()))].filter(Boolean);
+            
+            const leftIds = trainingIds.filter(id => {
+                const emp = findEmployee(id, false);
+                return emp && emp.status === 'Left';
+            });
+            const notFoundIds = trainingIds.filter(id => !findEmployee(id, false));
+            
+            return {
+                totalEmployees: allEmployees.length, activeEmployees: activeEmployees.length, leftEmployees: allEmployees.length - activeEmployees.length,
+                totalTrainingIds: trainingIds.length, leftInTraining: leftIds.length, notFoundCount: notFoundIds.length, leftIds, notFoundIds
+            };
+        }
+
+        window.showDiagnostic = () => {
+            const result = runDiagnostic();
+            const box = document.getElementById('diagnosticBox');
+            if (box) {
+                box.classList.toggle('show');
+                if (box.classList.contains('show')) {
+                    document.getElementById('diagTotalEmp').textContent = result.totalEmployees;
+                    document.getElementById('diagActiveEmp').textContent = result.activeEmployees;
+                    document.getElementById('diagLeftEmp').textContent = result.leftEmployees;
+                    document.getElementById('diagTrainingIds').textContent = result.totalTrainingIds;
+                    document.getElementById('diagLeftInTraining').textContent = result.leftInTraining;
+                    document.getElementById('diagNotFound').textContent = result.notFoundCount;
+                    
+                    let html = '';
+                    if (result.leftInTraining > 0) {
+                        html += `<div style="color:#d97706; font-weight:bold; margin-top:0.5rem;">🚪 موظفين مستقيلين حضروا تدريبات (يتم استبعادهم من قائمة الأفضل، ولكن تحتسب أقسامهم):</div>`;
+                        html += result.leftIds.slice(0, 15).map(id => {
+                            const emp = findEmployee(id, false);
+                            return `<div class="found">🆔 ${id} - ${emp?.fullName || 'Unknown'} | 🏢 ${emp?.department || 'N/A'}</div>`;
+                        }).join('');
+                    }
+                    if (result.notFoundCount > 0) {
+                        html += `<div style="color:#991b1b; font-weight:bold; margin-top:0.5rem;">❌ Not Found in Employee Data:</div>`;
+                        html += result.notFoundIds.slice(0, 15).map(id => `<div>🆔 ${id} - No match</div>`).join('');
+                    }
+                    if (result.leftInTraining === 0 && result.notFoundCount === 0) {
+                        html = '<div style="color:#065f46; font-weight:bold; padding:10px; background:#d1fae5; border-radius:10px;">✅ All training IDs match active employee data!</div>';
+                    }
+                    document.getElementById('diagMismatchList').innerHTML = html || '<div>No mismatches found</div>';
+                }
+            }
+        };
+
+        // ================= رسم الواجهات و الرسوم البيانية =================
+        function renderTopList(items, type, label) {
+            const getRankClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
+            const rankEmoji = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+            if (items.length === 0) return '<div style="text-align:center;padding:3rem;color:#a0aec0;">📭 No data available</div>';
+            
+            return items.map((emp, i) => `
+                <div class="top-item color-${i}">
+                    <div class="top-rank ${getRankClass(i)}">${rankEmoji[i]}</div>
+                    <div class="top-info">
+                        <div class="top-name">${emp.name}</div>
+                        <div class="top-meta"><span class="meta-id">🆔 ${emp.id}</span><span class="meta-dept">🏢 ${emp.department}</span><span class="meta-pos">💼 ${emp.position}</span></div>
+                    </div>
+                    <div class="top-stats">
+                        <div class="top-value ${type}">${type === 'hours' ? emp.hours : emp.sessions}</div>
+                        <div class="top-label">${label}</div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderTopCoursesList(topCourses) {
+            if (topCourses.length === 0) return '<div style="text-align:center;padding:2rem;color:#a0aec0;">📭 No course data available</div>';
+            const getRankClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
+            const rankEmoji = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+            
+            return topCourses.map((course, i) => `
+                <div class="top-item color-${i}">
+                    <div class="top-rank ${getRankClass(i)}">${rankEmoji[i]}</div>
+                    <div class="top-info"><div class="top-name">${course.course_name}</div></div>
+                    <div class="top-stats"><div class="top-value completions">${course.completions}</div><div class="top-label">Completion(s)</div></div>
+                </div>`).join('');
+        }
+
+        function renderDeptCards(deptStats) {
+            if (deptStats.length === 0) return '<div style="text-align:center;padding:2rem;color:#a0aec0;grid-column:1/-1;">📭 No department data</div>';
+            const medals = ['🥇', '🥈', '🥉'];
+            return deptStats.slice(0, 9).map((dept, i) => `
+                <div class="dept-card">
+                    <div class="dept-rank-badge">${i < 3 ? medals[i] : '#'} ${i + 1}</div>
+                    <div class="dept-info">
+                        <div class="dept-name">${dept.department}</div>
+                        <div class="dept-details"><span>👥 ${dept.uniqueEmployees} Emp.</span><span>📚 ${dept.sessions} Sess.</span><span>⏰ ${dept.hours} Hrs.</span></div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function initCharts(deptStats) {
+            Chart.register(ChartDataLabels);
+            const empSorted = [...deptStats].sort((a, b) => b.uniqueEmployees - a.uniqueEmployees).slice(0, 10);
+            const hoursSorted = [...deptStats].sort((a, b) => b.hours - a.hours).slice(0, 10);
+            const colorPalette = ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316', '#6366f1', '#14b8a6', '#e11d48'];
+            
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 35, bottom: 10 } },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 6, padding: { left: 8, right: 8, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 8, font: { weight: 'bold', size: 14 }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : '' }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#718096', stepSize: 1 }, grid: { display: false } },
+                    x: { ticks: { color: '#718096', maxRotation: 45 }, grid: { display: false } }
+                }
+            };
+            
+            ['deptEmployeesChart', 'deptHoursChart'].forEach(id => destroyChart(id));
+
+            const ctx1 = document.getElementById('deptEmployeesChart')?.getContext('2d');
+            if (ctx1) chartInstances['deptEmployeesChart'] = new Chart(ctx1, { type: 'bar', data: { labels: empSorted.map(d => d.department), datasets: [{ data: empSorted.map(d => d.uniqueEmployees), backgroundColor: empSorted.map((_, i) => colorPalette[i]), borderRadius: 10, barPercentage: 0.7 }] }, options: chartOptions });
+            
+            const ctx2 = document.getElementById('deptHoursChart')?.getContext('2d');
+            if (ctx2) chartInstances['deptHoursChart'] = new Chart(ctx2, { type: 'bar', data: { labels: hoursSorted.map(d => d.department), datasets: [{ data: hoursSorted.map(d => d.hours), backgroundColor: hoursSorted.map((_, i) => colorPalette[i]), borderRadius: 10, barPercentage: 0.7 }] }, options: chartOptions });
+        }
+
+        function applyChartSizes() {
+            const m = CHART_SIZES.main;
+            document.querySelectorAll('.chart-wrapper').forEach(el => el.style.minHeight = m.height + 'px');
+            document.querySelectorAll('canvas').forEach(el => el.style.maxHeight = m.height + 'px');
+            document.querySelectorAll('.chart-card h3').forEach(el => el.style.fontSize = m.titleFont + 'rem');
+        }
+
+        // ================= البناء النهائي =================
+        function buildUI() {
+            const empStats = calculateEmployeeStats();
+            const deptStats = calculateDepartmentStats();
+            const topCourses = calculateTopCourses();
+            
+            const monthName = currentMonth === 'all' ? "All Months" : monthNames[parseInt(currentMonth)];
+            const typeName = currentType === 'all' ? 'All Trainings' : (currentType === 'onjob' ? 'On Job Training' : 'Off Job Training');
+            
+            const yearOptions = [2024, 2025, 2026, 2027, 2028].map(y => `<option value="${y}" ${currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
+            const monthOptions = `<option value="all" ${currentMonth === 'all' ? 'selected' : ''}>All Months</option>` + monthNames.map((name, i) => `<option value="${i}" ${currentMonth === i.toString() ? 'selected' : ''}>${name}</option>`).join('');
+
+            document.getElementById('app').innerHTML = `
+                <div class="navbar">
+                    <div class="logo"><h2>🏆 Top Performers <span>Analysis</span></h2></div>
+                    <div class="nav-links">
+                        <a href="index.html" class="home">🏠 Home</a>
+                        <button onclick="showDiagnostic()" class="diagnose">🔍 Diagnose Errors</button>
+                        <button id="logoutBtn" class="logout">🚪 Logout</button>
+                    </div>
+                </div>
+                
+                <div class="container">
+                    <div class="page-header">
+                        <h1>🏆 <span>Top Performers & Departments</span></h1>
+                        <p>Best employees ranking by training hours and sessions with department comparison</p>
+                    </div>
+                    
+                    <div class="diagnostic-box" id="diagnosticBox">
+                        <h3>🔍 Data Diagnostic Tool</h3>
+                        <div class="stats-row">
+                            <div class="stat-item"><div class="stat-value" id="diagTotalEmp">-</div><div class="stat-label">Total Employees</div></div>
+                            <div class="stat-item"><div class="stat-value" id="diagActiveEmp">-</div><div class="stat-label">Active</div></div>
+                            <div class="stat-item"><div class="stat-value" id="diagLeftEmp">-</div><div class="stat-label">Left</div></div>
+                            <div class="stat-item"><div class="stat-value" id="diagTrainingIds">-</div><div class="stat-label">IDs in Training</div></div>
+                            <div class="stat-item"><div class="stat-value" id="diagLeftInTraining">-</div><div class="stat-label">Left in Training</div></div>
+                            <div class="stat-item"><div class="stat-value" id="diagNotFound">-</div><div class="stat-label">Not Found</div></div>
+                        </div>
+                        <div class="mismatch-list" id="diagMismatchList">Click "🔍 Diagnose" for details</div>
+                        <p style="margin-top:1rem;font-size:0.85rem;color:#718096;text-align:center;">📌 <strong>Left employees</strong> EXCLUDED from Top Rankings but INCLUDED in Dept Stats</p>
+                    </div>
+                    
+                    <div class="filter-bar">
+                        <div class="filter-group"><label>📅 Year:</label><select id="yearSelect" class="filter-select">${yearOptions}</select></div>
+                        <div class="filter-group"><label>📅 Month:</label><select id="monthSelect" class="filter-select">${monthOptions}</select></div>
+                        <div class="filter-group"><label>📚 Type:</label><select id="typeSelect" class="filter-select"><option value="all" ${currentType==='all'?'selected':''}>All</option><option value="onjob" ${currentType==='onjob'?'selected':''}>On Job</option><option value="offjob" ${currentType==='offjob'?'selected':''}>Off Job</option></select></div>
+                        <div class="filter-group"><span class="filter-info">📊 ${monthName} ${currentYear} - ${typeName}</span></div>
+                    </div>
+                    
+                    <div class="section-title employees">👤 Top Active Employees - ${typeName}</div>
+                    <div class="top-cards">
+                        <div class="top-card"><h3>⏰ Top 5 by Training Hours</h3><div class="top-list">${renderTopList(empStats.topByHours, 'hours', 'Hour(s)')}</div></div>
+                        <div class="top-card"><h3>🎯 Top 5 by Number of Sessions</h3><div class="top-list">${renderTopList(empStats.topBySessions, 'sessions', 'Session(s)')}</div></div>
+                    </div>
+                    
+                    <div class="section-title courses">🏆 Top 5 Courses by Completions</div>
+                    <div class="top-cards">
+                        <div class="top-card" style="grid-column: 1 / -1;">
+                            <h3>📚 Most Attended Courses - ${typeName}</h3>
+                            <div class="top-list">${renderTopCoursesList(topCourses)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title dept">🏢 Top Participating Departments (All) - ${typeName}</div>
+                    <div class="dept-cards">${renderDeptCards(deptStats)}</div>
+                    
+                    <div class="charts-row">
+                        <div class="chart-card"><h3>👥 Top 10 Departments - Employees</h3><div class="chart-wrapper"><canvas id="deptEmployeesChart"></canvas></div></div>
+                        <div class="chart-card"><h3>⏰ Top 10 Departments - Hours</h3><div class="chart-wrapper"><canvas id="deptHoursChart"></canvas></div></div>
+                    </div>
+                </div>
+                <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
+            `;
+            
+            applyChartSizes();
+            setTimeout(() => initCharts(deptStats), 100);
+
+            // ربط الأحداث
+            document.getElementById('yearSelect').addEventListener('change', (e) => { currentYear = parseInt(e.target.value); buildUI(); });
+            document.getElementById('monthSelect').addEventListener('change', (e) => { currentMonth = e.target.value; buildUI(); });
+            document.getElementById('typeSelect').addEventListener('change', (e) => { currentType = e.target.value; buildUI(); });
+            document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(auth); window.location.href = 'login.html'; });
+        }
+
+        // ================= التهيئة والمصادقة =================
+        window.showDiagnostic = showDiagnostic;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentMonth = new Date().getMonth().toString();
+                await loadAllDataFromServer();
+                buildUI();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

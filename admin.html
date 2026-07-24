@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم الذكية - نظام إدارة التعليم والتطوير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; }
+
+        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+        .logo h2 { color: #1e3a5f; font-weight: 800; font-size: 1.4rem; } 
+        .logo span { background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; transition: 0.3s; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .nav-links .home { background: linear-gradient(135deg, #2b7a4b, #1e5a38); color: white; } 
+        .nav-links .logout { background: linear-gradient(135deg, #e53e3e, #c53030); color: white; }
+
+        .container { max-width: 1400px; margin: 2.5rem auto; padding: 0 1.5rem; }
+
+        /* تبويبات حديثة */
+        .tabs { display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; justify-content: center; background: white; padding: 0.8rem; border-radius: 100px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .tab-btn { background: transparent; border: none; padding: 0.8rem 2rem; border-radius: 100px; font-size: 1.05rem; font-weight: 700; cursor: pointer; color: #718096; transition: 0.3s; }
+        .tab-btn:hover { color: #1e3a5f; background: #f7fafc; }
+        .tab-btn.active { background: linear-gradient(135deg, #1e3a5f, #2b7a4b); color: white; box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3); }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; } 
+        .tab-content.active { display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .admin-card { background: white; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 5px 25px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
+        .admin-card h3 { color: #1e3a5f; margin-bottom: 1.5rem; font-size: 1.3rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 800; }
+        .admin-card h3 i { font-size: 1.5rem; }
+        
+        input, select, textarea { width: 100%; padding: 0.9rem 1.2rem; margin: 0.6rem 0; border: 2px solid #e2e8f0; border-radius: 1rem; font-size: 0.95rem; outline: none; transition: 0.3s; background: #f8fafc; color: #1e3a5f; font-weight: 500; }
+        input:focus, select:focus, textarea:focus { border-color: #3182ce; background: white; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1); }
+        
+        button.primary-btn { background: linear-gradient(135deg, #2b7a4b, #1e5a38); color: white; padding: 0.8rem 2rem; border: none; border-radius: 1rem; font-weight: bold; cursor: pointer; margin-top: 1rem; transition: 0.3s; font-size: 1rem; box-shadow: 0 4px 15px rgba(43, 122, 75, 0.2); }
+        button.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(43, 122, 75, 0.3); }
+        
+        .msg { background: #c6f6d5; color: #22543d; padding: 1rem; border-radius: 1rem; margin-bottom: 1.5rem; display: none; font-weight: bold; border-right: 4px solid #38a169; }
+        .msg.error { background: #fed7d7; color: #c53030; border-right-color: #e53e3e; }
+        
+        .table-wrapper { overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 1.2rem 1rem; text-align: right; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: #4a5568; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        tr:hover { background: #f1f5f9; }
+        
+        .action-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
+        .edit-btn { background: #e2e8f0; color: #2b6cb0; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: 0.2s; }
+        .edit-btn:hover { background: #bee3f8; }
+        .delete-btn { background: #fee2e2; color: #c53030; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: 0.2s; margin: 0;}
+        .delete-btn:hover { background: #fecaca; }
+
+        .badge-type { padding: 0.3rem 1rem; border-radius: 2rem; font-size: 0.8rem; font-weight: 700; display: inline-block; text-align: center; min-width: 70px; }
+        .badge-pdf { background: #fed7d7; color: #c53030; } .badge-video { background: #e9d8fd; color: #6b46c1; } .badge-ppt { background: #feebc8; color: #c05621; } .badge-doc { background: #bee3f8; color: #2b6cb0; } .badge-excel { background: #c6f6d5; color: #22543d; } .badge-other { background: #e2e8f0; color: #4a5568; }
+
+        /* الكروت العصرية في المربع الخاص بالاستيراد */
+        .import-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .import-card { background: white; padding: 2rem 1.5rem; border-radius: 1.5rem; text-align: center; border: 2px solid #e2e8f0; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: space-between; }
+        .import-card:hover { border-color: #3182ce; box-shadow: 0 10px 30px rgba(49, 130, 206, 0.1); transform: translateY(-5px); }
+        .import-card .icon-wrapper { width: 70px; height: 70px; margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: center; border-radius: 20px; font-size: 2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        .import-card h4 { color: #1e3a5f; margin-bottom: 0.8rem; font-size: 1.25rem; font-weight: 800; }
+        .import-card p { font-size: 0.9rem; color: #718096; margin-bottom: 1.5rem; line-height: 1.5; flex-grow: 1; }
+        
+        .btn-group { display: flex; gap: 0.8rem; flex-direction: column; }
+        .btn-group .btn { width: 100%; padding: 0.8rem; font-size: 0.95rem; border-radius: 1rem; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn-import { background: #3182ce; color: white; box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3); }
+        .btn-import:hover { background: #2b6cb0; transform: translateY(-2px); }
+        .btn-template { background: white; color: #4a5568; border: 2px solid #cbd5e0; }
+        .btn-template:hover { background: #f8fafc; border-color: #a0aec0; color: #1a202c; }
+
+        .import-status { margin-top: 1.5rem; padding: 1rem; border-radius: 1rem; display: none; text-align: center; font-weight: bold; font-size: 1.1rem; }
+        
+        .backup-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .backup-buttons button { flex: 1; min-width: 250px; padding: 1rem; border-radius: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem; cursor: pointer; font-weight: 600; border: none; transition: 0.3s;}
+        .backup-buttons button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+
+        /* شاشة التحميل للعمليات */
+        #uploadProgressModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .progress-box { background: #1e293b; border: 1px solid #334155; padding: 3.5rem 3rem; border-radius: 2rem; width: 90%; max-width: 550px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .progress-bar-container { background: #0f172a; border-radius: 100px; height: 20px; width: 100%; margin: 2rem 0; overflow: hidden; position: relative; border: 1px solid #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        .progress-bar-fill { background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: 0%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .progress-bar-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%); animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .progress-text { font-weight: 800; color: #38bdf8; font-size: 1.8rem; font-family: monospace; }
+        .progress-subtext { color: #94a3b8; font-size: 1.1rem; margin-top: 0.5rem; font-weight: 500; }
+
+        /* نوافذ المودال (التحرير) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-content { background: white; border-radius: 1.5rem; padding: 2.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: modalEnter 0.3s ease-out; }
+        @keyframes modalEnter { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-buttons { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .save-btn { background: #3182ce; color: white; width: 100%; padding: 0.8rem; font-size: 1rem; border-radius: 1rem; border: none; font-weight: bold; cursor: pointer; }
+        .cancel-btn { background: #e2e8f0; color: #4a5568; width: 100%; padding: 0.8rem; font-size: 1rem; border-radius: 1rem; border: none; font-weight: bold; cursor: pointer; }
+
+        .footer { text-align: center; padding: 2rem; color: #a0aec0; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
+            جاري تحميل لوحة التحكم الذكية... ⏳
+        </div>
+    </div>
+
+    <!-- شاشة التحميل للعمليات -->
+    <div id="uploadProgressModal">
+        <div class="progress-box">
+            <h3 style="color: #f8fafc; font-size: 1.6rem; margin-bottom: 0.5rem; font-weight:800;">⚡ جاري تنفيذ العملية بأمان</h3>
+            <div id="progressStepText" class="progress-subtext">الرجاء عدم إغلاق هذه الصفحة...</div>
+            <div class="progress-bar-container">
+                <div id="progressBarFill" class="progress-bar-fill"></div>
+            </div>
+            <div id="progressPercentText" class="progress-text">0%</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        let currentData = { sections: [], links: [], users: [], materials: [] };
+        let currentEditId = null;
+        let currentEditSectionId = null;
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `position:fixed; bottom:2rem; right:2rem; background:${isError ? '#e53e3e' : '#2b7a4b'}; color:white; padding:1rem 1.8rem; border-radius:100px; z-index:3000; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-weight:bold; font-size:1rem; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; toast.style.transition = '0.3s'; setTimeout(()=>toast.remove(),300); }, 3000);
+        }
+        document.head.insertAdjacentHTML("beforeend", `<style>@keyframes slideUp { from{transform:translateY(100%); opacity:0;} to{transform:translateY(0); opacity:1;} }</style>`);
+
+        function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+        function showMsg(elementId, msg, isError = false) { const el = document.getElementById(elementId); if (el) { el.innerHTML = msg; el.className = isError ? 'msg error' : 'msg'; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 4000); } }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        
+        function switchTab(tab, event) { 
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+            document.getElementById(`${tab}Tab`).classList.add('active'); 
+            if(event) event.target.classList.add('active'); 
+        }
+
+        async function loadFullData() {
+            await DB.init();
+            const sections = await DB.getAll('sections') || [];
+            const links = await DB.getAll('links') || [];
+            const users = await DB.getAll('users') || [];
+            const materials = await DB.getAll('materials') || [];
+            
+            const sectionsWithLinks = sections.map(section => ({
+                ...section,
+                links: links.filter(link => String(link.sectionId) === String(section.id))
+            }));
+            
+            currentData = { sections: sectionsWithLinks, links, users, materials };
+        }
+
+        async function clearCollection(collectionName) {
+            const docs = await DB.getAll(collectionName);
+            for(let doc of docs) {
+                await DB.delete(collectionName, doc.id);
+            }
+        }
+
+        function showUploadProgress(stepText, percent) {
+            document.getElementById('uploadProgressModal').style.display = 'flex';
+            document.getElementById('progressStepText').textContent = stepText;
+            document.getElementById('progressBarFill').style.width = percent + '%';
+            document.getElementById('progressPercentText').textContent = percent + '%';
+        }
+
+        function hideUploadProgress() {
+            document.getElementById('uploadProgressModal').style.display = 'none';
+        }
+
+        // ================= إنشاء نماذج الإكسيل (Templates) =================
+        window.downloadTemplate = (type) => {
+            let wb = XLSX.utils.book_new();
+            let ws;
+            let filename = "Template.xlsx";
+
+            if(type === 'employees') {
+                ws = XLSX.utils.json_to_sheet([{ 'Employee ID': '12345', 'Full Name': 'Ahmed Ali', 'Dep': 'HR', 'Position': 'Manager', 'Level': 'HODs', 'Hire Date': '2020-01-15', 'Status': 'Active' }]);
+                XLSX.utils.book_append_sheet(wb, ws, "Employees");
+                filename = "Employees_Template.xlsx";
+            } 
+            else if (type === 'offjob' || type === 'onjob') {
+                let trType = type === 'onjob' ? 'On Job' : 'Off Job';
+                let wsCourses = XLSX.utils.json_to_sheet([{ 'course_code': 'C100', 'course_name': 'Leadership Skills', 'training_type': trType }]);
+                let wsSessions = XLSX.utils.json_to_sheet([{ 'session_code': 'S1001', 'course_code': 'C100', 'session_date': '2026-05-20', 'start_time': '09:00', 'end_time': '11:00', 'trainer_name': 'Dr. Smith' }]);
+                let wsEnrollments = XLSX.utils.json_to_sheet([{ 'employee_id': '12345', 'session_code': 'S1001', 'enrollment_status': 'Completed', 'score': '95' }]);
+                XLSX.utils.book_append_sheet(wb, wsCourses, "Courses");
+                XLSX.utils.book_append_sheet(wb, wsSessions, "Sessions");
+                XLSX.utils.book_append_sheet(wb, wsEnrollments, "Enrollments");
+                filename = `${type === 'onjob' ? 'OnJob' : 'OffJob'}_Template.xlsx`;
+            } 
+            else if (type === 'birthdays') {
+                ws = XLSX.utils.json_to_sheet([{ 'Employee ID': '12345', 'Full Name': 'Ahmed Ali', 'Month': '5', 'Day': '14', 'Dep': 'FO', 'Position': 'Receptionist' }]);
+                XLSX.utils.book_append_sheet(wb, ws, "Birthdays");
+                filename = "Birthdays_Template.xlsx";
+            } 
+            else if (type === 'schedule') {
+                ws = XLSX.utils.json_to_sheet([{ 'Date': '2026-05-01', 'Topic': 'Fire Safety', 'Time': '10:00 AM', 'Category': 'Safety' }]);
+                XLSX.utils.book_append_sheet(wb, ws, "Schedule");
+                filename = "Training_Schedule_Template.xlsx";
+            } 
+            else if (type === 'materials') {
+                ws = XLSX.utils.json_to_sheet([{ 'Title': 'HACCP Guide', 'Description': 'Food Safety Handbook', 'Category': 'Food Safety', 'Type': 'pdf', 'URL': 'https://link.to/file.pdf' }]);
+                XLSX.utils.book_append_sheet(wb, ws, "Materials");
+                filename = "Training_Materials_Template.xlsx";
+            }
+
+            XLSX.writeFile(wb, filename);
+            showToast(`📥 تم تحميل نموذج ${filename} بنجاح`);
+        };
+
+
+        // ================= التصدير والحذف العام =================
+        async function exportData() {
+            const jsonStr = JSON.stringify(currentData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Full_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📥 تم تصدير النسخة الاحتياطية الكاملة (JSON)');
+        }
+
+        async function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        showUploadProgress('جاري تحليل واستيراد ملف النسخ الاحتياطي...', 30);
+                        const importedData = JSON.parse(event.target.result);
+                        
+                        if (importedData.sections) {
+                            const sectionsToSave = importedData.sections.map(({ links, ...section }) => section);
+                            if (sectionsToSave.length > 0) await DB.bulkInsert('sections', sectionsToSave);
+                        }
+                        if (importedData.links && importedData.links.length > 0) await DB.bulkInsert('links', importedData.links);
+                        if (importedData.users && importedData.users.length > 0) await DB.bulkInsert('users', importedData.users);
+                        if (importedData.materials && importedData.materials.length > 0) await DB.bulkInsert('materials', importedData.materials);
+                        
+                        showUploadProgress('اكتمل استيراد البيانات بنجاح!', 100);
+                        setTimeout(() => {
+                            hideUploadProgress();
+                            showToast('✅ تم استيراد البيانات بنجاح');
+                            window.location.reload();
+                        }, 1000);
+                    } catch (error) { 
+                        hideUploadProgress();
+                        showToast('❌ خطأ في استيراد الملف', true); 
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        window.exportExcelData = async (collectionName, fileName) => {
+            try {
+                showToast(`⏳ جاري تجهيز ملف ${fileName}...`);
+                const data = await DB.getAll(collectionName);
+                if (!data || data.length === 0) {
+                    showToast(`⚠️ لا توجد بيانات في ${fileName} لتصديرها`, true);
+                    return;
+                }
+                const worksheet = XLSX.utils.json_to_sheet(data);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+                XLSX.writeFile(workbook, `${fileName}_${new Date().toISOString().slice(0,10)}.xlsx`);
+                showToast(`✅ تم تصدير ${fileName} بنجاح`);
+            } catch (err) {
+                showToast(`❌ خطأ أثناء تصدير الملف`, true);
+            }
+        };
+
+        window.clearAllCollectionData = async (collectionKey, arabicName) => {
+            if (confirm(`⚠️ تحذير خطير: هل أنت متأكد من حذف جميع بيانات (${arabicName}) نهائياً؟`)) {
+                try {
+                    showUploadProgress(`جاري مسح بيانات ${arabicName}...`, 40);
+                    await clearCollection(collectionKey);
+                    showUploadProgress('تم الحذف بنجاح!', 100);
+                    setTimeout(() => { hideUploadProgress(); showToast(`🗑️ تم حذف ${arabicName}`); window.location.reload(); }, 900);
+                } catch(err) { hideUploadProgress(); showToast(`❌ حدث خطأ أثناء الحذف`, true); }
+            }
+        };
+
+        window.clearAllOnJobData = async () => {
+            if (confirm(`⚠️ تحذير: هل تريد حذف جميع تدريبات On-Job من الفايربيز؟`)) {
+                try {
+                    showUploadProgress('جاري مسح تدريبات On-Job...', 30);
+                    await clearCollection('onjob_courses');
+                    await clearCollection('onjob_sessions');
+                    await clearCollection('onjob_enrollments');
+                    showUploadProgress('اكتمل الحذف بنجاح!', 100);
+                    setTimeout(() => { hideUploadProgress(); showToast('🗑️ تم الحذف بنجاح'); window.location.reload(); }, 900);
+                } catch(err) { hideUploadProgress(); showToast('❌ خطأ أثناء الحذف', true); }
+            }
+        };
+
+        window.clearLocalData = (key, name) => {
+            if (confirm(`⚠️ هل تريد حذف جميع بيانات (${name}) المخزنة محلياً؟`)) {
+                localStorage.removeItem(key);
+                showToast(`🗑️ تم حذف ${name} بنجاح`);
+            }
+        };
+
+        function convertExcelDate(excelDate) {
+            if (!excelDate) return null;
+            if (typeof excelDate === 'number') {
+                const date = XLSX.SSF.parse_date_code(excelDate);
+                return `${date.y}-${String(date.m).padStart(2,'0')}-${String(date.d).padStart(2,'0')}`;
+            }
+            return excelDate;
+        }
+
+        async function processExcelUpload(file, processors) {
+            showUploadProgress('جاري قراءة ملف الإكسيل...', 10);
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    await processors(workbook);
+                } catch(error) {
+                    hideUploadProgress();
+                    showImportStatus(`❌ حدث خطأ في الملف المرفوع. تأكد من صيغة الإكسيل.`, true);
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ================== دوال الاستيراد عبر ملفات إكسيل ==================
+        window.importEmployeesExcel = (file) => {
+            processExcelUpload(file, async (workbook) => {
+                showUploadProgress('تحليل بيانات الموظفين...', 30);
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rawData = XLSX.utils.sheet_to_json(sheet);
+                const employees = rawData.map(row => {
+                    let hireDate = row['Hire Date'] || row['hire_date'] || '';
+                    if (hireDate && typeof hireDate === 'number') hireDate = convertExcelDate(hireDate);
+                    return {
+                        id: parseInt(row['Employee ID'] || row['employee_id'] || row['id']),
+                        fullName: String(row['Full Name'] || row['full_name'] || row['name'] || '').trim(),
+                        department: String(row['Dep'] || row['department'] || '').trim(),
+                        position: String(row['Position'] || row['position'] || '').trim(),
+                        level: String(row['Level'] || row['level'] || '').trim(),
+                        hireDate: hireDate,
+                        status: (row['Status'] || row['status']) === 'Left' ? 'Left' : 'Active'
+                    };
+                }).filter(emp => emp.id && emp.fullName);
+                
+                if(employees.length > 0) {
+                    showUploadProgress('رفع ودمج الموظفين على دفعات...', 60);
+                    await DB.bulkInsert('employees', employees);
+                    showUploadProgress('اكتمل بنجاح!', 100);
+                    setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم دمج ${employees.length} موظف بنجاح`); window.location.reload(); }, 1000);
+                } else { hideUploadProgress(); showImportStatus(`⚠️ لا توجد بيانات صحيحة في الملف`, true); }
+            });
+        };
+
+        window.importOffJobExcel = (file) => {
+            processExcelUpload(file, async (workbook) => {
+                const courses = workbook.Sheets['Courses'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Courses']) : [];
+                const sessions = workbook.Sheets['Sessions'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Sessions']) : [];
+                const enrollments = workbook.Sheets['Enrollments'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Enrollments']) : [];
+                showUploadProgress('جاري الرفع على السيرفر...', 60);
+                if (courses.length > 0) await DB.bulkInsert('offjob_courses', courses);
+                if (sessions.length > 0) await DB.bulkInsert('offjob_sessions', sessions);
+                if (enrollments.length > 0) await DB.bulkInsert('offjob_enrollments', enrollments);
+                showUploadProgress('اكتمل بنجاح!', 100);
+                setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم تحديث بيانات Off Job`); window.location.reload(); }, 1000);
+            });
+        };
+
+        window.importOnJobExcel = (file) => {
+            processExcelUpload(file, async (workbook) => {
+                const courses = workbook.Sheets['Courses'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Courses']) : [];
+                const sessions = workbook.Sheets['Sessions'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Sessions']) : [];
+                const enrollments = workbook.Sheets['Enrollments'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Enrollments']) : [];
+                showUploadProgress('جاري الرفع على السيرفر...', 60);
+                if (courses.length > 0) await DB.bulkInsert('onjob_courses', courses);
+                if (sessions.length > 0) await DB.bulkInsert('onjob_sessions', sessions);
+                if (enrollments.length > 0) await DB.bulkInsert('onjob_enrollments', enrollments);
+                showUploadProgress('اكتمل بنجاح!', 100);
+                setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم تحديث بيانات On Job`); window.location.reload(); }, 1000);
+            });
+        };
+
+        window.importBirthdaysExcel = (file) => {
+            processExcelUpload(file, async (workbook) => {
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                const headers = rows[0];
+                let colCode = -1, colName = -1, colDep = -1, colPosition = -1, colMonth = -1, colDay = -1;
+                headers.forEach((h, i) => { const header = String(h).trim(); if (header === 'Employee ID') colCode = i; if (header === 'Full Name') colName = i; if (header === 'Dep') colDep = i; if (header === 'Position') colPosition = i; if (header === 'Month') colMonth = i; if (header === 'Day') colDay = i; });
+                
+                if (colCode === -1 || colName === -1 || colMonth === -1 || colDay === -1) { hideUploadProgress(); showImportStatus('⚠️ الملف لا يطابق النموذج المطلوب', true); return; }
+                const newEmployees = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i]; if (!row) continue;
+                    const code = row[colCode] ? String(row[colCode]).trim() : '';
+                    const name = row[colName] ? String(row[colName]).trim() : '';
+                    const month = row[colMonth] ? parseInt(row[colMonth]) : null;
+                    const day = row[colDay] ? parseInt(row[colDay]) : null;
+                    const department = colDep !== -1 && row[colDep] ? String(row[colDep]).trim() : '';
+                    const position = colPosition !== -1 && row[colPosition] ? String(row[colPosition]).trim() : '';
+                    if (code && name && month && day) newEmployees.push({ code, name, department, position, month, day });
+                }
+                if (newEmployees.length > 0) {
+                    localStorage.setItem('employee_birthdays_final', JSON.stringify(newEmployees));
+                    showUploadProgress('اكتمل بنجاح!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${newEmployees.length} سجل أعياد ميلاد`); }, 1000);
+                } else { hideUploadProgress(); showImportStatus('⚠️ لا يوجد بيانات صحيحة', true); }
+            });
+        };
+
+        window.importScheduleExcel = (file) => {
+            processExcelUpload(file, async (workbook) => {
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rawData = XLSX.utils.sheet_to_json(sheet);
+                const scheduleData = rawData.map(row => {
+                    let dateVal = row['Date'] || row['date'] || row['التاريخ'] || '';
+                    if (typeof dateVal === 'number') dateVal = convertExcelDate(dateVal);
+                    return {
+                        id: Date.now().toString() + Math.floor(Math.random()*1000),
+                        date: dateVal, topic: String(row['Topic'] || row['topic'] || row['الموضوع'] || ''), time: String(row['Time'] || row['time'] || row['الوقت'] || ''),
+                        required_category: String(row['Category'] || row['Required Category'] || row['الفئة'] || ''), imported_at: new Date().toISOString(), status: 'scheduled'
+                    };
+                }).filter(s => s.date && s.topic);
+
+                if (scheduleData.length > 0) {
+                    showUploadProgress('جاري الرفع...', 60);
+                    await DB.bulkInsert('training_schedule', scheduleData);
+                    localStorage.setItem('schedule_last_update', new Date().toISOString());
+                    showUploadProgress('اكتمل!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${scheduleData.length} جلسة في الجدول`); }, 1000);
+                } else { hideUploadProgress(); showImportStatus('⚠️ الملف لا يطابق النموذج المطلوب', true); }
+            });
+        };
+
+        window.importMaterialsExcel = (file) => {
+            processExcelUpload(file, async (workbook) => {
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rawData = XLSX.utils.sheet_to_json(sheet);
+                const newMaterials = rawData.map(row => {
+                    return {
+                        title: String(row['Title'] || row['العنوان'] || ''),
+                        description: String(row['Description'] || row['الوصف'] || ''),
+                        category: String(row['Category'] || row['التصنيف'] || 'عام'),
+                        type: String(row['Type'] || row['النوع'] || 'pdf').toLowerCase(),
+                        fileUrl: String(row['URL'] || row['الرابط'] || '#'),
+                        createdAt: Date.now(), views: 0, downloads: 0
+                    };
+                }).filter(m => m.title);
+
+                if (newMaterials.length > 0) {
+                    showUploadProgress('جاري الرفع...', 60);
+                    for(let mat of newMaterials) {
+                        const id = await DB.insert('materials', mat);
+                        mat.id = id;
+                        currentData.materials.push(mat);
+                    }
+                    let existingMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
+                    localStorage.setItem('training_materials_data', JSON.stringify([...existingMaterials, ...newMaterials]));
+                    
+                    showUploadProgress('اكتمل!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${newMaterials.length} مادة تدريبية`); buildAdminUI(); }, 1000);
+                } else { hideUploadProgress(); showImportStatus('⚠️ الملف لا يطابق النموذج المطلوب', true); }
+            });
+        };
+
+        function showImportStatus(message, isError = false) {
+            const statusDiv = document.getElementById('importStatus');
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = isError ? '#fee2e2' : '#d1fae5';
+            statusDiv.style.color = isError ? '#b91c1c' : '#047857';
+            statusDiv.style.border = `2px solid ${isError ? '#fca5a5' : '#6ee7b7'}`;
+            setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+        }
+
+        // ================== العمليات (الأقسام، الروابط، المواد، المستخدمين) ==================
+        
+        async function addSection() {
+            const name = document.getElementById('sectionName')?.value;
+            const icon = document.getElementById('sectionIcon')?.value;
+            const description = document.getElementById('sectionDesc')?.value;
+            if (!name) { showMsg('sectionMsg', '❌ الرجاء إدخال اسم القسم', true); return; }
+            const newSection = { name, icon: icon || '📁', description: description || '' };
+            const id = await DB.insert('sections', newSection);
+            newSection.id = id; newSection.links = []; currentData.sections.push(newSection);
+            showMsg('sectionMsg', '✅ تم إضافة القسم بنجاح');
+            document.getElementById('sectionName').value = ''; document.getElementById('sectionIcon').value = ''; document.getElementById('sectionDesc').value = '';
+            renderSectionsList(); updateLinksSectionDropdown();
+        }
+
+        async function deleteSection(id) {
+            if (confirm('⚠️ هل أنت متأكد من حذف هذا القسم؟')) {
+                await DB.delete('sections', id);
+                currentData.sections = currentData.sections.filter(s => String(s.id) !== String(id));
+                renderSectionsList(); updateLinksSectionDropdown(); showMsg('sectionMsg', '🗑️ تم حذف القسم');
+            }
+        }
+
+        function openEditSection(id) {
+            const section = currentData.sections.find(s => String(s.id) === String(id));
+            if (section) {
+                currentEditId = id;
+                document.getElementById('editSectionName').value = section.name;
+                document.getElementById('editSectionIcon').value = section.icon||'';
+                document.getElementById('editSectionDesc').value = section.description||'';
+                document.getElementById('editSectionModal').style.display = 'flex';
+            }
+        }
+
+        async function saveSectionEdit() {
+            const section = currentData.sections.find(s => String(s.id) === String(currentEditId));
+            if (section) {
+                section.name = document.getElementById('editSectionName').value;
+                section.icon = document.getElementById('editSectionIcon').value||'📁';
+                section.description = document.getElementById('editSectionDesc').value;
+                await DB.update('sections', { id: section.id, name: section.name, icon: section.icon, description: section.description });
+                closeModal('editSectionModal'); renderSectionsList(); showMsg('sectionMsg', '✅ تم التعديل');
+            }
+        }
+
+        async function addLink() {
+            const sectionId = document.getElementById('linkSection')?.value;
+            const title = document.getElementById('linkTitle')?.value;
+            const url = document.getElementById('linkUrl')?.value;
+            const type = document.getElementById('linkType')?.value;
+            if (!title || !sectionId) { showMsg('linkMsg', '❌ بيانات ناقصة', true); return; }
+            const newLink = { sectionId, title, url: url||'#', type, views: 0, pinned: false };
+            const id = await DB.insert('links', newLink);
+            newLink.id = id;
+            const section = currentData.sections.find(s => String(s.id) === String(sectionId));
+            if(section) section.links.push(newLink);
+            showMsg('linkMsg', '✅ تم الإضافة');
+            document.getElementById('linkTitle').value = ''; document.getElementById('linkUrl').value = '';
+            renderLinksList();
+        }
+
+        async function deleteLink(sectionId, linkId) {
+            if (confirm('⚠️ تأكيد الحذف؟')) {
+                await DB.delete('links', linkId);
+                const section = currentData.sections.find(s => String(s.id) === String(sectionId));
+                if (section) { section.links = section.links.filter(l => String(l.id) !== String(linkId)); renderLinksList(); showMsg('linkMsg', '🗑️ تم الحذف'); }
+            }
+        }
+
+        function openEditLink(sectionId, linkId) {
+            const section = currentData.sections.find(s => String(s.id) === String(sectionId));
+            if (section) {
+                const link = section.links.find(l => String(l.id) === String(linkId));
+                if (link) {
+                    currentEditSectionId = sectionId; currentEditId = linkId;
+                    document.getElementById('editLinkTitle').value = link.title;
+                    document.getElementById('editLinkUrl').value = link.url||'';
+                    document.getElementById('editLinkType').value = link.type||'internal';
+                    document.getElementById('editLinkModal').style.display = 'flex';
+                }
+            }
+        }
+
+        async function saveLinkEdit() {
+            const section = currentData.sections.find(s => String(s.id) === String(currentEditSectionId));
+            if (section) {
+                const link = section.links.find(l => String(l.id) === String(currentEditId));
+                if (link) {
+                    link.title = document.getElementById('editLinkTitle').value;
+                    link.url = document.getElementById('editLinkUrl').value;
+                    link.type = document.getElementById('editLinkType').value;
+                    await DB.update('links', { id: link.id, title: link.title, url: link.url, type: link.type });
+                    closeModal('editLinkModal'); renderLinksList(); showMsg('linkMsg', '✅ تم التعديل');
+                }
+            }
+        }
+
+        async function togglePin(sectionId, linkId) {
+            const section = currentData.sections.find(s => String(s.id) === String(sectionId));
+            if (section) {
+                const link = section.links.find(l => String(l.id) === String(linkId));
+                if (link) {
+                    link.pinned = !link.pinned;
+                    await DB.update('links', { id: link.id, pinned: link.pinned });
+                    renderLinksList();
+                }
+            }
+        }
+
+        function getTypeClass(type) {
+            const map = { pdf: 'badge-pdf', video: 'badge-video', ppt: 'badge-ppt', doc: 'badge-doc', excel: 'badge-excel', link: 'badge-other', other: 'badge-other' };
+            return map[String(type).toLowerCase()] || 'badge-other';
+        }
+
+        async function addMaterial() {
+            const title = document.getElementById('materialTitle')?.value;
+            const description = document.getElementById('materialDesc')?.value || '';
+            const category = document.getElementById('materialCategory')?.value || 'عام';
+            const type = document.getElementById('materialType')?.value || 'pdf';
+            const fileUrl = document.getElementById('materialUrl')?.value || '#';
+            if (!title) { showMsg('materialMsg', '❌ الرجاء إدخال عنوان المادة', true); return; }
+
+            const newMaterial = { title, description, category, type, fileUrl, createdAt: Date.now(), views: 0, downloads: 0 };
+            const id = await DB.insert('materials', newMaterial);
+            newMaterial.id = id;
+            currentData.materials.push(newMaterial);
+            
+            const localMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
+            localMaterials.push(newMaterial);
+            localStorage.setItem('training_materials_data', JSON.stringify(localMaterials));
+
+            showMsg('materialMsg', '✅ تم إضافة المادة التدريبية بنجاح');
+            document.getElementById('materialTitle').value = ''; document.getElementById('materialDesc').value = ''; document.getElementById('materialUrl').value = '';
+            renderMaterialsList();
+        }
+
+        async function deleteMaterial(id) {
+            if (confirm('⚠️ هل أنت متأكد من حذف هذه المادة؟')) {
+                await DB.delete('materials', id);
+                currentData.materials = currentData.materials.filter(m => String(m.id) !== String(id));
+                const localMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
+                const updatedLocal = localMaterials.filter(m => String(m.id) !== String(id));
+                localStorage.setItem('training_materials_data', JSON.stringify(updatedLocal));
+                renderMaterialsList(); showMsg('materialMsg', '🗑️ تم الحذف');
+            }
+        }
+
+        function openEditMaterial(id) {
+            const material = currentData.materials.find(m => String(m.id) === String(id));
+            if (material) {
+                currentEditId = id;
+                document.getElementById('editMaterialTitle').value = material.title;
+                document.getElementById('editMaterialDesc').value = material.description || '';
+                document.getElementById('editMaterialCategory').value = material.category || '';
+                document.getElementById('editMaterialType').value = material.type || 'pdf';
+                document.getElementById('editMaterialUrl').value = material.fileUrl || '';
+                document.getElementById('editMaterialModal').style.display = 'flex';
+            }
+        }
+
+        async function saveMaterialEdit() {
+            const material = currentData.materials.find(m => String(m.id) === String(currentEditId));
+            if (material) {
+                material.title = document.getElementById('editMaterialTitle').value;
+                material.description = document.getElementById('editMaterialDesc').value;
+                material.category = document.getElementById('editMaterialCategory').value;
+                material.type = document.getElementById('editMaterialType').value;
+                material.fileUrl = document.getElementById('editMaterialUrl').value;
+
+                await DB.update('materials', { id: material.id, title: material.title, description: material.description, category: material.category, type: material.type, fileUrl: material.fileUrl });
+                const localMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
+                const localIndex = localMaterials.findIndex(m => String(m.id) === String(material.id));
+                if(localIndex > -1) {
+                    localMaterials[localIndex] = { ...localMaterials[localIndex], ...material };
+                    localStorage.setItem('training_materials_data', JSON.stringify(localMaterials));
+                }
+                closeModal('editMaterialModal'); renderMaterialsList(); showMsg('materialMsg', '✅ تم التعديل');
+            }
+        }
+
+        async function addUser() {
+            const username = document.getElementById('userName')?.value;
+            const role = document.getElementById('userRole')?.value;
+            if (!username) { showMsg('userMsg', '❌ الرجاء إدخال البريد الإلكتروني', true); return; }
+            if (currentData.users.find(u => u.username === username || u.email === username)) { showMsg('userMsg', '❌ مستخدم موجود بالفعل', true); return; }
+            
+            const newUser = { username: username, email: username, role };
+            const id = await DB.insert('users', newUser);
+            newUser.id = id; currentData.users.push(newUser);
+            showMsg('userMsg', '✅ تم إضافة المستخدم');
+            document.getElementById('userName').value = ''; renderUsersList();
+        }
+
+        async function deleteUser(id) {
+            if (confirm('⚠️ هل أنت متأكد من الحذف؟')) {
+                await DB.delete('users', id);
+                currentData.users = currentData.users.filter(u => String(u.id) !== String(id));
+                renderUsersList(); showMsg('userMsg', '🗑️ تم الحذف');
+            }
+        }
+
+        function openEditUser(id) {
+            const user = currentData.users.find(u => String(u.id) === String(id));
+            if (user) {
+                currentEditUserId = id;
+                document.getElementById('editUserName').value = user.username || user.email;
+                document.getElementById('editUserRole').value = user.role;
+                document.getElementById('editUserModal').style.display = 'flex';
+            }
+        }
+
+        async function saveUserEdit() {
+            const user = currentData.users.find(u => String(u.id) === String(currentEditUserId));
+            if (user) {
+                user.username = document.getElementById('editUserName').value;
+                user.role = document.getElementById('editUserRole').value;
+                await DB.update('users', { id: user.id, username: user.username, role: user.role });
+                closeModal('editUserModal'); renderUsersList(); showMsg('userMsg', '✅ تم التعديل');
+            }
+        }
+
+        function updateLinksSectionDropdown() {
+            const select = document.getElementById('linkSection');
+            if(select) select.innerHTML = currentData.sections.map(s => `<option value="${s.id}">${s.icon||'📁'} ${s.name}</option>`).join('');
+        }
+
+        function renderSectionsList() {
+            const container = document.getElementById('sectionsList');
+            if (!container) return;
+            container.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>#</th><th>الأيقونة</th><th>اسم القسم</th><th>الوصف</th><th>الروابط</th><th>إجراء</th></tr></thead><tbody>${currentData.sections.map((section, index) => `<tr><td>${index+1}</td><td style="font-size:1.5rem;">${section.icon||'📁'}</td><td>${escapeHtml(section.name)}</td><td>${escapeHtml(section.description||'-')}</td><td><span style="background:#e2e8f0; padding:2px 8px; border-radius:10px;">${section.links?.length||0}</span></td><td class="action-buttons"><button class="edit-btn" onclick="openEditSection('${section.id}')">✏️</button><button class="delete-btn" onclick="deleteSection('${section.id}')">🗑️</button></td></tr>`).join('')}</tbody></table></div>`;
+        }
+
+        function renderLinksList() {
+            const container = document.getElementById('linksList');
+            if (!container) return;
+            let allLinks = [];
+            currentData.sections.forEach(section => { if (section.links) section.links.forEach(link => allLinks.push({ ...link, sectionName: section.name, sectionIcon: section.icon || '📁', sectionId: section.id })); });
+            if (allLinks.length === 0) { container.innerHTML = '<div style="text-align:center; padding:3rem; color:#a0aec0;">📭 لا توجد روابط</div>'; return; }
+            container.innerHTML = `<div class="links-table-container"><h3>📋 جميع الروابط المضافة (${allLinks.length})</h3><div class="table-wrapper"><table class="links-table"><thead><tr><th>#</th><th>القسم</th><th>العنوان</th><th>الرابط</th><th>النوع</th><th>مشاهدات</th><th>إجراء</th></tr></thead><tbody>${allLinks.map((link, index) => `<tr><td>${index + 1}</td><td>${link.sectionIcon} ${escapeHtml(link.sectionName)}</td><td><strong>${escapeHtml(link.title)}</strong></td><td><span style="direction:ltr; display:inline-block; font-size:0.8rem;">${escapeHtml(link.url).substring(0,25)}...</span></td><td><span class="badge-type ${link.type === 'internal' ? 'badge-internal' : 'badge-external'}">${link.type === 'internal' ? 'داخلي' : 'خارجي'}</span></td><td>👁️ ${link.views||0}</td><td><div style="display:flex; gap:0.3rem; justify-content:center;"><button class="btn-sm btn-edit" onclick="openEditLink('${link.sectionId}','${link.id}')">✏️</button><button class="btn-sm ${link.pinned ? 'btn-unpin' : 'btn-pin'}" onclick="togglePin('${link.sectionId}','${link.id}')">${link.pinned ? '📌' : '📍'}</button><button class="btn-sm btn-delete" onclick="deleteLink('${link.sectionId}','${link.id}')">🗑️</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
+        }
+
+        function renderMaterialsList() {
+            const container = document.getElementById('materialsList');
+            if (!container) return;
+            if (currentData.materials.length === 0) { container.innerHTML = '<div style="text-align:center; padding:2rem; color:#a0aec0;">📭 لا توجد مواد تدريبية مضافة حتى الآن</div>'; return; }
+            container.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>#</th><th>العنوان والوصف</th><th>التصنيف</th><th>النوع</th><th>تفاعل</th><th>إجراء</th></tr></thead><tbody>${currentData.materials.map((m, index) => `<tr><td>${index+1}</td><td style="text-align:right;"><strong>${escapeHtml(m.title)}</strong><br><span style="font-size:0.75rem;color:#718096;">${escapeHtml(m.description).substring(0,35)}...</span></td><td><span style="background:#edf2f7; padding:4px 8px; border-radius:5px; font-size:0.8rem;">${escapeHtml(m.category)}</span></td><td><span class="badge-type ${getTypeClass(m.type)}">${m.type.toUpperCase()}</span></td><td style="font-size:0.8rem; color:#4a5568;">👁️ ${m.views||0} | 📥 ${m.downloads||0}</td><td class="action-buttons"><button class="edit-btn" onclick="openEditMaterial('${m.id}')">✏️</button><button class="delete-btn" onclick="deleteMaterial('${m.id}')">🗑️</button></td></tr>`).join('')}</tbody></table></div>`;
+        }
+
+        function renderUsersList() {
+            const container = document.getElementById('usersList');
+            if (!container) return;
+            container.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>#</th><th>البريد الإلكتروني</th><th>الدور</th><th>إجراء</th></tr></thead><tbody>${currentData.users.map((user, index) => `<tr><td>${index+1}</td><td style="direction:ltr; text-align:left; font-weight:500;">${escapeHtml(user.email || user.username)}</td><td><span style="background:${user.role==='admin'?'#dbeafe':'#f3f4f6'}; color:${user.role==='admin'?'#1e40af':'#4b5563'}; padding:4px 10px; border-radius:10px; font-size:0.85rem; font-weight:bold;">${user.role==='admin'?'👑 أدمن':'👤 مستخدم'}</span></td><td class="action-buttons"><button class="edit-btn" onclick="openEditUser('${user.id}')">✏️</button><button class="delete-btn" onclick="deleteUser('${user.id}')">🗑️</button></td></tr>`).join('')}</tbody></table></div>`;
+        }
+
+        async function logout() { await signOut(auth); window.location.href = 'login.html'; }
+
+        // ================== بناء واجهة لوحة التحكم (محدثة) ==================
+        function buildAdminUI() {
+            document.getElementById('app').innerHTML = `
+                <div class="navbar">
+                    <div class="logo"><h2>🎓 <span>المركز</span> الإداري المتقدم</h2></div>
+                    <div class="nav-links">
+                        <a href="index.html" class="home">🏠 العودة للنظام</a>
+                        <button onclick="logout()" class="logout">🚪 تسجيل خروج</button>
+                    </div>
+                </div>
+                <div class="container">
+                    
+                    <div class="admin-card" style="background: linear-gradient(to right, #ffffff, #f8fafc); border-right: 5px solid #3182ce;">
+                        <h3 style="color:#2b6cb0;">🚀 دمج البيانات الذكي (Data Sync Hub)</h3>
+                        <p style="margin-bottom:1.5rem; color:#64748b; font-size:0.95rem;">ارفع ملفات الإكسيل لتحديث النظام لحظياً. قم بتحميل النموذج أولاً لتعبئته بالصيغة الصحيحة المدعومة.</p>
+                        
+                        <div class="import-grid">
+                            
+                            <div class="import-card">
+                                <div class="icon-wrapper" style="background:#ebf8ff; color:#3182ce;">👥</div>
+                                <h4>الموظفين (Employees)</h4>
+                                <p>تحديث الهيكل الوظيفي والتعيينات</p>
+                                <input type="file" id="employeesExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importEmployeesExcel(this.files[0])">
+                                <div class="btn-group">
+                                    <button class="btn btn-import" onclick="document.getElementById('employeesExcelInput').click()">📤 رفع البيانات (Import)</button>
+                                    <button class="btn btn-template" onclick="downloadTemplate('employees')">📄 نموذج الإكسيل (Template)</button>
+                                </div>
+                            </div>
+
+                            <div class="import-card">
+                                <div class="icon-wrapper" style="background:#f0fff4; color:#38a169;">📘</div>
+                                <h4>التدريب الخارجي (Off Job)</h4>
+                                <p>دمج الكورسات والحضور الخارجي</p>
+                                <input type="file" id="offjobExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importOffJobExcel(this.files[0])">
+                                <div class="btn-group">
+                                    <button class="btn btn-import" style="background:#38a169;" onclick="document.getElementById('offjobExcelInput').click()">📤 رفع البيانات (Import)</button>
+                                    <button class="btn btn-template" onclick="downloadTemplate('offjob')">📄 نموذج الإكسيل (Template)</button>
+                                </div>
+                            </div>
+
+                            <div class="import-card">
+                                <div class="icon-wrapper" style="background:#fdf6e3; color:#dd6b20;">📗</div>
+                                <h4>التدريب الداخلي (On Job)</h4>
+                                <p>دمج تدريبات الأقسام الداخلية</p>
+                                <input type="file" id="onjobExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importOnJobExcel(this.files[0])">
+                                <div class="btn-group">
+                                    <button class="btn btn-import" style="background:#dd6b20;" onclick="document.getElementById('onjobExcelInput').click()">📤 رفع البيانات (Import)</button>
+                                    <button class="btn btn-template" onclick="downloadTemplate('onjob')">📄 نموذج الإكسيل (Template)</button>
+                                </div>
+                            </div>
+
+                            <div class="import-card">
+                                <div class="icon-wrapper" style="background:#fef3c7; color:#d97706;">🎂</div>
+                                <h4>أعياد الميلاد (Birthdays)</h4>
+                                <p>جدول الاحتفالات وتواريخ الميلاد</p>
+                                <input type="file" id="birthdaysExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importBirthdaysExcel(this.files[0])">
+                                <div class="btn-group">
+                                    <button class="btn btn-import" style="background:#d97706;" onclick="document.getElementById('birthdaysExcelInput').click()">📤 رفع البيانات (Import)</button>
+                                    <button class="btn btn-template" onclick="downloadTemplate('birthdays')">📄 نموذج الإكسيل (Template)</button>
+                                </div>
+                            </div>
+
+                            <div class="import-card">
+                                <div class="icon-wrapper" style="background:#f3e8ff; color:#7c3aed;">📅</div>
+                                <h4>جدول التدريب (Schedule)</h4>
+                                <p>الخطة الشهرية ومواعيد الجلسات</p>
+                                <input type="file" id="scheduleExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importScheduleExcel(this.files[0])">
+                                <div class="btn-group">
+                                    <button class="btn btn-import" style="background:#7c3aed;" onclick="document.getElementById('scheduleExcelInput').click()">📤 رفع البيانات (Import)</button>
+                                    <button class="btn btn-template" onclick="downloadTemplate('schedule')">📄 نموذج الإكسيل (Template)</button>
+                                </div>
+                            </div>
+
+                            <div class="import-card">
+                                <div class="icon-wrapper" style="background:#e6fffa; color:#0d9488;">📚</div>
+                                <h4>مواد التدريب (Materials)</h4>
+                                <p>مكتبة الملفات والروابط التعليمية</p>
+                                <input type="file" id="materialsExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importMaterialsExcel(this.files[0])">
+                                <div class="btn-group">
+                                    <button class="btn btn-import" style="background:#0d9488;" onclick="document.getElementById('materialsExcelInput').click()">📤 رفع البيانات (Import)</button>
+                                    <button class="btn btn-template" onclick="downloadTemplate('materials')">📄 نموذج الإكسيل (Template)</button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div id="importStatus" class="import-status"></div>
+                    </div>
+
+                    <div class="admin-card" style="background: white; border-right: 5px solid #2b7a4b;">
+                        <h3>📁 التصدير والنسخ الاحتياطي (Export & Backup)</h3>
+                        <div class="backup-buttons">
+                            <button onclick="exportData()" style="background:linear-gradient(135deg, #1e3a5f, #2b6cb0); color:white; box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);">📥 تحميل نسخة احتياطية كاملة (JSON)</button>
+                            <button onclick="importData()" style="background:linear-gradient(135deg, #2b7a4b, #1e5a38); color:white; box-shadow: 0 4px 10px rgba(43, 122, 75, 0.3);">📤 استعادة نسخة احتياطية (JSON)</button>
+                            <button onclick="exportExcelData('employees', 'Employees_Export')" style="background:white; border: 2px solid #2b7a4b; color:#2b7a4b;">📊 استخراج إكسيل الموظفين</button>
+                            <button onclick="exportExcelData('offjob_enrollments', 'OffJob_Export')" style="background:white; border: 2px solid #d69e2e; color:#d69e2e;">📊 استخراج إكسيل Off-Job</button>
+                            <button onclick="exportExcelData('onjob_enrollments', 'OnJob_Export')" style="background:white; border: 2px solid #3182ce; color:#3182ce;">📊 استخراج إكسيل On-Job</button>
+                        </div>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('sections', event)">📂 تصنيفات الروابط</button>
+                        <button class="tab-btn" onclick="switchTab('links', event)">🔗 الروابط السريعة</button>
+                        <button class="tab-btn" onclick="switchTab('materials', event)">📚 مكتبة المواد التدريبية</button>
+                        <button class="tab-btn" onclick="switchTab('users', event)">👥 صلاحيات الدخول</button>
+                        <button class="tab-btn" onclick="switchTab('danger', event)" style="color:#e53e3e;">⚠️ منطقة الخطر</button>
+                    </div>
+
+                    <div id="sectionsTab" class="tab-content active">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-folder-plus"></i> إنشاء قسم للروابط</h3>
+                            <div id="sectionMsg" class="msg"></div>
+                            <input type="text" id="sectionName" placeholder="اسم القسم (مثال: منصات الفندق)">
+                            <input type="text" id="sectionIcon" placeholder="أيقونة القسم (سمايلي فيس: 🌐)">
+                            <input type="text" id="sectionDesc" placeholder="وصف قصير للقسم">
+                            <button class="primary-btn" onclick="addSection()">💾 حفظ القسم</button>
+                        </div>
+                        <div class="admin-card"><h3>📋 الأقسام المتاحة</h3><div id="sectionsList"></div></div>
+                    </div>
+
+                    <div id="linksTab" class="tab-content">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-link"></i> إضافة رابط جديد للرئيسية</h3>
+                            <div id="linkMsg" class="msg"></div>
+                            <select id="linkSection"></select>
+                            <input type="text" id="linkTitle" placeholder="عنوان الزر أو الرابط">
+                            <input type="url" id="linkUrl" placeholder="https://...">
+                            <select id="linkType"><option value="internal">داخلي (داخل الشبكة)</option><option value="external">خارجي (إنترنت عام)</option></select>
+                            <button class="primary-btn" onclick="addLink()">💾 حفظ الرابط</button>
+                        </div>
+                        <div class="admin-card"><div id="linksList"></div></div>
+                    </div>
+
+                    <div id="materialsTab" class="tab-content">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-book"></i> إضافة مادة للمكتبة يدوياً</h3>
+                            <div id="materialMsg" class="msg"></div>
+                            <input type="text" id="materialTitle" placeholder="عنوان الملف التدريبي *">
+                            <textarea id="materialDesc" placeholder="نبذة مختصرة عما يحتويه الملف" rows="2"></textarea>
+                            <input type="text" id="materialCategory" placeholder="التصنيف (سلامة، مبيعات، سوفت سكيلز)">
+                            <select id="materialType"><option value="pdf">ملف PDF</option><option value="video">فيديو</option><option value="ppt">عرض تقديمي PPT</option><option value="doc">Word</option><option value="excel">Excel</option><option value="link">رابط</option></select>
+                            <input type="url" id="materialUrl" placeholder="رابط الملف (Google Drive أو غيره)">
+                            <button class="primary-btn" onclick="addMaterial()">💾 حفظ في المكتبة</button>
+                        </div>
+                        <div class="admin-card"><h3>📚 المواد المتاحة</h3><div id="materialsList"></div></div>
+                    </div>
+
+                    <div id="usersTab" class="tab-content">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-user-shield"></i> ترقية الحسابات</h3>
+                            <div id="userMsg" class="msg"></div>
+                            <input type="email" id="userName" placeholder="البريد الإلكتروني">
+                            <select id="userRole"><option value="admin">مسؤول نظام (أدمن)</option><option value="user">مستخدم تقارير (عادي)</option></select>
+                            <button class="primary-btn" onclick="addUser()">💾 حفظ الصلاحية</button>
+                        </div>
+                        <div class="admin-card"><h3>👥 مديري النظام</h3><div id="usersList"></div></div>
+                    </div>
+
+                    <div id="dangerTab" class="tab-content">
+                        <div class="admin-card" style="background:#fff5f5; border: 2px solid #feb2b2;">
+                            <h3 style="color:#c53030; border-right-color: #e53e3e;">⚠️ مسح البيانات (Wipe Data)</h3>
+                            <p style="color:#9b2c2c; margin-bottom:1.5rem; font-weight:bold;">احذر: هذه العمليات لا يمكن التراجع عنها. استخدمها فقط في بداية السنة الجديدة أو لإعادة ضبط المصنع.</p>
+                            <div class="backup-buttons">
+                                <button onclick="clearAllOnJobData()" style="background:#e53e3e; color:white;">🗑️ محو تدريبات On-Job</button>
+                                <button onclick="clearAllCollectionData('offjob_enrollments', 'تدريبات Off-Job')" style="background:#c53030; color:white;">🗑️ محو تدريبات Off-Job</button>
+                                <button onclick="clearAllCollectionData('employees', 'الموظفين')" style="background:#9b2c2c; color:white;">🗑️ مسح دليل الموظفين</button>
+                                <button onclick="clearAllCollectionData('training_schedule', 'جدول التدريب')" style="background:#7f1d1d; color:white;">🗑️ إفراغ جدول التدريب</button>
+                                <button onclick="clearLocalData('employee_birthdays_final', 'أعياد الميلاد')" style="background:white; border:2px solid #e53e3e; color:#e53e3e;">🗑️ مسح أعياد الميلاد (محلي)</button>
+                                <button onclick="clearLocalData('training_materials_data', 'مواد التدريب')" style="background:white; border:2px solid #c53030; color:#c53030;">🗑️ مسح المكتبة (محلي)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- النوافذ المنبثقة للتحرير -->
+                <div id="editSectionModal" class="modal"><div class="modal-content"><h3>✏️ تعديل القسم</h3><input type="text" id="editSectionName"><input type="text" id="editSectionIcon"><input type="text" id="editSectionDesc"><div class="modal-buttons"><button class="save-btn" onclick="saveSectionEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editSectionModal')">إلغاء</button></div></div></div>
+                <div id="editLinkModal" class="modal"><div class="modal-content"><h3>✏️ تعديل الرابط</h3><input type="text" id="editLinkTitle"><input type="url" id="editLinkUrl"><select id="editLinkType"><option value="internal">داخلي</option><option value="external">خارجي</option></select><div class="modal-buttons"><button class="save-btn" onclick="saveLinkEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editLinkModal')">إلغاء</button></div></div></div>
+                <div id="editMaterialModal" class="modal"><div class="modal-content"><h3>✏️ تعديل المادة التدريبية</h3><input type="text" id="editMaterialTitle" placeholder="العنوان"><textarea id="editMaterialDesc" placeholder="الوصف" rows="2"></textarea><input type="text" id="editMaterialCategory" placeholder="التصنيف"><select id="editMaterialType"><option value="pdf">PDF</option><option value="video">فيديو</option><option value="ppt">PPT</option><option value="doc">Word</option><option value="excel">Excel</option><option value="link">رابط</option><option value="other">أخرى</option></select><input type="url" id="editMaterialUrl" placeholder="الرابط"><div class="modal-buttons"><button class="save-btn" onclick="saveMaterialEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editMaterialModal')">إلغاء</button></div></div></div>
+                <div id="editUserModal" class="modal"><div class="modal-content"><h3>✏️ تعديل المستخدم</h3><input type="email" id="editUserName"><select id="editUserRole"><option value="user">مستخدم عادي</option><option value="admin">أدمن</option></select><div class="modal-buttons"><button class="save-btn" onclick="saveUserEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editUserModal')">إلغاء</button></div></div></div>
+
+                <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
+            `;
+            
+            renderSectionsList(); updateLinksSectionDropdown(); renderLinksList(); renderMaterialsList(); renderUsersList();
+        }
+
+        window.addSection = addSection; window.deleteSection = deleteSection; window.openEditSection = openEditSection; window.saveSectionEdit = saveSectionEdit;
+        window.addLink = addLink; window.deleteLink = deleteLink; window.openEditLink = openEditLink; window.saveLinkEdit = saveLinkEdit; window.togglePin = togglePin;
+        window.addMaterial = addMaterial; window.deleteMaterial = deleteMaterial; window.openEditMaterial = openEditMaterial; window.saveMaterialEdit = saveMaterialEdit;
+        window.addUser = addUser; window.deleteUser = deleteUser; window.openEditUser = openEditUser; window.saveUserEdit = saveUserEdit;
+        window.closeModal = closeModal; window.switchTab = switchTab; window.exportData = exportData; window.importData = importData;
+        window.logout = logout;
+
+        // ================== المصادقة ==================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userData = await DB.get('users', user.uid);
+                    if (userData && userData.role === 'admin') {
+                        await loadFullData();
+                        buildAdminUI();
+                    } else {
+                        alert("❌ غير مصرح لك بدخول لوحة التحكم");
+                        window.location.href = 'index.html';
+                    }
+                } catch(err) { window.location.href = 'login.html'; }
+            } else { window.location.href = 'login.html'; }
+        });
+    </script>
+</body>
+</html>

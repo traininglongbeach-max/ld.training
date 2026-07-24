@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Training Schedule - L&D Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- السكريبتات بنظام Modules للاتصال بالفيربيز -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; }
+
+        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo h2 { color: #1e3a5f; font-size: 1.3rem; } .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #2b7a4b; color: white; } .nav-links .logout { background: #e53e3e; color: white; }
+
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+
+        .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .page-header h1 { color: #1e3a5f; font-size: 2rem; } .page-header h1 span { color: #2b7a4b; }
+        .page-header p { color: #718096; }
+        .last-update { font-size: 0.8rem; color: #718096; background: white; padding: 0.5rem 1.2rem; border-radius: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        /* Quick Filter Bar */
+        .quick-filter-bar { background: white; border-radius: 1.5rem; padding: 1rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .quick-filter-bar .filter-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .quick-filter-bar .filter-btn { padding: 0.5rem 1.2rem; border: 2px solid #e2e8f0; background: white; border-radius: 2rem; cursor: pointer; font-weight: 500; font-size: 0.85rem; transition: 0.3s; color: #4a5568; }
+        .quick-filter-bar .filter-btn:hover { border-color: #2b7a4b; color: #2b7a4b; }
+        .quick-filter-bar .filter-btn.active { background: #2b7a4b; color: white; border-color: #2b7a4b; }
+        .quick-filter-bar .filter-btn.active-today { background: #f59e0b; color: white; border-color: #f59e0b; }
+        .quick-filter-bar .search-box { display: flex; gap: 0.5rem; align-items: center; }
+        .quick-filter-bar .search-box input { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.85rem; width: 220px; outline: none; }
+        .quick-filter-bar .search-box input:focus { border-color: #2b7a4b; }
+        .quick-filter-bar .search-box button { padding: 0.5rem 1rem; background: #4299e1; color: white; border: none; border-radius: 2rem; cursor: pointer; font-weight: 500; }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }
+        .stat-card { background: white; border-radius: 1rem; padding: 1rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #2b7a4b; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 800; color: #1e3a5f; }
+        .stat-card .stat-label { color: #718096; font-size: 0.75rem; margin-top: 0.2rem; }
+        .stat-card.today-card { border-left-color: #f59e0b; } .stat-card.today-card .stat-value { color: #f59e0b; }
+        .stat-card.completed-card { border-left-color: #38a169; } .stat-card.completed-card .stat-value { color: #38a169; }
+        .stat-card.cancelled-card { border-left-color: #e53e3e; } .stat-card.cancelled-card .stat-value { color: #e53e3e; }
+        .stat-card.pending-card { border-left-color: #ed8936; } .stat-card.pending-card .stat-value { color: #ed8936; }
+        .stat-card.postponed-card { border-left-color: #4299e1; } .stat-card.postponed-card .stat-value { color: #4299e1; }
+
+        /* Progress Bar */
+        .progress-section { background: white; border-radius: 1.5rem; padding: 1.2rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .progress-section .progress-header { display: flex; justify-content: space-between; font-weight: 600; color: #1e3a5f; margin-bottom: 0.3rem; }
+        .progress-bar-bg { background: #e2e8f0; height: 12px; border-radius: 20px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: #2b7a4b; width: 0%; border-radius: 20px; transition: width 0.3s; }
+
+        /* Sections */
+        .section-title { font-size: 1.3rem; font-weight: 700; color: #1e3a5f; margin: 2rem 0 1.2rem 0; padding-left: 1rem; border-left: 5px solid #2b7a4b; display: flex; align-items: center; gap: 0.8rem; }
+        .section-title .badge-count { background: #2b7a4b; color: white; font-size: 0.8rem; padding: 0.15rem 0.8rem; border-radius: 2rem; }
+        .section-title .badge-count.today-badge { background: #f59e0b; }
+
+        /* Training Cards */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.2rem; }
+        .training-card { background: white; border-radius: 1.2rem; padding: 1.2rem 1.5rem; box-shadow: 0 3px 15px rgba(0,0,0,0.06); transition: 0.3s; border-left: 5px solid #2b7a4b; position: relative; }
+        .training-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+        .training-card.completed-card-bg { background: #f0fff4; border-left-color: #38a169; }
+        .training-card.cancelled-card-bg { background: #fff5f5; border-left-color: #e53e3e; }
+        .training-card.postponed-card-bg { background: #ebf8ff; border-left-color: #4299e1; }
+        .training-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.3rem; }
+        .training-card .card-date { font-size: 0.8rem; color: #1e3a5f; font-weight: 600; background: #f0f4f8; padding: 0.2rem 0.8rem; border-radius: 1rem; }
+        .training-card .card-status { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.8rem; border-radius: 1rem; white-space: nowrap; }
+        
+        .training-card .card-status.today { background: #f59e0b; color: white; }
+        .training-card .card-status.tomorrow { background: #4299e1; color: white; }
+        .training-card .card-status.week { background: #8b5cf6; color: white; }
+        .training-card .card-status.upcoming { background: #38a169; color: white; }
+        .training-card .card-status.passed { background: #e2e8f0; color: #4a5568; }
+        
+        .training-card .card-status.scheduled { background: #f6ad55; color: #1e3a5f; }
+        .training-card .card-status.completed { background: #38a169; color: white; }
+        .training-card .card-status.cancelled { background: #e53e3e; color: white; }
+        .training-card .card-status.postponed { background: #4299e1; color: white; }
+
+        .training-card .card-topic { font-size: 1.1rem; font-weight: 700; color: #1e3a5f; margin: 0.3rem 0 0.4rem 0; line-height: 1.4; }
+        .training-card .card-time { font-size: 0.85rem; color: #718096; margin-bottom: 0.2rem; }
+        .training-card .card-time span { font-weight: 600; color: #1e3a5f; }
+        .training-card .card-category { display: inline-block; background: #ede9fe; color: #5b21b6; padding: 0.2rem 0.8rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; margin-top: 0.3rem; }
+        .training-card .card-day-diff { font-size: 0.7rem; color: #a0aec0; margin-top: 0.4rem; }
+        .training-card .card-actions { margin-top: 0.8rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+        .training-card .card-actions .action-btn { border: none; padding: 0.3rem 1rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .training-card .card-actions .action-btn:hover { opacity: 0.8; transform: scale(0.97); }
+        .training-card .card-actions .action-btn.complete-btn { background: #2b7a4b; color: white; }
+        .training-card .card-actions .action-btn.cancel-btn { background: #e53e3e; color: white; }
+        .training-card .card-actions .action-btn.postpone-btn { background: #4299e1; color: white; }
+        .training-card .card-actions .action-btn.restore-btn { background: #718096; color: white; }
+        .training-card .card-footer { margin-top: 0.6rem; font-size: 0.65rem; color: #a0aec0; display: flex; justify-content: space-between; border-top: 1px solid #edf2f7; padding-top: 0.5rem; }
+        
+        .no-data { text-align: center; padding: 4rem 2rem; color: #a0aec0; font-size: 1.1rem; background: white; border-radius: 1.5rem; grid-column: 1 / -1; }
+        .no-data .icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
+        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
+
+        /* Day group styling */
+        .day-group { margin-bottom: 2rem; }
+        .day-group .day-header { font-size: 1.1rem; font-weight: 700; color: #1e3a5f; background: white; padding: 0.5rem 1.2rem; border-radius: 1rem; margin-bottom: 1rem; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid #2b7a4b; }
+        .day-group .day-header .day-count { background: #2b7a4b; color: white; font-size: 0.7rem; padding: 0.1rem 0.7rem; border-radius: 1rem; margin-left: 0.5rem; }
+        .day-group .cards-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+
+        @media (max-width: 768px) {
+            .quick-filter-bar { flex-direction: column; align-items: stretch; }
+            .quick-filter-bar .search-box input { width: 100%; }
+            .quick-filter-bar .filter-buttons { justify-content: center; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+            .cards-grid { grid-template-columns: 1fr; }
+            .page-header { flex-direction: column; text-align: center; }
+            .day-group .cards-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- شاشة التحميل -->
+    <div id="loadingScreen" style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
+        ⏳ Fetching training schedule from server...
+    </div>
+
+    <!-- المحتوى الرئيسي مخفي حتى التوثيق -->
+    <div id="mainContent" style="display: none;"></div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ========== Variables ==========
+        let allSessions = [];
+        let filteredSessions = [];
+        let currentFilter = 'today';
+        let searchTerm = "";
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // ========== Load data from IndexedDB (Firebase Synced) ==========
+        async function loadDataFromDB() {
+            try {
+                await DB.init();
+                const data = await DB.getAll('training_schedule');
+                allSessions = data.map(item => ({
+                    id: item.id,
+                    date: item.date || '-',
+                    topic: item.topic || '-',
+                    time: item.time || '-',
+                    requiredCategory: item.required_category || '-',
+                    importedAt: item.imported_at || null,
+                    status: item.status || 'scheduled',
+                    statusUpdatedAt: item.statusUpdatedAt || null
+                }));
+                const lastUpdate = localStorage.getItem('schedule_last_update');
+                return { count: allSessions.length, lastUpdate };
+            } catch (error) {
+                console.error('❌ Failed to load data:', error);
+                allSessions = [];
+                return { count: 0, lastUpdate: null };
+            }
+        }
+
+        // ========== Helper Functions ==========
+        function parseDateSafely(dateValue) {
+            if (!dateValue || dateValue === '-') return new Date(NaN);
+            if (typeof dateValue === 'number') return new Date((dateValue - 25569) * 86400000);
+            return new Date(dateValue);
+        }
+
+        function getDateDiff(dateStr) {
+            if (dateStr === '-' || !dateStr) return null;
+            const d = parseDateSafely(dateStr);
+            if (isNaN(d.getTime())) return null;
+            d.setHours(0, 0, 0, 0);
+            return Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+        }
+
+        function getStatusText(dateStr) {
+            const diff = getDateDiff(dateStr);
+            if (diff === null) return { text: 'Upcoming', class: 'upcoming' };
+            if (diff < 0) return { text: 'Passed', class: 'passed' };
+            if (diff === 0) return { text: 'Today', class: 'today' };
+            if (diff === 1) return { text: 'Tomorrow', class: 'tomorrow' };
+            if (diff <= 7) return { text: 'This Week', class: 'week' };
+            return { text: 'Upcoming', class: 'upcoming' };
+        }
+
+        function getDayText(diff) {
+            if (diff === null) return '';
+            if (diff < 0) return `📅 ${Math.abs(diff)} days ago`;
+            if (diff === 0) return '📅 Today';
+            if (diff === 1) return '📅 Tomorrow';
+            return `📅 In ${diff} days`;
+        }
+
+        function getStatusBadge(status) {
+            const map = {
+                'scheduled': { text: 'Scheduled', class: 'scheduled' },
+                'completed': { text: 'Completed', class: 'completed' },
+                'cancelled': { text: 'Cancelled', class: 'cancelled' },
+                'postponed': { text: 'Postponed', class: 'postponed' }
+            };
+            return map[status] || map['scheduled'];
+        }
+
+        function formatDate(dateStr) {
+            if (dateStr === '-' || !dateStr) return 'No Date';
+            const d = parseDateSafely(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        // ========== Apply Filters ==========
+        function applyFilters() {
+            let filtered = [...allSessions];
+
+            if (currentFilter === 'today') {
+                filtered = filtered.filter(s => getDateDiff(s.date) === 0);
+            } else if (currentFilter === 'tomorrow') {
+                filtered = filtered.filter(s => getDateDiff(s.date) === 1);
+            } else if (currentFilter === 'week') {
+                filtered = filtered.filter(s => {
+                    const diff = getDateDiff(s.date);
+                    return diff !== null && diff >= 0 && diff <= 7;
+                });
+            } else if (currentFilter === 'completed') {
+                filtered = filtered.filter(s => s.status === 'completed');
+            } else if (currentFilter === 'pending') {
+                filtered = filtered.filter(s => s.status !== 'completed' && s.status !== 'cancelled' && s.status !== 'postponed');
+            } else if (currentFilter === 'cancelled') {
+                filtered = filtered.filter(s => s.status === 'cancelled');
+            } else if (currentFilter === 'postponed') {
+                filtered = filtered.filter(s => s.status === 'postponed');
+            }
+
+            if (searchTerm.trim()) {
+                const term = searchTerm.trim().toLowerCase();
+                filtered = filtered.filter(s =>
+                    (s.topic || '').toLowerCase().includes(term) ||
+                    (s.requiredCategory || '').toLowerCase().includes(term) ||
+                    (s.date || '').includes(term)
+                );
+            }
+
+            filtered.sort((a, b) => {
+                const da = parseDateSafely(a.date);
+                const db = parseDateSafely(b.date);
+                if (isNaN(da.getTime())) return 1;
+                if (isNaN(db.getTime())) return -1;
+                return da - db;
+            });
+
+            filteredSessions = filtered;
+            return filtered;
+        }
+
+        // ========== Status Update Functions ==========
+        async function updateSessionStatus(id, newStatus) {
+            try {
+                // Get directly from database
+                const record = await DB.get("training_schedule", id); // ID could be string or number
+                if (!record) {
+                    alert("Session not found in the database.");
+                    return false;
+                }
+
+                record.status = newStatus;
+                record.statusUpdatedAt = new Date().toISOString();
+
+                await DB.update("training_schedule", record);
+                return true;
+            } catch (e) {
+                console.error('Update failed', e);
+                alert('Failed to update session status. Please try again.');
+                return false;
+            }
+        }
+
+        window.markAsCompleted = async (id) => {
+            if (await updateSessionStatus(id, 'completed')) await refreshPage();
+        };
+
+        window.cancelSession = async (id) => {
+            if (!confirm('Are you sure you want to cancel this session?')) return;
+            if (await updateSessionStatus(id, 'cancelled')) await refreshPage();
+        };
+
+        window.postponeSession = async (id) => {
+            if (!confirm('Are you sure you want to postpone this session?')) return;
+            if (await updateSessionStatus(id, 'postponed')) await refreshPage();
+        };
+
+        window.restoreSession = async (id) => {
+            if (await updateSessionStatus(id, 'scheduled')) await refreshPage();
+        };
+
+        async function refreshPage() {
+            await loadDataFromDB();
+            renderPage();
+        }
+
+        // ========== Render Page ==========
+        async function renderPage() {
+            const { count, lastUpdate } = await loadDataFromDB();
+            applyFilters();
+
+            const total = allSessions.length;
+            const completed = allSessions.filter(s => s.status === 'completed').length;
+            const cancelled = allSessions.filter(s => s.status === 'cancelled').length;
+            const postponed = allSessions.filter(s => s.status === 'postponed').length;
+            const pending = allSessions.filter(s => s.status !== 'completed' && s.status !== 'cancelled' && s.status !== 'postponed').length;
+            const todaySessions = allSessions.filter(s => getDateDiff(s.date) === 0).length;
+            const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            function renderCard(s) {
+                const statusInfo = getStatusBadge(s.status);
+                const diff = getDateDiff(s.date);
+                const isCompleted = s.status === 'completed';
+                const isCancelled = s.status === 'cancelled';
+                const isPostponed = s.status === 'postponed';
+                
+                let cardClass = 'training-card';
+                if (isCompleted) cardClass += ' completed-card-bg';
+                if (isCancelled) cardClass += ' cancelled-card-bg';
+                if (isPostponed) cardClass += ' postponed-card-bg';
+                
+                const statusUpdated = s.statusUpdatedAt ? new Date(s.statusUpdatedAt).toLocaleString('en-US', {hour: '2-digit', minute:'2-digit', day:'numeric', month:'short'}) : '—';
+
+                let actionsHtml = '';
+                if (isCompleted || isCancelled || isPostponed) {
+                    actionsHtml = `<button class="action-btn restore-btn" onclick="restoreSession('${s.id}')">↩ Restore Session</button>`;
+                } else {
+                    actionsHtml = `
+                        <button class="action-btn complete-btn" onclick="markAsCompleted('${s.id}')">✅ Complete</button>
+                        <button class="action-btn postpone-btn" onclick="postponeSession('${s.id}')">🔵 Postpone</button>
+                        <button class="action-btn cancel-btn" onclick="cancelSession('${s.id}')">❌ Cancel</button>
+                    `;
+                }
+
+                return `
+                    <div class="${cardClass}">
+                        <div class="card-header">
+                            <span class="card-date">📅 ${s.date}</span>
+                            <span class="card-status ${statusInfo.class}">${statusInfo.text}</span>
+                        </div>
+                        <div class="card-topic">${s.topic}</div>
+                        <div class="card-time">🕐 <span>${s.time}</span></div>
+                        <div class="card-category">🏷️ ${s.requiredCategory}</div>
+                        <div class="card-day-diff">${getDayText(diff)}</div>
+                        <div class="card-actions">${actionsHtml}</div>
+                        <div class="card-footer">
+                            <span>Status: ${statusInfo.text}</span>
+                            <span>Updated: ${statusUpdated}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderGroupedSessions() {
+                const grouped = {};
+                filteredSessions.forEach(s => {
+                    const dateKey = s.date || 'No Date';
+                    if (!grouped[dateKey]) grouped[dateKey] = [];
+                    grouped[dateKey].push(s);
+                });
+
+                const sortedDates = Object.keys(grouped).sort((a, b) => {
+                    if (a === 'No Date') return 1;
+                    if (b === 'No Date') return -1;
+                    return parseDateSafely(a) - parseDateSafely(b);
+                });
+
+                let html = '';
+                sortedDates.forEach(dateKey => {
+                    const sessions = grouped[dateKey];
+                    const displayDate = formatDate(dateKey);
+                    const diff = getDateDiff(dateKey);
+                    
+                    let dateLabel = displayDate;
+                    if (diff === 0) dateLabel = '🔴 ' + displayDate + ' (Today)';
+                    else if (diff === 1) dateLabel = '📅 ' + displayDate + ' (Tomorrow)';
+                    else if (diff !== null && diff > 1 && diff <= 7) dateLabel = '📆 ' + displayDate + ' (This Week)';
+                    else if (diff !== null && diff < 0) dateLabel = '📅 ' + displayDate + ' (Passed)';
+                    else dateLabel = '📅 ' + displayDate;
+
+                    html += `
+                        <div class="day-group">
+                            <div class="day-header">
+                                ${dateLabel}
+                                <span class="day-count">${sessions.length} session${sessions.length > 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="cards-grid">
+                                ${sessions.map(s => renderCard(s)).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                return html;
+            }
+
+            function renderSection(title, items, badgeColor = '') {
+                if (items.length === 0) return '';
+                const badgeClass = badgeColor ? `badge-count ${badgeColor}` : 'badge-count';
+                return `
+                    <div class="section-title">
+                        ${title}
+                        <span class="${badgeClass}">${items.length}</span>
+                    </div>
+                    <div class="cards-grid">
+                        ${items.map(s => renderCard(s)).join('')}
+                    </div>
+                `;
+            }
+
+            let lastUpdateText = 'Not updated yet';
+            if (lastUpdate) {
+                const d = new Date(lastUpdate);
+                lastUpdateText = `Last update: ${d.toLocaleDateString('en-US')} ${d.toLocaleTimeString('en-US')}`;
+            }
+
+            const filterMap = {
+                'today': '🔴 Today', 'tomorrow': '📅 Tomorrow', 'week': '📆 This Week',
+                'all': '📋 All', 'completed': '✅ Completed', 'pending': '⏳ Pending',
+                'cancelled': '❌ Cancelled', 'postponed': '🔵 Postponed'
+            };
+            const filterBtns = Object.keys(filterMap).map(key =>
+                `<button class="filter-btn ${currentFilter === key ? (key === 'today' ? 'active-today' : 'active') : ''}" onclick="setFilter('${key}')">${filterMap[key]}</button>`
+            ).join('');
+
+            const progressWidth = completionRate;
+
+            let contentHtml = '';
+            if (allSessions.length === 0) {
+                contentHtml = `<div class="no-data"><span class="icon">📭</span>No training schedule data available<br><span style="font-size:0.8rem; color:#a0aec0;">Please import the monthly schedule from the Admin Dashboard</span></div>`;
+            } else if (filteredSessions.length === 0) {
+                contentHtml = `<div class="no-data"><span class="icon">🔍</span>No sessions match your search</div>`;
+            } else if (['all', 'completed', 'pending', 'cancelled', 'postponed'].includes(currentFilter)) {
+                contentHtml = renderGroupedSessions();
+            } else {
+                const todayList = filteredSessions.filter(s => getDateDiff(s.date) === 0);
+                const tomorrowList = filteredSessions.filter(s => getDateDiff(s.date) === 1);
+                const weekList = filteredSessions.filter(s => {
+                    const diff = getDateDiff(s.date);
+                    return diff !== null && diff >= 2 && diff <= 7;
+                });
+                const upcomingList = filteredSessions.filter(s => {
+                    const diff = getDateDiff(s.date);
+                    return (diff === null || diff > 7) && s.status !== 'completed' && s.status !== 'cancelled';
+                });
+
+                contentHtml = `
+                    ${renderSection('🔴 Today\'s Sessions', todayList, 'today-badge')}
+                    ${renderSection('📅 Tomorrow\'s Sessions', tomorrowList)}
+                    ${renderSection('📆 This Week', weekList)}
+                    ${renderSection('📋 Upcoming Sessions', upcomingList)}
+                `;
+            }
+
+            document.getElementById('mainContent').innerHTML = `
+                <div class="navbar">
+                    <div class="logo"><h2>🎓 <span>L&D</span> Management System</h2></div>
+                    <div class="nav-links">
+                        <a href="index.html" class="home">🏠 Home</a>
+                        <button onclick="window.logout()" class="logout">🚪 Logout</button>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="page-header">
+                        <div>
+                            <h1>📅 <span>Monthly</span> Training Schedule</h1>
+                            <p>View all scheduled training sessions organized by date</p>
+                        </div>
+                        <div class="last-update">🔄 ${lastUpdateText}</div>
+                    </div>
+
+                    <div class="quick-filter-bar">
+                        <div class="filter-buttons">
+                            ${filterBtns}
+                        </div>
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="🔍 Search..." value="${searchTerm}" onkeyup="if(event.key==='Enter') window.doSearch()">
+                            <button onclick="window.doSearch()">Search</button>
+                            ${searchTerm ? `<button onclick="window.clearSearch()" style="background:#718096;">✖</button>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card today-card"><div class="stat-value">${todaySessions}</div><div class="stat-label">🔴 Today's Sessions</div></div>
+                        <div class="stat-card completed-card"><div class="stat-value">${completed}</div><div class="stat-label">✅ Completed</div></div>
+                        <div class="stat-card pending-card"><div class="stat-value">${pending}</div><div class="stat-label">⏳ Pending</div></div>
+                        <div class="stat-card cancelled-card"><div class="stat-value">${cancelled}</div><div class="stat-label">❌ Cancelled</div></div>
+                        <div class="stat-card postponed-card"><div class="stat-value">${postponed}</div><div class="stat-label">🔵 Postponed</div></div>
+                        <div class="stat-card"><div class="stat-value">${completionRate}%</div><div class="stat-label">📊 Completion Rate</div></div>
+                        <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">📋 Total Sessions</div></div>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header"><span>📈 Training Progress</span><span>${completionRate}%</span></div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${progressWidth}%;"></div></div>
+                    </div>
+
+                    ${contentHtml}
+                </div>
+                <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
+            `;
+        }
+
+        // ========== Controllers Setup ==========
+        window.setFilter = (filter) => { currentFilter = filter; renderPage(); };
+        window.doSearch = () => { searchTerm = document.getElementById('searchInput').value; renderPage(); };
+        window.clearSearch = () => { searchTerm = ''; document.getElementById('searchInput').value = ''; renderPage(); };
+        window.logout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+
+        // ===== Init Auth =====
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await refreshPage();
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

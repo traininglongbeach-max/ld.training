@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>المواد التدريبية - نظام إدارة التعليم والتطوير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- السكريبتات بنظام Modules للاتصال بالفيربيز -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; }
+        
+        .navbar {
+            background: white;
+            padding: 0.8rem 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        .logo h2 { color: #1e3a5f; font-size: 1.1rem; }
+        .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button {
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.75rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
+        .nav-links .admin { background: #9f7aea; color: white; }
+        
+        .container { max-width: 1400px; margin: 1rem auto; padding: 0 1rem; }
+        .page-header { margin-bottom: 1rem; }
+        .page-header h1 { color: #1e3a5f; font-size: 1.4rem; }
+        .page-header p { color: #718096; font-size: 0.8rem; }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .search-box input:focus { border-color: #2b7a4b; }
+        .search-box button {
+            padding: 0.6rem 1.2rem;
+            background: #2b7a4b;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .filter-group select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 2rem;
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+        .filter-group select:focus { border-color: #2b7a4b; }
+        
+        .stats-banner {
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            text-align: center;
+        }
+        .stat-item { display: flex; align-items: center; gap: 0.5rem; }
+        .stat-number { font-size: 1.5rem; font-weight: bold; }
+        .stat-label { font-size: 0.7rem; opacity: 0.9; }
+        
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .material-card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .material-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .material-header {
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white;
+            padding: 1rem;
+            position: relative;
+        }
+        .material-category {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            margin-bottom: 0.5rem;
+        }
+        .material-header h3 { font-size: 1rem; margin-bottom: 0.3rem; }
+        .material-type {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 1.5rem;
+        }
+        .material-body { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
+        .material-description {
+            color: #4a5568;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+        .material-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: #718096;
+            font-weight: 500;
+        }
+        .material-download {
+            background: #2b7a4b;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            justify-content: center;
+        }
+        .material-download:hover { background: #1e5a38; transform: scale(1.02); }
+        .empty-msg { text-align: center; padding: 3rem; color: #718096; font-size: 1.1rem; grid-column: 1 / -1; }
+        .footer { text-align: center; padding: 1rem; color: #718096; font-size: 0.7rem; }
+        
+        .toast-msg {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #2b7a4b;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 2rem;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+            font-weight: bold;
+        }
+        .toast-msg.error { background: #e53e3e; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; text-align: center; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .materials-grid { grid-template-columns: 1fr; }
+            .stats-banner { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة التحميل الأولية -->
+    <div id="loadingScreen" style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
+        ⏳ جاري جلب المواد التدريبية من السيرفر...
+    </div>
+
+    <!-- المحتوى الرئيسي (مخفي حتى الانتهاء من التحميل) -->
+    <div id="mainContent" style="display: none;"></div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        let materials = [];
+        let isAdmin = false;
+        
+        const VIEWED_KEY = "material_views_local";
+        const DOWNLOADED_KEY = "material_downloads_local";
+        
+        function showToast(msg, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg' + (isError ? ' error' : '');
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ========== جلب البيانات من السيرفر ==========
+        async function loadMaterialsFromServer() {
+            try {
+                const data = await DB.getAll('materials');
+                materials = data || [];
+                // الترتيب من الأحدث للأقدم
+                materials.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                console.log(`✅ تم تحميل ${materials.length} مادة تدريبية من السيرفر.`);
+            } catch (error) {
+                console.error("❌ خطأ في تحميل المواد التدريبية:", error);
+                showToast("❌ حدث خطأ في الاتصال بقاعدة البيانات", true);
+            }
+        }
+
+        // ========== تسجيل التفاعلات (ورفعها للسيرفر) ==========
+        async function registerView(materialId) {
+            const viewed = JSON.parse(localStorage.getItem(VIEWED_KEY) || "{}");
+            const now = Date.now();
+            
+            // منع تكرار التسجيل لنفس المادة في نفس الـ 10 دقائق (600,000 ملي ثانية)
+            if (viewed[materialId] && now - viewed[materialId] < 600000) {
+                return false;
+            }
+            
+            viewed[materialId] = now;
+            localStorage.setItem(VIEWED_KEY, JSON.stringify(viewed));
+            
+            const material = materials.find(m => String(m.id) === String(materialId));
+            if (material) {
+                material.views = (material.views || 0) + 1;
+                // التحديث المباشر في الفايربيز
+                try {
+                    await DB.update('materials', { id: material.id, views: material.views });
+                } catch(e) { console.error("Error updating views in DB", e); }
+            }
+            return true;
+        }
+        
+        async function registerDownload(materialId) {
+            const downloaded = JSON.parse(localStorage.getItem(DOWNLOADED_KEY) || "{}");
+            const now = Date.now();
+            
+            if (downloaded[materialId] && now - downloaded[materialId] < 600000) {
+                return false;
+            }
+            
+            downloaded[materialId] = now;
+            localStorage.setItem(DOWNLOADED_KEY, JSON.stringify(downloaded));
+            
+            const material = materials.find(m => String(m.id) === String(materialId));
+            if (material) {
+                material.downloads = (material.downloads || 0) + 1;
+                // التحديث المباشر في الفايربيز
+                try {
+                    await DB.update('materials', { id: material.id, downloads: material.downloads });
+                } catch(e) { console.error("Error updating downloads in DB", e); }
+            }
+            return true;
+        }
+        
+        // ========== معالجات الأحداث ==========
+        window.handleDownload = async (materialId, fileUrl, event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            showToast("⏳ جاري تحضير الملف...");
+            
+            // تسجيل التفاعل في الخلفية والسيرفر
+            await registerView(materialId);
+            await registerDownload(materialId);
+            
+            setTimeout(() => {
+                if(fileUrl && fileUrl !== '#') {
+                    window.open(fileUrl, '_blank');
+                } else {
+                    showToast("⚠️ رابط الملف غير متوفر", true);
+                }
+                render(); 
+            }, 500);
+        }
+        
+        window.handleCardClick = async (materialId, event) => {
+            if (event.target.closest('.material-download')) return;
+            await registerView(materialId);
+            render(); 
+        }
+        
+        // ========== دوال مساعدة ==========
+        function getTypeIcon(type) {
+            const icons = { pdf: '📄', video: '🎥', ppt: '📊', doc: '📝', excel: '📈', image: '🖼️', link: '🔗', other: '📁' };
+            return icons[String(type).toLowerCase()] || '📁';
+        }
+        
+        function formatDate(timestamp) {
+            if (!timestamp) return '-';
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) return '-';
+            return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+        }
+        
+        function escapeHtml(text) { 
+            if (!text) return ''; 
+            const div = document.createElement('div'); 
+            div.textContent = text; 
+            return div.innerHTML; 
+        }
+
+        // ========== بناء الواجهة ==========
+        function render() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const categoryFilter = document.getElementById('categoryFilter')?.value || 'all';
+            
+            let filtered = materials.filter(m => {
+                const matchSearch = searchTerm === '' || m.title?.toLowerCase().includes(searchTerm) || m.description?.toLowerCase().includes(searchTerm);
+                const matchCategory = categoryFilter === 'all' || m.category === categoryFilter;
+                return matchSearch && matchCategory;
+            });
+            
+            const categories = [...new Set(materials.map(m => m.category).filter(Boolean))].sort();
+            
+            const totalMaterials = materials.length;
+            const totalViews = materials.reduce((sum, m) => sum + (m.views || 0), 0);
+            const totalDownloads = materials.reduce((sum, m) => sum + (m.downloads || 0), 0);
+            
+            let html = `
+                <div class="navbar">
+                    <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
+                    <div class="nav-links">
+                        <a href="index.html" class="home">🏠 الرئيسية</a>
+                        ${isAdmin ? '<a href="admin.html" class="admin">⚙️ لوحة التحكم</a>' : ''}
+                        <button onclick="window.logout()" class="logout">🚪 تسجيل خروج</button>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="page-header">
+                        <h1>📚 المكتبة و المواد التدريبية</h1>
+                        <p>تصفح وحمل جميع الملفات والمواد التعليمية المتاحة (يتم تحديث المشاهدات والتحميلات لحظياً)</p>
+                    </div>
+                    
+                    <div class="stats-banner">
+                        <div class="stat-item"><span class="stat-number">${totalMaterials}</span><span class="stat-label">📚 إجمالي المواد</span></div>
+                        <div class="stat-item"><span class="stat-number">${totalViews}</span><span class="stat-label">👁️ إجمالي المشاهدات</span></div>
+                        <div class="stat-item"><span class="stat-number">${totalDownloads}</span><span class="stat-label">📥 إجمالي التحميلات</span></div>
+                    </div>
+                    
+                    <div class="filter-bar">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="🔍 ابحث عن مادة برقم، عنوان أو وصف..." value="${searchTerm}" onkeypress="if(event.key === 'Enter') window.filterMaterials()">
+                            <button onclick="window.filterMaterials()">بحث</button>
+                        </div>
+                        <div class="filter-group">
+                            <select id="categoryFilter" onchange="window.filterMaterials()">
+                                <option value="all">📂 جميع التصنيفات</option>
+                                ${categories.map(c => `<option value="${c}" ${categoryFilter === c ? 'selected' : ''}>${c}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="materials-grid" id="materialsGrid">
+                        ${filtered.length === 0 ? '<div class="empty-msg"><span style="font-size:3rem; display:block; margin-bottom:10px;">📭</span>لا توجد مواد تدريبية مطابقة لبحثك</div>' : filtered.map(m => `
+                            <div class="material-card" onclick="window.handleCardClick('${m.id}', event)">
+                                <div class="material-header">
+                                    <span class="material-category">${escapeHtml(m.category || 'عام')}</span>
+                                    <span class="material-type">${getTypeIcon(m.type)}</span>
+                                    <h3>${escapeHtml(m.title)}</h3>
+                                </div>
+                                <div class="material-body">
+                                    <div class="material-description">${escapeHtml(m.description || 'لا يوجد وصف متاح لهذه المادة')}</div>
+                                    <div class="material-meta">
+                                        <span>📅 ${formatDate(m.createdAt)}</span>
+                                        <span>👁️ ${m.views || 0} مشاهدة</span>
+                                        <span>📥 ${m.downloads || 0} تحميل</span>
+                                    </div>
+                                    <button class="material-download" onclick="window.handleDownload('${m.id}', '${m.fileUrl}', event)">📥 استعراض / تحميل المادة</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
+            `;
+            
+            document.getElementById('mainContent').innerHTML = html;
+            
+            // إعادة التركيز على مربع البحث بعد التحديث
+            if (searchTerm) {
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+                }
+            }
+        }
+        
+        window.filterMaterials = () => render();
+
+        window.logout = async () => { 
+            await signOut(auth);
+            window.location.href = 'login.html'; 
+        };
+
+        // ========== بدء التشغيل والمصادقة ==========
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    // فحص الصلاحيات (Admin)
+                    const usersList = await DB.getAll('users');
+                    const currentUser = usersList.find(u => u.email === user.email || u.username === user.email);
+                    isAdmin = currentUser?.role === 'admin';
+                } catch(e) {
+                    console.log("Error checking user role", e);
+                }
+
+                await loadMaterialsFromServer();
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                render();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

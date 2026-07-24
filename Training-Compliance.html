@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Compliance Report - Learning & Development System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- السكريبتات بنظام Modules -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; }
+
+        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo h2 { color: #1e3a5f; } .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
+
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+        .page-header { margin-bottom: 2rem; } .page-header h1 { color: #1e3a5f; font-size: 2rem; } .page-header p { color: #718096; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: 1rem; padding: 1.2rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #2b7a4b; }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: #1e3a5f; } .stat-label { color: #718096; font-size: 0.8rem; margin-top: 0.3rem; }
+        .stat-card.warning { border-left-color: #e53e3e; } .stat-card.warning .stat-value { color: #c53030; }
+        .stat-card.success { border-left-color: #38a169; } .stat-card.success .stat-value { color: #22543d; }
+
+        .filter-bar { background: white; border-radius: 1rem; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .filter-group { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .filter-group label { font-weight: bold; color: #1e3a5f; font-size: 0.85rem; }
+        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.85rem; background: white; cursor: pointer; max-width: 200px; }
+        .search-box { display: flex; gap: 0.5rem; align-items: center; }
+        .search-box input { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.85rem; width: 220px; }
+        .search-box button, .export-btn { padding: 0.5rem 1rem; background: #4299e1; color: white; border: none; border-radius: 2rem; cursor: pointer; font-weight: 500; font-size: 0.8rem; white-space: nowrap; }
+        .export-btn { background: #2b7a4b; }
+
+        .level-dropdown { position: relative; display: inline-block; }
+        .level-dropdown-btn { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.85rem; background: white; cursor: pointer; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .level-dropdown-content { display: none; position: absolute; top: 100%; left: 0; background: white; min-width: 220px; max-height: 250px; overflow-y: auto; border: 2px solid #e2e8f0; border-radius: 1rem; padding: 0.5rem; z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-top: 0.3rem; }
+        .level-dropdown-content.show { display: block; }
+        .level-dropdown-content label { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.5rem; cursor: pointer; border-radius: 0.5rem; font-size: 0.8rem; font-weight: normal; }
+        .level-dropdown-content label:hover { background: #f0f4f8; }
+        .level-dropdown-content input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #2b7a4b; }
+        .level-dropdown-content .select-all-btn { display: block; width: 100%; padding: 0.3rem; margin-bottom: 0.3rem; background: #2b7a4b; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.75rem; }
+
+        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .chart-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: 1.1rem; }
+        canvas { max-height: 350px; }
+
+        .data-table-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+        .data-table-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: 1.2rem; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: #1e3a5f; color: white; font-weight: bold; padding: 12px 10px; text-align: center; position: sticky; top: 0; z-index: 10; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
+        th:hover { background: #2a4a6f; }
+        th .sort-icon { font-size: 0.7rem; margin-left: 3px; }
+        td { padding: 10px; text-align: center; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
+        tr:hover { background-color: #f7fafc; }
+        
+        .badge-trained { background: #c6f6d5; color: #22543d; padding: 0.2rem 0.8rem; border-radius: 1rem; font-weight: bold; font-size: 0.8rem; }
+        .badge-untrained { background: #fed7d7; color: #c53030; padding: 0.2rem 0.8rem; border-radius: 1rem; font-weight: bold; font-size: 0.8rem; }
+        .badge-dept { background: #e2e8f0; color: #4a5568; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; }
+        
+        .dept-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem; }
+        .dept-stat-card { background: white; border-radius: 1rem; padding: 1rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid #2b7a4b; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .dept-stat-card.warning { border-left-color: #e53e3e; }
+        .dept-stat-card.success { border-left-color: #38a169; }
+        .dept-rank { background: #2b7a4b; color: white; padding: 0.3rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; font-weight: bold; min-width: 40px; text-align: center; }
+        .dept-rank.warning { background: #e53e3e; } .dept-rank.success { background: #38a169; }
+        .dept-info { flex: 1; font-size: 0.85rem; }
+        .dept-name { font-weight: bold; color: #1e3a5f; } .dept-details { color: #718096; font-size: 0.75rem; margin-top: 0.2rem; }
+        .coverage-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 0.3rem; overflow: hidden; }
+        .coverage-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
+
+        @media (max-width: 768px) {
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .filter-select, .search-box input { width: 100%; max-width: 100%; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-row { grid-template-columns: 1fr; }
+            th, td { padding: 0.5rem; font-size: 0.7rem; }
+            .dept-stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- الهيكل الثابت للـ HTML لمنع مشاكل التحميل -->
+    <div class="navbar">
+        <div class="logo"><h2>🎓 Learning & Development <span>System</span></h2></div>
+        <div class="nav-links">
+            <a href="index.html" class="home">🏠 Home</a>
+            <button id="logoutBtn" class="logout">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>📊 Training Compliance Report</h1>
+            <p>Monitor and analyze employee training coverage and compliance across the organization</p>
+        </div>
+
+        <div id="statusIndicator" style="text-align:center; padding:2rem; font-size:1.2rem; color:#1e3a5f;">
+            ⏳ Fetching compliance data from server...
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <!-- الإحصائيات العلوية -->
+            <div class="stats-grid" id="mainStats"></div>
+
+            <!-- الفلاتر -->
+            <div class="filter-bar">
+                <div class="filter-group"><label>📅 Year:</label><select id="yearSelect" class="filter-select"></select></div>
+                <div class="filter-group"><label>📅 Month:</label><select id="monthSelect" class="filter-select"></select></div>
+                <div class="filter-group"><label>📚 Type:</label><select id="typeSelect" class="filter-select"><option value="all">All</option><option value="offjob">Off Job</option><option value="onjob">On Job</option></select></div>
+                <div class="filter-group"><label>🏢 Dept:</label><select id="deptFilter" class="filter-select"></select></div>
+                
+                <div class="filter-group">
+                    <label>📊 Level:</label>
+                    <div class="level-dropdown" id="levelDropdown">
+                        <button class="level-dropdown-btn" id="levelDropdownBtn">All Levels</button>
+                        <div class="level-dropdown-content" id="levelDropdownContent">
+                            <!-- مستويات الموظفين -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group"><label>📌 Status:</label><select id="statusFilter" class="filter-select"><option value="all">All</option><option value="trained">✅ Trained</option><option value="untrained">⚠️ Not Trained</option></select></div>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search...">
+                    <button id="searchBtn">Search</button>
+                    <button id="clearSearchBtn" style="background:#718096; display:none;">✖</button>
+                </div>
+                <button id="exportExcelBtn" class="export-btn">📥 Excel</button>
+                <button id="exportCsvBtn" class="export-btn" style="background:#718096;">📄 CSV</button>
+            </div>
+
+            <!-- إحصائيات الأقسام التفصيلية -->
+            <div class="data-table-card">
+                <h3>🏢 Department Training Coverage</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div><h4 style="color:#c53030; font-size:0.9rem; margin-bottom:0.5rem;">⚠️ Lowest Coverage</h4><div class="dept-stats-grid" style="grid-template-columns:1fr;" id="lowestDeptsGrid"></div></div>
+                    <div><h4 style="color:#38a169; font-size:0.9rem; margin-bottom:0.5rem;">✅ Highest Coverage</h4><div class="dept-stats-grid" style="grid-template-columns:1fr;" id="highestDeptsGrid"></div></div>
+                </div>
+            </div>
+
+            <!-- الرسوم البيانية -->
+            <div class="charts-row">
+                <div class="chart-card"><h3>📊 Training Coverage by Department</h3><canvas id="chartCoverage"></canvas></div>
+                <div class="chart-card"><h3>⚠️ Untrained Employees by Department</h3><canvas id="chartUntrained"></canvas></div>
+            </div>
+            <div class="charts-row">
+                <div class="chart-card"><h3>🍩 Training Status Overview</h3><canvas id="chartPie"></canvas></div>
+                <div class="chart-card"><h3>📈 Monthly Training Coverage</h3><canvas id="chartMonthly"></canvas></div>
+            </div>
+
+            <!-- جدول البيانات -->
+            <div class="data-table-card">
+                <h3 id="tableTitle">📋 Employee Compliance Report</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th class="sortable" data-sort="id">ID <span class="sort-icon">↕</span></th>
+                                <th class="sortable" data-sort="name">Name <span class="sort-icon">↕</span></th>
+                                <th class="sortable" data-sort="department">Department <span class="sort-icon">↕</span></th>
+                                <th class="sortable" data-sort="level">Level <span class="sort-icon">↕</span></th>
+                                <th>Hire Date</th>
+                                <th class="sortable" data-sort="lastTrainingDate">Last Training <span class="sort-icon">↕</span></th>
+                                <th class="sortable" data-sort="daysSinceLastTraining">Days Since <span class="sort-icon">↕</span></th>
+                                <th class="sortable" data-sort="status">Status <span class="sort-icon">↕</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="tableFooterInfo" style="text-align:center; margin-top:1rem; color:#718096; font-size:0.85rem;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer"><p>© 2026 Learning & Development System</p></div>
+
+    <!-- السكريبت الديناميكي -->
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ================= المتغيرات وحالة النظام =================
+        let allEmployees = [];
+        let offJobEnrollments = [];
+        let onJobEnrollments = [];
+        
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth(); // التعديل: الافتراضي هو الشهر الحالي
+        let currentType = "offjob"; // التعديل: الافتراضي هو Off Job
+        let currentDept = "all";
+        let currentStatus = "all";
+        let selectedLevels = [];
+        let searchTerm = "";
+        let sortField = "id";
+        let sortDirection = "asc";
+        
+        let complianceReport = [];
+        let trainedEmployeeIdsMap = new Map();
+        let chartInstances = {}; // لمنع Memory Leaks
+
+        const EXCLUDED_DEPARTMENTS = ['A&G', 'A & G', 'AG', 'Admin & General'];
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        // ================= دوال مساعدة ذكية للتواريخ =================
+        function parseDateSafely(dateValue) {
+            if (!dateValue) return new Date(NaN);
+            if (typeof dateValue === 'number') return new Date((dateValue - 25569) * 86400000);
+            return new Date(dateValue);
+        }
+
+        function isExcludedDepartment(dept) {
+            if (!dept) return false;
+            return EXCLUDED_DEPARTMENTS.some(ex => dept.toString().trim().toLowerCase() === ex.toLowerCase());
+        }
+
+        function destroyChart(id) {
+            if (chartInstances[id]) {
+                chartInstances[id].destroy();
+                delete chartInstances[id];
+            }
+        }
+
+        // ================= جلب البيانات لمرة واحدة من السيرفر =================
+        async function loadAllDataFromServer() {
+            try {
+                const employeesData = await DB.getAll('employees');
+                allEmployees = employeesData || [];
+                
+                const offJobData = await DB.getAll('offjob_enrollments');
+                offJobEnrollments = offJobData || [];
+                
+                const onJobData = await DB.getAll('onjob_enrollments');
+                onJobEnrollments = onJobData || [];
+
+                document.getElementById('statusIndicator').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } catch (error) {
+                console.error("❌ Failed to fetch data from Firestore:", error);
+                document.getElementById('statusIndicator').innerHTML = '<span style="color:#e53e3e;">❌ Error fetching data.</span>';
+            }
+        }
+
+        // ================= معالجة البيانات والحسابات =================
+        function buildTrainedEmployeesMap() {
+            trainedEmployeeIdsMap.clear();
+            
+            const processEnrollments = (enrollments, type) => {
+                enrollments.forEach(e => {
+                    if (e.enrollment_status !== 'Completed' || !e.employee_id) return;
+                    
+                    const empId = e.employee_id.toString().trim();
+                    const dateStr = e.completion_date || e.registered_at?.slice(0, 10) || null;
+                    if (!dateStr) return;
+                    
+                    const date = parseDateSafely(dateStr);
+                    if (isNaN(date.getTime())) return;
+                    
+                    if (date.getFullYear() !== currentYear) return;
+                    if (currentMonth !== -1 && date.getMonth() !== currentMonth) return;
+                    if (currentType !== 'all' && currentType !== type) return;
+                    
+                    const existing = trainedEmployeeIdsMap.get(empId);
+                    if (!existing || date > existing.lastDate) {
+                        trainedEmployeeIdsMap.set(empId, {
+                            lastDate: date,
+                            daysSince: Math.floor((new Date() - date) / (1000 * 60 * 60 * 24))
+                        });
+                    }
+                });
+            };
+            
+            processEnrollments(offJobEnrollments, 'offjob');
+            processEnrollments(onJobEnrollments, 'onjob');
+        }
+
+        function buildComplianceReport() {
+            buildTrainedEmployeesMap();
+            
+            const activeEmployees = allEmployees.filter(emp => 
+                emp.status !== 'Left' && !isExcludedDepartment(emp.department)
+            );
+            
+            complianceReport = activeEmployees.map(emp => {
+                const empId = emp.id?.toString().trim();
+                const trainingInfo = trainedEmployeeIdsMap.get(empId);
+                const isTrained = !!trainingInfo;
+                
+                let hireDateFormatted = '-';
+                if (emp.hireDate || emp.dateOfJoin) {
+                    const d = parseDateSafely(emp.hireDate || emp.dateOfJoin);
+                    if (!isNaN(d.getTime())) hireDateFormatted = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                }
+                
+                let lastTrainingFmt = 'Never';
+                if (isTrained) {
+                    const ltd = trainingInfo.lastDate;
+                    lastTrainingFmt = `${ltd.getFullYear()}-${String(ltd.getMonth()+1).padStart(2,'0')}-${String(ltd.getDate()).padStart(2,'0')}`;
+                }
+
+                return {
+                    id: empId || '-',
+                    name: emp.fullName || emp.name || 'Unknown',
+                    department: emp.department || 'Not Specified',
+                    level: emp.level || '-',
+                    hireDate: hireDateFormatted,
+                    lastTrainingDate: lastTrainingFmt,
+                    daysSinceLastTraining: isTrained ? trainingInfo.daysSince : 'Never Trained',
+                    isTrained: isTrained,
+                    status: isTrained ? 'Trained' : 'Not Trained'
+                };
+            });
+        }
+
+        function getUniqueLevels() {
+            const levels = new Set();
+            complianceReport.forEach(e => { if (e.level && e.level !== '-') levels.add(e.level); });
+            return [...levels].sort();
+        }
+
+        function getUniqueDepartments() {
+            const depts = new Set();
+            complianceReport.forEach(e => depts.add(e.department));
+            return [...depts].sort();
+        }
+
+        function applyFilters(data) {
+            let filtered = data;
+            
+            if (currentStatus === 'trained') filtered = filtered.filter(e => e.isTrained);
+            else if (currentStatus === 'untrained') filtered = filtered.filter(e => !e.isTrained);
+            
+            if (currentDept !== 'all') filtered = filtered.filter(e => e.department === currentDept);
+            if (selectedLevels.length > 0) filtered = filtered.filter(e => selectedLevels.includes(e.level));
+            
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filtered = filtered.filter(e => 
+                    e.id.toLowerCase().includes(term) || e.name.toLowerCase().includes(term) ||
+                    e.department.toLowerCase().includes(term) || e.level.toLowerCase().includes(term)
+                );
+            }
+            
+            filtered.sort((a, b) => {
+                let valA = a[sortField], valB = b[sortField];
+                if (sortField === 'daysSinceLastTraining') {
+                    valA = valA === 'Never Trained' ? Infinity : valA;
+                    valB = valB === 'Never Trained' ? Infinity : valB;
+                }
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                
+                if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            return filtered;
+        }
+
+        function getDepartmentStats() {
+            const deptMap = new Map();
+            complianceReport.forEach(emp => {
+                if (!deptMap.has(emp.department)) deptMap.set(emp.department, { total: 0, trained: 0, untrained: 0 });
+                const stats = deptMap.get(emp.department);
+                stats.total++;
+                if (emp.isTrained) stats.trained++; else stats.untrained++;
+            });
+            
+            return Array.from(deptMap.entries()).map(([dept, stats]) => ({
+                department: dept, total: stats.total, trained: stats.trained, untrained: stats.untrained,
+                coverage: stats.total > 0 ? ((stats.trained / stats.total) * 100).toFixed(1) : 0
+            })).sort((a, b) => parseFloat(b.coverage) - parseFloat(a.coverage));
+        }
+
+        // ================= الرسوم البيانية =================
+        function initCharts(deptStats) {
+            Chart.register(ChartDataLabels);
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: 11 } } },
+                    datalabels: { display: true, color: '#1e3a5f', anchor: 'end', align: 'top', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? v : '' }
+                },
+                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+            };
+            
+            const byCoverage = deptStats.slice(0, 15);
+            destroyChart('chartCoverage');
+            const ctx1 = document.getElementById('chartCoverage')?.getContext('2d');
+            if (ctx1) {
+                chartInstances['chartCoverage'] = new Chart(ctx1, {
+                    type: 'bar',
+                    data: { labels: byCoverage.map(d => d.department), datasets: [{ label: 'Coverage %', data: byCoverage.map(d => parseFloat(d.coverage)), backgroundColor: '#078fff' }] },
+                    options: { ...chartOptions, scales: { y: { max: 100, grid: { display: false } }, x: { grid: { display: false } } } }
+                });
+            }
+            
+            const byUntrained = deptStats.slice().sort((a, b) => b.untrained - a.untrained).slice(0, 15);
+            destroyChart('chartUntrained');
+            const ctx2 = document.getElementById('chartUntrained')?.getContext('2d');
+            if (ctx2) {
+                chartInstances['chartUntrained'] = new Chart(ctx2, {
+                    type: 'bar',
+                    data: { labels: byUntrained.map(d => d.department), datasets: [{ label: 'Untrained', data: byUntrained.map(d => d.untrained), backgroundColor: '#e53e3e' }] },
+                    options: chartOptions
+                });
+            }
+            
+            const trainedCount = complianceReport.filter(e => e.isTrained).length;
+            const untrainedCount = complianceReport.filter(e => !e.isTrained).length;
+            const totalCount = trainedCount + untrainedCount;
+            
+            destroyChart('chartPie');
+            const ctx3 = document.getElementById('chartPie')?.getContext('2d');
+            if (ctx3) {
+                chartInstances['chartPie'] = new Chart(ctx3, {
+                    type: 'doughnut',
+                    data: { labels: ['Trained', 'Not Trained'], datasets: [{ data: [trainedCount, untrainedCount], backgroundColor: ['#38a169', '#e53e3e'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, datalabels: { display: true, color: 'white', font: { weight: 'bold', size: 14 }, formatter: v => totalCount === 0 ? v : `${v} (${((v/totalCount)*100).toFixed(1)}%)` } } }
+                });
+            }
+            
+            const monthlyCoverage = [];
+            for (let m = 0; m < 12; m++) {
+                const monthTrained = complianceReport.filter(e => {
+                    if (!e.isTrained || e.lastTrainingDate === 'Never') return false;
+                    const d = parseDateSafely(e.lastTrainingDate);
+                    return d.getFullYear() === currentYear && d.getMonth() === m;
+                }).length;
+                monthlyCoverage.push({ month: monthNames[m].substring(0, 3), coverage: complianceReport.length > 0 ? parseFloat(((monthTrained / complianceReport.length) * 100).toFixed(1)) : 0 });
+            }
+            
+            destroyChart('chartMonthly');
+            const ctx4 = document.getElementById('chartMonthly')?.getContext('2d');
+            if (ctx4) {
+                chartInstances['chartMonthly'] = new Chart(ctx4, {
+                    type: 'line',
+                    data: { labels: monthlyCoverage.map(m => m.month), datasets: [{ label: 'Coverage %', data: monthlyCoverage.map(m => m.coverage), borderColor: '#078fff', backgroundColor: 'rgba(7,143,255,0.1)', fill: true, tension: 0.3 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+                });
+            }
+        }
+
+        // ================= تحديث واجهة المستخدم =================
+        function updateUI() {
+            buildComplianceReport();
+            const filtered = applyFilters(complianceReport);
+            
+            const totalActive = complianceReport.length;
+            const trainedCount = complianceReport.filter(e => e.isTrained).length;
+            const untrainedCount = totalActive - trainedCount;
+            const coverage = totalActive > 0 ? ((trainedCount / totalActive) * 100).toFixed(1) : 0;
+            
+            // 1. تحديث الإحصائيات العلوية
+            document.getElementById('mainStats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${totalActive}</div><div class="stat-label">👥 Total Employees</div></div>
+                <div class="stat-card success"><div class="stat-value">${trainedCount}</div><div class="stat-label">✅ Trained Employees</div></div>
+                <div class="stat-card warning"><div class="stat-value">${untrainedCount}</div><div class="stat-label">⚠️ Untrained Employees</div></div>
+                <div class="stat-card"><div class="stat-value">${coverage}%</div><div class="stat-label">📊 Training Coverage</div></div>
+            `;
+
+            // 2. تحديث الفلاتر (مرة واحدة فقط لتجنب إعادة بناء الخيارات)
+            if (document.getElementById('yearSelect').options.length === 0) {
+                const yearOpts = [2024, 2025, 2026, 2027, 2028].map(y => `<option value="${y}" ${currentYear===y?'selected':''}>${y}</option>`).join('');
+                document.getElementById('yearSelect').innerHTML = yearOpts;
+                
+                const monthOpts = `<option value="-1">All Months</option>` + monthNames.map((m,i)=>`<option value="${i}" ${currentMonth===i?'selected':''}>${m}</option>`).join('');
+                document.getElementById('monthSelect').innerHTML = monthOpts;
+                
+                // تحديد القيمة الافتراضية لقائمة التايب
+                document.getElementById('typeSelect').value = currentType;
+                
+                const depts = getUniqueDepartments();
+                document.getElementById('deptFilter').innerHTML = `<option value="all">All</option>` + depts.map(d=>`<option value="${d}">${d}</option>`).join('');
+                
+                const levels = getUniqueLevels();
+                document.getElementById('levelDropdownContent').innerHTML = `
+                    <button class="select-all-btn" id="selectAllLevelsBtn">✅ Select All</button>
+                    <button class="select-all-btn" id="clearAllLevelsBtn" style="background:#e53e3e;">✖ Clear All</button>
+                    ${levels.map(l => `<label><input type="checkbox" value="${l}" class="level-chk"> ${l}</label>`).join('')}
+                `;
+                
+                // ربط أحداث الليفيلز
+                document.getElementById('selectAllLevelsBtn').addEventListener('click', () => {
+                    document.querySelectorAll('.level-chk').forEach(cb => cb.checked = true);
+                    selectedLevels = getUniqueLevels();
+                    updateLevelButtonText(); updateUI();
+                });
+                document.getElementById('clearAllLevelsBtn').addEventListener('click', () => {
+                    document.querySelectorAll('.level-chk').forEach(cb => cb.checked = false);
+                    selectedLevels = [];
+                    updateLevelButtonText(); updateUI();
+                });
+                document.querySelectorAll('.level-chk').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const val = e.target.value;
+                        if (e.target.checked && !selectedLevels.includes(val)) selectedLevels.push(val);
+                        else if (!e.target.checked) selectedLevels = selectedLevels.filter(l => l !== val);
+                        updateLevelButtonText(); updateUI();
+                    });
+                });
+            }
+
+            // 3. تحديث أفضل وأسوأ الأقسام
+            const deptStats = getDepartmentStats();
+            const lowestDepts = deptStats.slice(-5);
+            const highestDepts = deptStats.slice(0, 5);
+            
+            document.getElementById('lowestDeptsGrid').innerHTML = lowestDepts.map(d => `
+                <div class="dept-stat-card warning">
+                    <div class="dept-rank warning">${d.coverage}%</div>
+                    <div class="dept-info"><div class="dept-name">🏢 ${d.department}</div><div class="dept-details">👥 ${d.total} | ⚠️ ${d.untrained} Untrained</div><div class="coverage-bar"><div class="coverage-fill" style="width:${d.coverage}%; background:#e53e3e;"></div></div></div>
+                </div>`).join('') || '<div style="color:#718096;">No data</div>';
+                
+            document.getElementById('highestDeptsGrid').innerHTML = highestDepts.map(d => `
+                <div class="dept-stat-card success">
+                    <div class="dept-rank success">${d.coverage}%</div>
+                    <div class="dept-info"><div class="dept-name">🏢 ${d.department}</div><div class="dept-details">👥 ${d.total} | ✅ ${d.trained} Trained</div><div class="coverage-bar"><div class="coverage-fill" style="width:${d.coverage}%; background:#38a169;"></div></div></div>
+                </div>`).join('') || '<div style="color:#718096;">No data</div>';
+
+            // 4. تحديث الجدول
+            const trainedFiltered = filtered.filter(e => e.isTrained).length;
+            const untrainedFiltered = filtered.filter(e => !e.isTrained).length;
+            document.getElementById('tableTitle').innerHTML = `📋 Employee Compliance Report (${filtered.length} employees | ✅ ${trainedFiltered} Trained | ⚠️ ${untrainedFiltered} Not Trained)`;
+            
+            const tbody = document.getElementById('resultsTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:3rem;">📭 No employees match the selected criteria</td></tr>';
+            } else {
+                tbody.innerHTML = filtered.map((e, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${e.id}</td>
+                        <td style="text-align:left; font-weight:500;">${e.name}</td>
+                        <td><span class="badge-dept">${e.department}</span></td>
+                        <td>${e.level}</td>
+                        <td style="font-size:0.8rem;">${e.hireDate}</td>
+                        <td style="font-size:0.8rem; ${e.lastTrainingDate === 'Never' ? 'color:#c53030;' : ''}">${e.lastTrainingDate}</td>
+                        <td style="${e.daysSinceLastTraining === 'Never Trained' ? 'color:#c53030;' : ''}">${e.daysSinceLastTraining === 'Never Trained' ? 'Never Trained' : e.daysSinceLastTraining + ' days'}</td>
+                        <td><span class="${e.isTrained ? 'badge-trained' : 'badge-untrained'}">${e.status}</span></td>
+                    </tr>`).join('');
+            }
+            document.getElementById('tableFooterInfo').textContent = `Showing all ${filtered.length} records`;
+
+            // تحديث أيقونات الترتيب
+            document.querySelectorAll('th.sortable .sort-icon').forEach(icon => icon.textContent = '↕');
+            const activeHeader = document.querySelector(`th[data-sort="${sortField}"] .sort-icon`);
+            if (activeHeader) activeHeader.textContent = sortDirection === 'asc' ? '▲' : '▼';
+
+            // 5. رسم الشارتات
+            setTimeout(() => initCharts(deptStats), 100);
+        }
+
+        function updateLevelButtonText() {
+            const btn = document.getElementById('levelDropdownBtn');
+            if (btn) btn.textContent = selectedLevels.length === 0 ? 'All Levels' : `${selectedLevels.length} selected`;
+        }
+
+        // ================= التصدير =================
+        function exportToExcel() {
+            const filtered = applyFilters(complianceReport);
+            const data = filtered.map((e, i) => ({ '#': i + 1, 'Employee ID': e.id, 'Name': e.name, 'Department': e.department, 'Level': e.level, 'Hire Date': e.hireDate, 'Last Training': e.lastTrainingDate, 'Days Since': e.daysSinceLastTraining, 'Status': e.status }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Training Compliance');
+            XLSX.writeFile(wb, `Training_Compliance_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        function exportToCSV() {
+            const filtered = applyFilters(complianceReport);
+            let csv = 'Employee ID,Name,Department,Level,Hire Date,Last Training,Days Since,Status\n';
+            filtered.forEach(e => { csv += `"${e.id}","${e.name}","${e.department}","${e.level}","${e.hireDate}","${e.lastTrainingDate}","${e.daysSinceLastTraining}","${e.status}"\n`; });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Training_Compliance_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        // ================= ربط الأحداث (Event Listeners) =================
+        document.getElementById('yearSelect').addEventListener('change', (e) => { currentYear = parseInt(e.target.value); updateUI(); });
+        document.getElementById('monthSelect').addEventListener('change', (e) => { currentMonth = parseInt(e.target.value); updateUI(); });
+        document.getElementById('typeSelect').addEventListener('change', (e) => { currentType = e.target.value; updateUI(); });
+        document.getElementById('deptFilter').addEventListener('change', (e) => { currentDept = e.target.value; updateUI(); });
+        document.getElementById('statusFilter').addEventListener('change', (e) => { currentStatus = e.target.value; updateUI(); });
+        
+        document.getElementById('levelDropdownBtn').addEventListener('click', () => document.getElementById('levelDropdownContent').classList.toggle('show'));
+        document.addEventListener('click', (e) => { if (!document.getElementById('levelDropdown').contains(e.target)) document.getElementById('levelDropdownContent').classList.remove('show'); });
+
+        document.getElementById('searchBtn').addEventListener('click', () => { 
+            searchTerm = document.getElementById('searchInput').value.trim(); 
+            document.getElementById('clearSearchBtn').style.display = searchTerm ? 'inline-block' : 'none';
+            updateUI(); 
+        });
+        document.getElementById('clearSearchBtn').addEventListener('click', () => { 
+            searchTerm = ''; document.getElementById('searchInput').value = ''; 
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            updateUI(); 
+        });
+        document.getElementById('searchInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') document.getElementById('searchBtn').click(); });
+
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.getAttribute('data-sort');
+                if (sortField === field) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                else { sortField = field; sortDirection = 'asc'; }
+                updateUI();
+            });
+        });
+
+        document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+        document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+
+        // ================= التهيئة والمصادقة =================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await loadAllDataFromServer();
+                updateUI();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

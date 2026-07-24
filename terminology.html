@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبة المصطلحات المهنية - L&D | التدريب والاستقبال</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #f0f4f8;
+            font-family: 'Tajawal', 'Segoe UI', sans-serif;
+            direction: rtl;
+            color: #1e3a5f;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #2b7a4b; border-radius: 10px; }
+
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .logo h2 { color: #1e3a5f; font-size: 1.3rem; }
+        .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a {
+            text-decoration: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover { transform: translateY(-2px); }
+        .nav-links .home { background: #2b7a4b; color: white; }
+
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .page-header .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white;
+            padding: 0.4rem 1.5rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+        .page-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e3a5f;
+            margin-bottom: 0.5rem;
+        }
+        .page-header h1 span { color: #2b7a4b; }
+        .page-header p { color: #718096; font-size: 1rem; }
+
+        .section-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .section-tab {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border: 2px solid #e2e8f0;
+            border-radius: 60px;
+            background: white;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .section-tab:hover { border-color: #2b7a4b; transform: translateY(-2px); }
+        .section-tab.active {
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(43, 122, 75, 0.3);
+        }
+        .section-tab .count {
+            background: rgba(0,0,0,0.08);
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+        }
+        .section-tab.active .count { background: rgba(255,255,255,0.2); }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        .toolbar .stats { display: flex; gap: 1.5rem; font-size: 0.85rem; color: #718096; }
+        .toolbar .stats strong { color: #1e3a5f; }
+
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+        }
+        .view-toggle button {
+            padding: 0.5rem 1.2rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 2rem;
+            background: white;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .view-toggle button.active {
+            background: #2b7a4b;
+            color: white;
+            border-color: #2b7a4b;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 3rem;
+            font-size: 0.95rem;
+            background: white;
+            outline: none;
+            font-family: 'Tajawal', sans-serif;
+            transition: 0.3s;
+        }
+        .search-box input:focus { border-color: #2b7a4b; box-shadow: 0 0 0 3px rgba(43,122,75,0.1); }
+        .search-box .search-icon {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        /* Card View */
+        .flip-card {
+            max-width: 550px;
+            margin: 0 auto;
+            perspective: 1500px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-front, .flip-back {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            backface-visibility: hidden;
+        }
+        .flip-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transform: rotateY(180deg);
+        }
+
+        .card-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card-nav .counter {
+            background: #f0f4f8;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+        .card-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(30,58,95,0.1), rgba(43,122,75,0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .card-icon i { font-size: 2rem; color: #2b7a4b; }
+        .english-word {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #1e3a5f;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .divider {
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #2b7a4b, #1e3a5f);
+            margin: 0 auto 1rem;
+            border-radius: 2px;
+        }
+        .arabic-word {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #2b7a4b;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .btn-flip {
+            display: block;
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white;
+            border: none;
+            border-radius: 3rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            transition: 0.3s;
+        }
+        .btn-flip:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(43,122,75,0.3); }
+
+        .meaning-box {
+            background: #f0fdf4;
+            border-radius: 1rem;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            border-right: 4px solid #2b7a4b;
+        }
+        .meaning-box .label { font-weight: 700; color: #1e3a5f; margin-bottom: 0.5rem; }
+        .meaning-box p { color: #4a5568; line-height: 1.7; font-size: 0.9rem; }
+        .example-box {
+            background: #fef5e7;
+            border-radius: 1rem;
+            padding: 1.2rem;
+            border-right: 4px solid #ed8936;
+        }
+        .example-box .label { font-weight: 700; color: #1e3a5f; margin-bottom: 0.5rem; }
+        .example-box .english-example { color: #4a5568; font-style: italic; margin-bottom: 0.8rem; font-size: 0.9rem; }
+        .example-box .arabic-example { color: #718096; font-size: 0.85rem; padding-top: 0.8rem; border-top: 1px solid #fde68a; }
+        .btn-flip-back {
+            display: block;
+            width: 100%;
+            padding: 0.7rem;
+            background: #f0f4f8;
+            color: #1e3a5f;
+            border: none;
+            border-radius: 3rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-family: 'Tajawal', sans-serif;
+            transition: 0.3s;
+        }
+        .btn-flip-back:hover { background: #e2e8f0; }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .nav-btn {
+            padding: 0.7rem 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 3rem;
+            background: white;
+            color: #1e3a5f;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            transition: 0.3s;
+        }
+        .nav-btn:hover { border-color: #2b7a4b; }
+        .nav-btn.primary {
+            background: #2b7a4b;
+            color: white;
+            border-color: #2b7a4b;
+        }
+        .nav-btn.primary:hover { background: #1e5a38; }
+
+        .progress-bar {
+            margin-top: 1.5rem;
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e3a5f, #2b7a4b);
+            transition: width 0.3s ease;
+        }
+
+        /* List View */
+        .list-item {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            margin-bottom: 0.6rem;
+        }
+        .list-item:hover { border-color: #2b7a4b; transform: translateX(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .list-item .item-number {
+            background: #f0f4f8;
+            border-radius: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            font-weight: 800;
+            color: #2b7a4b;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .list-item .item-content { flex: 1; margin: 0 1rem; }
+        .list-item .item-en { font-weight: 700; color: #1e3a5f; font-size: 0.95rem; }
+        .list-item .item-ar { color: #2b7a4b; font-size: 0.85rem; margin-top: 2px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 1.5rem;
+        }
+        .empty-state i { font-size: 3rem; color: #cbd5e0; margin-bottom: 1rem; display: block; }
+        .empty-state p { color: #718096; }
+
+        .footer { text-align: center; padding: 2rem; color: #718096; font-size: 0.85rem; }
+
+        @media (max-width: 768px) {
+            .english-word { font-size: 1.6rem; }
+            .arabic-word { font-size: 1.3rem; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar .stats { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        // ============================================
+        //  المصطلحات - قسم التدريب والتطوير (89 مصطلح)
+        // ============================================
+        const trainingWords = [
+            { id: 1, english: "Training", arabic: "التدريب", meaning: "عملية تطوير مهارات ومعارف الموظفين لتحسين أدائهم في العمل.", example: "Training is essential for every new employee.", translation: "التدريب ضروري لكل موظف جديد." },
+            { id: 2, english: "Development", arabic: "التطوير", meaning: "عملية مستمرة تهدف إلى تحسين قدرات الموظف المهنية والشخصية.", example: "Employee development increases long-term performance.", translation: "تطوير الموظفين يزيد من الأداء على المدى الطويل." },
+            { id: 3, english: "Learning", arabic: "التعلم", meaning: "اكتساب المعرفة أو المهارات من خلال الدراسة أو الخبرة أو التدريب.", example: "Learning never stops in a successful organization.", translation: "التعلم لا يتوقف أبدًا في المؤسسة الناجحة." },
+            { id: 4, english: "Orientation", arabic: "التهيئة الوظيفية", meaning: "برنامج تعريفي للموظفين الجدد يساعدهم على فهم بيئة العمل.", example: "New hires attend orientation during their first week.", translation: "يحضر الموظفون الجدد برنامج التهيئة خلال أسبوعهم الأول." },
+            { id: 5, english: "Onboarding", arabic: "الدمج الوظيفي", meaning: "عملية إدماج الموظف الجديد في المنظمة ومهامه الوظيفية.", example: "Effective onboarding improves employee retention.", translation: "يساعد الدمج الوظيفي الفعال على الاحتفاظ بالموظفين." },
+            { id: 6, english: "Trainer", arabic: "المدرب", meaning: "الشخص المسؤول عن تقديم البرامج التدريبية للمتدربين.", example: "The trainer explained the procedure clearly.", translation: "شرح المدرب الإجراء بوضوح." },
+            { id: 7, english: "Trainee", arabic: "المتدرب", meaning: "الشخص الذي يشارك في برنامج تدريبي لاكتساب مهارات جديدة.", example: "Each trainee completed the practical exercise.", translation: "أكمل كل متدرب التمرين العملي." },
+            { id: 8, english: "Training Session", arabic: "جلسة تدريبية", meaning: "فترة زمنية مخصصة لتقديم موضوع تدريبي محدد.", example: "The training session lasted two hours.", translation: "استمرت الجلسة التدريبية لمدة ساعتين." },
+            { id: 9, english: "Workshop", arabic: "ورشة عمل", meaning: "نشاط تدريبي عملي يركز على التطبيق والمشاركة.", example: "The workshop focused on communication skills.", translation: "ركزت ورشة العمل على مهارات التواصل." },
+            { id: 10, english: "Seminar", arabic: "ندوة", meaning: "لقاء تعليمي يتم خلاله مناقشة موضوع معين بشكل متخصص.", example: "We attended a seminar on leadership.", translation: "حضرنا ندوة عن القيادة." },
+            { id: 11, english: "Coaching", arabic: "التوجيه العملي", meaning: "عملية دعم الموظف لتحسين أدائه من خلال المتابعة الفردية.", example: "The manager provided coaching to the team.", translation: "قدم المدير توجيهًا عمليًا للفريق." },
+            { id: 12, english: "Mentoring", arabic: "الإرشاد المهني", meaning: "علاقة تطويرية بين موظف خبير وموظف أقل خبرة.", example: "Mentoring helps employees grow professionally.", translation: "يساعد الإرشاد المهني الموظفين على التطور مهنيًا." },
+            { id: 13, english: "Assessment", arabic: "التقييم", meaning: "قياس مستوى المعرفة أو المهارات أو الأداء.", example: "All participants completed the assessment.", translation: "أكمل جميع المشاركين التقييم." },
+            { id: 14, english: "Evaluation", arabic: "التقويم", meaning: "تحليل نتائج التدريب لتحديد مدى فعاليته.", example: "The evaluation showed positive feedback.", translation: "أظهر التقويم ملاحظات إيجابية." },
+            { id: 15, english: "Learning Objective", arabic: "هدف تعليمي", meaning: "النتيجة التي يُتوقع أن يحققها المتدرب بعد التدريب.", example: "Every course should have clear learning objectives.", translation: "يجب أن يكون لكل دورة أهداف تعليمية واضحة." },
+            { id: 16, english: "Competency", arabic: "الكفاءة", meaning: "مزيج من المعرفة والمهارات والسلوكيات اللازمة للأداء الناجح.", example: "Customer service is a key competency.", translation: "خدمة العملاء كفاءة أساسية." },
+            { id: 17, english: "Skill", arabic: "مهارة", meaning: "القدرة على تنفيذ مهمة معينة بكفاءة.", example: "Communication is an important skill.", translation: "التواصل مهارة مهمة." },
+            { id: 18, english: "Knowledge", arabic: "المعرفة", meaning: "المعلومات والفهم الذي يمتلكه الفرد حول موضوع معين.", example: "Knowledge improves decision-making.", translation: "المعرفة تحسن اتخاذ القرارات." },
+            { id: 19, english: "Certification", arabic: "شهادة اعتماد", meaning: "وثيقة تثبت إكمال برنامج تدريبي أو اجتياز اختبار.", example: "She received a certification in hospitality.", translation: "حصلت على شهادة اعتماد في الضيافة." },
+            { id: 20, english: "Training Plan", arabic: "خطة تدريبية", meaning: "وثيقة تحدد البرامج التدريبية والأهداف والجداول الزمنية.", example: "The training plan was approved by management.", translation: "تمت الموافقة على الخطة التدريبية من الإدارة." },
+            { id: 21, english: "Training Needs Analysis", arabic: "تحليل الاحتياجات التدريبية", meaning: "عملية تحديد الفجوة بين الأداء الحالي والأداء المطلوب لتحديد الاحتياجات التدريبية.", example: "The Training Needs Analysis identified key skill gaps.", translation: "حدد تحليل الاحتياجات التدريبية الفجوات الرئيسية في المهارات." },
+            { id: 22, english: "Training Matrix", arabic: "مصفوفة التدريب", meaning: "جدول يوضح التدريبات المطلوبة والمنجزة لكل موظف أو قسم.", example: "The training matrix is updated every month.", translation: "يتم تحديث مصفوفة التدريب كل شهر." },
+            { id: 23, english: "Annual Training Plan", arabic: "الخطة التدريبية السنوية", meaning: "خطة تتضمن جميع البرامج التدريبية المقررة خلال العام.", example: "The annual training plan was finalized in January.", translation: "تم الانتهاء من الخطة التدريبية السنوية في يناير." },
+            { id: 24, english: "Training Calendar", arabic: "التقويم التدريبي", meaning: "جدول زمني يوضح مواعيد البرامج التدريبية خلال فترة محددة.", example: "Employees can check the training calendar online.", translation: "يمكن للموظفين الاطلاع على التقويم التدريبي عبر الإنترنت." },
+            { id: 25, english: "Attendance Sheet", arabic: "كشف الحضور", meaning: "نموذج يُستخدم لتسجيل حضور المشاركين في التدريب.", example: "Please sign the attendance sheet before the session.", translation: "يرجى التوقيع في كشف الحضور قبل الجلسة." },
+            { id: 26, english: "Training Record", arabic: "سجل التدريب", meaning: "وثيقة تحتوي على تاريخ الموظف التدريبي والدورات التي أكملها.", example: "Training records are stored electronically.", translation: "يتم حفظ سجلات التدريب إلكترونيًا." },
+            { id: 27, english: "Learning Management System", arabic: "نظام إدارة التعلم", meaning: "منصة إلكترونية لإدارة وتتبع البرامج التدريبية.", example: "The LMS tracks employee progress automatically.", translation: "يتابع نظام إدارة التعلم تقدم الموظفين تلقائيًا." },
+            { id: 28, english: "E-Learning", arabic: "التعلم الإلكتروني", meaning: "التعلم من خلال الوسائط الرقمية والإنترنت.", example: "E-learning allows flexible training schedules.", translation: "يتيح التعلم الإلكتروني جداول تدريب مرنة." },
+            { id: 29, english: "Blended Learning", arabic: "التعلم المدمج", meaning: "مزيج من التدريب الحضوري والتعلم الإلكتروني.", example: "The course uses a blended learning approach.", translation: "تستخدم الدورة أسلوب التعلم المدمج." },
+            { id: 30, english: "Classroom Training", arabic: "التدريب داخل القاعة", meaning: "تدريب يتم وجهًا لوجه داخل قاعة تدريبية.", example: "Classroom training encourages discussion.", translation: "يشجع التدريب داخل القاعة على النقاش." },
+            { id: 31, english: "On-the-Job Training", arabic: "التدريب أثناء العمل", meaning: "تدريب الموظف أثناء قيامه بمهامه الفعلية.", example: "New employees receive On-the-Job Training.", translation: "يحصل الموظفون الجدد على تدريب أثناء العمل." },
+            { id: 32, english: "Off-the-Job Training", arabic: "التدريب خارج العمل", meaning: "تدريب يتم بعيدًا عن موقع العمل الفعلي.", example: "The hotel organized off-the-job training sessions.", translation: "نظم الفندق جلسات تدريب خارج العمل." },
+            { id: 33, english: "Cross Training", arabic: "التدريب المتبادل", meaning: "تدريب الموظف على مهام قسم أو وظيفة أخرى.", example: "Cross training improves workforce flexibility.", translation: "يحسن التدريب المتبادل مرونة القوى العاملة." },
+            { id: 34, english: "Refresher Training", arabic: "التدريب التنشيطي", meaning: "برنامج تدريبي يهدف إلى تحديث المعلومات والمهارات السابقة.", example: "Staff attended refresher training on safety procedures.", translation: "حضر الموظفون تدريبًا تنشيطيًا حول إجراءات السلامة." },
+            { id: 35, english: "Induction Training", arabic: "التدريب التمهيدي", meaning: "تدريب يُقدم للموظفين الجدد عند بداية عملهم.", example: "Induction training covers company policies.", translation: "يغطي التدريب التمهيدي سياسات الشركة." },
+            { id: 36, english: "Training Material", arabic: "المواد التدريبية", meaning: "المحتوى والأدوات المستخدمة أثناء التدريب.", example: "The training materials were distributed beforehand.", translation: "تم توزيع المواد التدريبية مسبقًا." },
+            { id: 37, english: "Presentation", arabic: "عرض تقديمي", meaning: "وسيلة لشرح المعلومات باستخدام الشرائح أو الوسائط المرئية.", example: "The presentation included practical examples.", translation: "تضمن العرض التقديمي أمثلة عملية." },
+            { id: 38, english: "Handout", arabic: "مادة مطبوعة", meaning: "وثيقة تُوزع على المشاركين لدعم عملية التعلم.", example: "Each participant received a handout.", translation: "حصل كل مشارك على مادة مطبوعة." },
+            { id: 39, english: "Case Study", arabic: "دراسة حالة", meaning: "مثال واقعي يُستخدم لتحليل موقف أو مشكلة معينة.", example: "The trainer discussed a hospitality case study.", translation: "ناقش المدرب دراسة حالة في مجال الضيافة." },
+            { id: 40, english: "Role Play", arabic: "لعب الأدوار", meaning: "نشاط تدريبي يقوم فيه المشاركون بتمثيل مواقف واقعية.", example: "Role play improved customer service skills.", translation: "ساعد لعب الأدوار على تحسين مهارات خدمة العملاء." },
+            { id: 41, english: "Group Discussion", arabic: "مناقشة جماعية", meaning: "نشاط يشارك فيه المتدربون بتبادل الآراء والأفكار.", example: "The session ended with a group discussion.", translation: "انتهت الجلسة بمناقشة جماعية." },
+            { id: 42, english: "Brainstorming", arabic: "العصف الذهني", meaning: "أسلوب لتوليد أكبر عدد ممكن من الأفكار والحلول.", example: "The team used brainstorming to solve the issue.", translation: "استخدم الفريق العصف الذهني لحل المشكلة." },
+            { id: 43, english: "Icebreaker", arabic: "نشاط كسر الجليد", meaning: "نشاط قصير يُستخدم لزيادة التفاعل بين المشاركين.", example: "The trainer started with an icebreaker activity.", translation: "بدأ المدرب بنشاط لكسر الجليد." },
+            { id: 44, english: "Participation", arabic: "المشاركة", meaning: "مساهمة المتدرب في الأنشطة والمناقشات التدريبية.", example: "Active participation enhances learning.", translation: "تعزز المشاركة الفعالة عملية التعلم." },
+            { id: 45, english: "Engagement", arabic: "التفاعل", meaning: "مدى اهتمام ومشاركة المتدربين أثناء التدريب.", example: "The trainer maintained high engagement.", translation: "حافظ المدرب على مستوى عالٍ من التفاعل." },
+            { id: 46, english: "Feedback", arabic: "التغذية الراجعة", meaning: "معلومات أو ملاحظات تُقدم لتحسين الأداء أو التعلم.", example: "Feedback helps employees improve.", translation: "تساعد التغذية الراجعة الموظفين على التحسن." },
+            { id: 47, english: "Training Effectiveness", arabic: "فعالية التدريب", meaning: "مدى تحقيق التدريب لأهدافه ونتائجه المطلوبة.", example: "The company measures training effectiveness regularly.", translation: "تقيس الشركة فعالية التدريب بشكل منتظم." },
+            { id: 48, english: "Post-Test", arabic: "اختبار بعدي", meaning: "اختبار يُجرى بعد التدريب لقياس ما تم تعلمه.", example: "Employees completed a post-test after the session.", translation: "أكمل الموظفون اختبارًا بعديًا بعد الجلسة." },
+            { id: 49, english: "Pre-Test", arabic: "اختبار قبلي", meaning: "اختبار يُجرى قبل التدريب لقياس المعرفة الحالية.", example: "The pre-test identified learning gaps.", translation: "حدد الاختبار القبلي فجوات التعلم." },
+            { id: 50, english: "Action Plan", arabic: "خطة عمل", meaning: "خطوات محددة لتطبيق ما تم تعلمه في بيئة العمل.", example: "Participants created an action plan after training.", translation: "أعد المشاركون خطة عمل بعد التدريب." },
+            { id: 51, english: "Performance", arabic: "الأداء", meaning: "مستوى تنفيذ الموظف لمهامه ومسؤولياته الوظيفية.", example: "Training can improve employee performance.", translation: "يمكن للتدريب أن يحسن أداء الموظف." },
+            { id: 52, english: "Performance Gap", arabic: "فجوة الأداء", meaning: "الفرق بين الأداء الحالي والأداء المطلوب.", example: "The training addressed the performance gap.", translation: "عالج التدريب فجوة الأداء." },
+            { id: 53, english: "Learning Outcome", arabic: "مخرج التعلم", meaning: "المعرفة أو المهارة التي يكتسبها المتدرب بعد التدريب.", example: "The learning outcomes were clearly defined.", translation: "تم تحديد مخرجات التعلم بوضوح." },
+            { id: 54, english: "Learning Path", arabic: "مسار التعلم", meaning: "سلسلة من الدورات أو الأنشطة التدريبية لتحقيق هدف معين.", example: "Employees follow a learning path for career growth.", translation: "يتبع الموظفون مسار تعلم للتطور الوظيفي." },
+            { id: 55, english: "Curriculum", arabic: "المنهج التدريبي", meaning: "مجموعة منظمة من الموضوعات والمواد التدريبية.", example: "The curriculum includes leadership and communication.", translation: "يتضمن المنهج التدريبي القيادة والتواصل." },
+            { id: 56, english: "Training Module", arabic: "وحدة تدريبية", meaning: "جزء مستقل من برنامج تدريبي أكبر.", example: "The safety module is mandatory.", translation: "وحدة السلامة إلزامية." },
+            { id: 57, english: "Training Program", arabic: "برنامج تدريبي", meaning: "مجموعة من الجلسات والأنشطة التدريبية المنظمة.", example: "The hotel launched a new training program.", translation: "أطلق الفندق برنامجًا تدريبيًا جديدًا." },
+            { id: 58, english: "Training Course", arabic: "دورة تدريبية", meaning: "برنامج تدريبي يركز على موضوع أو مهارة محددة.", example: "She attended a customer service course.", translation: "حضرت دورة تدريبية في خدمة العملاء." },
+            { id: 59, english: "Competency Framework", arabic: "إطار الكفاءات", meaning: "نظام يحدد الكفاءات المطلوبة لكل وظيفة.", example: "The competency framework guides employee development.", translation: "يوجه إطار الكفاءات عملية تطوير الموظفين." },
+            { id: 60, english: "Soft Skills", arabic: "المهارات الشخصية", meaning: "المهارات السلوكية والاجتماعية المتعلقة بالتعامل مع الآخرين.", example: "Soft skills are essential in hospitality.", translation: "المهارات الشخصية ضرورية في الضيافة." },
+            { id: 61, english: "Hard Skills", arabic: "المهارات الفنية", meaning: "المهارات التقنية أو التخصصية المرتبطة بوظيفة معينة.", example: "Hard skills can be learned through practice.", translation: "يمكن تعلم المهارات الفنية من خلال الممارسة." },
+            { id: 62, english: "Communication Skills", arabic: "مهارات التواصل", meaning: "القدرة على نقل المعلومات بوضوح وفعالية.", example: "Communication skills improve guest satisfaction.", translation: "تحسن مهارات التواصل رضا النزلاء." },
+            { id: 63, english: "Leadership Skills", arabic: "مهارات القيادة", meaning: "القدرة على توجيه وتحفيز الآخرين لتحقيق الأهداف.", example: "Leadership skills are important for supervisors.", translation: "مهارات القيادة مهمة للمشرفين." },
+            { id: 64, english: "Problem Solving", arabic: "حل المشكلات", meaning: "القدرة على تحديد المشكلات وإيجاد الحلول المناسبة لها.", example: "Problem-solving is a valuable workplace skill.", translation: "حل المشكلات مهارة قيمة في بيئة العمل." },
+            { id: 65, english: "Decision Making", arabic: "اتخاذ القرار", meaning: "عملية اختيار أفضل إجراء من بين عدة خيارات.", example: "Training supports better decision making.", translation: "يدعم التدريب اتخاذ قرارات أفضل." },
+            { id: 66, english: "Time Management", arabic: "إدارة الوقت", meaning: "تنظيم الوقت واستخدامه بكفاءة لإنجاز المهام.", example: "Time management increases productivity.", translation: "تزيد إدارة الوقت من الإنتاجية." },
+            { id: 67, english: "Teamwork", arabic: "العمل الجماعي", meaning: "التعاون بين الأفراد لتحقيق هدف مشترك.", example: "Teamwork is crucial in hotel operations.", translation: "العمل الجماعي ضروري في عمليات الفندق." },
+            { id: 68, english: "Facilitation", arabic: "تيسير التدريب", meaning: "إدارة الأنشطة والمناقشات لمساعدة المشاركين على التعلم.", example: "Good facilitation encourages participation.", translation: "يساعد التيسير الجيد على تشجيع المشاركة." },
+            { id: 69, english: "Facilitator", arabic: "ميسر التدريب", meaning: "الشخص الذي يدير عملية التعلم ويوجه المشاركين.", example: "The facilitator encouraged open discussion.", translation: "شجع ميسر التدريب النقاش المفتوح." },
+            { id: 70, english: "Knowledge Transfer", arabic: "نقل المعرفة", meaning: "عملية مشاركة الخبرات والمعلومات بين الأفراد.", example: "Knowledge transfer improves team performance.", translation: "يحسن نقل المعرفة أداء الفريق." },
+            { id: 71, english: "Best Practice", arabic: "أفضل الممارسات", meaning: "الأساليب المثبتة التي تحقق أفضل النتائج.", example: "The trainer shared industry best practices.", translation: "شارك المدرب أفضل الممارسات في القطاع." },
+            { id: 72, english: "Continuous Learning", arabic: "التعلم المستمر", meaning: "الاستمرار في اكتساب المعرفة والمهارات طوال الحياة المهنية.", example: "Continuous learning supports career growth.", translation: "يدعم التعلم المستمر التطور المهني." },
+            { id: 73, english: "Career Development", arabic: "التطوير الوظيفي", meaning: "الأنشطة التي تساعد الموظف على التقدم في مسيرته المهنية.", example: "The company invests in career development.", translation: "تستثمر الشركة في التطوير الوظيفي." },
+            { id: 74, english: "Succession Planning", arabic: "تخطيط التعاقب الوظيفي", meaning: "إعداد موظفين لتولي المناصب الرئيسية مستقبلًا.", example: "Succession planning ensures business continuity.", translation: "يضمن تخطيط التعاقب الوظيفي استمرارية العمل." },
+            { id: 75, english: "Talent Development", arabic: "تطوير المواهب", meaning: "تنمية قدرات الموظفين ذوي الإمكانات العالية.", example: "The hotel focuses on talent development.", translation: "يركز الفندق على تطوير المواهب." },
+            { id: 76, english: "Talent Management", arabic: "إدارة المواهب", meaning: "استقطاب وتطوير والاحتفاظ بالموظفين المتميزين.", example: "Talent management is a strategic priority.", translation: "تعد إدارة المواهب أولوية استراتيجية." },
+            { id: 77, english: "Employee Engagement", arabic: "ارتباط الموظفين بالعمل", meaning: "مدى حماس الموظفين والتزامهم تجاه عملهم.", example: "Training increases employee engagement.", translation: "يزيد التدريب من ارتباط الموظفين بالعمل." },
+            { id: 78, english: "Employee Retention", arabic: "الاحتفاظ بالموظفين", meaning: "قدرة المؤسسة على تقليل معدل دوران الموظفين.", example: "Development opportunities improve retention.", translation: "تحسن فرص التطوير الاحتفاظ بالموظفين." },
+            { id: 79, english: "Learning Culture", arabic: "ثقافة التعلم", meaning: "بيئة تشجع التعلم والتطوير المستمر.", example: "The company promotes a strong learning culture.", translation: "تعزز الشركة ثقافة تعلم قوية." },
+            { id: 80, english: "Return on Training Investment", arabic: "العائد على الاستثمار في التدريب", meaning: "قياس الفائدة الناتجة عن التدريب مقارنة بتكلفته.", example: "Management reviewed the ROTI report.", translation: "راجعت الإدارة تقرير العائد على الاستثمار في التدريب." },
+            { id: 81, english: "Kirkpatrick Model", arabic: "نموذج كيركباتريك", meaning: "نموذج يستخدم لتقييم فعالية التدريب من أربعة مستويات.", example: "The training was evaluated using the Kirkpatrick Model.", translation: "تم تقييم التدريب باستخدام نموذج كيركباتريك." },
+            { id: 82, english: "Learning Assessment", arabic: "تقييم التعلم", meaning: "قياس مدى استيعاب المتدربين للمحتوى التدريبي.", example: "The learning assessment showed positive results.", translation: "أظهر تقييم التعلم نتائج إيجابية." },
+            { id: 83, english: "Certification Program", arabic: "برنامج اعتماد", meaning: "برنامج تدريبي يمنح شهادة رسمية عند إكماله.", example: "The certification program lasts three months.", translation: "يستمر برنامج الاعتماد لمدة ثلاثة أشهر." },
+            { id: 84, english: "Professional Development", arabic: "التطوير المهني", meaning: "تحسين مهارات ومعارف الموظف المتعلقة بمهنته.", example: "Professional development is encouraged.", translation: "يتم تشجيع التطوير المهني." },
+            { id: 85, english: "Learning Experience", arabic: "تجربة التعلم", meaning: "الانطباع والتفاعل الذي يمر به المتدرب أثناء التعلم.", example: "The course provided a positive learning experience.", translation: "قدمت الدورة تجربة تعلم إيجابية." },
+            { id: 86, english: "Training Budget", arabic: "ميزانية التدريب", meaning: "المبلغ المالي المخصص للأنشطة التدريبية.", example: "The training budget was approved.", translation: "تمت الموافقة على ميزانية التدريب." },
+            { id: 87, english: "Training Coordinator", arabic: "منسق التدريب", meaning: "الشخص المسؤول عن تنظيم ومتابعة الأنشطة التدريبية.", example: "The training coordinator arranged the schedule.", translation: "قام منسق التدريب بتنظيم الجدول." },
+            { id: 88, english: "Upskilling", arabic: "رفع المهارات", meaning: "تطوير مهارات الموظف الحالية ليصبح أكثر كفاءة.", example: "Upskilling prepares employees for future challenges.", translation: "يساعد رفع المهارات الموظفين على مواجهة التحديات المستقبلية." },
+            { id: 89, english: "Reskilling", arabic: "إعادة التأهيل المهاري", meaning: "تعليم الموظف مهارات جديدة للانتقال إلى مهام أو وظائف مختلفة.", example: "Reskilling supports workforce transformation.", translation: "تدعم إعادة التأهيل المهاري تحول القوى العاملة." }
+        ];
+
+        // ============================================
+        //  المصطلحات - قسم الاستقبال (87 مصطلح)
+        // ============================================
+        const frontOfficeWords = [
+            { id: 1, english: "Reservation", arabic: "الحجز", meaning: "عملية حجز غرفة أو خدمة للضيف قبل وصوله إلى الفندق.", example: "The guest made a reservation for three nights.", translation: "قام النزيل بحجز غرفة لمدة ثلاث ليالٍ." },
+            { id: 2, english: "Booking", arabic: "الحجز", meaning: "تأكيد طلب الإقامة أو الخدمة الفندقية للضيف.", example: "Your booking has been confirmed.", translation: "تم تأكيد حجزك." },
+            { id: 3, english: "Guest", arabic: "النزيل", meaning: "الشخص الذي يقيم في الفندق أو يستخدم خدماته.", example: "Every guest should receive a warm welcome.", translation: "يجب أن يحظى كل نزيل بترحيب حار." },
+            { id: 4, english: "Check-in", arabic: "تسجيل الوصول", meaning: "إجراء دخول النزيل إلى الفندق واستلام غرفته.", example: "Check-in starts at 2:00 PM.", translation: "يبدأ تسجيل الوصول الساعة الثانية ظهرًا." },
+            { id: 5, english: "Check-out", arabic: "تسجيل المغادرة", meaning: "إجراء إنهاء إقامة النزيل وتسوية الحساب قبل المغادرة.", example: "Check-out is at noon.", translation: "تسجيل المغادرة يكون عند الظهر." },
+            { id: 6, english: "Reception", arabic: "الاستقبال", meaning: "القسم المسؤول عن استقبال النزلاء وخدمتهم أثناء الإقامة.", example: "Please contact reception for assistance.", translation: "يرجى التواصل مع الاستقبال للمساعدة." },
+            { id: 7, english: "Receptionist", arabic: "موظف الاستقبال", meaning: "الموظف المسؤول عن استقبال النزلاء وإجراءات الوصول والمغادرة.", example: "The receptionist helped the guest quickly.", translation: "ساعد موظف الاستقبال النزيل بسرعة." },
+            { id: 8, english: "Front Desk", arabic: "مكتب الاستقبال", meaning: "المكان الذي يتم من خلاله التعامل المباشر مع النزلاء.", example: "The guest collected the key from the front desk.", translation: "استلم النزيل المفتاح من مكتب الاستقبال." },
+            { id: 9, english: "Room Key", arabic: "مفتاح الغرفة", meaning: "المفتاح أو البطاقة المستخدمة للدخول إلى الغرفة.", example: "The room key stopped working.", translation: "توقف مفتاح الغرفة عن العمل." },
+            { id: 10, english: "Key Card", arabic: "بطاقة الغرفة", meaning: "بطاقة إلكترونية تُستخدم لفتح باب الغرفة.", example: "Please keep your key card with you.", translation: "يرجى الاحتفاظ ببطاقة الغرفة معك." },
+            { id: 11, english: "Room Number", arabic: "رقم الغرفة", meaning: "الرقم المخصص لكل غرفة داخل الفندق.", example: "What is your room number?", translation: "ما هو رقم غرفتك؟" },
+            { id: 12, english: "Occupancy", arabic: "نسبة الإشغال", meaning: "عدد الغرف المشغولة مقارنة بإجمالي الغرف المتاحة.", example: "The hotel occupancy reached 95%.", translation: "وصلت نسبة إشغال الفندق إلى 95%." },
+            { id: 13, english: "Vacancy", arabic: "غرفة شاغرة", meaning: "غرفة متاحة للحجز أو الإقامة.", example: "We have no vacancy tonight.", translation: "لا توجد غرف شاغرة الليلة." },
+            { id: 14, english: "Availability", arabic: "التوافر", meaning: "مدى توفر الغرف أو الخدمات للحجز.", example: "Please check room availability.", translation: "يرجى التحقق من توافر الغرف." },
+            { id: 15, english: "Walk-in Guest", arabic: "نزيل بدون حجز مسبق", meaning: "ضيف يصل إلى الفندق دون إجراء حجز مسبق.", example: "We received several walk-in guests today.", translation: "استقبلنا عدة نزلاء بدون حجز مسبق اليوم." },
+            { id: 16, english: "Arrival", arabic: "وصول", meaning: "وصول النزيل إلى الفندق لبدء إقامته.", example: "The guest arrival is expected at 6 PM.", translation: "من المتوقع وصول النزيل الساعة السادسة مساءً." },
+            { id: 17, english: "Departure", arabic: "مغادرة", meaning: "مغادرة النزيل للفندق بعد انتهاء إقامته.", example: "The departure was scheduled for today.", translation: "كانت المغادرة مقررة اليوم." },
+            { id: 18, english: "Early Check-in", arabic: "تسجيل وصول مبكر", meaning: "السماح للنزيل باستلام غرفته قبل الموعد الرسمي.", example: "The guest requested an early check-in.", translation: "طلب النزيل تسجيل وصول مبكر." },
+            { id: 19, english: "Late Check-out", arabic: "تسجيل مغادرة متأخر", meaning: "السماح للنزيل بالبقاء في الغرفة بعد موعد المغادرة الرسمي.", example: "The hotel approved a late check-out.", translation: "وافق الفندق على تسجيل مغادرة متأخر." },
+            { id: 20, english: "Guest Profile", arabic: "ملف النزيل", meaning: "سجل يحتوي على بيانات وتفضيلات النزيل.", example: "The guest profile shows previous stays.", translation: "يوضح ملف النزيل إقاماته السابقة." },
+            { id: 21, english: "VIP Guest", arabic: "نزيل مهم", meaning: "ضيف يتمتع بمعاملة وخدمات خاصة.", example: "A VIP guest will arrive tomorrow.", translation: "سيصل نزيل مهم غدًا." },
+            { id: 22, english: "Repeat Guest", arabic: "نزيل متكرر", meaning: "ضيف سبق له الإقامة في الفندق أكثر من مرة.", example: "The repeat guest received special amenities.", translation: "حصل النزيل المتكرر على تجهيزات خاصة." },
+            { id: 23, english: "Group Booking", arabic: "حجز جماعي", meaning: "حجز يتم لمجموعة من الأشخاص في نفس الوقت.", example: "The hotel received a group booking.", translation: "تلقى الفندق حجزًا جماعيًا." },
+            { id: 24, english: "Confirmation Number", arabic: "رقم التأكيد", meaning: "رقم مرجعي يؤكد عملية الحجز.", example: "Please provide your confirmation number.", translation: "يرجى تقديم رقم التأكيد الخاص بك." },
+            { id: 25, english: "Cancellation", arabic: "إلغاء الحجز", meaning: "إلغاء الحجز قبل موعد الوصول.", example: "The guest requested a cancellation.", translation: "طلب النزيل إلغاء الحجز." },
+            { id: 26, english: "No-show", arabic: "عدم الحضور", meaning: "حالة عدم وصول النزيل رغم وجود حجز مؤكد.", example: "The reservation became a no-show.", translation: "تم تسجيل الحجز كحالة عدم حضور." },
+            { id: 27, english: "Upgrade", arabic: "ترقية الغرفة", meaning: "نقل النزيل إلى غرفة أفضل من المحجوزة.", example: "The guest received a free upgrade.", translation: "حصل النزيل على ترقية مجانية للغرفة." },
+            { id: 28, english: "Downgrade", arabic: "تخفيض مستوى الغرفة", meaning: "نقل النزيل إلى غرفة بمستوى أقل من المحجوزة.", example: "The downgrade was due to maintenance issues.", translation: "تم تخفيض مستوى الغرفة بسبب أعمال الصيانة." },
+            { id: 29, english: "Room Type", arabic: "نوع الغرفة", meaning: "التصنيف الخاص بالغرفة مثل Standard أو Deluxe أو Suite.", example: "What room type did you book?", translation: "ما نوع الغرفة الذي قمت بحجزه؟" },
+            { id: 30, english: "Suite", arabic: "جناح", meaning: "غرفة فندقية كبيرة تضم مساحة إضافية أو أكثر من غرفة.", example: "The family stayed in a suite.", translation: "أقامت العائلة في جناح." },
+            { id: 31, english: "Concierge", arabic: "الكونسيرج", meaning: "موظف يساعد النزلاء في ترتيب الخدمات والحجوزات وتقديم المعلومات.", example: "The concierge arranged a city tour for the guest.", translation: "قام موظف الكونسيرج بترتيب جولة في المدينة للنزيل." },
+            { id: 32, english: "Bellman", arabic: "حامل الأمتعة", meaning: "الموظف المسؤول عن نقل أمتعة النزلاء من وإلى الغرف.", example: "The bellman delivered the luggage to the room.", translation: "قام حامل الأمتعة بتوصيل الحقائب إلى الغرفة." },
+            { id: 33, english: "Bell Desk", arabic: "مكتب الأمتعة", meaning: "المكتب المسؤول عن خدمات الأمتعة داخل الفندق.", example: "The luggage was left at the bell desk.", translation: "تم ترك الأمتعة في مكتب الأمتعة." },
+            { id: 34, english: "Luggage", arabic: "الأمتعة", meaning: "الحقائب والممتلكات الشخصية الخاصة بالنزيل.", example: "The luggage arrived before the guest.", translation: "وصلت الأمتعة قبل النزيل." },
+            { id: 35, english: "Luggage Tag", arabic: "بطاقة الأمتعة", meaning: "بطاقة تُثبت على الأمتعة لتسهيل التعرف عليها.", example: "Please keep your luggage tag.", translation: "يرجى الاحتفاظ ببطاقة الأمتعة الخاصة بك." },
+            { id: 36, english: "Wake-up Call", arabic: "مكالمة إيقاظ", meaning: "خدمة يقدمها الفندق لإيقاظ النزيل في وقت محدد.", example: "I would like a wake-up call at 6 AM.", translation: "أود الحصول على مكالمة إيقاظ الساعة السادسة صباحًا." },
+            { id: 37, english: "Guest Request", arabic: "طلب النزيل", meaning: "أي طلب إضافي يقدمه النزيل أثناء إقامته.", example: "The guest requested extra pillows.", translation: "طلب النزيل وسائد إضافية." },
+            { id: 38, english: "Guest Complaint", arabic: "شكوى النزيل", meaning: "ملاحظة أو اعتراض يقدمه النزيل بشأن الخدمة أو الإقامة.", example: "The guest complaint was resolved quickly.", translation: "تم حل شكوى النزيل بسرعة." },
+            { id: 39, english: "Guest Satisfaction", arabic: "رضا النزيل", meaning: "مدى رضا النزيل عن الخدمات المقدمة.", example: "Guest satisfaction is our priority.", translation: "رضا النزيل هو أولويتنا." },
+            { id: 40, english: "Guest History", arabic: "سجل النزيل", meaning: "معلومات عن الإقامات السابقة وتفضيلات النزيل.", example: "The receptionist checked the guest history.", translation: "قام موظف الاستقبال بمراجعة سجل النزيل." },
+            { id: 41, english: "Room Status", arabic: "حالة الغرفة", meaning: "الوضع الحالي للغرفة داخل النظام الفندقي.", example: "Please verify the room status.", translation: "يرجى التحقق من حالة الغرفة." },
+            { id: 42, english: "Vacant Clean (VC)", arabic: "غرفة شاغرة ونظيفة", meaning: "غرفة جاهزة لاستقبال النزلاء.", example: "The room is marked as Vacant Clean.", translation: "تم تسجيل الغرفة كغرفة شاغرة ونظيفة." },
+            { id: 43, english: "Occupied Clean (OC)", arabic: "غرفة مشغولة ونظيفة", meaning: "غرفة يقيم بها نزيل وتم تنظيفها.", example: "The room status is Occupied Clean.", translation: "حالة الغرفة مشغولة ونظيفة." },
+            { id: 44, english: "Out of Order (OOO)", arabic: "خارج الخدمة", meaning: "غرفة غير متاحة للبيع بسبب مشكلة فنية أو صيانة.", example: "Room 520 is out of order.", translation: "الغرفة 520 خارج الخدمة." },
+            { id: 45, english: "Out of Service (OOS)", arabic: "خارج الاستخدام", meaning: "غرفة غير متاحة مؤقتًا لأسباب تشغيلية.", example: "The room is temporarily out of service.", translation: "الغرفة خارج الاستخدام مؤقتًا." },
+            { id: 46, english: "Room Assignment", arabic: "تخصيص الغرفة", meaning: "عملية تحديد الغرفة المناسبة للنزيل.", example: "The room assignment was completed.", translation: "تم الانتهاء من تخصيص الغرفة." },
+            { id: 47, english: "Room Move", arabic: "نقل الغرفة", meaning: "نقل النزيل من غرفة إلى أخرى أثناء الإقامة.", example: "The guest requested a room move.", translation: "طلب النزيل نقل الغرفة." },
+            { id: 48, english: "Room Change", arabic: "تغيير الغرفة", meaning: "استبدال غرفة النزيل بغرفة أخرى.", example: "The room change was approved.", translation: "تمت الموافقة على تغيير الغرفة." },
+            { id: 49, english: "Folio", arabic: "حساب النزيل", meaning: "السجل المالي الذي يحتوي على جميع رسوم النزيل.", example: "The folio was reviewed before check-out.", translation: "تمت مراجعة حساب النزيل قبل المغادرة." },
+            { id: 50, english: "Bill", arabic: "الفاتورة", meaning: "المستند الذي يوضح المبالغ المستحقة على النزيل.", example: "The guest requested a copy of the bill.", translation: "طلب النزيل نسخة من الفاتورة." },
+            { id: 51, english: "Invoice", arabic: "فاتورة ضريبية", meaning: "وثيقة مالية رسمية توضح تفاصيل المدفوعات.", example: "An invoice was issued to the company.", translation: "تم إصدار فاتورة للشركة." },
+            { id: 52, english: "Payment", arabic: "الدفع", meaning: "عملية سداد المبالغ المستحقة للفندق.", example: "Payment can be made by card.", translation: "يمكن إجراء الدفع بواسطة البطاقة." },
+            { id: 53, english: "Cash Payment", arabic: "دفع نقدي", meaning: "سداد المبلغ باستخدام النقود.", example: "The guest made a cash payment.", translation: "قام النزيل بالدفع نقدًا." },
+            { id: 54, english: "Credit Card", arabic: "بطاقة ائتمانية", meaning: "بطاقة مصرفية تستخدم لسداد المدفوعات.", example: "The credit card was authorized.", translation: "تم اعتماد البطاقة الائتمانية." },
+            { id: 55, english: "Deposit", arabic: "عربون", meaning: "مبلغ يُدفع مسبقًا لضمان الحجز أو تغطية المصروفات.", example: "A deposit is required upon arrival.", translation: "يُطلب دفع عربون عند الوصول." },
+            { id: 56, english: "Refund", arabic: "استرداد المبلغ", meaning: "إعادة الأموال للنزيل بعد إلغاء أو تعديل الخدمة.", example: "The refund was processed successfully.", translation: "تمت معالجة استرداد المبلغ بنجاح." },
+            { id: 57, english: "Cashier", arabic: "أمين الصندوق", meaning: "الموظف المسؤول عن تحصيل المدفوعات وإصدار الفواتير.", example: "The cashier completed the transaction.", translation: "أكمل أمين الصندوق عملية الدفع." },
+            { id: 58, english: "Shift", arabic: "وردية", meaning: "فترة عمل محددة لموظفي الاستقبال.", example: "The morning shift starts at 7 AM.", translation: "تبدأ الوردية الصباحية الساعة السابعة صباحًا." },
+            { id: 59, english: "Morning Shift", arabic: "الوردية الصباحية", meaning: "وردية العمل التي تبدأ صباحًا.", example: "He works the morning shift.", translation: "يعمل في الوردية الصباحية." },
+            { id: 60, english: "Night Audit", arabic: "المراجعة الليلية", meaning: "عملية تدقيق الحسابات اليومية للفندق خلال الليل.", example: "The night audit was completed successfully.", translation: "تم الانتهاء من المراجعة الليلية بنجاح." },
+            { id: 61, english: "Night Auditor", arabic: "مدقق الحسابات الليلي", meaning: "الموظف المسؤول عن المراجعة الليلية وإغلاق اليوم المالي.", example: "The night auditor prepared the daily report.", translation: "أعد مدقق الحسابات الليلي التقرير اليومي." },
+            { id: 62, english: "Express Check-out", arabic: "مغادرة سريعة", meaning: "خدمة تسمح للنزيل بالمغادرة دون إجراءات مطولة.", example: "The guest used express check-out.", translation: "استخدم النزيل خدمة المغادرة السريعة." },
+            { id: 63, english: "Express Check-in", arabic: "وصول سريع", meaning: "خدمة تسرع إجراءات تسجيل الوصول.", example: "VIP guests receive express check-in.", translation: "يحصل النزلاء المهمون على خدمة الوصول السريع." },
+            { id: 64, english: "Overbooking", arabic: "زيادة الحجوزات", meaning: "قبول حجوزات أكثر من عدد الغرف المتاحة.", example: "The hotel experienced overbooking.", translation: "واجه الفندق حالة زيادة في الحجوزات." },
+            { id: 65, english: "Underbooking", arabic: "انخفاض الحجوزات", meaning: "وجود عدد حجوزات أقل من المتوقع.", example: "The hotel faced underbooking this week.", translation: "واجه الفندق انخفاضًا في الحجوزات هذا الأسبوع." },
+            { id: 66, english: "Waiting List", arabic: "قائمة الانتظار", meaning: "قائمة بالأشخاص الذين ينتظرون توفر غرف للحجز.", example: "The guest was added to the waiting list.", translation: "تمت إضافة النزيل إلى قائمة الانتظار." },
+            { id: 67, english: "Guaranteed Reservation", arabic: "حجز مضمون", meaning: "حجز يظل محفوظًا للنزيل حتى في حالة الوصول المتأخر.", example: "This is a guaranteed reservation.", translation: "هذا حجز مضمون." },
+            { id: 68, english: "Non-Guaranteed Reservation", arabic: "حجز غير مضمون", meaning: "حجز يمكن إلغاؤه إذا لم يصل النزيل في الوقت المحدد.", example: "The booking is non-guaranteed.", translation: "الحجز غير مضمون." },
+            { id: 69, english: "Confirmation Letter", arabic: "خطاب تأكيد الحجز", meaning: "وثيقة تؤكد تفاصيل الحجز للنزيل.", example: "The confirmation letter was emailed.", translation: "تم إرسال خطاب تأكيد الحجز عبر البريد الإلكتروني." },
+            { id: 70, english: "Property Management System (PMS)", arabic: "نظام إدارة الفندق", meaning: "نظام إلكتروني يستخدم لإدارة الحجوزات والغرف وحسابات النزلاء.", example: "The reservation was entered into the PMS.", translation: "تم إدخال الحجز في نظام إدارة الفندق." },
+            { id: 71, english: "Guest Ledger", arabic: "دفتر حسابات النزلاء", meaning: "سجل مالي يحتوي على جميع حسابات النزلاء المقيمين.", example: "The charge was posted to the guest ledger.", translation: "تم تسجيل الرسوم في دفتر حسابات النزلاء." },
+            { id: 72, english: "City Ledger", arabic: "دفتر الحسابات المدينة", meaning: "سجل للحسابات غير المسددة الخاصة بالشركات أو الوكالات.", example: "The invoice was transferred to the city ledger.", translation: "تم تحويل الفاتورة إلى دفتر الحسابات المدينة." },
+            { id: 73, english: "House Count", arabic: "عدد النزلاء المقيمين", meaning: "إجمالي عدد النزلاء الموجودين في الفندق حاليًا.", example: "Today's house count is 1,250 guests.", translation: "عدد النزلاء المقيمين اليوم هو 1250 نزيلًا." },
+            { id: 74, english: "Rack Rate", arabic: "السعر المعلن", meaning: "السعر الرسمي للغرفة قبل الخصومات أو الاتفاقيات.", example: "The rack rate for this room is $150.", translation: "السعر المعلن لهذه الغرفة هو 150 دولارًا." },
+            { id: 75, english: "Room Rate", arabic: "سعر الغرفة", meaning: "المبلغ الذي يدفعه النزيل مقابل الإقامة في الغرفة.", example: "The room rate includes breakfast.", translation: "يشمل سعر الغرفة وجبة الإفطار." },
+            { id: 76, english: "Package", arabic: "باقة", meaning: "عرض يتضمن الإقامة مع خدمات إضافية محددة.", example: "The package includes airport transfer.", translation: "تشمل الباقة خدمة النقل من المطار." },
+            { id: 77, english: "All-Inclusive", arabic: "شامل كليًا", meaning: "نظام إقامة يشمل الإقامة والطعام والمشروبات والخدمات المحددة.", example: "The guest booked an all-inclusive package.", translation: "حجز النزيل باقة شاملة كليًا." },
+            { id: 78, english: "Half Board", arabic: "نصف إقامة", meaning: "نظام إقامة يشمل الإفطار ووجبة رئيسية واحدة.", example: "They booked a half-board stay.", translation: "حجزوا إقامة بنظام نصف إقامة." },
+            { id: 79, english: "Full Board", arabic: "إقامة كاملة", meaning: "نظام إقامة يشمل ثلاث وجبات يوميًا.", example: "The group stayed on a full-board basis.", translation: "أقامت المجموعة بنظام الإقامة الكاملة." },
+            { id: 80, english: "Bed and Breakfast (BB)", arabic: "إقامة مع إفطار", meaning: "نظام إقامة يشمل الغرفة ووجبة الإفطار فقط.", example: "The reservation is on a BB basis.", translation: "الحجز بنظام الإقامة مع الإفطار." },
+            { id: 81, english: "FIT (Free Independent Traveler)", arabic: "نزيل فردي", meaning: "مسافر يحجز بشكل فردي وليس ضمن مجموعة.", example: "The hotel received many FIT bookings.", translation: "استقبل الفندق العديد من حجوزات النزلاء الأفراد." },
+            { id: 82, english: "Tour Operator", arabic: "منظم رحلات", meaning: "شركة تنظم وتبيع برامج ورحلات سياحية.", example: "The booking came from a tour operator.", translation: "جاء الحجز من منظم رحلات." },
+            { id: 83, english: "Travel Agency", arabic: "وكالة سفر", meaning: "شركة تتولى حجز الرحلات والفنادق للعملاء.", example: "The reservation was made through a travel agency.", translation: "تم إجراء الحجز عبر وكالة سفر." },
+            { id: 84, english: "Voucher", arabic: "قسيمة حجز", meaning: "مستند يثبت أحقية النزيل في الحصول على الخدمات المحجوزة.", example: "The guest presented a voucher at check-in.", translation: "قدم النزيل قسيمة الحجز عند تسجيل الوصول." },
+            { id: 85, english: "Do Not Disturb (DND)", arabic: "عدم الإزعاج", meaning: "إشارة يضعها النزيل لعدم دخول الموظفين إلى الغرفة.", example: "The room has a Do Not Disturb sign.", translation: "توجد علامة عدم الإزعاج على الغرفة." },
+            { id: 86, english: "Wake-up Service", arabic: "خدمة الإيقاظ", meaning: "خدمة يقدمها الفندق لتنبيه النزيل في وقت محدد.", example: "The guest requested wake-up service.", translation: "طلب النزيل خدمة الإيقاظ." },
+            { id: 87, english: "Guest Relation Officer (GRO)", arabic: "موظف علاقات النزلاء", meaning: "الموظف المسؤول عن متابعة رضا النزلاء وحل مشكلاتهم.", example: "The GRO followed up with the guest.", translation: "تابع موظف علاقات النزلاء حالة النزيل." }
+        ];
+
+        const sections = {
+            training: { name: "التدريب والتطوير", icon: "fa-graduation-cap", words: trainingWords },
+            frontoffice: { name: "الاستقبال (Front Office)", icon: "fa-hotel", words: frontOfficeWords }
+        };
+
+        let currentSection = "training";
+        let currentIndex = 0;
+        let showDetail = false;
+        let searchQuery = "";
+        let viewMode = "card";
+
+        function getFilteredWords() {
+            const words = sections[currentSection].words;
+            if (!searchQuery.trim()) return words;
+            const q = searchQuery.trim().toLowerCase();
+            return words.filter(w => w.english.toLowerCase().includes(q) || w.arabic.includes(q) || (w.meaning && w.meaning.toLowerCase().includes(q)));
+        }
+
+        function getCurrentItem() {
+            const filtered = getFilteredWords();
+            if (filtered.length === 0) return null;
+            if (currentIndex >= filtered.length) currentIndex = 0;
+            return filtered[currentIndex];
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function render() {
+            const app = document.getElementById("app");
+            const filtered = getFilteredWords();
+            const total = filtered.length;
+            const currentItem = getCurrentItem();
+            const section = sections[currentSection];
+
+            app.innerHTML = `
+                <div class="navbar">
+                    <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
+                    <div class="nav-links">
+                        <a href="index.html" class="home">🏠 الرئيسية</a>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="page-header">
+                        <h1>📚 مكتبة <span>المصطلحات المهنية</span></h1>
+                        <p>أكثر من 175 مصطلح تدريبي وفندقي - تعلم وتطور معنا</p>
+                    </div>
+
+                    <div class="section-tabs">
+                        ${Object.entries(sections).map(([key, sec]) => `
+                            <button class="section-tab ${currentSection === key ? 'active' : ''}" data-section="${key}">
+                                <i class="fas ${sec.icon}"></i>
+                                <span>${sec.name}</span>
+                                <span class="count">${sec.words.length}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div class="toolbar">
+                        <div class="stats">
+                            <div><i class="fas fa-book-open" style="color:#2b7a4b;"></i> <strong>${total}</strong> / ${section.words.length} مصطلح</div>
+                            <div><i class="fas fa-layer-group" style="color:#1e3a5f;"></i> ${section.name}</div>
+                        </div>
+                        <div class="view-toggle">
+                            <button id="viewCardBtn" class="${viewMode === 'card' ? 'active' : ''}"><i class="fas fa-id-card"></i> بطاقات</button>
+                            <button id="viewListBtn" class="${viewMode === 'list' ? 'active' : ''}"><i class="fas fa-list"></i> قائمة</button>
+                        </div>
+                    </div>
+
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ابحث بالعربية أو الإنجليزية أو المعنى...">
+                    </div>
+
+                    <div id="mainContent"></div>
+                </div>
+
+                <div class="footer">
+                    <p>© 2025 نظام إدارة التعليم والتطوير - جميع الحقوق محفوظة</p>
+                </div>
+            `;
+
+            const contentContainer = document.getElementById("mainContent");
+            if (viewMode === "card" && currentItem) {
+                renderCardView(contentContainer, currentItem, total);
+            } else if (viewMode === "list") {
+                renderListView(contentContainer, filtered);
+            } else if (!currentItem && filtered.length === 0) {
+                contentContainer.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><p>لا توجد نتائج مطابقة لـ "${escapeHtml(searchQuery)}"</p></div>`;
+            }
+
+            attachEvents();
+        }
+
+        function renderCardView(container, item, total) {
+            container.innerHTML = `
+                <div class="flip-card ${showDetail ? 'flipped' : ''}" id="flipCard">
+                    <div class="flip-card-inner">
+                        <div class="flip-front">
+                            <div class="card-nav">
+                                <span class="counter">${currentIndex + 1} / ${total}</span>
+                                <span style="font-size:0.8rem; color:#718096;">#${item.id}</span>
+                            </div>
+                            <div class="card-icon"><i class="fas ${sections[currentSection].icon}"></i></div>
+                            <div class="english-word">${escapeHtml(item.english)}</div>
+                            <div class="divider"></div>
+                            <div class="arabic-word">${escapeHtml(item.arabic)}</div>
+                            <button class="btn-flip" id="flipBtn"><i class="fas fa-sync-alt"></i> اقلب للاطلاع على المعنى</button>
+                        </div>
+                        <div class="flip-back">
+                            <div class="meaning-box">
+                                <div class="label"><i class="fas fa-lightbulb" style="color:#2b7a4b;"></i> المعنى:</div>
+                                <p>${escapeHtml(item.meaning)}</p>
+                            </div>
+                            <div class="example-box">
+                                <div class="label"><i class="fas fa-quote-right" style="color:#ed8936;"></i> مثال:</div>
+                                <div class="english-example">"${escapeHtml(item.example)}"</div>
+                                <div class="arabic-example">📖 ${escapeHtml(item.translation)}</div>
+                            </div>
+                            <button class="btn-flip-back" id="flipBackBtn"><i class="fas fa-undo-alt"></i> العودة للبطاقة</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="nav-btn" id="prevBtn"><i class="fas fa-chevron-right"></i> السابق</button>
+                    <button class="nav-btn primary" id="nextBtn">التالي <i class="fas fa-chevron-left"></i></button>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${((currentIndex + 1) / total) * 100}%;"></div>
+                </div>
+            `;
+        }
+
+        function renderListView(container, filteredArr) {
+            container.innerHTML = `
+                <div style="display: grid; gap: 0.5rem;">
+                    ${filteredArr.map((item, idx) => `
+                        <div class="list-item" data-index="${idx}">
+                            <div class="item-number">${item.id}</div>
+                            <div class="item-content">
+                                <div class="item-en">${escapeHtml(item.english)}</div>
+                                <div class="item-ar">${escapeHtml(item.arabic)}</div>
+                            </div>
+                            <i class="fas fa-chevron-left" style="color:#2b7a4b;"></i>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function attachEvents() {
+            document.querySelectorAll('.section-tab').forEach(btn => {
+                btn.onclick = () => {
+                    currentSection = btn.dataset.section;
+                    currentIndex = 0;
+                    showDetail = false;
+                    searchQuery = "";
+                    render();
+                };
+            });
+
+            const viewCard = document.getElementById("viewCardBtn");
+            const viewList = document.getElementById("viewListBtn");
+            if (viewCard) viewCard.onclick = () => { viewMode = "card"; showDetail = false; render(); };
+            if (viewList) viewList.onclick = () => { viewMode = "list"; render(); };
+
+            const searchInput = document.getElementById("searchInput");
+            if (searchInput) {
+                searchInput.oninput = (e) => {
+                    searchQuery = e.target.value;
+                    currentIndex = 0;
+                    showDetail = false;
+                    render();
+                };
+            }
+
+            const prevBtn = document.getElementById("prevBtn");
+            const nextBtn = document.getElementById("nextBtn");
+            if (prevBtn) prevBtn.onclick = () => {
+                const filtered = getFilteredWords();
+                if (filtered.length) currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
+                showDetail = false;
+                render();
+            };
+            if (nextBtn) nextBtn.onclick = () => {
+                const filtered = getFilteredWords();
+                if (filtered.length) currentIndex = (currentIndex + 1) % filtered.length;
+                showDetail = false;
+                render();
+            };
+
+            const flipBtn = document.getElementById("flipBtn");
+            const flipBackBtn = document.getElementById("flipBackBtn");
+            if (flipBtn) flipBtn.onclick = () => { showDetail = true; render(); };
+            if (flipBackBtn) flipBackBtn.onclick = () => { showDetail = false; render(); };
+
+            document.querySelectorAll('.list-item').forEach(el => {
+                el.onclick = () => {
+                    currentIndex = parseInt(el.dataset.index, 10);
+                    viewMode = "card";
+                    showDetail = false;
+                    render();
+                };
+            });
+        }
+
+        render();
+    </script>
+</body>
+</html>

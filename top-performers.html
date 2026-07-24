@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Analysis - Departments & Employees</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <!-- السكريبتات بنظام Modules -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; }
+
+        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo h2 { color: #1e3a5f; } .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
+
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+        .page-header { margin-bottom: 2rem; } .page-header h1 { color: #1e3a5f; font-size: 2rem; } .page-header p { color: #718096; }
+        .section-title { font-size: 1.5rem; color: #1e3a5f; margin: 3rem 0 1.5rem 0; border-left: 5px solid #2b7a4b; padding-left: 10px; }
+
+        .diagnostic-box { background: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; direction: rtl; }
+        .diagnostic-box.show { display: block; }
+        .diagnostic-box h3 { color: #d97706; margin-bottom: 1rem; font-size: 1.3rem; }
+        .diagnostic-box .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .diagnostic-box .stat-item { background: #fffbeb; padding: 1rem; border-radius: 1rem; text-align: center; }
+        .diagnostic-box .stat-value { font-size: 1.5rem; font-weight: bold; color: #d97706; }
+        .diagnostic-box .stat-label { font-size: 0.8rem; color: #92400e; margin-top: 0.3rem; font-weight: bold; }
+        .diagnostic-box .mismatch-list { max-height: 250px; overflow-y: auto; background: #fef2f2; padding: 1rem; border-radius: 1rem; font-size: 0.9rem; color: #991b1b; margin-top: 1rem; }
+        .diagnostic-box .mismatch-list div { padding: 0.5rem 0; border-bottom: 1px solid #fecaca; }
+
+        .filter-bar { background: white; border-radius: 1rem; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .filter-group { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .filter-group label { font-weight: bold; color: #1e3a5f; }
+        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.9rem; background: white; cursor: pointer; }
+
+        .charts-container { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem; }
+        .chart-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
+        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; }
+        .chart-wrapper { position: relative; width: 100%; }
+
+        .top-employees { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .top-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .top-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: 1.2rem; }
+        .top-list { display: flex; flex-direction: column; gap: 0.8rem; }
+        .top-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; transition: 0.3s; position: relative; overflow: hidden; }
+        .top-item::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 0 4px 4px 0; }
+        .top-item:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .top-item.color-0 { background: linear-gradient(135deg, #fffbeb, #fef3c7); } .top-item.color-1 { background: linear-gradient(135deg, #eff6ff, #dbeafe); } .top-item.color-2 { background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
+        .top-item.color-0::before { background: linear-gradient(180deg, #f59e0b, #ef4444); } .top-item.color-1::before { background: linear-gradient(180deg, #3b82f6, #8b5cf6); } .top-item.color-2::before { background: linear-gradient(180deg, #10b981, #06b6d4); }
+
+        .top-rank { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; color: white; flex-shrink: 0; box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        .top-rank.gold { background: linear-gradient(135deg, #f59e0b, #d97706); } .top-rank.silver { background: linear-gradient(135deg, #94a3b8, #64748b); } .top-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); }
+
+        .top-info { flex: 1; min-width: 0; }
+        .top-name { font-weight: 700; color: #1e3a5f; font-size: 1rem; margin-bottom: 5px; }
+        .top-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem; }
+        .top-meta span { padding: 0.2rem 0.6rem; border-radius: 1rem; font-weight: 500; }
+        .meta-id { background: #dbeafe; color: #1e40af; } .meta-dept { background: #ede9fe; color: #5b21b6; } .meta-pos { background: #d1fae5; color: #065f46; }
+
+        .top-stats { text-align: right; flex-shrink: 0; }
+        .top-value { font-weight: 800; font-size: 1.4rem; }
+        .top-value.hours { color: #10b981; } .top-value.sessions { color: #3b82f6; }
+        .top-label { font-size: 0.7rem; color: #718096; }
+
+        .excluded-note { background: #fef5e7; padding: 1rem; border-radius: 1rem; text-align: center; margin-top: 1rem; }
+        .excluded-note p { color: #718096; font-size: 0.85rem; }
+
+        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
+
+        @media (max-width: 768px) {
+            .top-employees { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">
+            ⏳ Fetching records from server...
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ========== إعدادات الرسوم البيانية ==========
+        const CHART_SIZES = {
+            main: { height: 450, titleFont: 1.5, dataFont: 20, axisFont: 18, padding: { top: 40, bottom: 20, left: 20, right: 30 } },
+            medium: { columns: 1, height: 370, titleFont: 1.2, dataFont: 18, axisFont: 18, padding: { top: 35, bottom: 18, left: 18, right: 28 }, gap: 1.5 }
+        };
+
+        // ========== المتغيرات وحالة النظام ==========
+        let offJobData = { courses: [], sessions: [], enrollments: [] };
+        let onJobData = { courses: [], sessions: [], enrollments: [] };
+        let allEmployees = [];
+        let activeEmployees = [];
+        let employeeDeptMap = new Map();
+
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth().toString(); // 'all' or string number
+        let currentType = "offjob";
+        
+        let chartInstances = {}; // لمنع الـ Memory Leaks
+        
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const EXCLUDED_COURSES = ['new hire induction', 'تعريف الموظفين الجدد', 'الهاسب'];
+
+        // ================= دوال مساعدة ذكية =================
+        function parseDateSafely(dateValue) {
+            if (!dateValue) return new Date(NaN);
+            if (typeof dateValue === 'number') return new Date((dateValue - 25569) * 86400000);
+            return new Date(dateValue);
+        }
+
+        function isExcludedCourse(courseName) {
+            if (!courseName) return false;
+            return EXCLUDED_COURSES.some(ex => courseName.toLowerCase().includes(ex));
+        }
+
+        function destroyChart(id) {
+            if (chartInstances[id]) {
+                chartInstances[id].destroy();
+                delete chartInstances[id];
+            }
+        }
+
+        // ================= جلب البيانات لمرة واحدة =================
+        async function loadAllDataFromServer() {
+            try {
+                const empData = await DB.getAll('employees');
+                allEmployees = empData || [];
+                activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
+
+                employeeDeptMap.clear();
+                allEmployees.forEach(emp => {
+                    if (emp.id && emp.department) employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
+                    else if (emp.id) employeeDeptMap.set(emp.id.toString(), 'Under Review');
+                });
+
+                offJobData.courses = await DB.getAll('offjob_courses') || [];
+                offJobData.sessions = await DB.getAll('offjob_sessions') || [];
+                offJobData.enrollments = await DB.getAll('offjob_enrollments') || [];
+
+                onJobData.courses = await DB.getAll('onjob_courses') || [];
+                onJobData.sessions = await DB.getAll('onjob_sessions') || [];
+                onJobData.enrollments = await DB.getAll('onjob_enrollments') || [];
+
+            } catch (error) {
+                console.error("❌ Failed to fetch data from Firestore:", error);
+            }
+        }
+
+        function findEmployee(empId, activeOnly = false) {
+            if (!empId) return null;
+            const idStr = empId.toString().trim();
+            const searchIn = activeOnly ? activeEmployees : allEmployees;
+            
+            let emp = searchIn.find(e => e.id?.toString().trim() === idStr);
+            if (emp) return emp;
+            return null;
+        }
+
+        // ================= دوال التحليل =================
+        function getActiveData() {
+            let courses = [], sessions = [], enrollments = [];
+            if (currentType === 'offjob') {
+                courses = [...offJobData.courses]; sessions = [...offJobData.sessions]; enrollments = [...offJobData.enrollments];
+            } else if (currentType === 'onjob') {
+                courses = [...onJobData.courses]; sessions = [...onJobData.sessions]; enrollments = [...onJobData.enrollments];
+            } else {
+                const allC = [...offJobData.courses, ...onJobData.courses];
+                const allS = [...offJobData.sessions, ...onJobData.sessions];
+                const uc = new Map(); allC.forEach(c => { if (c.course_code) uc.set(c.course_code.toString(), c); });
+                courses = Array.from(uc.values());
+                const us = new Map(); allS.forEach(s => { if (s.session_code) us.set(s.session_code.toString(), s); });
+                sessions = Array.from(us.values());
+                enrollments = [...offJobData.enrollments, ...onJobData.enrollments];
+            }
+            return { courses, sessions, enrollments };
+        }
+
+        function filterByMonth(items, dateField) {
+            return items.filter(item => {
+                if (!item[dateField]) return false;
+                const d = parseDateSafely(item[dateField]);
+                if (isNaN(d.getTime()) || d.getFullYear() !== currentYear) return false;
+                if (currentMonth !== 'all' && d.getMonth() !== parseInt(currentMonth)) return false;
+                return true;
+            });
+        }
+
+        function calculateHoursFromTime(startTime, endTime) {
+            if (!startTime || !endTime) return 0;
+            const startParts = startTime.toString().split(':');
+            const endParts = endTime.toString().split(':');
+            let startHour = parseInt(startParts[0]), startMinute = parseInt(startParts[1]) || 0;
+            let endHour = parseInt(endParts[0]), endMinute = parseInt(endParts[1]) || 0;
+            let diffHours = endHour - startHour;
+            let diffMinutes = endMinute - startMinute;
+            if (diffHours < 0) diffHours = 24 + diffHours;
+            return parseFloat((diffHours + (diffMinutes / 60)).toFixed(2));
+        }
+
+        function getSessionHours(session) {
+            if (session.start_time == null || session.end_time == null) return 0;
+            if (typeof session.start_time === "number" && typeof session.end_time === "number") {
+                let hours = (session.end_time - session.start_time) * 24;
+                return Number((hours < 0 ? hours + 24 : hours).toFixed(2));
+            }
+            return calculateHoursFromTime(session.start_time, session.end_time);
+        }
+
+        function excludeSpecialEmployees(empIds) {
+            const excludedLevels = ['HODs', 'GM', 'Director'];
+            const excludedPositions = ['General Manager', 'Hotel Manager', 'Department Head'];
+            return empIds.filter(id => {
+                const emp = findEmployee(id, true);
+                if (!emp) return false;
+                if (excludedLevels.includes(emp.level)) return false;
+                if (excludedPositions.some(p => emp.position?.includes(p))) return false;
+                return true;
+            });
+        }
+
+        function calculateDepartmentStats() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const filteredSessions = filterByMonth(sessions, 'session_date');
+            const deptMap = new Map();
+            
+            filteredSessions.forEach(session => {
+                const sc = session.session_code;
+                const attendees = enrollments.filter(e => e.session_code == sc && e.enrollment_status === 'Completed');
+                
+                attendees.forEach(a => {
+                    const empId = a.employee_id?.toString();
+                    const dept = employeeDeptMap.get(empId) || 'Not Assigned';
+                    
+                    if (!deptMap.has(dept)) deptMap.set(dept, { employees: new Set(), sessions: new Set(), hours: 0 });
+                    const ds = deptMap.get(dept);
+                    ds.employees.add(empId);
+                    ds.sessions.add(sc);
+                    ds.hours += getSessionHours(session);
+                });
+            });
+            
+            return Array.from(deptMap.keys()).map(d => ({
+                department: d, uniqueEmployees: deptMap.get(d).employees.size, sessions: deptMap.get(d).sessions.size, hours: parseFloat(deptMap.get(d).hours.toFixed(1))
+            })).sort((a, b) => b.uniqueEmployees - a.uniqueEmployees);
+        }
+
+        function calculateMonthlyStats() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const monthlyStats = new Map();
+            for (let i = 0; i < 12; i++) monthlyStats.set(i, { employees: new Set(), sessions: 0, hours: 0 });
+            
+            sessions.forEach(session => {
+                if (!session.session_date) return;
+                const d = parseDateSafely(session.session_date);
+                if (!isNaN(d.getTime()) && d.getFullYear() === currentYear) {
+                    const m = d.getMonth();
+                    const ms = monthlyStats.get(m);
+                    ms.sessions++;
+                    
+                    const attendees = enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
+                    attendees.forEach(a => { if (a.employee_id) ms.employees.add(a.employee_id.toString()); });
+                    
+                    const hrs = getSessionHours(session);
+                    ms.hours += hrs * attendees.length;
+                }
+            });
+            
+            return Array.from(monthlyStats.keys()).map(m => ({
+                month: m, monthName: monthNames[m], uniqueEmployees: monthlyStats.get(m).employees.size, sessions: monthlyStats.get(m).sessions, hours: parseFloat(monthlyStats.get(m).hours.toFixed(1))
+            }));
+        }
+
+        function calculateQuarterlyStats() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const quarters = [ { name: 'Q1 (Jan-Mar)', months: [0,1,2] }, { name: 'Q2 (Apr-Jun)', months: [3,4,5] }, { name: 'Q3 (Jul-Sep)', months: [6,7,8] }, { name: 'Q4 (Oct-Dec)', months: [9,10,11] } ];
+            
+            return quarters.map(q => {
+                const employees = new Set();
+                let sessionsCount = 0, hoursCount = 0;
+                
+                sessions.forEach(session => {
+                    if (!session.session_date) return;
+                    const d = parseDateSafely(session.session_date);
+                    if (!isNaN(d.getTime()) && d.getFullYear() === currentYear && q.months.includes(d.getMonth())) {
+                        sessionsCount++;
+                        const attendees = enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
+                        attendees.forEach(a => { if (a.employee_id) employees.add(a.employee_id.toString()); });
+                        const hrs = getSessionHours(session);
+                        hoursCount += hrs * attendees.length;
+                    }
+                });
+                
+                return { quarter: q.name, uniqueEmployees: employees.size, sessions: sessionsCount, hours: parseFloat(hoursCount.toFixed(1)) };
+            });
+        }
+
+        function calculateSemiAnnualStats() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const halves = [ { name: 'H1 (Jan-Jun)', months: [0,1,2,3,4,5] }, { name: 'H2 (Jul-Dec)', months: [6,7,8,9,10,11] } ];
+            
+            return halves.map(h => {
+                const employees = new Set();
+                let sessionsCount = 0, hoursCount = 0;
+                
+                sessions.forEach(session => {
+                    if (!session.session_date) return;
+                    const d = parseDateSafely(session.session_date);
+                    if (!isNaN(d.getTime()) && d.getFullYear() === currentYear && h.months.includes(d.getMonth())) {
+                        sessionsCount++;
+                        const attendees = enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
+                        attendees.forEach(a => { if (a.employee_id) employees.add(a.employee_id.toString()); });
+                        const hrs = getSessionHours(session);
+                        hoursCount += hrs * attendees.length;
+                    }
+                });
+                
+                return { half: h.name, uniqueEmployees: employees.size, sessions: sessionsCount, hours: parseFloat(hoursCount.toFixed(1)) };
+            });
+        }
+
+        function calculateTopEmployees() {
+            const { courses, sessions, enrollments } = getActiveData();
+            const filteredSessions = filterByMonth(sessions, 'session_date');
+            const sessionCodes = new Set(filteredSessions.map(s => s.session_code?.toString()));
+            
+            const empMap = new Map();
+            
+            enrollments.filter(e => sessionCodes.has(e.session_code?.toString()) && e.enrollment_status === 'Completed')
+                .forEach(enrollment => {
+                    const empId = enrollment.employee_id?.toString().trim();
+                    if (!empId) return;
+                    
+                    const emp = findEmployee(empId, true); // موظفين نشطين فقط للـ Top List
+                    if (!emp) return;
+                    
+                    const session = filteredSessions.find(s => s.session_code == enrollment.session_code);
+                    const course = courses.find(c => c.course_code == session?.course_code);
+                    
+                    if (!empMap.has(empId)) empMap.set(empId, { sessions: 0, hours: 0 });
+                    const stats = empMap.get(empId);
+                    stats.sessions++;
+                    
+                    if (!isExcludedCourse(course?.course_name)) {
+                        stats.hours += getSessionHours(session);
+                    }
+                });
+            
+            let result = Array.from(empMap.keys()).map(empId => {
+                const emp = findEmployee(empId, true);
+                return {
+                    id: empId, name: emp?.fullName || 'Unknown', department: emp?.department || '-', position: emp?.position || '-',
+                    sessions: empMap.get(empId).sessions, hours: parseFloat(empMap.get(empId).hours.toFixed(1))
+                };
+            });
+            
+            result = result.filter(e => excludeSpecialEmployees([e.id]).length > 0);
+            
+            return {
+                topBySessions: [...result].sort((a, b) => b.sessions - a.sessions).slice(0, 3),
+                topByHours: [...result].sort((a, b) => b.hours - a.hours).slice(0, 3)
+            };
+        }
+
+        // ================= أداة التشخيص المحسنة =================
+        function runDiagnostic() {
+            let emptyIdsCount = 0;
+            const { enrollments } = getActiveData();
+            const trainingIds = [];
+            
+            enrollments.filter(e => e.enrollment_status === 'Completed').forEach(e => {
+                const id = e.employee_id?.toString().trim();
+                if (!id) emptyIdsCount++;
+                else trainingIds.push(id);
+            });
+
+            const uniqueTrainingIds = [...new Set(trainingIds)];
+            const employeeMap = new Map();
+            allEmployees.forEach(e => { if (e.id) employeeMap.set(e.id.toString().trim(), e); });
+
+            const notFoundIds = [];
+            const noDeptIds = [];
+            const leftIds = [];
+
+            uniqueTrainingIds.forEach(id => {
+                if (!employeeMap.has(id)) {
+                    notFoundIds.push(id);
+                } else {
+                    const emp = employeeMap.get(id);
+                    if (emp.status === 'Left') leftIds.push(id);
+                    const dept = employeeDeptMap.get(id);
+                    if (!dept || dept === 'Under Review' || dept === 'Not Specified') noDeptIds.push(id);
+                }
+            });
+
+            return { 
+                totalEmployees: allEmployees.length, activeEmployees: activeEmployees.length, totalTrainingIds: uniqueTrainingIds.length, 
+                emptyIdsCount, notFoundCount: notFoundIds.length, notFoundIds, noDeptCount: noDeptIds.length, noDeptIds,
+                leftInTraining: leftIds.length, leftIds
+            };
+        }
+
+        window.showDiagnostic = () => {
+            const result = runDiagnostic();
+            const box = document.getElementById('diagnosticBox');
+            if (box) {
+                box.classList.toggle('show');
+                if (box.classList.contains('show')) {
+                    document.getElementById('diagTotalEmp').textContent = result.totalEmployees;
+                    document.getElementById('diagActiveEmp').textContent = result.activeEmployees;
+                    document.getElementById('diagLeftEmp').textContent = result.totalEmployees - result.activeEmployees;
+                    document.getElementById('diagTrainingIds').textContent = result.totalTrainingIds;
+                    document.getElementById('diagLeftInTraining').textContent = result.leftInTraining;
+                    document.getElementById('diagNotFound').textContent = result.notFoundCount;
+                    
+                    let errorHtml = '';
+                    if (result.emptyIdsCount > 0) errorHtml += `<h4 style="color:#e53e3e; margin-bottom:0.8rem; font-size:1.1rem;">⚠️ يوجد عدد (${result.emptyIdsCount}) تسجيلات بدون كود موظف نهائياً!</h4><hr style="margin:1.5rem 0; border-color:#fecaca;">`;
+                    
+                    if (result.leftInTraining > 0) {
+                        errorHtml += `<div style="color:#d97706; font-weight:bold; margin-bottom:0.8rem; font-size:1.1rem;">🚪 موظفين مستقيلين حضروا تدريبات (يتم استبعادهم من قائمة الأفضل، ولكن تحتسب أقسامهم):</div>`;
+                        errorHtml += result.leftIds.slice(0, 15).map(id => {
+                            const emp = findEmployee(id, false);
+                            return `<div style="background:white; padding:0.5rem; border-radius:0.5rem; margin-bottom:0.3rem;">🆔 كود: <strong>${id}</strong> &nbsp;|&nbsp; 👤 الاسم: ${emp?.fullName || 'بدون اسم'} | 🏢 ${emp?.department || 'N/A'}</div>`;
+                        }).join('');
+                        errorHtml += `<hr style="margin:1.5rem 0; border-color:#fecaca;">`;
+                    }
+                    
+                    if (result.notFoundIds.length > 0) {
+                        errorHtml += `<h4 style="color:#c53030; margin-bottom:0.8rem; font-size:1.1rem;">❌ موظفين مسجلين بالتدريب ولكن كودهم غير موجود في قاعدة بيانات الموظفين:</h4>`;
+                        errorHtml += result.notFoundIds.map(id => `<div style="background:white; padding:0.5rem; border-radius:0.5rem; margin-bottom:0.3rem;">🆔 كود الموظف: <strong>${id}</strong></div>`).join('');
+                        errorHtml += `<hr style="margin:1.5rem 0; border-color:#fecaca;">`;
+                    }
+                    
+                    if (result.noDeptIds.length > 0) {
+                        errorHtml += `<h4 style="color:#92400e; margin-bottom:0.8rem; font-size:1.1rem;">⚠️ موظفين مسجلين بالتدريب ولكن ليس لديهم قسم (Not Specified):</h4>`;
+                        errorHtml += result.noDeptIds.map(id => {
+                            const empName = allEmployees.find(e => e.id?.toString() === id)?.fullName || 'بدون اسم';
+                            return `<div style="background:white; padding:0.5rem; border-radius:0.5rem; margin-bottom:0.3rem;">🆔 كود: <strong>${id}</strong> &nbsp;|&nbsp; 👤 الاسم: ${empName}</div>`;
+                        }).join('');
+                    }
+
+                    if (errorHtml === '') errorHtml = '<div style="color:#065f46; font-weight:bold; font-size:1.1rem; padding:1rem; background:#d1fae5; border-radius:1rem;">✅ لا توجد أخطاء! جميع أكواد التدريب صحيحة ومسجل لها أقسام.</div>';
+                    
+                    document.getElementById('diagMismatchList').innerHTML = errorHtml;
+                }
+            }
+        };
+
+        function renderDiagnosticHTML() {
+            return `
+                <div class="diagnostic-box" id="diagnosticBox">
+                    <h3>🔍 أداة تشخيص الأخطاء (Diagnostic Tool)</h3>
+                    <p style="color:#718096; margin-bottom:1rem; font-size:0.9rem;">تساعدك هذه الأداة على معرفة سبب ظهور (Not Specified) وكشف الموظفين المستقيلين</p>
+                    <div class="stats-row">
+                        <div class="stat-item"><div class="stat-value" id="diagTotalEmp">-</div><div class="stat-label">Total Employees</div></div>
+                        <div class="stat-item"><div class="stat-value" id="diagActiveEmp">-</div><div class="stat-label">Active</div></div>
+                        <div class="stat-item"><div class="stat-value" id="diagLeftEmp">-</div><div class="stat-label">Left</div></div>
+                        <div class="stat-item"><div class="stat-value" id="diagTrainingIds">-</div><div class="stat-label">IDs in Training</div></div>
+                        <div class="stat-item"><div class="stat-value" id="diagLeftInTraining">-</div><div class="stat-label">Left in Training</div></div>
+                        <div class="stat-item"><div class="stat-value" style="color:#c53030;" id="diagNotFound">-</div><div class="stat-label">Not Found</div></div>
+                    </div>
+                    <div class="mismatch-list" id="diagMismatchList"></div>
+                    <p style="margin-top:1rem; font-size:0.85rem; color:#718096; text-align:center;">📌 يتم استبعاد المستقيلين من قائمة (أفضل الموظفين)، ولكن يتم حسابهم ضمن إحصائيات أقسامهم.</p>
+                </div>`;
+        }
+
+        // ================= رسم الواجهات البيانية =================
+        function renderTopEmployees(topBySessions, topByHours) {
+            const getRankClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze';
+            const emoji = ['🥇', '🥈', '🥉'];
+            
+            const renderList = (items, type, label) => {
+                if (items.length === 0) return '<div style="text-align:center; padding:2rem;">No data available</div>';
+                return items.map((emp, i) => `
+                    <div class="top-item color-${i}">
+                        <div class="top-rank ${getRankClass(i)}">${emoji[i]}</div>
+                        <div class="top-info">
+                            <div class="top-name">${emp.name}</div>
+                            <div class="top-meta">
+                                <span class="meta-id">🆔 ${emp.id}</span>
+                                <span class="meta-dept">🏢 ${emp.department}</span>
+                                <span class="meta-pos">💼 ${emp.position}</span>
+                            </div>
+                        </div>
+                        <div class="top-stats">
+                            <div class="top-value ${type}">${type === 'hours' ? emp.hours : emp.sessions}</div>
+                            <div class="top-label">${label}</div>
+                        </div>
+                    </div>
+                `).join('');
+            };
+            
+            return `
+                <div class="top-employees">
+                    <div class="top-card">
+                        <h3>🏆 Top Active Employees - By Sessions</h3>
+                        <div class="top-list">${renderList(topBySessions, 'sessions', 'Session(s)')}</div>
+                    </div>
+                    <div class="top-card">
+                        <h3>🏆 Top Active Employees - By Hours</h3>
+                        <div class="top-list">${renderList(topByHours, 'hours', 'Hour(s)')}</div>
+                    </div>
+                </div>
+                <div class="excluded-note"><p>ℹ️ Note: Department Heads, General Managers, and specific induction courses are excluded from these rankings.</p></div>
+                `;
+        }
+
+        function applyChartSizes() {
+            const m = CHART_SIZES.main;
+            const med = CHART_SIZES.medium;
+            
+            document.querySelectorAll('.chart-wrapper:not(.medium)').forEach(el => el.style.minHeight = m.height + 'px');
+            document.querySelectorAll('canvas:not(.medium-canvas)').forEach(el => el.style.maxHeight = m.height + 'px');
+            document.querySelectorAll('.chart-card:not(.medium) h3').forEach(el => el.style.fontSize = m.titleFont + 'rem');
+            
+            document.querySelectorAll('.charts-row').forEach(el => {
+                el.style.gridTemplateColumns = `repeat(${med.columns}, 1fr)`;
+                el.style.gap = med.gap + 'rem';
+            });
+            document.querySelectorAll('.chart-wrapper.medium').forEach(el => el.style.minHeight = med.height + 'px');
+            document.querySelectorAll('canvas.medium-canvas').forEach(el => el.style.maxHeight = med.height + 'px');
+            document.querySelectorAll('.chart-card.medium h3').forEach(el => el.style.fontSize = med.titleFont + 'rem');
+        }
+
+        function initCharts(deptStats) {
+            Chart.register(ChartDataLabels);
+            const s = CHART_SIZES.main;
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false, layout: { padding: s.padding },
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: s.axisFont } } },
+                    datalabels: { display: true, color: '#000000', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 }
+                },
+                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+            };
+            
+            const sorted = (key) => [...deptStats].sort((a, b) => b[key] - a[key]);
+            
+            [['deptEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Number of Trainees'],
+             ['deptSessionsChart', 'sessions', '#ff7707', '🎯 Number of Sessions'],
+             ['deptHoursChart', 'hours', '#158040', '⏰ Number of Hours']].forEach(([id, key, color, label]) => {
+                destroyChart(id);
+                const ctx = document.getElementById(id)?.getContext('2d');
+                if (ctx) {
+                    const data = sorted(key);
+                    chartInstances[id] = new Chart(ctx, { type: 'bar', data: { labels: data.map(d => d.department), datasets: [{ label, data: data.map(d => d[key]), backgroundColor: color, borderRadius: 10 }] }, options: chartOptions });
+                }
+            });
+        }
+
+        function initMonthlyCharts(monthlyStats) {
+            Chart.register(ChartDataLabels);
+            const s = CHART_SIZES.main;
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false, layout: { padding: s.padding },
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: s.axisFont } } },
+                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 }
+                },
+                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+            };
+            
+            const months = monthlyStats.map(m => m.monthName);
+            
+            [['monthlyEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Employees'],
+             ['monthlySessionsChart', 'sessions', '#ff7707', '🎯 Sessions'],
+             ['monthlyHoursChart', 'hours', '#158040', '⏰ Hours']].forEach(([id, key, color, label]) => {
+                destroyChart(id);
+                const ctx = document.getElementById(id)?.getContext('2d');
+                if (ctx) {
+                    chartInstances[id] = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label, data: monthlyStats.map(m => m[key]), backgroundColor: color, borderRadius: 10 }] }, options: chartOptions });
+                }
+            });
+        }
+
+        function initQuarterlyCharts(quarterlyStats) {
+            Chart.register(ChartDataLabels);
+            const s = CHART_SIZES.medium;
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false, layout: { padding: s.padding },
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14 } },
+                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 }
+                },
+                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+            };
+            
+            const quarters = quarterlyStats.map(q => q.quarter);
+            
+            [['quarterlyEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Employees'],
+             ['quarterlySessionsChart', 'sessions', '#ff7707', '🎯 Sessions'],
+             ['quarterlyHoursChart', 'hours', '#158040', '⏰ Hours']].forEach(([id, key, color, label]) => {
+                destroyChart(id);
+                const ctx = document.getElementById(id)?.getContext('2d');
+                if (ctx) {
+                    chartInstances[id] = new Chart(ctx, { type: 'bar', data: { labels: quarters, datasets: [{ label, data: quarterlyStats.map(q => q[key]), backgroundColor: color, borderRadius: 9 }] }, options: chartOptions });
+                }
+            });
+        }
+
+        function initSemiAnnualCharts(semiAnnualStats) {
+            Chart.register(ChartDataLabels);
+            const s = CHART_SIZES.medium;
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false, layout: { padding: s.padding },
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14 } },
+                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 }
+                },
+                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+            };
+            
+            const halves = semiAnnualStats.map(h => h.half);
+            
+            [['semiAnnualEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Employees'],
+             ['semiAnnualSessionsChart', 'sessions', '#ff7707', '🎯 Sessions'],
+             ['semiAnnualHoursChart', 'hours', '#158040', '⏰ Hours']].forEach(([id, key, color, label]) => {
+                destroyChart(id);
+                const ctx = document.getElementById(id)?.getContext('2d');
+                if (ctx) {
+                    chartInstances[id] = new Chart(ctx, { type: 'bar', data: { labels: halves, datasets: [{ label, data: semiAnnualStats.map(h => h[key]), backgroundColor: color, borderRadius: 9 }] }, options: chartOptions });
+                }
+            });
+        }
+
+        // ================= بناء الواجهة =================
+        function buildUI() {
+            const deptStats = calculateDepartmentStats();
+            const monthlyStats = calculateMonthlyStats();
+            const quarterlyStats = calculateQuarterlyStats();
+            const semiAnnualStats = calculateSemiAnnualStats();
+            const { topBySessions, topByHours } = calculateTopEmployees();
+            
+            const monthName = currentMonth === 'all' ? "All Months" : monthNames[parseInt(currentMonth)];
+            const typeName = currentType === 'offjob' ? 'Off Job' : (currentType === 'onjob' ? 'On Job' : 'All Trainings');
+            
+            const yearOptions = [2024, 2025, 2026, 2027, 2028].map(y => `<option value="${y}" ${currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
+            
+            const monthOptions = `<option value="all" ${currentMonth === 'all' ? 'selected' : ''}>All Months</option>` + 
+                monthNames.map((name, i) => `<option value="${i}" ${currentMonth === i.toString() ? 'selected' : ''}>${name}</option>`).join('');
+
+            document.getElementById('app').innerHTML = `
+                <div class="navbar">
+                    <div class="logo"><h2>🎓 Learning & Development <span>System</span></h2></div>
+                    <div class="nav-links">
+                        <a href="index.html" class="home">🏠 Home</a>
+                        <button onclick="showDiagnostic()" class="diagnose">🔍 Diagnose Errors</button>
+                        <button id="logoutBtn" class="logout">🚪 Logout</button>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="page-header">
+                        <h1>🏆 Performance Analysis</h1>
+                        <p>Analysis of department and employee participation in training</p>
+                    </div>
+
+                    ${renderDiagnosticHTML()}
+
+                    <div class="filter-bar">
+                        <div class="filter-group"><label>📅 Year:</label><select id="yearSelect" class="filter-select">${yearOptions}</select></div>
+                        <div class="filter-group"><label>📅 Month:</label><select id="monthSelect" class="filter-select">${monthOptions}</select></div>
+                        <div class="filter-group"><label>📚 Type:</label><select id="typeSelect" class="filter-select"><option value="all" ${currentType==='all'?'selected':''}>All</option><option value="offjob" ${currentType==='offjob'?'selected':''}>Off Job</option><option value="onjob" ${currentType==='onjob'?'selected':''}>On Job</option></select></div>
+                        <div class="filter-group"><span>📊 ${monthName} ${currentYear} - ${typeName}</span></div>
+                    </div>
+
+                    <div class="section-title">📊 Department Analysis (All Employees)</div>
+                    <div class="charts-container">
+                        <div class="chart-card"><h3>👥 Trainees by Department</h3><div class="chart-wrapper"><canvas id="deptEmployeesChart"></canvas></div></div>
+                        <div class="chart-card"><h3>🎯 Sessions by Department</h3><div class="chart-wrapper"><canvas id="deptSessionsChart"></canvas></div></div>
+                        <div class="chart-card"><h3>⏰ Hours by Department</h3><div class="chart-wrapper"><canvas id="deptHoursChart"></canvas></div></div>
+                    </div>
+
+                    <div class="section-title">🏅 Best Active Employees</div>
+                    ${renderTopEmployees(topBySessions, topByHours)}
+
+                    <div class="section-title">📅 Monthly Analysis (${currentYear})</div>
+                    <div class="charts-container">
+                        <div class="chart-card"><h3>👥 Employees per Month</h3><div class="chart-wrapper"><canvas id="monthlyEmployeesChart"></canvas></div></div>
+                        <div class="chart-card"><h3>🎯 Sessions per Month</h3><div class="chart-wrapper"><canvas id="monthlySessionsChart"></canvas></div></div>
+                        <div class="chart-card"><h3>⏰ Hours per Month</h3><div class="chart-wrapper"><canvas id="monthlyHoursChart"></canvas></div></div>
+                    </div>
+
+                    <div class="section-title">📊 Quarterly Analysis (${currentYear})</div>
+                    <div class="charts-row">
+                        <div class="chart-card medium"><h3>👥 Employees per Quarter</h3><div class="chart-wrapper medium"><canvas id="quarterlyEmployeesChart" class="medium-canvas"></canvas></div></div>
+                        <div class="chart-card medium"><h3>🎯 Sessions per Quarter</h3><div class="chart-wrapper medium"><canvas id="quarterlySessionsChart" class="medium-canvas"></canvas></div></div>
+                        <div class="chart-card medium"><h3>⏰ Hours per Quarter</h3><div class="chart-wrapper medium"><canvas id="quarterlyHoursChart" class="medium-canvas"></canvas></div></div>
+                    </div>
+
+                    <div class="section-title">📈 Semi-Annual Analysis (${currentYear})</div>
+                    <div class="charts-row">
+                        <div class="chart-card medium"><h3>👥 Employees per Half-Year</h3><div class="chart-wrapper medium"><canvas id="semiAnnualEmployeesChart" class="medium-canvas"></canvas></div></div>
+                        <div class="chart-card medium"><h3>🎯 Sessions per Half-Year</h3><div class="chart-wrapper medium"><canvas id="semiAnnualSessionsChart" class="medium-canvas"></canvas></div></div>
+                        <div class="chart-card medium"><h3>⏰ Hours per Half-Year</h3><div class="chart-wrapper medium"><canvas id="semiAnnualHoursChart" class="medium-canvas"></canvas></div></div>
+                    </div>
+
+                </div>
+                <div class="footer"><p>© 2026 Learning & Development System</p></div>
+            `;
+            
+            applyChartSizes();
+            
+            setTimeout(() => { 
+                initCharts(deptStats); 
+                initMonthlyCharts(monthlyStats); 
+                initQuarterlyCharts(quarterlyStats);
+                initSemiAnnualCharts(semiAnnualStats);
+            }, 100);
+
+            // إعداد الأحداث
+            document.getElementById('yearSelect').addEventListener('change', (e) => { currentYear = parseInt(e.target.value); buildUI(); });
+            document.getElementById('monthSelect').addEventListener('change', (e) => { currentMonth = e.target.value; buildUI(); });
+            document.getElementById('typeSelect').addEventListener('change', (e) => { currentType = e.target.value; buildUI(); });
+            document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(auth); window.location.href = 'login.html'; });
+        }
+
+        // ================= التهيئة والمصادقة =================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentMonth = new Date().getMonth().toString(); // تعيين الشهر الحالي عند فتح الصفحة
+                await loadAllDataFromServer();
+                buildUI();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
