@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     
-    <!-- السكريبتات بنظام Modules (مع إزالة cache-manager لعدم الحاجة إليه بعد تحسين الذاكرة) -->
+    <!-- تحويل السكريبتات لتعمل بنظام Modules للاتصال بفايربيز -->
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
     
@@ -15,64 +15,92 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { background: #f0f4f8; }
         
-        .navbar { background: white; padding: 0.8rem 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; }
-        .logo h2 { color: #1e3a5f; font-size: 1.1rem; } .logo span { color: #2b7a4b; }
+        .navbar {
+            background: white;
+            padding: 0.8rem 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        .logo h2 { color: #1e3a5f; font-size: 1.1rem; }
+        .logo span { color: #2b7a4b; }
         .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .nav-links a, .nav-links button { text-decoration: none; padding: 0.4rem 0.8rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.75rem; }
-        .nav-links .home { background: #2b7a4b; color: white; } .nav-links .logout { background: #e53e3e; color: white; }
+        .nav-links a, .nav-links button {
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.75rem;
+        }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
         
         .container { max-width: 1200px; margin: 1rem auto; padding: 0 1rem; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-card { background: white; border-radius: 1rem; padding: 0.8rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-right: 4px solid #2b7a4b; }
-        .stat-number { font-size: 1.5rem; font-weight: bold; color: #1e3a5f; } .stat-label { color: #718096; font-size: 0.7rem; margin-top: 0.2rem; }
+        .last-code-card {
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .last-code-card .label { font-size: 0.85rem; opacity: 0.8; }
+        .last-code-card .code { font-size: 1.8rem; font-weight: bold; background: rgba(255,255,255,0.15); padding: 0.3rem 1.2rem; border-radius: 2rem; letter-spacing: 2px; }
+        .last-code-card .no-data { font-size: 0.9rem; opacity: 0.7; }
+        .last-code-card .code-group { display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; }
+        .last-code-card .code-item { text-align: center; }
+        .last-code-card .code-item .code-label { font-size: 0.7rem; opacity: 0.7; }
         
         .action-bar { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.5rem; justify-content: space-between; align-items: center; }
         .search-box { display: flex; gap: 0.5rem; flex: 1; max-width: 400px; }
         .search-box input { flex: 1; padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.8rem; }
-        .search-box button { padding: 0.5rem 1rem; background: #4299e1; margin-top: 0; font-size: 0.8rem; border: none; border-radius: 2rem; color: white; cursor: pointer; }
-        .action-buttons { display: flex; gap: 0.5rem; }
-        .action-buttons button { padding: 0.5rem 1rem; font-size: 0.8rem; border: none; border-radius: 2rem; color: white; cursor: pointer; font-weight: bold; }
-        
-        .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; margin-top: 1rem; }
-        .course-card { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.3s; border-right: 4px solid #2b7a4b; }
-        .course-card:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .course-header { background: linear-gradient(135deg, #1e3a5f, #2b7a4b); color: white; padding: 0.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
-        .course-code { font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 0.2rem 0.6rem; border-radius: 1rem; }
-        .course-body { padding: 0.8rem; }
-        .course-name { font-size: 1rem; font-weight: bold; color: #1e3a5f; margin-bottom: 0.5rem; }
-        .course-details { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.8rem; font-size: 0.75rem; color: #718096; }
-        .course-actions { display: flex; gap: 0.5rem; justify-content: flex-end; border-top: 1px solid #e2e8f0; padding-top: 0.8rem; margin-top: 0.5rem; }
-        .course-actions button { padding: 0.3rem 0.8rem; font-size: 0.7rem; border: none; border-radius: 1rem; color: white; cursor: pointer; }
+        .search-box button { padding: 0.5rem 1rem; background: #4299e1; margin-top: 0; font-size: 0.8rem; }
+        .action-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .action-buttons button { padding: 0.5rem 1rem; font-size: 0.8rem; }
         
         .enrollment-card { background: linear-gradient(135deg, #1e3a5f, #2b7a4b); border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; color: white; }
         .enrollment-card h3 { font-size: 0.9rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
         .enrollment-form { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end; }
-        .enrollment-form .form-group { flex: 1; min-width: 150px; margin-bottom: 0;}
-        .enrollment-form .form-group label { font-size: 0.7rem; opacity: 0.8; display: block; margin-bottom: 0.2rem; color: white; font-weight: normal;}
+        .enrollment-form .form-group { flex: 1; min-width: 150px; }
+        .enrollment-form .form-group label { font-size: 0.7rem; opacity: 0.8; display: block; margin-bottom: 0.2rem; }
         .enrollment-form input, .enrollment-form select { width: 100%; padding: 0.5rem; border: none; border-radius: 0.8rem; font-size: 0.8rem; background: white; color: #1a202c; }
-        .enrollment-form button { margin: 0; padding: 0.5rem 1rem; background: #ed8936; min-width: 100px; border: none; border-radius: 0.8rem; color: white; font-weight: bold; cursor: pointer; }
+        .enrollment-form button { margin: 0; padding: 0.5rem 1rem; background: #ed8936; min-width: 100px; }
+        .enrollment-form button:hover { background: #dd6b20; }
+        
         .batch-input-area { background: rgba(255,255,255,0.15); border-radius: 0.8rem; padding: 0.8rem; margin-top: 0.8rem; }
         .batch-input-area textarea { width: 100%; padding: 0.5rem; border: none; border-radius: 0.8rem; font-size: 0.8rem; direction: ltr; color: #1a202c; }
-        .batch-input-area button { background: #4299e1; margin-top: 0.5rem; border: none; border-radius: 0.8rem; color: white; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; }
+        .batch-input-area button { background: #4299e1; margin-top: 0.5rem; }
         
         .delete-enroll-card { background: linear-gradient(135deg, #7b341e, #e53e3e); border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; color: white; }
         .delete-enroll-card h3 { font-size: 0.9rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
         .delete-enroll-form { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end; }
-        .delete-enroll-form .form-group { flex: 1; min-width: 180px; margin-bottom: 0; }
-        .delete-enroll-form .form-group label { font-size: 0.7rem; opacity: 0.8; display: block; margin-bottom: 0.2rem; color: white; font-weight: normal;}
+        .delete-enroll-form .form-group { flex: 1; min-width: 180px; }
+        .delete-enroll-form .form-group label { font-size: 0.7rem; opacity: 0.8; display: block; margin-bottom: 0.2rem; }
         .delete-enroll-form input { width: 100%; padding: 0.5rem; border: none; border-radius: 0.8rem; font-size: 0.8rem; background: white; color: #1a202c; }
-        .delete-enroll-form button { margin: 0; padding: 0.5rem 1rem; background: #ffd700; color: #7b341e; min-width: 100px; font-weight: bold; border: none; border-radius: 0.8rem; cursor: pointer; }
+        .delete-enroll-form button { margin: 0; padding: 0.5rem 1rem; background: #ffd700; color: #7b341e; min-width: 100px; font-weight: bold; }
+        .delete-enroll-form button:hover { background: #ffc107; }
         
         .empty-msg { text-align: center; padding: 2rem; color: #718096; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
-        .modal-content { background: white; border-radius: 1rem; padding: 1.2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: white; border-radius: 1rem; padding: 1.2rem; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
         .modal-buttons { display: flex; gap: 0.8rem; margin-top: 1rem; }
-        .modal-buttons button { flex: 1; margin: 0; background: #2b7a4b; color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.8rem; font-weight: bold; cursor: pointer; }
+        .modal-buttons button { flex: 1; margin: 0; }
         .form-group { margin-bottom: 0.8rem; }
-        .form-group label { display: block; font-size: 0.75rem; color: #000000; margin-bottom: 0.3rem; font-weight: bold; }
-        input[type="text"], input[type="number"], input[type="date"], input[type="time"], select, textarea { width: 100%; padding: 0.6rem; border: 2px solid #e2e8f0; border-radius: 0.8rem; font-size: 0.85rem; }   
+        .form-group label { display: block; font-size: 0.75rem; color: #ffffff; margin-bottom: 0.3rem; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 0.6rem; border: 2px solid #e2e8f0; border-radius: 0.8rem; font-size: 0.85rem; }   
+        button { background: #2b7a4b; color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
         
         .sessions-list { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem; }
         .session-card { background: #f7fafc; border-radius: 1rem; padding: 0.8rem; border-right: 4px solid #2b7a4b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
@@ -82,179 +110,35 @@
         .session-trainer { font-size: 0.75rem; color: #2b7a4b; display: block; margin-top: 0.2rem; font-weight: bold; }
         .session-time { font-size: 0.7rem; color: #718096; display: block; margin-top: 0.2rem; }
         .session-actions { display: flex; gap: 0.5rem; }
-        .session-actions button { padding: 0.3rem 0.8rem; font-size: 0.7rem; border: none; border-radius: 1rem; color: white; cursor: pointer; }
+        .session-actions button { padding: 0.3rem 0.8rem; font-size: 0.7rem; }
         
         .no-sessions { text-align: center; padding: 2rem; color: #718096; background: #f7fafc; border-radius: 1rem; }
+        
         .footer { text-align: center; padding: 1rem; color: #718096; font-size: 0.7rem; margin-top: 1rem; }
         .toast-msg { position: fixed; bottom: 1rem; right: 1rem; left: 1rem; background: #2b7a4b; color: white; padding: 0.6rem; border-radius: 2rem; text-align: center; z-index: 1000; font-size: 0.8rem; max-width: calc(100% - 2rem); margin: 0 auto; }
         .toast-msg.error { background: #e53e3e; }
     </style>
 </head>
 <body>
-    <!-- الهيكل الثابت للواجهة -->
-    <div class="navbar">
-        <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير - <span style="color:#4299e1;">📘 Off Job</span></h2></div>
-        <div class="nav-links">
-            <a href="index.html" class="home">🏠 الرئيسية</a>
-            <button id="logoutBtn" class="logout">🚪 تسجيل خروج</button>
+    <div id="app">
+        <div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">
+            ⏳ جاري التحميل والاتصال بقاعدة البيانات...
         </div>
     </div>
 
-    <div class="container">
-        <div id="statusIndicator" style="text-align:center; padding:2rem; color:#718096;">⏳ جاري تحميل البيانات...</div>
-        
-        <div id="mainContent" style="display:none;">
-            <!-- الإحصائيات -->
-            <div class="stats-grid" id="statsGrid"></div>
-            
-            <!-- لوحة التسجيل السريع -->
-            <div class="enrollment-card">
-                <h3>⚡ تسجيل سريع لمتدرب</h3>
-                <div class="enrollment-form">
-                    <div class="form-group">
-                        <label>📝 كود الجلسة</label>
-                        <input type="number" id="quickSessionCode" placeholder="مثال: 2100" list="sessionsList">
-                        <datalist id="sessionsList"></datalist>
-                    </div>
-                    <div class="form-group">
-                        <label>👤 كود الموظف</label>
-                        <input type="number" id="quickEmployeeId" placeholder="مثال: 12336" list="employeesDatalist">
-                        <datalist id="employeesDatalist"></datalist>
-                    </div>
-                    <div class="form-group">
-                        <label>📌 الحالة</label>
-                        <select id="quickStatus">
-                            <option value="Completed">✅ مكتمل</option>
-                            <option value="In Progress">🔄 قيد التقدم</option>
-                            <option value="Failed">❌ راسب</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>🎯 الدرجة (اختياري)</label>
-                        <input type="number" id="quickScore" placeholder="مثال: 85" min="0" max="100">
-                    </div>
-                    <button id="btnQuickEnroll">➕ تسجيل</button>
-                </div>
-            </div>
-            
-            <!-- لوحة التسجيل المتعدد -->
-            <div class="enrollment-card">
-                <h3>📋 تسجيل متعدد (دفعة واحدة)</h3>
-                <div class="enrollment-form">
-                    <div class="form-group">
-                        <label>📝 كود الجلسة</label>
-                        <select id="batchSessionCode"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>📌 الحالة</label>
-                        <select id="batchStatus">
-                            <option value="Completed">✅ مكتمل</option>
-                            <option value="In Progress">🔄 قيد التقدم</option>
-                            <option value="Failed">❌ راسب</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>🎯 الدرجة للجميع (اختياري)</label>
-                        <input type="number" id="batchScore" placeholder="مثال: 85">
-                    </div>
-                </div>
-                <div class="batch-input-area">
-                    <label style="font-size:0.75rem; color:white; margin-bottom:0.3rem; display:block;">📝 أكواد الموظفين (كل كود في سطر منفصل)</label>
-                    <textarea id="batchEmployeeIds" rows="3" placeholder="12336&#10;12337&#10;12338"></textarea>
-                    <button id="btnBatchEnroll">📥 تسجيل الجميع</button>
-                </div>
-            </div>
-            
-            <!-- لوحة الحذف -->
-            <div class="delete-enroll-card">
-                <h3>🗑️ حذف تسجيل موظف من جلسة</h3>
-                <div class="delete-enroll-form">
-                    <div class="form-group">
-                        <label>📝 كود الجلسة</label>
-                        <input type="number" id="deleteSessionCode" placeholder="مثال: 2100">
-                    </div>
-                    <div class="form-group">
-                        <label>👤 كود الموظف</label>
-                        <input type="number" id="deleteEmployeeId" placeholder="مثال: 12306">
-                    </div>
-                    <button id="btnDeleteEnroll">🗑️ حذف التسجيل</button>
-                </div>
-            </div>
-            
-            <!-- شريط العمليات والبحث -->
-            <div class="action-bar">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 بحث في الكورسات...">
-                    <button id="btnSearch">بحث</button>
-                    <button id="btnClearSearch" style="background:#718096; display:none;">✖️ إلغاء</button>
-                </div>
-                <div class="action-buttons">
-                    <button id="btnAddCourse" style="background:#2b7a4b;">📚 إضافة كورس</button>
-                    <button id="btnAddSession" style="background:#4299e1;">🎯 إضافة جلسة</button>
-                    <button id="btnExportExcel" style="background:#ed8936;">📤 تصدير لـ Excel</button>
-                </div>
-            </div>
-            
-            <!-- شبكة الكورسات -->
-            <div id="coursesGridContainer"></div>
-        </div>
-    </div>
-    
-    <!-- النوافذ المنبثقة (Modals) -->
-    <div id="courseModal" class="modal">
-        <div class="modal-content">
-            <h3 id="courseModalTitle">إضافة كورس</h3>
-            <div class="form-group"><label>كود الكورس *</label><input type="number" id="courseCode" placeholder="كود الكورس"></div>
-            <div class="form-group"><label>اسم الكورس *</label><input type="text" id="courseName" placeholder="اسم الكورس"></div>
-            <div class="form-group"><label>التصنيف</label><input type="text" id="courseCategory" placeholder="التصنيف"></div>
-            <div class="form-group"><label>⏱️ مدة ساعات الكورس</label><input type="number" id="courseDuration" placeholder="عدد الساعات"></div>
-            <div class="modal-buttons">
-                <button id="btnSaveCourse">💾 حفظ بالسيرفر</button>
-                <button onclick="document.getElementById('courseModal').style.display='none'" style="background:#a0aec0;">❌ إلغاء</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="sessionModal" class="modal">
-        <div class="modal-content">
-            <h3 id="sessionModalTitle">إضافة جلسة</h3>
-            <div class="form-group"><label>كود الجلسة *</label><input type="number" id="sessionCode" placeholder="كود الجلسة"></div>
-            <div class="form-group"><label>الكورس التابع له الجلسة *</label><select id="sessionCourseCode"></select></div>
-            <div class="form-group"><label>التاريخ</label><input type="date" id="sessionDate"></div>
-            <div class="form-group"><label>👨‍🏫 اسم المدرب</label><input type="text" id="trainerName" placeholder="اسم المدرب"></div>
-            <div class="form-group"><label>🕐 وقت البداية</label><input type="time" id="sessionStartTime"></div>
-            <div class="form-group"><label>🕐 وقت النهاية</label><input type="time" id="sessionEndTime"></div>
-            <div class="modal-buttons">
-                <button id="btnSaveSession">💾 حفظ بالسيرفر</button>
-                <button onclick="document.getElementById('sessionModal').style.display='none'" style="background:#a0aec0;">❌ إلغاء</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="sessionsModal" class="modal">
-        <div class="modal-content">
-            <h3 id="sessionsModalTitle">جلسات الكورس</h3>
-            <div id="sessionsModalContent"></div>
-            <div class="modal-buttons">
-                <button onclick="document.getElementById('sessionsModal').style.display='none'" style="background:#a0aec0;">❌ إغلاق</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="footer"><p>© 2026 نظام إدارة التعليم والتطوير - Off Job</p></div>
-
+    <!-- ⚡ تم استبدال الكود ليعمل بشكل مباشر وموزع مع Firestore Database ⚡ -->
     <script type="module">
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        // ================= الذاكرة المؤقتة للبيانات (State) =================
+        let currentUser = null;
+        
         let courses = [];
         let sessions = [];
         let employeesList = [];
         let enrollments = [];
         let searchTerm = "";
-
-        // ================= دوال مساعدة =================
+        
         function showToast(msg, isError = false) { 
             const toast = document.createElement('div'); 
             toast.className = 'toast-msg' + (isError ? ' error' : ''); 
@@ -262,374 +146,558 @@
             document.body.appendChild(toast); 
             setTimeout(() => toast.remove(), 3000); 
         }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ================= جلب البيانات لمرة واحدة (Initial Load) =================
-        async function loadAllData() {
-            try {
-                // تتم القراءة مرة واحدة فقط عند فتح الصفحة لتقليل الاستهلاك
-                courses = await DB.getAll('offjob_courses') || [];
-                sessions = await DB.getAll('offjob_sessions') || [];
-                enrollments = await DB.getAll('offjob_enrollments') || [];
-                employeesList = await DB.getAll('employees') || [];
-                
-                document.getElementById('statusIndicator').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-                updateUI();
-            } catch(e) {
-                console.error(e);
-                document.getElementById('statusIndicator').innerHTML = '<span style="color:#e53e3e;">❌ حدث خطأ أثناء تحميل البيانات من السيرفر.</span>';
-            }
-        }
-
-        // ================= تحديث واجهة المستخدم (تعتمد على الذاكرة المحلية فقط) =================
-        function updateUI() {
-            // 1. تحديث الإحصائيات
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card"><div class="stat-number">${courses.length}</div><div class="stat-label">📚 إجمالي الكورسات</div></div>
-                <div class="stat-card"><div class="stat-number">${sessions.length}</div><div class="stat-label">🎯 إجمالي الجلسات</div></div>
-                <div class="stat-card"><div class="stat-number">${enrollments.length}</div><div class="stat-label">👥 إجمالي التسجيلات</div></div>
-            `;
-
-            // 2. تحديث القوائم المنسدلة (Datalists & Selects)
-            document.getElementById('sessionsList').innerHTML = sessions.map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('');
-            document.getElementById('batchSessionCode').innerHTML = '<option value="">اختر الجلسة</option>' + sessions.map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('');
-            document.getElementById('employeesDatalist').innerHTML = employeesList.map(emp => `<option value="${emp.id}">${emp.id} - ${escapeHtml(emp.fullName)}</option>`).join('');
-
-            // 3. تحديث شبكة الكورسات
-            let filteredCourses = courses;
-            if (searchTerm) {
-                const term = searchTerm.toLowerCase();
-                filteredCourses = courses.filter(c => String(c.course_code).includes(term) || c.course_name.toLowerCase().includes(term));
-            }
-
-            const gridContainer = document.getElementById('coursesGridContainer');
-            if (filteredCourses.length === 0) {
-                gridContainer.innerHTML = `<div class="empty-msg">📭 لا توجد كورسات مطابقة للبحث</div>`;
-            } else {
-                let html = `<div class="courses-grid">`;
-                filteredCourses.forEach(course => {
-                    const sessionsCount = sessions.filter(s => String(s.course_code) === String(course.course_code)).length;
-                    html += `
-                        <div class="course-card">
-                            <div class="course-header">
-                                <span class="course-code">📚 ${course.course_code}</span>
-                                <span class="course-code">🎯 ${sessionsCount} جلسة</span>
-                            </div>
-                            <div class="course-body">
-                                <div class="course-name">${escapeHtml(course.course_name)}</div>
-                                <div class="course-details">
-                                    <span>📂 ${escapeHtml(course.category || 'عام')}</span>
-                                    <span>⏱️ ${course.duration_hours || 0} ساعة</span>
-                                </div>
-                                <div class="course-actions">
-                                    <button onclick="window.viewSessions('${course.course_code}', '${escapeHtml(course.course_name).replace(/'/g, "\\'")}')" style="background:#4299e1;">📋 الجلسات (${sessionsCount})</button>
-                                    <button onclick="window.editCourse('${course.course_code}')" style="background:#ed8936;">✏️ تعديل</button>
-                                    <button onclick="window.deleteCourse('${course.course_code}')" style="background:#e53e3e;">🗑️ حذف</button>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-                html += `</div>`;
-                gridContainer.innerHTML = html;
-            }
-        }
-
-        // ================= عمليات السيرفر المباشرة (Targeted Updates) =================
         
-        // 1. إدارة الكورسات
+        // جلب البيانات بشكل حي من Firestore بدلاً من الاستبدال الشامل
+        async function loadAllDataFromDB() {
+            await DB.init();
+            courses = await DB.getAll('offjob_courses') || [];
+            sessions = await DB.getAll('offjob_sessions') || [];
+            enrollments = await DB.getAll('offjob_enrollments') || [];
+            employeesList = await DB.getAll('employees') || [];
+            
+            console.log(`📊 تم تحميل البيانات من السيرفر بنجاح`);
+        }
+        
+        window.refreshFromLocal = async () => {
+            showToast('⏳ جاري جلب أحدث البيانات من السيرفر...');
+            await loadAllDataFromDB();
+            renderPage();
+            showToast('🔄 تم التحديث بنجاح');
+        };
+
+        // ==== التحقق من وجود الكود في الكورسات أو السيشنات ====
+        function isCodeExists(code, excludeCourseCode = null, excludeSessionCode = null) {
+            const courseExists = courses.some(c => parseInt(c.course_code) === code && c.course_code !== excludeCourseCode);
+            const sessionExists = sessions.some(s => parseInt(s.session_code) === code && s.session_code !== excludeSessionCode);
+            return courseExists || sessionExists;
+        }
+
+        // حفظ وتحديث مباشر لجدول الكورسات في Firestore
         window.saveCourse = async () => {
+            const code = document.getElementById('courseCode').value.trim();
+            const editMode = document.getElementById('courseModal').dataset.editMode === 'true';
+            const oldCode = parseInt(document.getElementById('courseModal').dataset.oldCode);
+            const newCodeNum = parseInt(code);
+            
+            if (!code || !document.getElementById('courseName').value.trim() || isNaN(newCodeNum)) { 
+                showToast('❌ الرجاء إدخال كود صحيح واسم الكورس', true); 
+                return; 
+            }
+
             const data = {
-                course_code: parseInt(document.getElementById('courseCode').value),
+                id: String(newCodeNum),
+                course_code: newCodeNum,
                 course_name: document.getElementById('courseName').value.trim(),
+                description: document.getElementById('courseDescription').value.trim(),
                 category: document.getElementById('courseCategory').value.trim(),
-                duration_hours: Number(document.getElementById('courseDuration').value) || 0
+                target_audience: document.getElementById('courseTargetAudience').value.trim(),
+                duration_hours: Number(document.getElementById('courseDuration').value) || 0,
+                training_type: document.getElementById('courseTrainingType').value,
+                status: document.getElementById('courseStatus').value
             };
             
-            if (!data.course_code || !data.course_name) return showToast('❌ أدخل كود واسم الكورس', true);
-            
-            // نجعل المعرف في فايربيز هو نفس كود الكورس لتسهيل التحديث بدلاً من إضافة مكررة
-            data.id = data.course_code.toString(); 
-
-            try {
-                // حفظ في فايربيز (كتابة فقط)
+            if (editMode) {
+                if (newCodeNum !== oldCode && isCodeExists(newCodeNum)) {
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    return;
+                }
+                if (newCodeNum !== oldCode) {
+                    await DB.delete('offjob_courses', String(oldCode));
+                    await DB.insert('offjob_courses', data);
+                } else {
+                    await DB.update('offjob_courses', data);
+                }
+                const index = courses.findIndex(c => c.course_code === oldCode);
+                if (index !== -1) courses[index] = data;
+                showToast('✅ تم تحديث الكورس بالسيرفر');
+            } else {
+                if (isCodeExists(newCodeNum)) {
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    return;
+                }
                 await DB.insert('offjob_courses', data);
-                
-                // تحديث الذاكرة المحلية (بدون قراءة)
-                const index = courses.findIndex(c => String(c.course_code) === String(data.course_code));
-                if (index >= 0) courses[index] = data; else courses.push(data);
-                
-                document.getElementById('courseModal').style.display = 'none';
-                updateUI();
-                showToast('✅ تم حفظ الكورس بالسيرفر');
-            } catch(e) { showToast('❌ فشل حفظ الكورس', true); }
+                courses.push(data);
+                showToast('✅ تم إضافة الكورس للسيرفر');
+            }
+            
+            renderPage();
+            document.getElementById('courseModal').style.display = 'none';
         };
 
         window.deleteCourse = async (courseCode) => {
-            if (!confirm('⚠️ هل أنت متأكد من حذف هذا الكورس؟')) return;
-            try {
-                await DB.delete('offjob_courses', courseCode.toString());
-                courses = courses.filter(c => String(c.course_code) !== String(courseCode));
-                updateUI();
-                showToast('🗑️ تم حذف الكورس');
-            } catch(e) { showToast('❌ فشل الحذف', true); }
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا الكورس من السيرفر نهائياً؟')) return;
+            await DB.delete('offjob_courses', String(courseCode));
+            courses = courses.filter(c => c.course_code != courseCode);
+            renderPage();
+            showToast('🗑️ تم الحذف بنجاح');
         };
 
-        window.editCourse = (courseCode) => {
-            const course = courses.find(c => String(c.course_code) === String(courseCode));
-            if(course) {
-                document.getElementById('courseModalTitle').innerText = '✏️ تعديل كورس';
-                document.getElementById('courseCode').value = course.course_code;
-                document.getElementById('courseCode').disabled = true; // منع تغيير الكود لأنه الـ ID
-                document.getElementById('courseName').value = course.course_name;
-                document.getElementById('courseCategory').value = course.category || '';
-                document.getElementById('courseDuration').value = course.duration_hours || '';
-                document.getElementById('courseModal').style.display = 'flex';
-            }
-        };
-
-        // 2. إدارة الجلسات
+        // حفظ وتحديث مباشر لجدول الجلسات في Firestore
         window.saveSession = async () => {
-            const data = {
-                session_code: parseInt(document.getElementById('sessionCode').value),
-                course_code: parseInt(document.getElementById('sessionCourseCode').value),
-                session_date: document.getElementById('sessionDate').value,
-                trainer_name: document.getElementById('trainerName').value.trim(),
-                start_time: document.getElementById('sessionStartTime').value,
-                end_time: document.getElementById('sessionEndTime').value
-            };
-
-            if (!data.session_code || !data.course_code) return showToast('❌ أدخل كود الجلسة والكورس', true);
+            const code = document.getElementById('sessionCode').value.trim();
+            const courseCode = document.getElementById('sessionCourseCode').value.trim();
+            const editMode = document.getElementById('sessionModal').dataset.editMode === 'true';
+            const oldCode = parseInt(document.getElementById('sessionModal').dataset.oldCode);
+            const newCodeNum = parseInt(code);
+            const courseCodeNum = parseInt(courseCode);
             
-            data.id = data.session_code.toString();
+            if (!code || !courseCode || isNaN(newCodeNum) || isNaN(courseCodeNum)) { 
+                showToast('❌ الرجاء إدخال أكواد صحيحة', true); 
+                return; 
+            }
 
-            try {
-                await DB.insert('offjob_sessions', data);
-                const index = sessions.findIndex(s => String(s.session_code) === String(data.session_code));
-                if (index >= 0) sessions[index] = data; else sessions.push(data);
-                
-                document.getElementById('sessionModal').style.display = 'none';
-                updateUI();
-                
-                // تحديث نافذة الجلسات المفتوحة إن وجدت
-                if(document.getElementById('sessionsModal').style.display === 'flex') {
-                    const courseName = courses.find(c => String(c.course_code) === String(data.course_code))?.course_name || '';
-                    window.viewSessions(data.course_code, courseName);
+            const data = {
+                id: String(newCodeNum),
+                session_code: newCodeNum,
+                course_code: courseCodeNum,
+                trainer_name: document.getElementById('trainerName').value.trim(),
+                session_date: document.getElementById('sessionDate').value,
+                start_time: document.getElementById('sessionStartTime').value,
+                end_time: document.getElementById('sessionEndTime').value,
+                location: document.getElementById('sessionLocation').value.trim(),
+                max_capacity: Number(document.getElementById('sessionMaxCapacity').value) || null,
+                status: document.getElementById('sessionStatus').value,
+                notes: document.getElementById('sessionNotes').value.trim()
+            };
+            
+            if (editMode) {
+                if (newCodeNum !== oldCode && isCodeExists(newCodeNum)) {
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    return;
                 }
-                showToast('✅ تم حفظ الجلسة بالسيرفر');
-            } catch(e) { showToast('❌ فشل حفظ الجلسة', true); }
+                if (newCodeNum !== oldCode) {
+                    await DB.delete('offjob_sessions', String(oldCode));
+                    await DB.insert('offjob_sessions', data);
+                } else {
+                    await DB.update('offjob_sessions', data);
+                }
+                const index = sessions.findIndex(s => s.session_code === oldCode);
+                if (index !== -1) sessions[index] = data;
+                showToast('✅ تم تحديث الجلسة بالسيرفر');
+            } else {
+                if (isCodeExists(newCodeNum)) {
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    return;
+                }
+                await DB.insert('offjob_sessions', data);
+                sessions.push(data);
+                showToast('✅ تم إضافة الجلسة للسيرفر');
+            }
+            
+            renderPage();
+            document.getElementById('sessionModal').style.display = 'none';
         };
 
         window.deleteSession = async (sessionCode) => {
-            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الجلسة؟')) return;
-            try {
-                await DB.delete('offjob_sessions', sessionCode.toString());
-                const deletedSession = sessions.find(s => String(s.session_code) === String(sessionCode));
-                sessions = sessions.filter(s => String(s.session_code) !== String(sessionCode));
-                updateUI();
-                
-                if(deletedSession && document.getElementById('sessionsModal').style.display === 'flex') {
-                    const courseName = courses.find(c => String(c.course_code) === String(deletedSession.course_code))?.course_name || '';
-                    window.viewSessions(deletedSession.course_code, courseName);
-                }
-                showToast('🗑️ تم حذف الجلسة');
-            } catch(e) { showToast('❌ فشل الحذف', true); }
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الجلسة من السيرفر نهائياً؟')) return;
+            await DB.delete('offjob_sessions', String(sessionCode));
+            sessions = sessions.filter(s => s.session_code != sessionCode);
+            renderPage();
+            // إغلاق مودال الجلسات إذا كان مفتوحاً
+            document.getElementById('sessionsModal').style.display = 'none';
+            showToast('🗑️ تم الحذف بنجاح');
         };
 
-        window.editSession = (sessionCode) => {
-            const session = sessions.find(s => String(s.session_code) === String(sessionCode));
-            if(session) {
-                document.getElementById('sessionModalTitle').innerText = '✏️ تعديل جلسة';
-                document.getElementById('sessionCode').value = session.session_code;
-                document.getElementById('sessionCode').disabled = true;
-                
-                document.getElementById('sessionCourseCode').innerHTML = courses.map(c => 
-                    `<option value="${c.course_code}" ${String(session.course_code) === String(c.course_code) ? 'selected' : ''}>${c.course_code} - ${escapeHtml(c.course_name)}</option>`
-                ).join('');
-                
-                document.getElementById('sessionDate').value = session.session_date || '';
-                document.getElementById('trainerName').value = session.trainer_name || '';
-                document.getElementById('sessionStartTime').value = session.start_time || '';
-                document.getElementById('sessionEndTime').value = session.end_time || '';
-                document.getElementById('sessionModal').style.display = 'flex';
+        function checkExistingEnrollment(sessionCode, employeeId) {
+            const docId = `${employeeId}_${sessionCode}`;
+            return enrollments.some(e => e.id === docId);
+        }
+        
+        window.quickAddEnrollment = async () => {
+            const sessionCodeRaw = document.getElementById('quickSessionCode').value.trim();
+            const empIdRaw = document.getElementById('quickEmployeeId').value.trim();
+            const status = document.getElementById('quickStatus').value;
+            const scoreRaw = document.getElementById('quickScore').value.trim();
+
+            if (!sessionCodeRaw || !empIdRaw) { 
+                showToast('⚠️ يرجى إدخال كود الجلسة وكود الموظف', true); return; 
             }
+            
+            const sessionCode = parseInt(sessionCodeRaw);
+            const employeeId = parseInt(empIdRaw);
+            
+            if (isNaN(sessionCode) || isNaN(employeeId)) {
+                showToast('❌ الأكواد يجب أن تكون أرقاماً صحيحة', true); return;
+            }
+            
+            if (!sessions.some(s => s.session_code === sessionCode)) {
+                showToast(`❌ الجلسة ${sessionCode} غير موجودة!`, true); return;
+            }
+            
+            if (checkExistingEnrollment(sessionCode, employeeId)) {
+                showToast(`❌ الموظف ${employeeId} مسجل بالفعل في هذه الجلسة!`, true); return;
+            }
+
+            const docId = `${employeeId}_${sessionCode}`;
+            const enrollmentData = {
+                id: docId,
+                employee_id: employeeId,
+                session_code: sessionCode,
+                enrollment_status: String(status),
+                score: scoreRaw !== '' ? parseFloat(scoreRaw) : null,
+                completion_date: new Date().toISOString().slice(0,10),
+                feedback: '',
+                registered_manually: true,
+                registered_at: new Date().toISOString()
+            };
+            
+            // إضافة التسجيل مباشرة لـ Firestore
+            await DB.insert('offjob_enrollments', enrollmentData);
+            enrollments.push(enrollmentData);
+            
+            showToast(`✅ تم تسجيل الموظف بالسيرفر بنجاح`);
+            document.getElementById('quickEmployeeId').value = '';
+            document.getElementById('quickScore').value = '';
+            renderPage();
+        };
+        
+        window.batchAddEnrollments = async () => {
+            const sessionCodeRaw = document.getElementById('batchSessionCode').value.trim();
+            const status = document.getElementById('batchStatus').value;
+            const scoreRaw = document.getElementById('batchScore').value.trim();
+            const rawInput = document.getElementById('batchEmployeeIds').value;
+
+            if (!sessionCodeRaw) { showToast('⚠️ يرجى اختيار الجلسة أولاً', true); return; }
+            const sessionCode = parseInt(sessionCodeRaw);
+            
+            if (!sessions.some(s => s.session_code === sessionCode)) {
+                showToast(`❌ الجلسة ${sessionCode} غير موجودة!`, true); return;
+            }
+            
+            const score = scoreRaw !== '' ? parseFloat(scoreRaw) : null;
+            const employeeIdsRaw = rawInput.split(/[\n,]+/).map(id => id.trim()).filter(id => id.length > 0);
+            
+            let duplicateCount = 0;
+            const newEnrollments = [];
+            
+            employeeIdsRaw.forEach(rawId => {
+                const empId = parseInt(rawId);
+                if (!isNaN(empId)) {
+                    const docId = `${empId}_${sessionCode}`;
+                    if (checkExistingEnrollment(sessionCode, empId)) {
+                        duplicateCount++;
+                    } else {
+                        const enrollmentData = {
+                            id: docId,
+                            employee_id: empId,
+                            session_code: sessionCode,
+                            enrollment_status: String(status),
+                            score: score,
+                            completion_date: new Date().toISOString().slice(0,10),
+                            feedback: '',
+                            registered_manually: true,
+                            registered_at: new Date().toISOString()
+                        };
+                        newEnrollments.push(enrollmentData);
+                        enrollments.push(enrollmentData); // تحديث القائمة المحلية
+                    }
+                }
+            });
+            
+            if (newEnrollments.length > 0) {
+                // رفع الدفعة الجديدة فقط عبر bulkInsert الآمنة
+                await DB.bulkInsert('offjob_enrollments', newEnrollments);
+            }
+            
+            let msg = `✅ تم تسجيل ${newEnrollments.length} موظف بنجاح بالسيرفر`;
+            if (duplicateCount > 0) msg += `، وتم تخطي ${duplicateCount} مسجل مسبقاً`;
+            
+            showToast(msg);
+            document.getElementById('batchEmployeeIds').value = '';
+            document.getElementById('batchScore').value = '';
+            renderPage();
+        };
+        
+        window.deleteEnrollmentByCode = async () => {
+            const sessionCodeRaw = document.getElementById('deleteSessionCode').value.trim();
+            const empIdRaw = document.getElementById('deleteEmployeeId').value.trim();
+            
+            if (!sessionCodeRaw || !empIdRaw) { showToast('⚠️ الرجاء إدخال كود الجلسة والموظف', true); return; }
+            
+            const docId = `${parseInt(empIdRaw)}_${parseInt(sessionCodeRaw)}`;
+            
+            if (!enrollments.some(e => e.id === docId)) {
+                showToast('❌ لم يتم العثور على تسجيل مطابِق', true); return;
+            }
+            
+            if (!confirm(`⚠️ هل أنت متأكد من حذف هذا التسجيل من قاعدة البيانات؟`)) return;
+            
+            // حذف مباشر من Firestore
+            await DB.delete('offjob_enrollments', docId);
+            enrollments = enrollments.filter(e => e.id !== docId);
+            
+            document.getElementById('deleteSessionCode').value = '';
+            document.getElementById('deleteEmployeeId').value = '';
+            showToast('✅ تم الحذف من السيرفر بنجاح');
+            renderPage();
         };
 
-        window.viewSessions = (courseCode, courseName) => {
-            const courseSessions = sessions.filter(s => String(s.course_code) === String(courseCode));
-            courseSessions.sort((a, b) => new Date(b.session_date) - new Date(a.session_date));
+        window.exportEnrollmentsToExcel = () => {
+            if (courses.length === 0 && sessions.length === 0 && enrollments.length === 0) {
+                showToast('⚠️ لا توجد أي بيانات حالياً لتصديرها', true); return;
+            }
             
-            let html = courseSessions.length === 0 
-                ? `<div class="no-sessions">📭 لا توجد جلسات مسجلة لهذا الكورس حتى الآن</div>`
-                : `<div class="sessions-list">` + courseSessions.map(s => `
-                    <div class="session-card">
-                        <div class="session-info">
-                            <span class="session-code">🎯 ${s.session_code}</span>
-                            <span class="session-date">📅 ${s.session_date || 'غير محدد'}</span>
-                            ${s.trainer_name ? `<span class="session-trainer">👨‍🏫 المدرب: ${escapeHtml(s.trainer_name)}</span>` : ''}
-                            ${s.start_time ? `<span class="session-time">🕐 ${s.start_time} - ${s.end_time}</span>` : ''}
+            const coursesData = courses.map(c => ({
+                'course_code': c.course_code || '', 'course_name': c.course_name || '', 'description': c.description || '', 'category': c.category || '', 'target_audience': c.target_audience || '', 'duration_hours': c.duration_hours || 0, 'training_type': c.training_type || 'Off Job', 'status': c.status || 'Active'
+            }));
+            
+            const sessionsData = sessions.map(s => ({
+                'session_code': s.session_code || '', 'course_code': s.course_code || '', 'trainer_name': s.trainer_name || '', 'session_date': s.session_date || '', 'start_time': s.start_time || '', 'end_time': s.end_time || '', 'location': s.location || '', 'max_capacity': s.max_capacity || '', 'status': s.status || 'Active', 'notes': s.notes || ''
+            }));
+            
+            const enrollmentsData = enrollments.map(e => ({
+                'employee_id': e.employee_id || '', 'session_code': e.session_code || '', 'enrollment_status': e.enrollment_status || 'Completed', 'completion_date': e.completion_date || (e.registered_at ? e.registered_at.slice(0, 10) : ''), 'score': e.score !== null && e.score !== undefined ? e.score : '', 'feedback': e.feedback || ''
+            }));
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(coursesData), 'Courses');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sessionsData), 'Sessions');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(enrollmentsData), 'Enrollments');
+            
+            XLSX.writeFile(wb, `OffJob_System_Backup_${new Date().toISOString().slice(0,10)}.xlsx`);
+            showToast('📥 تم التصدير بنجاح');
+        };
+        
+        window.showCourseSessions = (courseCode, courseName) => {
+            const relatedSessions = sessions.filter(s => s.course_code == courseCode);
+            relatedSessions.sort((a, b) => new Date(b.session_date) - new Date(a.session_date));
+            
+            let sessionsHtml = '';
+            if (relatedSessions.length === 0) {
+                sessionsHtml = `<div class="no-sessions">📭 لا توجد جلسات مسجلة لهذا الكورس حتى الآن</div>`;
+            } else {
+                sessionsHtml = `<div class="sessions-list">`;
+                relatedSessions.forEach(session => {
+                    sessionsHtml += `
+                        <div class="session-card">
+                            <div class="session-info">
+                                <span class="session-code">🎯 ${session.session_code}</span>
+                                <span class="session-date">📅 ${session.session_date || 'غير محدد'}</span>
+                                ${session.trainer_name ? `<span class="session-trainer">👨‍🏫 المدرب: ${session.trainer_name}</span>` : ''}
+                                ${session.start_time ? `<span class="session-time">🕐 ${session.start_time} - ${session.end_time}</span>` : ''}
+                            </div>
+                            <div class="session-actions">
+                                <button onclick='window.openSessionModal(${JSON.stringify(session)})' style="background:#ed8936;">✏️ تعديل</button>
+                                <button onclick='window.deleteSession(${session.session_code})' style="background:#e53e3e;">🗑️ حذف</button>
+                            </div>
                         </div>
-                        <div class="session-actions">
-                            <button onclick="window.editSession('${s.session_code}')" style="background:#ed8936;">✏️ تعديل</button>
-                            <button onclick="window.deleteSession('${s.session_code}')" style="background:#e53e3e;">🗑️ حذف</button>
-                        </div>
-                    </div>`).join('') + `</div>`;
+                    `;
+                });
+                sessionsHtml += `</div>`;
+            }
             
             document.getElementById('sessionsModalTitle').innerText = `📚 جلسات كورس: ${courseCode} - ${courseName}`;
-            document.getElementById('sessionsModalContent').innerHTML = html;
+            document.getElementById('sessionsModalContent').innerHTML = sessionsHtml;
             document.getElementById('sessionsModal').style.display = 'flex';
         };
 
-        // 3. إدارة التسجيلات (Enrollments)
-        window.enrollQuick = async () => {
-            const sessionCode = parseInt(document.getElementById('quickSessionCode').value);
-            const employeeId = parseInt(document.getElementById('quickEmployeeId').value);
-            const status = document.getElementById('quickStatus').value;
-            const scoreRaw = document.getElementById('quickScore').value;
-            
-            if (!sessionCode || !employeeId) return showToast('⚠️ يرجى إدخال كود الجلسة والموظف', true);
-            
-            const docId = `${employeeId}_${sessionCode}`;
-            const data = {
-                id: docId, employee_id: employeeId, session_code: sessionCode,
-                enrollment_status: status, score: scoreRaw ? parseFloat(scoreRaw) : null,
-                registered_manually: true, registered_at: new Date().toISOString()
-            };
+        function getLastCodes() {
+            let lastCourse = courses.length > 0 ? [...courses].sort((a, b) => parseInt(b.course_code) - parseInt(a.course_code))[0] : null;
+            let lastSession = sessions.length > 0 ? [...sessions].sort((a, b) => parseInt(b.session_code) - parseInt(a.session_code))[0] : null;
+            return { lastCourse, lastSession };
+        }
+        
+        function renderLastCodesCard() {
+            const { lastCourse, lastSession } = getLastCodes();
+            return `
+                <div class="last-code-card">
+                    <div class="code-group">
+                        <div class="code-item"><div class="code-label">📚 آخر كود كورس</div><div class="${lastCourse ? 'code' : 'no-data'}">${lastCourse ? lastCourse.course_code : 'لا يوجد'}</div></div>
+                        <div class="code-item"><div class="code-label">🎯 آخر كود سيشن</div><div class="${lastSession ? 'code' : 'no-data'}">${lastSession ? lastSession.session_code : 'لا يوجد'}</div></div>
+                    </div>
+                </div>
+            `;
+        }
 
-            try {
-                await DB.insert('offjob_enrollments', data);
-                const index = enrollments.findIndex(e => e.id === docId);
-                if (index >= 0) enrollments[index] = data; else enrollments.push(data);
-                
-                document.getElementById('quickEmployeeId').value = '';
-                document.getElementById('quickScore').value = '';
-                updateUI();
-                showToast(`✅ تم تسجيل الموظف ${employeeId} بالسيرفر`);
-            } catch(e) { showToast('❌ فشل التسجيل', true); }
-        };
-
-        window.enrollBatch = async () => {
-            const sessionCode = parseInt(document.getElementById('batchSessionCode').value);
-            const status = document.getElementById('batchStatus').value;
-            const scoreRaw = document.getElementById('batchScore').value;
-            const rawInput = document.getElementById('batchEmployeeIds').value;
-
-            if (!sessionCode) return showToast('⚠️ يرجى اختيار الجلسة', true);
-            
-            const employeeIds = rawInput.split(/[\n,]+/).map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-            if (employeeIds.length === 0) return showToast('⚠️ لم يتم العثور على أكواد موظفين صالحة', true);
-
-            const batchData = [];
-            employeeIds.forEach(empId => {
-                batchData.push({
-                    id: `${empId}_${sessionCode}`, employee_id: empId, session_code: sessionCode,
-                    enrollment_status: status, score: scoreRaw ? parseFloat(scoreRaw) : null,
-                    registered_manually: true, registered_at: new Date().toISOString()
-                });
-            });
-
-            try {
-                await DB.bulkInsert('offjob_enrollments', batchData);
-                batchData.forEach(newData => {
-                    const index = enrollments.findIndex(e => e.id === newData.id);
-                    if (index >= 0) enrollments[index] = newData; else enrollments.push(newData);
-                });
-                
-                document.getElementById('batchEmployeeIds').value = '';
-                document.getElementById('batchScore').value = '';
-                updateUI();
-                showToast(`✅ تم رفع تسجيل ${batchData.length} موظف للسيرفر دفعة واحدة`);
-            } catch(e) { showToast('❌ فشل التسجيل الجماعي', true); }
-        };
-
-        window.deleteEnrollment = async () => {
-            const sessionCode = document.getElementById('deleteSessionCode').value.trim();
-            const employeeId = document.getElementById('deleteEmployeeId').value.trim();
-            if (!sessionCode || !employeeId) return showToast('⚠️ أدخل الأكواد', true);
-            
-            const docId = `${employeeId}_${sessionCode}`;
-            if (!enrollments.some(e => e.id === docId)) return showToast('❌ لم يتم العثور على هذا التسجيل', true);
-            if (!confirm('⚠️ تأكيد الحذف؟')) return;
-
-            try {
-                await DB.delete('offjob_enrollments', docId);
-                enrollments = enrollments.filter(e => e.id !== docId);
-                document.getElementById('deleteSessionCode').value = '';
-                document.getElementById('deleteEmployeeId').value = '';
-                updateUI();
-                showToast('✅ تم حذف التسجيل من السيرفر');
-            } catch(e) { showToast('❌ فشل الحذف', true); }
-        };
-
-        // ================= تصدير إكسيل =================
-        window.exportData = () => {
-            if (courses.length === 0 && sessions.length === 0 && enrollments.length === 0) return showToast('⚠️ لا توجد بيانات', true);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(courses), 'Courses');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sessions), 'Sessions');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(enrollments), 'Enrollments');
-            XLSX.writeFile(wb, `OffJob_Backup_${new Date().toISOString().slice(0,10)}.xlsx`);
-            showToast('📥 تم التصدير بنجاح');
-        };
-
-        // ================= ربط أحداث الأزرار =================
-        document.getElementById('btnAddCourse').onclick = () => {
-            document.getElementById('courseModalTitle').innerText = '➕ إضافة كورس جديد';
-            document.getElementById('courseCode').value = '';
-            document.getElementById('courseCode').disabled = false;
-            document.getElementById('courseName').value = '';
-            document.getElementById('courseCategory').value = '';
-            document.getElementById('courseDuration').value = '';
+        window.openCourseModal = (item = null) => {
+            document.getElementById('courseModalTitle').innerText = item ? '✏️ تعديل كورس' : '➕ إضافة كورس جديد';
+            document.getElementById('courseCode').value = item?.course_code || '';
+            document.getElementById('courseName').value = item?.course_name || '';
+            document.getElementById('courseDescription').value = item?.description || '';
+            document.getElementById('courseCategory').value = item?.category || '';
+            document.getElementById('courseTargetAudience').value = item?.target_audience || '';
+            document.getElementById('courseDuration').value = item?.duration_hours || '';
+            document.getElementById('courseTrainingType').value = item?.training_type || 'Off Job';
+            document.getElementById('courseStatus').value = item?.status || 'Active';
+            document.getElementById('courseModal').dataset.editMode = item ? 'true' : 'false';
+            document.getElementById('courseModal').dataset.oldCode = item?.course_code || '';
             document.getElementById('courseModal').style.display = 'flex';
         };
-
-        document.getElementById('btnAddSession').onclick = () => {
-            document.getElementById('sessionModalTitle').innerText = '➕ إضافة جلسة جديدة';
-            document.getElementById('sessionCode').value = '';
-            document.getElementById('sessionCode').disabled = false;
-            document.getElementById('sessionCourseCode').innerHTML = '<option value="">اختر الكورس</option>' + courses.map(c => `<option value="${c.course_code}">${c.course_code} - ${escapeHtml(c.course_name)}</option>`).join('');
-            document.getElementById('sessionDate').value = '';
-            document.getElementById('trainerName').value = '';
-            document.getElementById('sessionStartTime').value = '';
-            document.getElementById('sessionEndTime').value = '';
+        
+        window.openSessionModal = (item = null) => {
+            document.getElementById('sessionModalTitle').innerText = item ? '✏️ تعديل جلسة' : '➕ إضافة جلسة جديدة';
+            document.getElementById('sessionCode').value = item?.session_code || '';
+            document.getElementById('sessionDate').value = item?.session_date || '';
+            document.getElementById('trainerName').value = item?.trainer_name || '';
+            document.getElementById('sessionStartTime').value = item?.start_time || '';
+            document.getElementById('sessionEndTime').value = item?.end_time || '';
+            document.getElementById('sessionLocation').value = item?.location || '';
+            document.getElementById('sessionMaxCapacity').value = item?.max_capacity || '';
+            document.getElementById('sessionStatus').value = item?.status || 'Active';
+            document.getElementById('sessionNotes').value = item?.notes || '';
+            
+            document.getElementById('sessionCourseCode').innerHTML = '<option value="">اختر الكورس</option>' + courses.map(c => 
+                `<option value="${c.course_code}" ${item?.course_code == c.course_code ? 'selected' : ''}>${c.course_code} - ${c.course_name}</option>`
+            ).join('');
+            
+            document.getElementById('sessionModal').dataset.editMode = item ? 'true' : 'false';
+            document.getElementById('sessionModal').dataset.oldCode = item?.session_code || '';
             document.getElementById('sessionModal').style.display = 'flex';
         };
 
-        document.getElementById('btnSaveCourse').onclick = window.saveCourse;
-        document.getElementById('btnSaveSession').onclick = window.saveSession;
-        document.getElementById('btnQuickEnroll').onclick = window.enrollQuick;
-        document.getElementById('btnBatchEnroll').onclick = window.enrollBatch;
-        document.getElementById('btnDeleteEnroll').onclick = window.deleteEnrollment;
-        document.getElementById('btnExportExcel').onclick = window.exportData;
+        window.addCourse = () => window.openCourseModal();
+        window.addSession = () => window.openSessionModal();
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        
+        window.searchData = () => { searchTerm = document.getElementById('searchInput')?.value.trim() || ""; renderPage(); };
+        window.clearSearch = () => { document.getElementById('searchInput').value = ''; searchTerm = ''; renderPage(); };
 
-        document.getElementById('btnSearch').onclick = () => {
-            searchTerm = document.getElementById('searchInput').value.trim();
-            document.getElementById('btnClearSearch').style.display = searchTerm ? 'inline-block' : 'none';
-            updateUI();
-        };
+        function renderPage() {
+            const html = `
+                ${renderLastCodesCard()}
+                
+                <div class="enrollment-card">
+                    <h3>⚡ تسجيل سريع لمتدرب</h3>
+                    <div class="enrollment-form">
+                        <div class="form-group">
+                            <label>📝 كود الجلسة</label>
+                            <input type="number" id="quickSessionCode" placeholder="مثال: 2100" list="sessionsList">
+                            <datalist id="sessionsList">${sessions.map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('')}</datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>👤 كود الموظف</label>
+                            <input type="number" id="quickEmployeeId" placeholder="مثال: 12236" list="employeesDatalist">
+                            <datalist id="employeesDatalist">${employeesList.map(emp => `<option value="${emp.id}">${emp.id} - ${emp.fullName || ''}</option>`).join('')}</datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>📌 الحالة</label>
+                            <select id="quickStatus"><option value="Completed">✅ مكتمل</option><option value="In Progress">🔄 قيد التقدم</option><option value="Failed">❌ راسب</option></select>
+                        </div>
+                        <div class="form-group"><label>🎯 الدرجة (اختياري)</label><input type="number" id="quickScore" placeholder="مثال: 85" min="0" max="100"></div>
+                        <button onclick="window.quickAddEnrollment()">➕ تسجيل</button>
+                    </div>
+                </div>
+                
+                <div class="enrollment-card">
+                    <h3>📋 تسجيل متعدد (دفعة واحدة)</h3>
+                    <div class="enrollment-form">
+                        <div class="form-group">
+                            <label>📝 كود الجلسة</label>
+                            <select id="batchSessionCode"><option value="">اختر الجلسة</option>${sessions.map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('')}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>📌 الحالة</label>
+                            <select id="batchStatus"><option value="Completed">✅ مكتمل</option><option value="In Progress">🔄 قيد التقدم</option><option value="Failed">❌ راسب</option></select>
+                        </div>
+                        <div class="form-group"><label>🎯 الدرجة للجميع (اختياري)</label><input type="number" id="batchScore" placeholder="مثال: 85"></div>
+                    </div>
+                    <div class="batch-input-area">
+                        <label>📝 أكواد الموظفين (كل كود في سطر منفصل)</label>
+                        <textarea id="batchEmployeeIds" rows="3" placeholder="12336&#10;12337&#10;12338"></textarea>
+                        <button onclick="window.batchAddEnrollments()">📥 تسجيل الجميع بالسيرفر</button>
+                    </div>
+                </div>
+                
+                <div class="delete-enroll-card">
+                    <h3>🗑️ حذف تسجيل موظف من جلسة</h3>
+                    <div class="delete-enroll-form">
+                        <div class="form-group"><label>📝 كود الجلسة</label><input type="number" id="deleteSessionCode" placeholder="مثال: 2100"></div>
+                        <div class="form-group"><label>👤 كود الموظف</label><input type="number" id="deleteEmployeeId" placeholder="مثال: 12306"></div>
+                        <button onclick="window.deleteEnrollmentByCode()">🗑️ حذف التسجيل</button>
+                    </div>
+                </div>
+                
+                <div class="action-bar">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 بحث في الكورسات..." value="${searchTerm}" onkeyup="if(event.key==='Enter') window.searchData()">
+                        <button onclick="window.searchData()">بحث</button>
+                        ${searchTerm ? '<button onclick="window.clearSearch()" style="background:#718096;">✖️ إلغاء</button>' : ''}
+                    </div>
+                    <div class="action-buttons">
+                        <button onclick="window.addCourse()" style="background:#2b7a4b;">📚 إضافة كورس</button>
+                        <button onclick="window.addSession()" style="background:#4299e1;">🎯 إضافة جلسة</button>
+                        <button onclick="window.refreshFromLocal()" style="background:#9f7aea;">🔄 تحديث من السيرفر</button>
+                        <button onclick="window.exportEnrollmentsToExcel()" style="background:#ed8936;">📤 تصدير لـ Excel</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = html;
+        }
+        
+        async function logout() { 
+            await signOut(auth); 
+            window.location.href = 'login.html'; 
+        }
+        window.logout = logout;
 
-        document.getElementById('btnClearSearch').onclick = () => {
-            searchTerm = '';
-            document.getElementById('searchInput').value = '';
-            document.getElementById('btnClearSearch').style.display = 'none';
-            updateUI();
-        };
-
-        document.getElementById('logoutBtn').onclick = async () => {
-            await signOut(auth);
-            window.location.href = 'login.html';
-        };
-
-        // ================= التحقق من تسجيل الدخول وبدء العمل =================
+        // ===== الحماية والمصادقة للاتصال بـ Firebase =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                await loadAllData();
+                currentUser = user;
+                try {
+                    await loadAllDataFromDB();
+                    
+                    document.getElementById('app').innerHTML = `
+                        <div class="navbar">
+                            <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير - <span style="color:#4299e1;">📘 Off Job</span></h2></div>
+                            <div class="nav-links">
+                                <a href="index.html" class="home">🏠 الرئيسية</a>
+                                <button onclick="logout()" class="logout">🚪 تسجيل خروج</button>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div id="content"></div>
+                        </div>
+                        
+                        <!-- Course Modal -->
+                        <div id="courseModal" class="modal">
+                            <div class="modal-content">
+                                <h3 id="courseModalTitle">إضافة كورس</h3>
+                                <div class="form-group"><label>كود الكورس *</label><input type="number" id="courseCode"></div>
+                                <div class="form-group"><label>اسم الكورس *</label><input type="text" id="courseName"></div>
+                                <div class="form-group"><label>الوصف</label><textarea id="courseDescription" rows="2"></textarea></div>
+                                <div class="form-group"><label>التصنيف</label><select id="courseCategory"><option value="">-- اختر --</option><option value="Compliance">Compliance</option><option value="Service">Service</option><option value="Soft Skills">Soft Skills</option></select></div>
+                                <div class="form-group"><label>الجمهور المستهدف</label><input type="text" id="courseTargetAudience"></div>
+                                <div class="form-group"><label>⏱️ مدة الساعات</label><input type="number" id="courseDuration" step="0.5"></div>
+                                <div class="form-group"><label>نوع التدريب</label><select id="courseTrainingType"><option value="Off Job">Off Job</option><option value="Outsourced">Outsourced</option><option value="Online">Online</option><option value="Blended">Blended</option></select></div>
+                                <div class="form-group"><label>الحالة</label><select id="courseStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Archived">Archived</option></select></div>
+                                <div class="modal-buttons"><button onclick="window.saveCourse()">💾 حفظ</button><button onclick="window.closeModal('courseModal')" style="background:#a0aec0;">❌ إلغاء</button></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Session Modal -->
+                        <div id="sessionModal" class="modal">
+                            <div class="modal-content">
+                                <h3 id="sessionModalTitle">إضافة جلسة</h3>
+                                <div class="form-group"><label>كود الجلسة *</label><input type="number" id="sessionCode"></div>
+                                <div class="form-group"><label>الكورس التابع له *</label><select id="sessionCourseCode"></select></div>
+                                <div class="form-group"><label>👨‍🏫 المدرب</label><input type="text" id="trainerName"></div>
+                                <div class="form-group"><label>📅 التاريخ</label><input type="date" id="sessionDate"></div>
+                                <div class="form-group"><label>🕐 وقت البداية</label><input type="time" id="sessionStartTime"></div>
+                                <div class="form-group"><label>🕐 وقت النهاية</label><input type="time" id="sessionEndTime"></div>
+                                <div class="form-group"><label>📍 الموقع</label><input type="text" id="sessionLocation"></div>
+                                <div class="form-group"><label>👥 السعة القصوى</label><input type="number" id="sessionMaxCapacity"></div>
+                                <div class="form-group"><label>الحالة</label><select id="sessionStatus"><option value="Active">Active</option><option value="Cancelled">Cancelled</option><option value="Completed">Completed</option><option value="Scheduled">Scheduled</option></select></div>
+                                <div class="form-group"><label>ملاحظات</label><textarea id="sessionNotes" rows="2"></textarea></div>
+                                <div class="modal-buttons"><button onclick="window.saveSession()">💾 حفظ</button><button onclick="window.closeModal('sessionModal')" style="background:#a0aec0;">❌ إلغاء</button></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sessions Viewer Modal -->
+                        <div id="sessionsModal" class="modal">
+                            <div class="modal-content">
+                                <h3 id="sessionsModalTitle" style="color:#1e3a5f;">جلسات الكورس</h3>
+                                <div id="sessionsModalContent"></div>
+                                <div class="modal-buttons"><button onclick="window.closeModal('sessionsModal')" style="background:#a0aec0;">❌ إغلاق</button></div>
+                            </div>
+                        </div>
+                        
+                        <div class="footer"><p>© 2026 نظام إدارة التعليم والتطوير - Off Job</p></div>
+                    `;
+                    renderPage();
+                } catch(error) {
+                    document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px; color:#e53e3e;">❌ خطأ في الاتصال بقاعدة البيانات</div>`;
+                }
             } else {
                 window.location.href = 'login.html';
             }
