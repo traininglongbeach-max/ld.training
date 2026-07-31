@@ -4,82 +4,535 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة التعليم والتطوير</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- تحويل ملفات الجافاسكريبت لتعمل بنظام Modules -->
-    <script type="module" src="database.js"></script>
-    <script type="module" src="auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        :root {
+            --primary: #1e3a5f; --secondary: #2b7a4b; --accent: #ffd700; --bg: #f0f4f8;
+            --text: #1a202c; --text-light: #4a5568; --shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15); --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --radius: 1.5rem;
+        }
+        body { background: var(--bg); color: var(--text); transition: var(--transition); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* ===== NAVBAR ===== */
+        .navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); padding: 0.8rem 2.5rem; box-shadow: 0 2px 30px rgba(0, 0, 0, 0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 1000; transition: var(--transition); border-bottom: 3px solid transparent; }
+        .navbar.scrolled { border-bottom: 3px solid var(--secondary); box-shadow: 0 4px 40px rgba(43, 122, 75, 0.15); }
+        .logo h2 { color: var(--primary); font-size: 1.6rem; font-weight: 900; }
+        .logo span { color: var(--secondary); position: relative; }
+        .logo span::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--accent); border-radius: 10px; animation: shimmer 2s infinite; }
+        @keyframes shimmer { 0%, 100% { width: 100%; opacity: 1; } 50% { width: 60%; opacity: 0.5; } }
+        .nav-links { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; }
+        .nav-links a, .nav-links button, .nav-links span { text-decoration: none; padding: 0.6rem 1.5rem; border-radius: 2rem; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; transition: var(--transition); display: flex; align-items: center; gap: 0.5rem; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+        .nav-links .home { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .nav-links .admin { background: linear-gradient(135deg, #9f7aea, #6b46c1); color: white; }
+        .nav-links .logout { background: linear-gradient(135deg, #fc8181, #e53e3e); color: white; }
+        .nav-links .dark-mode-btn { background: #2d3748; color: white; padding: 0.6rem 1rem; font-size: 1.2rem; }
+        .nav-links .dark-mode-btn:hover { background: #1a202c; transform: rotate(20deg); }
+        .nav-links .user-welcome { background: linear-gradient(135deg, #edf2f7, #e2e8f0); color: var(--primary); font-weight: 700; cursor: default; }
+        .nav-links .task-btn { background: #e53e3e; color: white; }
+        .nav-links .offjob-btn { background: #4299e1; color: white; }
+        .nav-links .onjob-btn { background: #48bb78; color: white; }
+        .nav-links .performers-btn { background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; }
+        .nav-links .update-btn { background: linear-gradient(135deg, var(--secondary), #38a169); color: white; }
+
+        /* ===== HERO ===== */
+        .hero { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 4rem 2rem; text-align: center; color: white; position: relative; overflow: hidden; min-height: 280px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 60%); animation: heroGlow 8s ease-in-out infinite alternate; }
+        @keyframes heroGlow { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10%, 10%) scale(1.1); } }
+        .hero h1 { font-size: 3rem; font-weight: 900; position: relative; z-index: 1; animation: fadeInUp 1s ease; }
+        .hero h1 .highlight { color: var(--accent); position: relative; }
+        .hero h1 .highlight::after { content: '✨'; position: absolute; top: -10px; right: -30px; font-size: 1.5rem; animation: sparkle 2s infinite; }
+        @keyframes sparkle { 0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; } 50% { transform: scale(1.3) rotate(20deg); opacity: 0.7; } }
+        .hero p { font-size: 1.2rem; opacity: 0.9; margin-top: 1rem; position: relative; z-index: 1; animation: fadeInUp 1.2s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .floating-shapes { position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: hidden; z-index: 0; }
+        .shape { position: absolute; border-radius: 50%; opacity: 0.1; animation: float 15s infinite ease-in-out; }
+        .shape:nth-child(1) { width: 100px; height: 100px; background: var(--accent); top: 10%; left: 5%; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; background: white; bottom: 10%; right: 5%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; background: var(--accent); top: 50%; right: 20%; animation-delay: 6s; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 25% { transform: translate(30px, -30px) scale(1.1); } 50% { transform: translate(-20px, 20px) scale(0.9); } 75% { transform: translate(20px, -10px) scale(1.05); } }
+
+        /* ===== SEARCH ===== */
+        .search-container { max-width: 900px; margin: -1.5rem auto 2rem; padding: 0 1.5rem; position: relative; z-index: 10; }
+        .search-box { background: white; border-radius: 3rem; padding: 0.3rem 1.5rem; display: flex; align-items: center; gap: 0.8rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); transition: var(--transition); border: 2px solid transparent; position: relative; }
+        .search-box:focus-within { border-color: var(--secondary); box-shadow: 0 15px 50px rgba(43, 122, 75, 0.2); transform: translateY(-2px); }
+        .search-box .search-icon { font-size: 1.2rem; color: #a0aec0; transition: var(--transition); }
+        .search-box:focus-within .search-icon { color: var(--secondary); }
+        .search-box input { flex: 1; padding: 0.9rem 0; border: none; background: transparent; font-size: 1rem; outline: none; color: var(--text); }
+        .search-box input::placeholder { color: #a0aec0; }
+        .search-box .search-clear { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #a0aec0; display: none; padding: 0.3rem 0.5rem; transition: var(--transition); border-radius: 50%; }
+        .search-box .search-clear:hover { color: #e53e3e; background: #fed7d7; transform: scale(1.1); }
+        .search-box .search-shortcut { font-size: 0.7rem; color: #a0aec0; background: #edf2f7; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-weight: 600; direction: ltr; }
+        .search-box:focus-within .search-shortcut { display: none; }
+        #searchResults { background: white; border-radius: 1.5rem; margin-top: 0.8rem; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); max-height: 450px; overflow-y: auto; display: none; padding: 0.5rem; position: relative; }
+        #searchResults.active { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        #searchResults .search-loading { text-align: center; padding: 2rem; color: #a0aec0; }
+        #searchResults .search-loading .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top: 3px solid var(--secondary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .search-result-item { padding: 0.8rem 1.2rem; border-radius: 1rem; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid #f0f4f8; }
+        .search-result-item:hover { background: #f7fafc; transform: translateX(-5px); }
+        .search-result-item .icon { font-size: 1.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f0f4f8; border-radius: 0.8rem; flex-shrink: 0; }
+        .search-result-item .info { flex: 1; }
+        .search-result-item .info .title { font-weight: 600; color: var(--text); }
+        .search-result-item .info .title mark { background: #fef3c7; padding: 0 0.2rem; border-radius: 0.2rem; color: var(--primary); }
+        .search-result-item .info .sub { font-size: 0.8rem; color: #a0aec0; margin-top: 0.1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .search-result-item .badge { font-size: 0.65rem; padding: 0.2rem 0.7rem; border-radius: 1rem; background: #e2e8f0; color: #4a5568; flex-shrink: 0; font-weight: 600; }
+        .search-result-item .badge.link { background: #dbeafe; color: #1e40af; }
+        .search-result-item .badge.section { background: #fef3c7; color: #92400e; }
+        .search-filters { display: flex; gap: 0.5rem; padding: 0.5rem 0.5rem 0.8rem 0.5rem; border-bottom: 1px solid #f0f4f8; flex-wrap: wrap; }
+        .search-filters .filter-btn { padding: 0.3rem 1rem; border-radius: 2rem; border: 1px solid #e2e8f0; background: transparent; font-size: 0.75rem; cursor: pointer; transition: var(--transition); color: var(--text-light); font-weight: 600; }
+        .search-filters .filter-btn:hover { background: #f0f4f8; }
+        .search-filters .filter-btn.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+
+        /* ===== SECTIONS ===== */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem 3rem; }
+        .sections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; }
+        .section-card { background: white; border-radius: var(--radius); padding: 1.8rem; box-shadow: var(--shadow); transition: var(--transition); position: relative; overflow: hidden; border: 2px solid transparent; opacity: 0; transform: translateY(40px); }
+        .section-card.visible { opacity: 1; transform: translateY(0); }
+        .section-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent)); transform: scaleX(0); transform-origin: left; transition: var(--transition); }
+        .section-card:hover::before { transform: scaleX(1); }
+        .section-card:hover { transform: translateY(-10px) scale(1.01); box-shadow: var(--shadow-hover); border-color: var(--secondary); }
+        .section-card .section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .section-card .section-icon { font-size: 2.5rem; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f4f8, #e2e8f0); border-radius: 1rem; transition: var(--transition); flex-shrink: 0; }
+        .section-card:hover .section-icon { background: linear-gradient(135deg, var(--primary), var(--secondary)); transform: rotate(10deg) scale(1.1); }
+        .section-card .section-title { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+        .section-card .section-desc { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.6; }
+        .section-card .links-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+        .section-card .link-item { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 1rem; background: #f7fafc; border-radius: 0.8rem; transition: var(--transition); text-decoration: none; color: var(--text); }
+        .section-card .link-item:hover { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; transform: translateX(-5px); }
+        .section-card .link-item .link-title { font-weight: 500; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-card .link-item .view-count { font-size: 0.7rem; color: #a0aec0; }
+        .section-card .link-item:hover .view-count { color: rgba(255, 255, 255, 0.7); }
+        .section-card .pinned-badge { background: var(--accent); color: var(--primary); padding: 0.1rem 0.5rem; border-radius: 1rem; font-size: 0.6rem; font-weight: 700; }
+        .section-card .empty-links { text-align: center; padding: 1rem; color: #a0aec0; }
+        .footer { text-align: center; padding: 2.5rem; color: var(--text-light); background: white; border-top: 1px solid #e2e8f0; font-size: 0.9rem; }
+
+        /* ===== DARK MODE ===== */
+        body.dark-mode { --bg: #1a202c; --text: #f7fafc; --text-light: #a0aec0; --shadow: 0 10px 40px rgba(0, 0, 0, 0.3); --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.4); }
+        body.dark-mode .navbar { background: rgba(26, 32, 44, 0.95); }
+        body.dark-mode .navbar .logo h2 { color: #f7fafc; }
+        body.dark-mode .search-box { background: #2d3748; }
+        body.dark-mode .search-box input { color: #f7fafc; }
+        body.dark-mode .search-box .search-shortcut { background: #4a5568; color: #a0aec0; }
+        body.dark-mode #searchResults { background: #2d3748; }
+        body.dark-mode .search-result-item { border-bottom-color: #4a5568; }
+        body.dark-mode .search-result-item:hover { background: #4a5568; }
+        body.dark-mode .search-result-item .info .title { color: #f7fafc; }
+        body.dark-mode .search-result-item .icon { background: #4a5568; }
+        body.dark-mode .search-filters { border-bottom-color: #4a5568; }
+        body.dark-mode .search-filters .filter-btn { border-color: #4a5568; color: #a0aec0; }
+        body.dark-mode .search-filters .filter-btn:hover { background: #4a5568; }
+        body.dark-mode .search-filters .filter-btn.active { background: var(--secondary); color: white; }
+        body.dark-mode .section-card { background: #2d3748; }
+        body.dark-mode .section-card .section-title { color: #f7fafc; }
+        body.dark-mode .section-card .link-item { background: #4a5568; color: #f7fafc; }
+        body.dark-mode .section-card .section-icon { background: #4a5568; }
+        body.dark-mode .footer { background: #2d3748; border-top-color: #4a5568; }
+        body.dark-mode .hero { background: linear-gradient(135deg, #0d1b2a, #1a3a2a); }
+        body.dark-mode .nav-links .user-welcome { background: #4a5568; color: #f7fafc; }
+
+        /* ===== TOAST ===== */
+        .toast-msg { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--secondary); color: white; padding: 0.8rem 2rem; border-radius: 2rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); z-index: 9999; animation: slideUp 0.3s ease; font-weight: 500; }
+        .toast-msg.error { background: #e53e3e; }
+        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+        @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .navbar { padding: 0.8rem 1rem; } .sections-grid { grid-template-columns: 1fr; } .search-container { padding: 0 1rem; } .nav-links a, .nav-links button, .nav-links span { padding: 0.4rem 0.8rem; font-size: 0.75rem; } .nav-links .user-welcome { font-size: 0.7rem; padding: 0.3rem 0.6rem; } .search-box .search-shortcut { display: none; } .search-filters { justify-content: center; } }
+        @media (max-width: 480px) { .hero h1 { font-size: 1.5rem; } .hero p { font-size: 1rem; } }
+    </style>
 </head>
 <body>
     <div id="app">
-        <!-- شاشة انتظار بسيطة لحين رد سيرفر Firebase بحالة المصادقة -->
-        <div style="text-align:center; padding:100px 20px; font-family:'Tajawal', sans-serif; color:#1e3a5f;">
-            <h2>جاري تهيئة مساحة العمل والتحقق من الصلاحيات... ⏳</h2>
+        <div style="text-align:center; padding:100px; font-size:1.5rem; color:var(--primary);">
+            جاري تهيئة النظام والتحقق من الصلاحيات... ⏳
         </div>
     </div>
 
-    <!-- استدعاء سكريبت العمليات الأساسية -->
-    <script type="module" src="script.js"></script>
-    
+    <!-- دمج الأكواد ضمن بيئة Modules لدعم Firebase -->
     <script type="module">
-        import { auth } from './database.js';
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        const appContainer = document.getElementById('app');
+        // متغيرات النظام
+        let currentUser = null;
+        let isAdmin = false;
+        let darkMode = localStorage.getItem('darkMode') === 'true';
 
-        // الاستماع لحالة المستخدم من Firebase
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // المستخدم مسجل الدخول، يتم بناء وعرض الواجهة
-                appContainer.innerHTML = `
-                    <div class="navbar">
-                        <div class="logo">
-                            <h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2>
-                        </div>
-                        <div class="nav-links" id="navLinks"></div>
-                    </div>
+        // ===== TOAST =====
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            if (isError) toast.classList.add('error');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
 
-                    <div class="hero">
-                        <h1>نظام إدارة التعليم والتطوير</h1>
-                        <p>منصة متكاملة لإدارة التدريب</p>
-                    </div>
+        // ===== DARK MODE =====
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            localStorage.setItem('darkMode', darkMode);
+            document.body.classList.toggle('dark-mode', darkMode);
+            updateNavbar();
+        }
 
-                    <!-- شريط البحث -->
-                    <div class="search-container">
-                        <div class="search-box">
-                            <span class="search-icon">🔍</span>
-                            <input type="text" id="searchInput" placeholder="ابحث عن قسم أو رابط...">
-                        </div>
-                        <div id="searchResults"></div>
-                    </div>
+        // ===== UPDATE NAVBAR =====
+        function updateNavbar() {
+            const navLinks = document.getElementById('navLinks');
+            if (!navLinks) return;
 
-                    <div class="container">
-                        <div class="sections-grid" id="sectionsContainer"></div>
-                    </div>
+            const darkIcon = darkMode ? '☀️' : '🌙';
+            const username = currentUser?.username || currentUser?.email || 'مستخدم';
 
-                    <div class="footer">
-                        <p>© 2026 نظام إدارة التعليم والتطوير - جميع الحقوق محفوظة</p>
+            navLinks.innerHTML = `
+                <span class="user-welcome">👋 مرحباً ${escapeHtml(username)}</span>
+                <a href="task.html" class="task-btn"><i class="fas fa-tasks"></i> Task of the Day</a>
+                <a href="reports-offjob.html" class="offjob-btn"><i class="fas fa-chart-bar"></i> Off Job Report</a>
+                <a href="reports-onjob.html" class="onjob-btn"><i class="fas fa-chart-line"></i> On Job Report</a>
+                <a href="top-performers.html" class="performers-btn"><i class="fas fa-trophy"></i> تحليل التقرير</a>
+                <a href="update.html" class="update-btn"><i class="fas fa-sync-alt"></i> تحديث البيانات</a>
+                ${isAdmin ? `<a href="admin.html" class="admin"><i class="fas fa-cog"></i> لوحة التحكم</a>` : ''}
+                <button class="dark-mode-btn" onclick="toggleDarkMode()">${darkIcon}</button>
+                <button onclick="logout()" class="logout" style="border:none;"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</button>
+            `;
+
+            document.querySelectorAll('.nav-links a:not([target="_blank"])').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && !href.startsWith('http') && !href.startsWith('//') && href !== '#') {
+                    link.setAttribute('target', '_self');
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== LOGOUT =====
+        async function logout() {
+            try {
+                await signOut(auth);
+                showToast('👋 تم تسجيل الخروج بنجاح');
+                setTimeout(() => window.location.href = 'login.html', 500);
+            } catch(error) {
+                showToast('❌ حدث خطأ أثناء تسجيل الخروج', true);
+            }
+        }
+
+        // ===== RENDER SECTIONS FROM FIREBASE =====
+        async function renderSections() {
+            const container = document.getElementById('sectionsContainer');
+            if (!container) return;
+
+            await DB.init();
+            const sections = await DB.getAll('sections') || [];
+            const links = await DB.getAll('links') || [];
+
+            const sectionsWithLinks = sections.map(section => ({
+                ...section,
+                // ربط الروابط بالأقسام بناءً على ID
+                links: links.filter(link => String(link.sectionId) === String(section.id))
+            }));
+
+            if (sectionsWithLinks.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding:4rem; background:white; border-radius:2rem; box-shadow:var(--shadow);">
+                        <div style="font-size:4rem; margin-bottom:1rem;">📂</div>
+                        <h3 style="color:var(--text-light);">لا توجد أقسام بعد</h3>
+                        <p style="color:#a0aec0; margin-top:0.5rem;">تواصل مع المدير لإضافة الأقسام والروابط</p>
                     </div>
                 `;
-                
-                // ربط حدث البحث عبر EventListener (لأن onkeyup في HTML المدمج لا يتعرف على الـ Modules بسهولة)
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.addEventListener('keyup', () => {
-                        if (typeof window.searchContent === 'function') window.searchContent();
+                return;
+            }
+
+            sectionsWithLinks.sort((a, b) => {
+                const aHasPinned = a.links.some(l => l.pinned);
+                const bHasPinned = b.links.some(l => l.pinned);
+                if (aHasPinned && !bHasPinned) return -1;
+                if (!aHasPinned && bHasPinned) return 1;
+                return 0;
+            });
+
+            container.innerHTML = sectionsWithLinks.map((section, index) => {
+                const sortedLinks = [...section.links].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+                const delay = index * 0.1;
+
+                return `
+                    <div class="section-card" style="transition-delay: ${delay}s;" id="section-${section.id}">
+                        <div class="section-header">
+                            <div class="section-icon"><span>${section.icon || '📁'}</span></div>
+                            <div>
+                                <div class="section-title">${escapeHtml(section.name)}</div>
+                                <div class="section-desc">${escapeHtml(section.description || '')}</div>
+                            </div>
+                        </div>
+                        <div class="links-list">
+                            ${sortedLinks.length > 0 ? sortedLinks.map(link => `
+                                <a href="${link.url || '#'}" class="link-item" onclick="handleLinkClick(event, '${section.id}', '${link.id}')">
+                                    <span class="link-title">
+                                        <span class="link-icon">${link.pinned ? '📌' : '🔗'}</span>
+                                        <span>${escapeHtml(link.title)}</span>
+                                        ${link.pinned ? '<span class="pinned-badge">مثبت</span>' : ''}
+                                    </span>
+                                    ${link.views ? `<span class="view-count">👁️ ${link.views}</span>` : ''}
+                                </a>
+                            `).join('') : '<div class="empty-links">📭 لا توجد روابط حالياً</div>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            setTimeout(() => {
+                const cards = document.querySelectorAll('.section-card');
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
                     });
+                }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+                cards.forEach(card => observer.observe(card));
+            }, 100);
+        }
+
+        // ===== HANDLE LINK CLICK & TRACK VIEW =====
+        async function trackView(sectionId, linkId) {
+            try {
+                // تحديث مباشر للعنصر في قاعدة البيانات بدون مسح الجدول
+                const link = await DB.get('links', linkId);
+                if (link) {
+                    await DB.update('links', { id: linkId, views: (link.views || 0) + 1 });
+                }
+            } catch(e) {
+                console.error('Failed to track view', e);
+            }
+        }
+
+        function handleLinkClick(event, sectionId, linkId) {
+            const linkElement = event.currentTarget;
+            const href = linkElement.getAttribute('href');
+            
+            trackView(sectionId, linkId);
+
+            if (!href || href === '#') {
+                event.preventDefault();
+                return;
+            }
+
+            const isInternalLink = href.startsWith('#') || href.startsWith('index.html') || href.startsWith('./') || href.endsWith('.html') || !href.startsWith('http');
+
+            if (isInternalLink) {
+                event.preventDefault();
+                window.location.href = href;
+            } else {
+                event.preventDefault();
+                window.open(href, '_blank');
+            }
+        }
+
+        // ===== SEARCH LOGIC =====
+        let searchTimeout = null;
+        let currentFilter = 'all';
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            searchContent();
+        }
+
+        async function searchContent() {
+            const input = document.getElementById('searchInput');
+            const resultsContainer = document.getElementById('searchResults');
+            const query = input.value.trim();
+
+            document.querySelector('.search-clear').style.display = query ? 'block' : 'none';
+
+            if (!query || query.length < 2) {
+                resultsContainer.classList.remove('active');
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            resultsContainer.innerHTML = `<div class="search-loading"><div class="spinner"></div><p style="margin-top:0.5rem;">جاري البحث...</p></div>`;
+            resultsContainer.classList.add('active');
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                await DB.init();
+                const sections = await DB.getAll('sections') || [];
+                const links = await DB.getAll('links') || [];
+
+                const searchTerm = query.toLowerCase();
+                const results = [];
+
+                sections.forEach(section => {
+                    const nameMatch = section.name.toLowerCase().includes(searchTerm);
+                    const descMatch = section.description && section.description.toLowerCase().includes(searchTerm);
+                    if (nameMatch || descMatch) {
+                        results.push({ type: 'section', name: section.name, id: section.id, icon: section.icon || '📁', description: section.description || '', match: nameMatch ? 'الاسم' : 'الوصف' });
+                    }
+                });
+
+                links.forEach(link => {
+                    const section = sections.find(s => String(s.id) === String(link.sectionId));
+                    if (!section) return;
+
+                    const titleMatch = link.title.toLowerCase().includes(searchTerm);
+                    const urlMatch = link.url && link.url.toLowerCase().includes(searchTerm);
+                    if (titleMatch || urlMatch) {
+                        results.push({ type: 'link', name: link.title, linkId: link.id, sectionId: section.id, sectionName: section.name, sectionIcon: section.icon || '📁', url: link.url || '#', pinned: link.pinned || false, views: link.views || 0, match: titleMatch ? 'العنوان' : 'الرابط' });
+                    }
+                });
+
+                let filteredResults = results;
+                if (currentFilter === 'sections') {
+                    filteredResults = results.filter(r => r.type === 'section');
+                } else if (currentFilter === 'links') {
+                    filteredResults = results.filter(r => r.type === 'link');
                 }
 
-                // تهيئة محتويات الصفحة بالاعتماد على الدوال الموجودة في script.js
-                // ملاحظة: تأكد أن script.js يقوم بتصدير هذه الدوال أو إضافتها لـ window
-                setTimeout(() => {
-                    if (typeof window.updateNavbar === 'function') window.updateNavbar();
-                    if (typeof window.renderSections === 'function') window.renderSections();
-                }, 100);
+                if (filteredResults.length === 0) {
+                    resultsContainer.innerHTML = `<div style="padding:2rem; text-align:center; color:#a0aec0;"><div style="font-size:3rem;">🔍</div><p>لا توجد نتائج لـ "<strong>${escapeHtml(query)}</strong>"</p><p style="font-size:0.8rem; margin-top:0.3rem;">جرب كلمات بحث مختلفة</p></div>`;
+                    return;
+                }
+
+                let html = `<div class="search-filters"><button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-filter="all" onclick="setFilter('all')">الكل (${results.length})</button><button class="filter-btn ${currentFilter === 'sections' ? 'active' : ''}" data-filter="sections" onclick="setFilter('sections')">📂 أقسام (${results.filter(r => r.type === 'section').length})</button><button class="filter-btn ${currentFilter === 'links' ? 'active' : ''}" data-filter="links" onclick="setFilter('links')">🔗 روابط (${results.filter(r => r.type === 'link').length})</button></div>`;
+
+                filteredResults.forEach(r => {
+                    if (r.type === 'section') {
+                        html += `<div class="search-result-item" onclick="goToResult('section', '${r.id}')"><span class="icon">${r.icon}</span><div class="info"><div class="title">${highlightText(r.name, searchTerm)}</div><div class="sub"><span>📄 ${escapeHtml(r.description || 'لا يوجد وصف')}</span><span class="section-tag">${r.match}</span></div></div><span class="badge section">قسم</span></div>`;
+                    } else {
+                        const isInternal = r.url && (r.url.startsWith('#') || r.url.endsWith('.html') || !r.url.startsWith('http'));
+                        const clickHandler = isInternal ? `window.location.href='${r.url}'` : `window.open('${r.url}', '_blank')`;
+                        html += `<div class="search-result-item" onclick="${clickHandler}; trackView('${r.sectionId}', '${r.linkId}')"><span class="icon">${r.pinned ? '📌' : '🔗'}</span><div class="info"><div class="title">${highlightText(r.name, searchTerm)}</div><div class="sub"><span>${r.sectionIcon} ${escapeHtml(r.sectionName)}</span>${r.pinned ? '<span class="section-tag">⭐ مثبت</span>' : ''}${r.views > 0 ? `<span>👁️ ${r.views}</span>` : ''}<span class="section-tag">${r.match}</span></div></div><span class="badge link">رابط</span></div>`;
+                    }
+                });
+                resultsContainer.innerHTML = html;
+            }, 300);
+        }
+
+        function highlightText(text, term) {
+            if (!text || !term) return escapeHtml(text);
+            const escaped = escapeHtml(text);
+            const regex = new RegExp(`(${escapeHtml(term)})`, 'gi');
+            return escaped.replace(regex, '<mark>$1</mark>');
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').classList.remove('active');
+            document.getElementById('searchResults').innerHTML = '';
+            document.querySelector('.search-clear').style.display = 'none';
+            currentFilter = 'all';
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === 'all'));
+        }
+
+        function goToResult(type, id) {
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.classList.remove('active');
+            resultsDiv.innerHTML = '';
+            document.getElementById('searchInput').value = '';
+            document.querySelector('.search-clear').style.display = 'none';
+            currentFilter = 'all';
+
+            if (type === 'section') {
+                const element = document.getElementById(`section-${id}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.style.boxShadow = '0 0 0 3px var(--secondary)';
+                    element.style.borderColor = 'var(--secondary)';
+                    setTimeout(() => { element.style.boxShadow = ''; element.style.borderColor = 'transparent'; }, 2500);
+                }
             }
-            // إذا لم يكن مسجلاً، ملف auth-guard.js سيقوم تلقائياً بالتوجيه لصفحة login.html
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey && e.key === 'k') || (e.ctrlKey && e.key === '/')) {
+                e.preventDefault(); document.getElementById('searchInput').focus();
+            }
+            if (e.key === 'Escape') {
+                if (document.getElementById('searchResults').classList.contains('active')) clearSearch();
+            }
         });
+
+        // ===== INIT UI AFTER AUTH =====
+        function initUI() {
+            document.getElementById('app').innerHTML = `
+                <div class="navbar" id="navbar">
+                    <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
+                    <div class="nav-links" id="navLinks"></div>
+                </div>
+                <div class="hero">
+                    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
+                    <h1>مرحباً بك في <span class="highlight">نظام إدارة التعليم</span> والتطوير</h1>
+                    <p>منصة متكاملة لإدارة التدريب</p>
+                </div>
+                <div class="search-container">
+                    <div class="search-box">
+                        <span class="search-icon"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchInput" placeholder="ابحث عن قسم أو رابط... " onkeyup="searchContent()" autocomplete="off">
+                        <button class="search-clear" onclick="clearSearch()">✕</button>
+                    </div>
+                    <div id="searchResults"></div>
+                </div>
+                <div class="container"><div class="sections-grid" id="sectionsContainer"></div></div>
+                <div class="footer"><p>© 2026 نظام إدارة التعليم والتطوير - جميع الحقوق محفوظة</p></div>
+            `;
+
+            updateNavbar();
+            renderSections();
+
+            window.addEventListener('scroll', () => {
+                const navbar = document.getElementById('navbar');
+                if (window.scrollY > 50) navbar.classList.add('scrolled');
+                else navbar.classList.remove('scrolled');
+            });
+
+            if (darkMode) document.body.classList.add('dark-mode');
+        }
+
+        // إتاحة الدوال للاستخدام المباشر داخل الـ HTML
+        window.toggleDarkMode = toggleDarkMode;
+        window.logout = logout;
+        window.searchContent = searchContent;
+        window.clearSearch = clearSearch;
+        window.goToResult = goToResult;
+        window.trackView = trackView;
+        window.setFilter = setFilter;
+        window.handleLinkClick = handleLinkClick;
+
+        // ===== AUTH GUARD (تهيئة النظام) =====
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    // جلب بيانات المستخدم من Firestore لتحديد الدور (أدمن أو مستخدم)
+                    const usersList = await DB.getAll('users') || [];
+                    const foundUser = usersList.find(u => u.email === user.email || String(u.id) === String(user.uid));
+                    
+                    currentUser = foundUser || { username: user.email, email: user.email, role: 'user' };
+                    isAdmin = currentUser.role === 'admin';
+                    
+                    initUI();
+                } catch(err) {
+                    console.error("خطأ في جلب بيانات المستخدم", err);
+                    window.location.href = 'login.html';
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
     </script>
 </body>
 </html>
