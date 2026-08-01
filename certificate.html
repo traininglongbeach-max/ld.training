@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>توليد شهادات تقدير - نظام إدارة التعليم والتطوير</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="auth-guard.js"></script>
-    <script src="database.js"></script>
+    
+    <!-- تحويل السكريبتات لتعمل بنظام Modules لـ Firebase -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { background: #f0f4f8; }
@@ -54,13 +57,14 @@
         .page-header p { color: #718096; }
 
         .cache-info {
-            font-size: 0.75rem;
-            color: #718096;
+            font-size: 0.85rem;
+            color: #2b7a4b;
             text-align: center;
             margin-bottom: 1rem;
-            background: #e2e8f0;
+            background: #c6f6d5;
             padding: 0.5rem;
             border-radius: 1rem;
+            font-weight: bold;
         }
 
         .selection-card {
@@ -240,11 +244,16 @@
     </style>
 </head>
 <body>
-    <div id="app">⏳ جاري التحميل...</div>
+    <div id="app">
+        <div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">
+            ⏳ جاري التحميل والاتصال بقاعدة البيانات السحابية...
+        </div>
+    </div>
 
-    <script>
-        // ===== تم تعديل جميع الدوال لاستخدام IndexedDB عبر DB object من database.js =====
-        // ===== جميع وظائف الصفحة محفوظة كما هي، مع استبدال localStorage بالكامل =====
+    <!-- Script Block using module type -->
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
         // ========== بيانات النظام ==========
         let offJobCourses = [];
@@ -255,7 +264,7 @@
         let onJobEnrollments = [];
         let employees = [];
 
-        const CERTIFICATE_BG = 'certificate-bg.png'; // تأكد أن هذه الصورة موجودة بنفس مسار المشروع
+        const CERTIFICATE_BG = 'certificate-bg.png'; // تأكد أن هذه الصورة موجودة في مجلد المشروع
 
         function showToast(message, isError = false) {
             const toast = document.createElement('div');
@@ -265,8 +274,8 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // ========== تحميل من IndexedDB ==========
-        async function loadAllLocalData() {
+        // ========== تحميل من Firebase Firestore ==========
+        async function loadAllDataFromDB() {
             try {
                 await DB.init();
                 
@@ -279,39 +288,32 @@
                 }
 
                 // 2. تدريبات Off Job
-                const offJobCoursesData = await DB.getAll('offjob_courses');
-                const offJobSessionsData = await DB.getAll('offjob_sessions');
-                const offJobEnrollmentsData = await DB.getAll('offjob_enrollments');
-                
-                offJobCourses = offJobCoursesData || [];
-                offJobSessions = offJobSessionsData || [];
-                offJobEnrollments = offJobEnrollmentsData || [];
+                offJobCourses = await DB.getAll('offjob_courses') || [];
+                offJobSessions = await DB.getAll('offjob_sessions') || [];
+                offJobEnrollments = await DB.getAll('offjob_enrollments') || [];
 
                 // 3. تدريبات On Job
-                const onJobCoursesData = await DB.getAll('onjob_courses');
-                const onJobSessionsData = await DB.getAll('onjob_sessions');
-                const onJobEnrollmentsData = await DB.getAll('onjob_enrollments');
-                
-                onJobCourses = onJobCoursesData || [];
-                onJobSessions = onJobSessionsData || [];
-                onJobEnrollments = onJobEnrollmentsData || [];
+                onJobCourses = await DB.getAll('onjob_courses') || [];
+                onJobSessions = await DB.getAll('onjob_sessions') || [];
+                onJobEnrollments = await DB.getAll('onjob_enrollments') || [];
 
-                console.log('✅ تم تحميل البيانات من IndexedDB بنجاح.');
+                console.log('✅ تم تحميل البيانات من السيرفر بنجاح.');
             } catch (error) {
-                console.error("❌ خطأ في تحميل البيانات:", error);
+                console.error("❌ خطأ في تحميل البيانات من السيرفر:", error);
+                showToast("❌ حدث خطأ في الاتصال بقاعدة البيانات", true);
             }
         }
 
         function updateCacheInfo() {
             const cacheInfo = document.getElementById('cacheInfo');
             if (cacheInfo) {
-                cacheInfo.innerHTML = `📦 يتم جلب البيانات من IndexedDB (بدون إنترنت)`;
+                cacheInfo.innerHTML = `🌐 يتم جلب البيانات مباشرة من السيرفر (Firebase Firestore)`;
             }
         }
 
         async function refreshData() {
-            showToast("🔄 جاري تحديث البيانات...");
-            await loadAllLocalData();
+            showToast("🔄 جاري تحديث البيانات من السيرفر...");
+            await loadAllDataFromDB();
             loadSessionsByType();
             showToast("✅ تم تحديث البيانات بنجاح");
         }
@@ -442,7 +444,7 @@
                 <div class="employees-list-card" style="display:block;">
                     <h3>👥 الموظفين الذين أكملوا هذا التدريب (${attendees.length})</h3>
                     <div class="select-all">
-                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" checked>
+                        <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll()" checked>
                         <label for="selectAllCheckbox"><strong>تحديد الكل</strong></label>
                     </div>
                     <div class="employees-grid" id="employeesGrid">
@@ -457,8 +459,8 @@
                         `).join('')}
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="generateCertificates()">🎓 طباعة الشهادات</button>
-                        <button class="btn btn-secondary" onclick="previewCertificate()">👁️ معاينة الشهادة</button>
+                        <button class="btn btn-primary" onclick="window.generateCertificates()">🎓 طباعة الشهادات</button>
+                        <button class="btn btn-secondary" onclick="window.previewCertificate()">👁️ معاينة الشهادة</button>
                     </div>
                 </div>
             `;
@@ -466,13 +468,13 @@
             previewDiv.style.display = 'none';
         }
 
-        function toggleSelectAll() {
+        window.toggleSelectAll = () => {
             const selectAll = document.getElementById('selectAllCheckbox');
             document.querySelectorAll('.employee-check').forEach(cb => cb.checked = selectAll.checked);
         }
 
         // ========== معاينة الشهادة ==========
-        function previewCertificate() {
+        window.previewCertificate = () => {
             const selectedEmployees = Array.from(document.querySelectorAll('.employee-check:checked'));
             if (selectedEmployees.length === 0) {
                 showToast('❌ الرجاء اختيار موظف واحد على الأقل', true);
@@ -507,7 +509,7 @@
         }
 
         // ========== طباعة الشهادات ==========
-        function generateCertificates() {
+        window.generateCertificates = () => {
             const selectedEmployees = Array.from(document.querySelectorAll('.employee-check:checked'));
             if (selectedEmployees.length === 0) {
                 showToast('❌ الرجاء اختيار موظفين لطباعة الشهادات', true);
@@ -560,8 +562,8 @@
                     <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
                     <div class="nav-links">
                         <a href="index.html" class="home">🏠 الرئيسية</a>
-                        <button class="refresh-btn" onclick="refreshData()">🔄 تحديث البيانات</button>
-                        <a href="#" onclick="logout()" class="logout">🚪 تسجيل خروج</a>
+                        <button class="refresh-btn" onclick="window.refreshData()">🔄 تحديث البيانات</button>
+                        <a href="#" onclick="window.logout()" class="logout">🚪 تسجيل خروج</a>
                     </div>
                 </div>
                 <div class="container">
@@ -575,7 +577,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>🏷️ نوع التدريب</label>
-                                <select id="trainingTypeSelect" onchange="loadSessionsByType()">
+                                <select id="trainingTypeSelect" onchange="window.loadSessionsByType()">
                                     <option value="all">📚 جميع التدريبات</option>
                                     <option value="offjob">📘 Off Job</option>
                                     <option value="onjob">📗 On Job</option>
@@ -583,7 +585,7 @@
                             </div>
                             <div class="form-group">
                                 <label>اختر التدريب *</label>
-                                <select id="sessionSelect" onchange="onSessionChange()">
+                                <select id="sessionSelect" onchange="window.onSessionChange()">
                                     <option value="">-- اختر التدريب --</option>
                                 </select>
                             </div>
@@ -599,34 +601,38 @@
                 <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
             `;
 
-            // ✅ تحميل البيانات من IndexedDB
-            await loadAllLocalData();
+            // ✅ تحميل البيانات من فايربيز
+            await loadAllDataFromDB();
             updateCacheInfo();
             loadSessionsByType();
-
-            window.onSessionChange = onSessionChange;
-            window.toggleSelectAll = toggleSelectAll;
-            window.previewCertificate = previewCertificate;
-            window.generateCertificates = generateCertificates;
-            window.loadSessionsByType = loadSessionsByType;
-            window.refreshData = refreshData;
-            window.logout = logout;
         }
 
-        function logout() {
-            localStorage.removeItem('loggedUser');
-            sessionStorage.removeItem('loggedUser');
-            window.location.href = 'login.html';
-        }
-
-        // ========== بدء التشغيل ==========
-        document.addEventListener('DOMContentLoaded', async function() {
-            var loggedUser = JSON.parse(localStorage.getItem('loggedUser') || sessionStorage.getItem('loggedUser'));
-            if (!loggedUser) {
-                console.log('⚠️ لا يوجد مستخدم مسجل الدخول، سيتم فتح الصفحة للاختبار.');
+        async function logout() {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error("Error signing out: ", error);
             }
-            await DB.init();
-            await loadPage();
+        }
+
+        window.onSessionChange = onSessionChange;
+        window.loadSessionsByType = loadSessionsByType;
+        window.refreshData = refreshData;
+        window.logout = logout;
+
+        // ===== 🔒 Auth Guard & App Start =====
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    await loadPage();
+                } catch (error) {
+                    console.error("Error loading data:", error);
+                    document.getElementById('app').innerHTML = '<div style="text-align:center; padding:50px;">❌ حدث خطأ أثناء تحميل البيانات من السيرفر. يرجى التحقق من الاتصال.</div>';
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
         });
     </script>
 </body>
