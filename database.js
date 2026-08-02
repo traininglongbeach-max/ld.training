@@ -1,7 +1,7 @@
 // database.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { 
-    getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch 
+    getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, enableIndexedDbPersistence 
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
@@ -21,10 +21,19 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
+// ========== تفعيل التخزين المؤقت لتقليل القراءات ==========
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code == 'failed-precondition') {
+        console.warn("تنبيه: التخزين المؤقت يعمل في تبويبة واحدة فقط في نفس الوقت.");
+    } else if (err.code == 'unimplemented') {
+        console.warn("تنبيه: متصفحك الحالي لا يدعم التخزين المؤقت.");
+    }
+});
+
 export const DB = {
     // ========== تهيئة قاعدة البيانات ==========
     async init() {
-        console.log("✅ تم الاتصال بقاعدة بيانات Firestore بنجاح");
+        console.log("✅ تم الاتصال بقاعدة بيانات Firestore بنجاح (مع تفعيل الكاش)");
         return Promise.resolve();
     },
 
@@ -120,7 +129,7 @@ export const DB = {
         }
     },
 
-
+    // ========== الإدراج الدفعي ==========
     async bulkInsert(storeName, dataArray) {
         try {
             if (!dataArray || dataArray.length === 0) return [];
@@ -142,7 +151,7 @@ export const DB = {
                 await batch.commit();
                 console.log(`✅ تم دمج دفعة من ${chunk.length} عنصر في ${storeName}`);
                 
-                // مهلة زمنية ثвищаً (1 ثانية) بين كل دفعة وأخرى لراحة السيرفر تماماً
+                // مهلة زمنية ثانية بين كل دفعة وأخرى لراحة السيرفر تماماً
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
