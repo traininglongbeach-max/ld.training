@@ -126,11 +126,14 @@
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        // ========== بيانات التدريب ==========
+        // ========== بيانات التدريب (سيتم تحميلها مرة واحدة فقط) ==========
         let offJobData = { courses: [], sessions: [], enrollments: [] };
         let onJobData = { courses: [], sessions: [], enrollments: [] };
-        
         let employees = [];
+        
+        // مؤشر لمعرفة إذا تم تحميل البيانات الأساسية أم لا
+        let isDataLoaded = false;
+        
         let currentEmployee = null;
         let currentTrainings = [];
         let selectedType = "all";
@@ -165,24 +168,47 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // ===== تحميل الموظفين والتدريبات من Firebase =====
+        // ===== تحميل البيانات من Firebase (مرة واحدة فقط) =====
         async function loadAllDataFromServer() {
+            // إذا كانت البيانات محملة بالفعل، نعيدها مباشرة بدون استدعاء Firestore
+            if (isDataLoaded) {
+                console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
+                return;
+            }
+            
             try {
-                const savedEmployees = await DB.getAll('employees');
-                employees = savedEmployees || [];
+                console.log('🔥 تحميل البيانات من Firestore (المرة الأولى والأخيرة)');
                 
-                offJobData.courses = await DB.getAll('offjob_courses') || [];
-                offJobData.sessions = await DB.getAll('offjob_sessions') || [];
-                offJobData.enrollments = await DB.getAll('offjob_enrollments') || [];
+                // استخدام Promise.all لتحميل كل البيانات مرة واحدة فقط
+                const [
+                    employeesData,
+                    offJobCourses, offJobSessions, offJobEnrollments,
+                    onJobCourses, onJobSessions, onJobEnrollments
+                ] = await Promise.all([
+                    DB.getAll('employees'),
+                    DB.getAll('offjob_courses'),
+                    DB.getAll('offjob_sessions'),
+                    DB.getAll('offjob_enrollments'),
+                    DB.getAll('onjob_courses'),
+                    DB.getAll('onjob_sessions'),
+                    DB.getAll('onjob_enrollments')
+                ]);
                 
-                onJobData.courses = await DB.getAll('onjob_courses') || [];
-                onJobData.sessions = await DB.getAll('onjob_sessions') || [];
-                onJobData.enrollments = await DB.getAll('onjob_enrollments') || [];
-
+                employees = employeesData || [];
+                offJobData.courses = offJobCourses || [];
+                offJobData.sessions = offJobSessions || [];
+                offJobData.enrollments = offJobEnrollments || [];
+                onJobData.courses = onJobCourses || [];
+                onJobData.sessions = onJobSessions || [];
+                onJobData.enrollments = onJobEnrollments || [];
+                
+                isDataLoaded = true;
+                
                 console.log(`✅ تم الجلب: ${employees.length} موظف | OffJob: ${offJobData.enrollments.length} | OnJob: ${onJobData.enrollments.length}`);
             } catch (error) {
                 console.error("❌ خطأ في تحميل البيانات من السيرفر:", error);
                 showToast("❌ حدث خطأ في الاتصال بقاعدة البيانات", true);
+                throw error;
             }
         }
 
@@ -246,6 +272,7 @@
             const empId = document.getElementById('employeeId').value.trim();
             if (!empId) return showToast('❌ الرجاء إدخال كود الموظف', true);
             
+            // استخدام البيانات المحملة مسبقاً (لا نستدعي DB.get)
             currentEmployee = employees.find(e => String(e.id) === empId);
             if (!currentEmployee) {
                 currentTrainings = [];
@@ -256,6 +283,7 @@
         };
 
         function refreshResults() {
+            // استخدام البيانات المحملة مسبقاً (لا نستدعي DB.filter أو DB.find)
             const allTrainingsList = [];
             
             const processTrainingType = (data, typeName) => {
@@ -529,6 +557,7 @@
         // ================= بدء التشغيل والمصادقة =================
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // تحميل البيانات مرة واحدة فقط
                 await loadAllDataFromServer();
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
