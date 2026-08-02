@@ -13,7 +13,7 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: #f0f4f8; }
+        body { background: #f0f4f8; overflow-x: hidden; }
 
         .navbar {
             background: white;
@@ -24,6 +24,9 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .logo h2 { color: #1e3a5f; }
         .logo span { color: #2b7a4b; }
@@ -38,7 +41,7 @@
             font-size: 0.85rem;
             transition: 0.3s;
         }
-        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-links .home { background: #2b7a4b; color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
@@ -58,25 +61,25 @@
             gap: 1rem;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
-        .filter-group { display: flex; align-items: center; gap: 0.8rem; }
+        .filter-group { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
         .filter-group label { font-weight: bold; color: #1e3a5f; font-size: 0.9rem; }
-        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.9rem; background: white; cursor: pointer; color: #1e3a5f; outline: none; transition: 0.3s; }
-        .filter-select:focus { border-color: #2b7a4b; }
+        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.9rem; background: white; cursor: pointer; color: #1e3a5f; outline: none; transition: 0.3s; width: 100%; max-width: 250px; }
+        .filter-select:focus { border-color: #2b7a4b; box-shadow: 0 0 0 3px rgba(43,122,75,0.1); }
         .month-select { min-width: 120px; }
         .filter-info { font-weight: bold; color: #2b7a4b; font-size: 0.9rem; }
-        .clear-filter-btn { background: #edf2f7; border: none; padding: 0.4rem 1rem; border-radius: 2rem; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: #4a5568; transition: 0.2s; }
+        .clear-filter-btn { background: #edf2f7; border: none; padding: 0.4rem 1rem; border-radius: 2rem; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: #4a5568; transition: 0.2s; white-space: nowrap; }
         .clear-filter-btn:hover { background: #e2e8f0; transform: translateY(-1px); }
 
         .search-card { background: white; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .search-card h3 { color: #1e3a5f; margin-bottom: 1rem; }
-        .search-box { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-        .search-box input { padding: 1rem; width: 250px; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 1rem; text-align: center; outline: none; transition: 0.3s; }
-        .search-box input:focus { border-color: #2b7a4b; }
-        .search-box button { padding: 1rem 2rem; background: #2b7a4b; color: white; border: none; border-radius: 2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .search-box button:hover { background: #1e5a38; transform: translateY(-2px); }
+        .search-box { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 500px; margin: 0 auto; }
+        .search-box input { padding: 1rem; width: 250px; max-width: 100%; flex: 1 1 auto; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 1rem; text-align: center; outline: none; transition: 0.3s; }
+        .search-box input:focus { border-color: #2b7a4b; box-shadow: 0 0 0 3px rgba(43,122,75,0.1); }
+        .search-box button { padding: 1rem 2rem; background: #2b7a4b; color: white; border: none; border-radius: 2rem; font-weight: bold; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
+        .search-box button:hover { background: #1e5a38; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(43,122,75,0.2); }
 
         .employee-info-card { background: linear-gradient(135deg, #1e3a5f, #2b7a4b); color: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .employee-info-card h2 { margin-bottom: 1rem; }
+        .employee-info-card h2 { margin-bottom: 1rem; font-size: 1.5rem; }
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
         .info-item { font-size: 0.95rem; }
         .info-label { font-weight: bold; opacity: 0.8; }
@@ -89,7 +92,7 @@
 
         .table-container { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .table-container h3 { color: #1e3a5f; margin-bottom: 1rem; border-right: 4px solid #2b7a4b; padding-right: 1rem; font-size: 1.2rem; }
-        .table-wrapper { overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; }
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; -webkit-overflow-scrolling: touch; }
         .training-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 850px; }
         .training-table th { background: #1e3a5f; color: white; padding: 12px 10px; text-align: center; font-weight: 500; white-space: nowrap; }
         .training-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
@@ -98,24 +101,76 @@
         .error-msg { background: #fed7d7; color: #c53030; padding: 1rem; border-radius: 1rem; text-align: center; font-weight: bold; margin-bottom: 1rem; }
         .empty-msg { text-align: center; padding: 3rem; color: #a0aec0; background: #f7fafc; border-radius: 1rem; font-size: 1.1rem; }
         
-        .toast-msg { position: fixed; bottom: 2rem; right: 2rem; background: #2b7a4b; color: white; padding: 0.8rem 1.5rem; border-radius: 2rem; z-index: 1000; animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .toast-msg { position: fixed; bottom: 2rem; right: 2rem; background: #2b7a4b; color: white; padding: 0.8rem 1.5rem; border-radius: 2rem; z-index: 1000; animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 90%; word-wrap: break-word; }
         .toast-msg.error { background: #e53e3e; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
+        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; font-size: 0.9rem; }
+
+        /* ================= Responsive Media Queries ================= */
+        @media (max-width: 1200px) {
+            .container { max-width: 960px; }
+        }
+
+        @media (max-width: 992px) {
+            .container { max-width: 720px; }
+            .filter-card { flex-direction: column; align-items: stretch; gap: 1rem; }
+            .filter-group { flex-direction: column; align-items: stretch; width: 100%; text-align: center; }
+            .filter-select { max-width: 100%; }
+        }
 
         @media (max-width: 768px) {
+            .navbar { flex-direction: column; text-align: center; justify-content: center; padding: 1rem; }
+            .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
+            .container { max-width: 100%; padding: 0 1rem; }
+            
+            .page-header h1 { font-size: 1.6rem; }
+            .page-header p { font-size: 0.9rem; }
+
+            .search-box { flex-direction: column; width: 100%; }
+            .search-box input { width: 100%; }
+            .search-box button { width: 100%; }
+            
             .info-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .filter-card { flex-direction: column; text-align: center; }
-            .training-table th, .training-table td { padding: 8px 6px; font-size: 0.75rem; }
+            
+            .table-container h3 { font-size: 1.1rem; }
+            .table-container > div:first-child { flex-direction: column; gap: 1rem; align-items: stretch !important; text-align: center; }
+            .table-container > div:first-child > div { justify-content: center; flex-wrap: wrap; }
+        }
+
+        @media (max-width: 576px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .filter-card, .search-card, .employee-info-card, .table-container { padding: 1.2rem; border-radius: 1rem; }
+            .stat-card { padding: 1rem; }
+            .employee-info-card h2 { font-size: 1.3rem; }
+            .clear-filter-btn { width: 100%; padding: 0.6rem 1rem; }
+            
+            .table-container button { width: 100%; text-align: center; margin-bottom: 0.5rem; }
+            .table-container > div:first-child > div { flex-direction: column; width: 100%; }
+        }
+
+        @media (max-width: 425px) {
+            .nav-links a, .nav-links button { width: 100%; text-align: center; }
+            .info-item { font-size: 0.85rem; }
+            .info-value { font-size: 0.95rem; }
+            .stat-value { font-size: 1.6rem; }
+            th, td { padding: 0.6rem; font-size: 0.8rem; }
+        }
+
+        @media (max-width: 375px) {
+            .page-header h1 { font-size: 1.4rem; }
+        }
+
+        @media (max-width: 320px) {
+            .navbar .logo h2 { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
     
     <!-- شاشة التحميل الأولية -->
-    <div id="loadingScreen" style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
+    <div id="loadingScreen" style="text-align:center; padding:150px 20px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
         ⏳ جاري جلب السجلات التدريبية من السيرفر...
     </div>
 
@@ -148,7 +203,12 @@
             toast.className = 'toast-msg' + (isError ? ' error' : '');
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = '0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         // ===== المعالج الذكي للتواريخ =====
@@ -423,11 +483,11 @@
                         </div>
 
                         <div class="table-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; gap: 1rem;">
                                 <h3 style="margin:0;">📚 سجل التدريبات المكتملة (${typeText} - ${yearText} - ${monthText})</h3>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button onclick="window.printTable()" style="background:#4299e1; color:white; border:none; border-radius:2rem; padding:0.5rem 1.2rem; cursor:pointer; font-weight:bold;">🖨️ طباعة السجل</button>
-                                    <button onclick="window.exportToExcel()" style="background:#48bb78; color:white; border:none; border-radius:2rem; padding:0.5rem 1.2rem; cursor:pointer; font-weight:bold;">📎 تصدير Excel</button>
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <button onclick="window.printTable()" style="background:#4299e1; color:white; border:none; border-radius:2rem; padding:0.5rem 1.2rem; cursor:pointer; font-weight:bold; transition: 0.3s;">🖨️ طباعة السجل</button>
+                                    <button onclick="window.exportToExcel()" style="background:#48bb78; color:white; border:none; border-radius:2rem; padding:0.5rem 1.2rem; cursor:pointer; font-weight:bold; transition: 0.3s;">📎 تصدير Excel</button>
                                 </div>
                             </div>
                             
@@ -451,8 +511,8 @@
                                             else { scoreClass = '#e2e8f0'; scoreText = 'لم يكتمل'; }
                                             
                                             const typeBadge = t.training_type === 'Off Job'
-                                                ? '<span style="background:#ebf8ff; color:#2b6cb0; padding:0.3rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold;">📘 Off Job</span>'
-                                                : '<span style="background:#f0fff4; color:#276749; padding:0.3rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold;">📗 On Job</span>';
+                                                ? '<span style="background:#ebf8ff; color:#2b6cb0; padding:0.3rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold; white-space:nowrap;">📘 Off Job</span>'
+                                                : '<span style="background:#f0fff4; color:#276749; padding:0.3rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold; white-space:nowrap;">📗 On Job</span>';
 
                                             return `
                                                 <tr>
@@ -460,10 +520,10 @@
                                                     <td style="direction:ltr; font-weight:bold;">${t.session_date}</td>
                                                     <td>${typeBadge}</td>
                                                     <td style="text-align:right; font-weight:700; color:#1e3a5f;">${t.course_name}</td>
-                                                    <td><span style="background:#bee3f8; color:#2c5282; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem;">${t.category}</span></td>
+                                                    <td><span style="background:#bee3f8; color:#2c5282; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem; white-space:nowrap;">${t.category}</span></td>
                                                     <td>${t.trainer}</td>
-                                                    <td><span style="background:#e2e8f0; color:#4a5568; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold;">${t.hours} س</span></td>
-                                                    <td><span style="background:${scoreClass}; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold; color:#1a202c;">${t.score} (${scoreText})</span></td>
+                                                    <td><span style="background:#e2e8f0; color:#4a5568; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold; white-space:nowrap;">${t.hours} س</span></td>
+                                                    <td><span style="background:${scoreClass}; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold; color:#1a202c; white-space:nowrap;">${t.score} (${scoreText})</span></td>
                                                 </tr>
                                             `;
                                         }).join('')}
