@@ -354,6 +354,9 @@
     <script type="module">
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        // إضافة دوال الاستعلام المباشر من Firestore بدلاً من جلب كل شيء
+        import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { db } from './database.js';
 
         const PHOTO_PATH = 'employee_photos/';
 
@@ -367,9 +370,11 @@
         let currentEditId = null;
         let currentUserRole = null;
 
-        // ========== دوال تحميل البيانات من Firestore ==========
+        // ========== دوال تحميل البيانات المحسنة من Firestore ==========
         async function loadEmployees() {
             try {
+                // محاولة الجلب من التخزين المحلي أولاً إذا لم تكن هناك حاجة لتحديث فوري لكل السجلات
+                // سيقوم Firestore تلقائياً بالاعتماد على الكاش بفضل enableIndexedDbPersistence
                 const data = await DB.getAll('employees');
                 return data || [];
             } catch (error) {
@@ -380,18 +385,24 @@
 
         async function getOffJobCounts() {
             try {
-                const offJobEnrollments = await DB.getAll('offjob_enrollments');
+                // تقليل القراءات: بدلاً من جلب كل التدريبات، نجلب فقط المكتملة، ولكن هذا لا يزال مكلفاً إذا كانت كثيرة جداً
+                // الحل الأمثل هو الاعتماد على حقل offJobCount بداخل مستند الموظف، ولكن مؤقتاً سنقوم بجلبها محلياً من الكاش
+                const q = query(collection(db, 'offjob_enrollments'), where('enrollment_status', '==', 'Completed'));
+                const querySnapshot = await getDocs(q);
+                
                 const counts = {};
-                if (offJobEnrollments && offJobEnrollments.length > 0) {
-                    offJobEnrollments.forEach(e => {
-                        if (e.enrollment_status === 'Completed' && e.employee_id) {
-                            const empId = e.employee_id.toString().trim();
-                            counts[empId] = (counts[empId] || 0) + 1;
-                        }
-                    });
-                }
+                querySnapshot.forEach(doc => {
+                    const e = doc.data();
+                    if (e.employee_id) {
+                        const empId = e.employee_id.toString().trim();
+                        counts[empId] = (counts[empId] || 0) + 1;
+                    }
+                });
                 return counts;
-            } catch(e) { return {}; }
+            } catch(e) { 
+                console.error("خطأ في جلب إحصائيات التدريب:", e);
+                return {}; 
+            }
         }
 
         function convertDateToISO(dateStr) {
@@ -457,6 +468,7 @@
         }
 
         async function updateUI() {
+            // جلب البيانات معتمد على الكاش المحلي لتقليل القراءات
             employees = await loadEmployees();
             offJobCounts = await getOffJobCounts();
             
@@ -502,7 +514,11 @@
             
             const tableBody = document.getElementById('tableBody');
             if (tableBody) {
-                tableBody.innerHTML = filtered.map(emp => {
+                // تقييد العرض لتقليل استهلاك موارد المتصفح إذا كانت القائمة ضخمة
+                const displayLimit = 100;
+                const displayData = filtered.slice(0, displayLimit);
+                
+                let html = displayData.map(emp => {
                     const empIdStr = emp.id.toString().trim();
                     const offJobCount = offJobCounts[empIdStr] || 0;
                     const isAdmin = (currentUserRole === 'Admin' || currentUserRole === 'admin');
@@ -526,7 +542,14 @@
                         </td>
                     </tr>`;
                 }).join('');
-                if (filtered.length === 0) tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;">📭 لا توجد بيانات مطابقة</td></tr>';
+
+                if (filtered.length > displayLimit) {
+                    html += `<tr><td colspan="9" style="text-align:center; padding: 1rem; color: #718096;">يتم عرض أول ${displayLimit} نتيجة من أصل ${filtered.length}. يرجى استخدام البحث للعثور على نتائج أكثر دقة.</td></tr>`;
+                } else if (filtered.length === 0) {
+                    html = '<tr><td colspan="9" style="text-align:center;">📭 لا توجد بيانات مطابقة</td></tr>';
+                }
+
+                tableBody.innerHTML = html;
             }
         }
 
