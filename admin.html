@@ -12,7 +12,7 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: #f0f4f8; }
+        body { background: #f0f4f8; overflow-x: hidden; }
 
         .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 100; }
         .logo h2 { color: #1e3a5f; font-weight: 800; font-size: 1.4rem; } 
@@ -48,7 +48,7 @@
         .msg { background: #c6f6d5; color: #22543d; padding: 1rem; border-radius: 1rem; margin-bottom: 1.5rem; display: none; font-weight: bold; border-right: 4px solid #38a169; }
         .msg.error { background: #fed7d7; color: #c53030; border-right-color: #e53e3e; }
         
-        .table-wrapper { overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; }
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
         th, td { padding: 1.2rem 1rem; text-align: right; border-bottom: 1px solid #e2e8f0; }
         th { background: #f8fafc; color: #4a5568; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -103,6 +103,65 @@
         .cancel-btn { background: #e2e8f0; color: #4a5568; width: 100%; padding: 0.8rem; font-size: 1rem; border-radius: 1rem; border: none; font-weight: bold; cursor: pointer; }
 
         .footer { text-align: center; padding: 2rem; color: #a0aec0; font-weight: 500; }
+
+        /* ================= Responsive Media Queries ================= */
+
+        @media (max-width: 1600px) {
+            .container { max-width: 95%; }
+        }
+
+        @media (max-width: 1400px) {
+            .container { max-width: 1140px; }
+        }
+
+        @media (max-width: 1200px) {
+            .container { max-width: 960px; }
+            .import-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        }
+
+        @media (max-width: 992px) {
+            .container { max-width: 720px; }
+            .backup-buttons button { min-width: calc(50% - 1rem); }
+        }
+
+        @media (max-width: 768px) {
+            .container { max-width: 100%; padding: 0 1rem; }
+            .navbar { flex-direction: column; justify-content: center; text-align: center; padding: 1rem; }
+            .nav-links { justify-content: center; width: 100%; }
+            .admin-card { padding: 1.5rem; margin-bottom: 1.5rem; }
+            .tabs { border-radius: 1rem; }
+            .backup-buttons button { min-width: 100%; flex: 1 1 100%; }
+        }
+
+        @media (max-width: 576px) {
+            .admin-card { padding: 1.2rem; }
+            .import-grid { grid-template-columns: 1fr; }
+            .tab-btn { width: 100%; padding: 0.6rem 1rem; border-radius: 10px; }
+            .progress-box { padding: 2.5rem 1.5rem; width: 95%; }
+            .modal-content { padding: 1.5rem; width: 95%; }
+            .logo h2 { font-size: 1.2rem; }
+            .table-wrapper { border-radius: 0.5rem; }
+        }
+
+        @media (max-width: 425px) {
+            th, td { padding: 0.8rem 0.5rem; font-size: 0.85rem; }
+            button.primary-btn { width: 100%; }
+            .modal-buttons { flex-direction: column; }
+            input, select, textarea { padding: 0.8rem 1rem; }
+        }
+
+        @media (max-width: 375px) {
+            .admin-card h3 { font-size: 1.1rem; }
+            .progress-text { font-size: 1.3rem; }
+            .import-card { padding: 1.5rem 1rem; }
+            .import-card .icon-wrapper { width: 60px; height: 60px; font-size: 1.5rem; }
+        }
+
+        @media (max-width: 320px) {
+            .logo h2 { font-size: 1.1rem; }
+            .nav-links a, .nav-links button { width: 100%; text-align: center; font-size: 0.8rem; }
+            .tab-btn { font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
@@ -135,7 +194,7 @@
         function showToast(message, isError = false) {
             const toast = document.createElement('div');
             toast.textContent = message;
-            toast.style.cssText = `position:fixed; bottom:2rem; right:2rem; background:${isError ? '#e53e3e' : '#2b7a4b'}; color:white; padding:1rem 1.8rem; border-radius:100px; z-index:3000; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-weight:bold; font-size:1rem; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);`;
+            toast.style.cssText = `position:fixed; bottom:2rem; right:2rem; background:${isError ? '#e53e3e' : '#2b7a4b'}; color:white; padding:1rem 1.8rem; border-radius:100px; z-index:3000; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-weight:bold; font-size:1rem; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 90%;`;
             document.body.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; toast.style.transition = '0.3s'; setTimeout(()=>toast.remove(),300); }, 3000);
         }
