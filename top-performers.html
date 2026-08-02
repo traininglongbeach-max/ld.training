@@ -27,6 +27,7 @@
         .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-links .home { background: #2b7a4b; color: white; }
         .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .nav-links .refresh { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 clamp(1rem, 3vw, 1.5rem); }
@@ -54,8 +55,8 @@
         .charts-container { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem; }
         .chart-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
         .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; font-size: clamp(1rem, 1.8vw, 1.2rem); }
-        .chart-wrapper { position: relative; width: 100%; min-height: 300px; max-height: 400px; }
-        .chart-wrapper canvas { width: 100% !important; height: 100% !important; max-height: 400px; }
+        .chart-wrapper { position: relative; width: 100%; min-height: 350px; max-height: 450px; }
+        .chart-wrapper canvas { width: 100% !important; height: 100% !important; max-height: 450px; }
 
         .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
 
@@ -92,6 +93,18 @@
         .top-value.hours { color: #10b981; }
         .top-label { font-size: clamp(0.65rem, 0.8vw, 0.7rem); color: #718096; }
 
+        .refresh-notice {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.8rem 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            display: none;
+        }
+        .refresh-notice.show { display: block; }
+
         .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
 
         /* ================= Responsive Media Queries ================= */
@@ -127,8 +140,8 @@
             
             .top-employees { grid-template-columns: 1fr; }
             
-            .chart-wrapper { min-height: 250px; max-height: 300px; }
-            .chart-wrapper canvas { max-height: 300px; }
+            .chart-wrapper { min-height: 280px; max-height: 350px; }
+            .chart-wrapper canvas { max-height: 350px; }
         }
 
         @media (max-width: 576px) {
@@ -136,8 +149,8 @@
             
             .stat-card, .chart-card, .diagnostic-box { padding: 1rem; border-radius: 1rem; }
             
-            .chart-wrapper { min-height: 200px; max-height: 250px; }
-            .chart-wrapper canvas { max-height: 250px; }
+            .chart-wrapper { min-height: 220px; max-height: 280px; }
+            .chart-wrapper canvas { max-height: 280px; }
             
             .top-rank { width: 40px; height: 40px; font-size: 1rem; }
             
@@ -151,8 +164,8 @@
             .top-stats { text-align: center; width: 100%; }
             .top-meta { justify-content: center; }
             
-            .chart-wrapper { min-height: 180px; max-height: 220px; }
-            .chart-wrapper canvas { max-height: 220px; }
+            .chart-wrapper { min-height: 180px; max-height: 240px; }
+            .chart-wrapper canvas { max-height: 240px; }
         }
 
         @media (max-width: 375px) {
@@ -194,6 +207,7 @@
         let activeEmployees = [];
         let availableYears = [new Date().getFullYear()];
         let isDataLoaded = false;
+        let isRefreshing = false;
 
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
@@ -241,14 +255,23 @@
         }
 
         // ===== تحميل البيانات (مرة واحدة فقط) =====
-        async function loadAllData() {
-            if (isDataLoaded) {
+        async function loadAllData(forceRefresh = false) {
+            if (isDataLoaded && !forceRefresh) {
                 console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
                 return;
             }
             
             try {
-                console.log('🔥 تحميل البيانات من Firestore (المرة الأولى والأخيرة)');
+                console.log('🔥 تحميل البيانات من Firestore' + (forceRefresh ? ' (تحديث إجباري)' : ' (المرة الأولى)'));
+                
+                if (forceRefresh) {
+                    // إظهار إشعار التحديث
+                    const notice = document.getElementById('refreshNotice');
+                    if (notice) {
+                        notice.textContent = '🔄 جاري تحديث البيانات من السيرفر...';
+                        notice.classList.add('show');
+                    }
+                }
                 
                 const [employeesData, offCourses, offSessions, offEnrollments, onCourses, onSessions, onEnrollments] = await Promise.all([
                     DB.getAll('employees'),
@@ -286,8 +309,28 @@
                 
                 isDataLoaded = true;
                 console.log(`✅ تم الجلب: ${allEmployees.length} موظف | OffJob: ${offJobData.enrollments.length} | OnJob: ${onJobData.enrollments.length}`);
+                
+                if (forceRefresh) {
+                    const notice = document.getElementById('refreshNotice');
+                    if (notice) {
+                        notice.textContent = '✅ تم تحديث البيانات بنجاح!';
+                        setTimeout(() => {
+                            notice.classList.remove('show');
+                        }, 3000);
+                    }
+                }
             } catch (error) {
                 console.error('❌ Failed to fetch data from Firestore:', error);
+                if (forceRefresh) {
+                    const notice = document.getElementById('refreshNotice');
+                    if (notice) {
+                        notice.textContent = '❌ فشل تحديث البيانات. يرجى المحاولة مرة أخرى.';
+                        notice.classList.add('show');
+                        setTimeout(() => {
+                            notice.classList.remove('show');
+                        }, 4000);
+                    }
+                }
                 throw error;
             }
         }
@@ -888,6 +931,23 @@
             }
         }
 
+        // ===== دالة تحديث البيانات من Firestore =====
+        async function refreshData() {
+            if (isRefreshing) return;
+            isRefreshing = true;
+            
+            try {
+                // إعادة تعيين علامة تحميل البيانات لفرض القراءة من Firestore
+                isDataLoaded = false;
+                await loadAllData(true);
+                await loadPage();
+            } catch (error) {
+                console.error('❌ فشل تحديث البيانات:', error);
+            } finally {
+                isRefreshing = false;
+            }
+        }
+
         // ===== Filter functions =====
         function changeYear() { currentYear = parseInt(document.getElementById('yearSelect').value); loadPage(); }
         function changeMonth() { 
@@ -928,6 +988,7 @@
                     <div class="nav-links">
                         <a href="index.html" class="home">🏠 Home</a>
                         <button onclick="showDiagnostic()" class="diagnose">🔍 Diagnose</button>
+                        <button onclick="refreshData()" class="refresh">🔄 Refresh Data</button>
                         <a href="#" onclick="logout()" class="logout">🚪 Logout</a>
                     </div>
                 </div>
@@ -937,6 +998,8 @@
                         <h1>🏆 Performance Analysis</h1>
                         <p>Analysis of department and employee participation in training</p>
                     </div>
+
+                    <div class="refresh-notice" id="refreshNotice"></div>
 
                     ${renderDiagnosticHTML()}
 
@@ -999,6 +1062,7 @@
         window.changeYear = changeYear; window.changeMonth = changeMonth;
         window.changeQuarter = changeQuarter; window.changeType = changeType;
         window.showDiagnostic = showDiagnostic; window.logout = logout;
+        window.refreshData = refreshData;
 
         // ===== إعادة تحديث الشارتات عند تغيير حجم الشاشة (مع debounce) =====
         let resizeTimeout;
@@ -1013,7 +1077,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    await loadAllData();
+                    await loadAllData(false);
                     await loadPage();
                 } catch (error) {
                     console.error("Error loading page data:", error);
