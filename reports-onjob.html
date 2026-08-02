@@ -15,82 +15,147 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: #f0f4f8; }
+        body { background: #f0f4f8; overflow-x: hidden; }
 
-        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .logo h2 { color: #1e3a5f; } .logo span { color: #2b7a4b; }
+        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+        .logo h2 { color: #1e3a5f; font-size: clamp(1.2rem, 3vw, 1.8rem); } .logo span { color: #2b7a4b; }
         .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.9rem; transition: 0.3s; }
-        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: clamp(0.8rem, 1.5vw, 0.9rem); transition: 0.3s; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-links .home { background: #2b7a4b; color: white; }
         .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
-        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
-        .page-header { margin-bottom: 2rem; } .page-header h1 { color: #1e3a5f; font-size: 2rem; } .page-header p { color: #718096; }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 clamp(1rem, 3vw, 1.5rem); }
+        .page-header { margin-bottom: 2rem; } .page-header h1 { color: #1e3a5f; font-size: clamp(1.5rem, 4vw, 2rem); } .page-header p { color: #718096; font-size: clamp(0.9rem, 1.5vw, 1rem); }
 
-        .diagnostic-box { background: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; direction: rtl; }
+        .diagnostic-box { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; direction: rtl; }
         .diagnostic-box.show { display: block; }
-        .diagnostic-box h3 { color: #d97706; margin-bottom: 1rem; font-size: 1.3rem; }
-        .diagnostic-box .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-        .diagnostic-box .stat-item { background: #fffbeb; padding: 1rem; border-radius: 1rem; text-align: center; }
-        .diagnostic-box .stat-value { font-size: 1.5rem; font-weight: bold; color: #d97706; }
-        .diagnostic-box .stat-label { font-size: 0.8rem; color: #92400e; margin-top: 0.3rem; font-weight: bold; }
-        .diagnostic-box .mismatch-list { max-height: 250px; overflow-y: auto; background: #fef2f2; padding: 1rem; border-radius: 1rem; font-size: 0.9rem; color: #991b1b; margin-top: 1rem; }
+        .diagnostic-box h3 { color: #d97706; margin-bottom: 1rem; font-size: clamp(1.1rem, 2vw, 1.3rem); }
+        .diagnostic-box .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .diagnostic-box .stat-item { background: #fffbeb; padding: clamp(0.8rem, 1.5vw, 1rem); border-radius: 1rem; text-align: center; }
+        .diagnostic-box .stat-value { font-size: clamp(1.2rem, 2.5vw, 1.5rem); font-weight: bold; color: #d97706; }
+        .diagnostic-box .stat-label { font-size: clamp(0.7rem, 1.2vw, 0.8rem); color: #92400e; margin-top: 0.3rem; font-weight: bold; }
+        .diagnostic-box .mismatch-list { max-height: 250px; overflow-y: auto; background: #fef2f2; padding: 1rem; border-radius: 1rem; font-size: clamp(0.8rem, 1.2vw, 0.9rem); color: #991b1b; margin-top: 1rem; }
         .diagnostic-box .mismatch-list div { padding: 0.5rem 0; border-bottom: 1px solid #fecaca; }
 
-        .filter-bar { background: white; border-radius: 1rem; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .filter-group { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .filter-group label { font-weight: bold; color: #1e3a5f; }
-        .month-select, .dept-select, .year-select, .quarter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 1rem; background: white; cursor: pointer; min-width: 140px; }
+        .filter-bar { background: white; border-radius: 1rem; padding: clamp(0.8rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.5rem); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .filter-group { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .filter-group label { font-weight: bold; color: #1e3a5f; font-size: clamp(0.85rem, 1.2vw, 0.95rem); }
+        .month-select, .dept-select, .year-select, .quarter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: clamp(0.85rem, 1.2vw, 1rem); background: white; cursor: pointer; min-width: 120px; outline: none; transition: 0.3s; flex: 1 1 auto; max-width: 200px; }
+        .month-select:focus, .dept-select:focus, .year-select:focus, .quarter-select:focus { border-color: #2b7a4b; box-shadow: 0 0 0 3px rgba(43,122,75,0.1); }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: white; border-radius: 1.5rem; padding: 1.5rem; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .stat-value { font-size: 2rem; font-weight: bold; color: #1e3a5f; } .stat-label { color: #718096; font-size: 0.85rem; margin-top: 0.3rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(140px, 15vw, 180px), 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 1.5vw, 1.5rem); text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .stat-value { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: bold; color: #1e3a5f; } .stat-label { color: #718096; font-size: clamp(0.7rem, 1.2vw, 0.85rem); margin-top: 0.3rem; }
 
-        .dept-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .dept-card { background: white; border-radius: 1rem; padding: 1rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid #00346d; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .dept-rank { background: #ef8f3d; color: white; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 16px; font-weight: bold; min-width: 45px; text-align: center; }
-        .dept-info { flex: 1; } .dept-name { font-weight: bold; color: #1e3a5f; font-size: 1rem; } .dept-stats { color: #718096; font-size: 0.75rem; margin-top: 0.2rem; }
+        .dept-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(250px, 25vw, 300px), 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .dept-card { background: white; border-radius: 1rem; padding: clamp(0.8rem, 1.2vw, 1rem); display: flex; align-items: center; gap: 1rem; border-left: 4px solid #00346d; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .dept-rank { background: #ef8f3d; color: white; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: clamp(14px, 1.5vw, 16px); font-weight: bold; min-width: 45px; text-align: center; }
+        .dept-info { flex: 1; } .dept-name { font-weight: bold; color: #1e3a5f; font-size: clamp(0.9rem, 1.2vw, 1rem); } .dept-stats { color: #718096; font-size: clamp(0.7rem, 1vw, 0.75rem); margin-top: 0.2rem; }
 
-        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
-        .chart-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; }
-        canvas { max-height: 350px; }
+        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(300px, 45vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .chart-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: clamp(1rem, 1.8vw, 1.3rem); }
+        canvas { max-height: 350px; width: 100% !important; height: auto !important; }
 
-        .data-table-card { background: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .data-table-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: 1.3rem; }
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #1e3a5f; color: white; font-weight: bold; padding: 12px; text-align: center; }
-        td { padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-        .badge-sessions { background: #e2e8f0; padding: 0.2rem 0.8rem; border-radius: 1rem; color: #4a5568; }
-        .badge-attendees { background: #c6f6d5; padding: 0.2rem 0.8rem; border-radius: 1rem; color: #22543d; font-weight: bold; }
-        .badge-hours { background: #fed7d7; padding: 0.2rem 0.8rem; border-radius: 1rem; color: #c53030; font-weight: bold; }
-        .btn-details { background: #4299e1; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 1rem; cursor: pointer; font-size: 0.8rem; }
+        .data-table-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); margin-bottom: 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .data-table-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: clamp(1.1rem, 2vw, 1.3rem); }
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: #1e3a5f; color: white; font-weight: bold; padding: clamp(8px, 1vw, 12px); text-align: center; font-size: clamp(0.75rem, 1vw, 0.9rem); }
+        td { padding: clamp(8px, 1vw, 12px); text-align: center; border-bottom: 1px solid #e2e8f0; font-size: clamp(0.75rem, 1vw, 0.85rem); }
+        .badge-sessions { background: #e2e8f0; padding: 0.2rem 0.8rem; border-radius: 1rem; color: #4a5568; white-space: nowrap; font-size: clamp(0.7rem, 0.9vw, 0.8rem); }
+        .badge-attendees { background: #c6f6d5; padding: 0.2rem 0.8rem; border-radius: 1rem; color: #22543d; font-weight: bold; white-space: nowrap; font-size: clamp(0.7rem, 0.9vw, 0.8rem); }
+        .badge-hours { background: #fed7d7; padding: 0.2rem 0.8rem; border-radius: 1rem; color: #c53030; font-weight: bold; white-space: nowrap; font-size: clamp(0.7rem, 0.9vw, 0.8rem); }
+        .btn-details { background: #4299e1; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 1rem; cursor: pointer; font-size: clamp(0.7rem, 0.9vw, 0.8rem); transition: 0.3s; white-space: nowrap; }
         .btn-details:hover { background: #3182ce; }
 
         .export-btn, .export-btn-dept {
-            color: white; border: none; padding: 0.8rem 2rem; border-radius: 2rem; font-size: 1.1rem;
-            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.6rem;
+            color: white; border: none; padding: clamp(0.6rem, 1.2vw, 0.8rem) clamp(1.5rem, 2.5vw, 2rem); border-radius: 2rem; font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
         }
         .export-btn { background: linear-gradient(135deg, #2b7a4b, #1e5a38); box-shadow: 0 4px 10px rgba(43, 122, 75, 0.3); }
         .export-btn-dept { background: linear-gradient(135deg, #1e3a5f, #2b7a4b); box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3); }
         .export-btn:hover, .export-btn-dept:hover { transform: translateY(-2px); }
 
-        .footer { text-align: center; padding: 2rem; color: #718096; }
+        .footer { text-align: center; padding: 2rem; color: #718096; font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
+
+        /* ================= Responsive Media Queries ================= */
+        @media (max-width: 1600px) {
+            .container { max-width: 95%; }
+        }
+
+        @media (max-width: 1400px) {
+            .container { max-width: 1140px; }
+        }
+
+        @media (max-width: 1200px) {
+            .container { max-width: 960px; }
+        }
+
+        @media (max-width: 992px) {
+            .container { max-width: 720px; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
+            .filter-group { flex-direction: column; align-items: stretch; width: 100%; text-align: center; }
+            .month-select, .dept-select, .year-select, .quarter-select { width: 100%; min-width: 100%; max-width: 100%; }
+            .charts-row { grid-template-columns: 1fr; }
+        }
 
         @media (max-width: 768px) {
+            .navbar { flex-direction: column; text-align: center; padding: 1rem; }
+            .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
+            .nav-links a, .nav-links button { width: 100%; text-align: center; }
+            .container { max-width: 100%; padding: 0 1rem; }
+            
+            .page-header h1 { font-size: 1.6rem; }
+            
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .charts-row { grid-template-columns: 1fr; }
-            th, td { padding: 0.5rem; font-size: 0.75rem; }
-            .badge-sessions, .badge-attendees, .badge-hours { padding: 0.1rem 0.4rem; font-size: 0.7rem; }
+            
+            .export-btn, .export-btn-dept { width: 100%; }
+            
+            th, td { padding: 0.6rem; font-size: 0.8rem; }
+            
+            .diagnostic-box .stats-row { grid-template-columns: 1fr; }
+            
+            .dept-stats-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 576px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            
+            .stat-card, .chart-card, .data-table-card, .diagnostic-box { padding: 1.2rem; border-radius: 1rem; }
+            .stat-value { font-size: 1.6rem; }
+            
+            canvas { max-height: 250px; }
+            
+            .data-table-card h3 { font-size: 1.1rem; }
+            .badge-sessions, .badge-attendees, .badge-hours { padding: 0.2rem 0.5rem; font-size: 0.75rem; }
+            
+            table { min-width: 500px; }
+        }
+
+        @media (max-width: 425px) {
+            .nav-links a, .nav-links button { width: 100%; text-align: center; }
+            .btn-details { padding: 0.4rem 1rem; width: 100%; }
+            table { min-width: 400px; }
+        }
+
+        @media (max-width: 375px) {
+            .page-header h1 { font-size: 1.4rem; }
+            .export-btn, .export-btn-dept { font-size: 1rem; padding: 0.7rem 1rem; }
+            table { min-width: 350px; }
+        }
+
+        @media (max-width: 320px) {
+            .navbar .logo h2 { font-size: 1.2rem; }
+            table { min-width: 300px; }
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">
+        <div style="text-align:center; padding:100px 20px; font-size:1.5rem; color:#1e3a5f;">
             ⏳ Fetching On Job records from server...
         </div>
     </div>
@@ -102,6 +167,7 @@
         // ================= المتغيرات وحالة النظام =================
         let trainingData = { courses: [], sessions: [], enrollments: [] };
         let employees = [];
+        let isDataLoaded = false;
         let selectedMonth = new Date().getMonth().toString(); 
         let selectedQuarter = 'all';    
         let currentYear = new Date().getFullYear();
@@ -128,20 +194,34 @@
 
         // ================= جلب البيانات (مرة واحدة فقط) =================
         async function loadAllDataFromServer() {
+            if (isDataLoaded) {
+                console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
+                return;
+            }
+            
             try {
-                const savedEmployees = await DB.getAll('employees');
+                console.log('🔥 تحميل البيانات من Firestore (المرة الأولى والأخيرة)');
+                
+                const [savedEmployees, courses, sessions, enrollments] = await Promise.all([
+                    DB.getAll('employees'),
+                    DB.getAll('onjob_courses'),
+                    DB.getAll('onjob_sessions'),
+                    DB.getAll('onjob_enrollments')
+                ]);
+                
                 employees = savedEmployees || [];
+                trainingData.courses = courses || [];
+                trainingData.sessions = sessions || [];
+                trainingData.enrollments = enrollments || [];
                 
                 employeeDeptMap.clear();
                 employees.forEach(emp => {
                     if (emp.id && emp.department) employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
                     else if (emp.id) employeeDeptMap.set(emp.id.toString(), 'Under Review');
                 });
-
-                trainingData.courses = await DB.getAll('onjob_courses') || [];
-                trainingData.sessions = await DB.getAll('onjob_sessions') || [];
-                trainingData.enrollments = await DB.getAll('onjob_enrollments') || [];
-
+                
+                isDataLoaded = true;
+                console.log(`✅ تم الجلب: ${employees.length} موظف | ${trainingData.enrollments.length} تسجيل`);
             } catch (error) {
                 console.error('❌ Failed to fetch data from Firestore:', error);
             }
@@ -290,7 +370,7 @@
             return Array.from(employeesMap.values()).map(emp => ({ ...emp, totalCourses: emp.totalCourses.size, totalHours: parseFloat(emp.totalHours.toFixed(1)), sessions: emp.sessions.sort((a,b) => parseDateSafely(b.session_date) - parseDateSafely(a.session_date)) })).sort((a, b) => b.totalHours - a.totalHours);
         }
 
-        // ================= دالة عرض الإحصائيات (التي كانت ناقصة) =================
+        // ================= دالة عرض الإحصائيات =================
         function renderStats(stats) {
             return `<div class="stats-grid">
                 <div class="stat-card"><div class="stat-value">${stats.totalCoursesAll}</div><div class="stat-label">📚 Total Courses</div></div>
