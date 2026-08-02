@@ -54,8 +54,8 @@
         .charts-container { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem; }
         .chart-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
         .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; font-size: clamp(1rem, 1.8vw, 1.2rem); }
-        .chart-wrapper { position: relative; width: 100%; min-height: 350px; }
-        canvas { max-height: 350px; width: 100% !important; height: auto !important; }
+        .chart-wrapper { position: relative; width: 100%; min-height: 300px; max-height: 400px; }
+        .chart-wrapper canvas { width: 100% !important; height: 100% !important; max-height: 400px; }
 
         .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
 
@@ -126,17 +126,23 @@
             .diagnostic-box .stats-row { grid-template-columns: repeat(2, 1fr); }
             
             .top-employees { grid-template-columns: 1fr; }
+            
+            .chart-wrapper { min-height: 250px; max-height: 300px; }
+            .chart-wrapper canvas { max-height: 300px; }
         }
 
         @media (max-width: 576px) {
             .diagnostic-box .stats-row { grid-template-columns: 1fr; }
             
-            .stat-card, .chart-card, .diagnostic-box { padding: 1.2rem; border-radius: 1rem; }
+            .stat-card, .chart-card, .diagnostic-box { padding: 1rem; border-radius: 1rem; }
             
-            canvas { max-height: 250px; }
-            .chart-wrapper { min-height: 250px; }
+            .chart-wrapper { min-height: 200px; max-height: 250px; }
+            .chart-wrapper canvas { max-height: 250px; }
             
             .top-rank { width: 40px; height: 40px; font-size: 1rem; }
+            
+            .charts-row { gap: 1rem; }
+            .charts-container { gap: 1rem; }
         }
 
         @media (max-width: 425px) {
@@ -144,15 +150,22 @@
             .top-item { flex-wrap: wrap; justify-content: center; text-align: center; }
             .top-stats { text-align: center; width: 100%; }
             .top-meta { justify-content: center; }
+            
+            .chart-wrapper { min-height: 180px; max-height: 220px; }
+            .chart-wrapper canvas { max-height: 220px; }
         }
 
         @media (max-width: 375px) {
             .page-header h1 { font-size: 1.4rem; }
+            .chart-wrapper { min-height: 160px; max-height: 200px; }
+            .chart-wrapper canvas { max-height: 200px; }
         }
 
         @media (max-width: 320px) {
             .navbar .logo h2 { font-size: 1.2rem; }
             .top-rank { width: 35px; height: 35px; font-size: 0.9rem; }
+            .chart-wrapper { min-height: 140px; max-height: 180px; }
+            .chart-wrapper canvas { max-height: 180px; }
         }
     </style>
 </head>
@@ -171,6 +184,9 @@
             main: { height: 450, titleFont: 1.5, dataFont: 20, axisFont: 18, padding: { top: 40, bottom: 20, left: 20, right: 30 } },
             medium: { columns: 1, height: 370, titleFont: 1.2, dataFont: 18, axisFont: 18, padding: { top: 35, bottom: 18, left: 18, right: 28 }, gap: 1.5 }
         };
+
+        // مصفوفة لتخزين مراجع الشارتات لإعادة التحديث عند تغيير حجم الشاشة
+        let chartInstances = [];
 
         let offJobData = { courses: [], sessions: [], enrollments: [] };
         let onJobData = { courses: [], sessions: [], enrollments: [] };
@@ -677,19 +693,51 @@
             document.querySelectorAll('.chart-card.medium h3').forEach(el => el.style.fontSize = med.titleFont + 'rem');
         }
 
+        // ===== دالة مساعدة لإنشاء شارت مع إعادة التحديث عند تغيير الحجم =====
+        function createChart(ctx, config) {
+            if (!ctx) return null;
+            const chart = new Chart(ctx, config);
+            chartInstances.push(chart);
+            return chart;
+        }
+
+        // ===== دالة لإعادة تحديث جميع الشارتات عند تغيير حجم الشاشة =====
+        function resizeCharts() {
+            chartInstances.forEach(chart => {
+                if (chart && chart.resize) {
+                    chart.resize();
+                }
+            });
+        }
+
         // ===== Chart functions =====
         function initCharts(deptStats) {
             Chart.register(ChartDataLabels);
             const isSplit = deptStats.type === 'split';
             const s = CHART_SIZES.main;
-            const chartOptions = { responsive: true, maintainAspectRatio: true, layout: { padding: s.padding }, plugins: { legend: { position: 'top', labels: { font: { size: s.axisFont }, usePointStyle: true, pointStyle: 'rectRounded' } }, datalabels: { display: true, color: '#000000', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } }, scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } };
+            const chartOptions = { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                layout: { padding: s.padding }, 
+                plugins: { 
+                    legend: { position: 'top', labels: { font: { size: s.axisFont }, usePointStyle: true, pointStyle: 'rectRounded' } }, 
+                    datalabels: { display: true, color: '#000000', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
+                }, 
+                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
+            };
             
             if (!isSplit) {
                 const data = deptStats.data;
                 const sorted = (key) => [...data].sort((a, b) => b[key] - a[key]);
                 [['deptEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Number of Trainees'], ['deptSessionsChart', 'sessions', '#ff7707', '🎯 Number of Sessions'], ['deptHoursChart', 'hours', '#158040', '⏰ Number of Hours']].forEach(([id, key, color, label]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
-                    if (ctx) new Chart(ctx, { type: 'bar', data: { labels: sorted(key).map(d => d.department), datasets: [{ label, data: sorted(key).map(d => d[key]), backgroundColor: color, borderRadius: 10 }] }, options: chartOptions });
+                    if (ctx) {
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: sorted(key).map(d => d.department), datasets: [{ label, data: sorted(key).map(d => d[key]), backgroundColor: color, borderRadius: 10 }] }, 
+                            options: chartOptions 
+                        });
+                    }
                 });
             } else {
                 const offData = deptStats.offJob; const onData = deptStats.onJob;
@@ -701,7 +749,11 @@
                     if (ctx) {
                         const offDataMap = {}; offData.forEach(d => offDataMap[d.department] = d[key]);
                         const onDataMap = {}; onData.forEach(d => onDataMap[d.department] = d[key]);
-                        new Chart(ctx, { type: 'bar', data: { labels: allDepts, datasets: [{ label: labels[0], data: allDepts.map(d => offDataMap[d] || 0), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: allDepts.map(d => onDataMap[d] || 0), backgroundColor: colors[1], borderRadius: 6 }] }, options: splitOptions });
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: allDepts, datasets: [{ label: labels[0], data: allDepts.map(d => offDataMap[d] || 0), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: allDepts.map(d => onDataMap[d] || 0), backgroundColor: colors[1], borderRadius: 6 }] }, 
+                            options: splitOptions 
+                        });
                     }
                 });
             }
@@ -711,20 +763,41 @@
             Chart.register(ChartDataLabels);
             const s = CHART_SIZES.main;
             const isSplit = currentType === 'all';
-            const chartOptions = { responsive: true, maintainAspectRatio: true, layout: { padding: s.padding }, plugins: { legend: { position: 'top', labels: { font: { size: s.axisFont }, usePointStyle: true, pointStyle: 'rectRounded' } }, datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } }, scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } };
+            const chartOptions = { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                layout: { padding: s.padding }, 
+                plugins: { 
+                    legend: { position: 'top', labels: { font: { size: s.axisFont }, usePointStyle: true, pointStyle: 'rectRounded' } }, 
+                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
+                }, 
+                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
+            };
             const months = monthlyStats.map(m => m.monthName);
             
             if (!isSplit) {
                 const key = currentType === 'offjob' ? 'offJob' : 'onJob';
                 [['monthlyEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Employees'], ['monthlySessionsChart', 'sessions', '#ff7707', '🎯 Sessions'], ['monthlyHoursChart', 'hours', '#158040', '⏰ Hours']].forEach(([id, keyProp, color, label]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
-                    if (ctx) new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label, data: monthlyStats.map(m => m[key][keyProp]), backgroundColor: color, borderRadius: 10 }] }, options: chartOptions });
+                    if (ctx) {
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: months, datasets: [{ label, data: monthlyStats.map(m => m[key][keyProp]), backgroundColor: color, borderRadius: 10 }] }, 
+                            options: chartOptions 
+                        });
+                    }
                 });
             } else {
                 const splitOptions = { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { ...chartOptions.plugins.legend, labels: { ...chartOptions.plugins.legend.labels, generateLabels: () => [{ text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' }, { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }] } } } };
                 [['monthlyEmployeesChart', 'uniqueEmployees', ['#078fff', '#ff7707'], ['👥 Off Job', '👥 On Job']], ['monthlySessionsChart', 'sessions', ['#078fff', '#ff7707'], ['🎯 Off Job', '🎯 On Job']], ['monthlyHoursChart', 'hours', ['#078fff', '#ff7707'], ['⏰ Off Job', '⏰ On Job']]].forEach(([id, keyProp, colors, labels]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
-                    if (ctx) new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label: labels[0], data: monthlyStats.map(m => m.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: monthlyStats.map(m => m.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, options: splitOptions });
+                    if (ctx) {
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: months, datasets: [{ label: labels[0], data: monthlyStats.map(m => m.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: monthlyStats.map(m => m.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, 
+                            options: splitOptions 
+                        });
+                    }
                 });
             }
         }
@@ -733,20 +806,41 @@
             Chart.register(ChartDataLabels);
             const s = CHART_SIZES.medium;
             const isSplit = currentType === 'all';
-            const chartOptions = { responsive: true, maintainAspectRatio: true, layout: { padding: s.padding }, plugins: { legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14, usePointStyle: true, pointStyle: 'rectRounded' } }, datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } }, scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } };
+            const chartOptions = { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                layout: { padding: s.padding }, 
+                plugins: { 
+                    legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14, usePointStyle: true, pointStyle: 'rectRounded' } }, 
+                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
+                }, 
+                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
+            };
             const quarters = quarterlyStats.map(q => q.quarter);
             
             if (!isSplit) {
                 const key = currentType === 'offjob' ? 'offJob' : 'onJob';
                 [['quarterlyEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Employees'], ['quarterlySessionsChart', 'sessions', '#ff7707', '🎯 Sessions'], ['quarterlyHoursChart', 'hours', '#158040', '⏰ Hours']].forEach(([id, keyProp, color, label]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
-                    if (ctx) new Chart(ctx, { type: 'bar', data: { labels: quarters, datasets: [{ label, data: quarterlyStats.map(q => q[key][keyProp]), backgroundColor: color, borderRadius: 9 }] }, options: chartOptions });
+                    if (ctx) {
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: quarters, datasets: [{ label, data: quarterlyStats.map(q => q[key][keyProp]), backgroundColor: color, borderRadius: 9 }] }, 
+                            options: chartOptions 
+                        });
+                    }
                 });
             } else {
                 const splitOptions = { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { ...chartOptions.plugins.legend, labels: { ...chartOptions.plugins.legend.labels, generateLabels: () => [{ text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' }, { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }] } } } };
                 [['quarterlyEmployeesChart', 'uniqueEmployees', ['#078fff', '#ff7707'], ['👥 Off Job', '👥 On Job']], ['quarterlySessionsChart', 'sessions', ['#078fff', '#ff7707'], ['🎯 Off Job', '🎯 On Job']], ['quarterlyHoursChart', 'hours', ['#078fff', '#ff7707'], ['⏰ Off Job', '⏰ On Job']]].forEach(([id, keyProp, colors, labels]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
-                    if (ctx) new Chart(ctx, { type: 'bar', data: { labels: quarters, datasets: [{ label: labels[0], data: quarterlyStats.map(q => q.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: quarterlyStats.map(q => q.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, options: splitOptions });
+                    if (ctx) {
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: quarters, datasets: [{ label: labels[0], data: quarterlyStats.map(q => q.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: quarterlyStats.map(q => q.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, 
+                            options: splitOptions 
+                        });
+                    }
                 });
             }
         }
@@ -755,20 +849,41 @@
             Chart.register(ChartDataLabels);
             const s = CHART_SIZES.medium;
             const isSplit = currentType === 'all';
-            const chartOptions = { responsive: true, maintainAspectRatio: true, layout: { padding: s.padding }, plugins: { legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14, usePointStyle: true, pointStyle: 'rectRounded' } }, datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } }, scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } };
+            const chartOptions = { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                layout: { padding: s.padding }, 
+                plugins: { 
+                    legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14, usePointStyle: true, pointStyle: 'rectRounded' } }, 
+                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
+                }, 
+                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
+            };
             const halves = semiAnnualStats.map(h => h.half);
             
             if (!isSplit) {
                 const key = currentType === 'offjob' ? 'offJob' : 'onJob';
                 [['semiAnnualEmployeesChart', 'uniqueEmployees', '#078fff', '👥 Employees'], ['semiAnnualSessionsChart', 'sessions', '#ff7707', '🎯 Sessions'], ['semiAnnualHoursChart', 'hours', '#158040', '⏰ Hours']].forEach(([id, keyProp, color, label]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
-                    if (ctx) new Chart(ctx, { type: 'bar', data: { labels: halves, datasets: [{ label, data: semiAnnualStats.map(h => h[key][keyProp]), backgroundColor: color, borderRadius: 9 }] }, options: chartOptions });
+                    if (ctx) {
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: halves, datasets: [{ label, data: semiAnnualStats.map(h => h[key][keyProp]), backgroundColor: color, borderRadius: 9 }] }, 
+                            options: chartOptions 
+                        });
+                    }
                 });
             } else {
                 const splitOptions = { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { ...chartOptions.plugins.legend, labels: { ...chartOptions.plugins.legend.labels, generateLabels: () => [{ text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' }, { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }] } } } };
                 [['semiAnnualEmployeesChart', 'uniqueEmployees', ['#078fff', '#ff7707'], ['👥 Off Job', '👥 On Job']], ['semiAnnualSessionsChart', 'sessions', ['#078fff', '#ff7707'], ['🎯 Off Job', '🎯 On Job']], ['semiAnnualHoursChart', 'hours', ['#078fff', '#ff7707'], ['⏰ Off Job', '⏰ On Job']]].forEach(([id, keyProp, colors, labels]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
-                    if (ctx) new Chart(ctx, { type: 'bar', data: { labels: halves, datasets: [{ label: labels[0], data: semiAnnualStats.map(h => h.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: semiAnnualStats.map(h => h.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, options: splitOptions });
+                    if (ctx) {
+                        createChart(ctx, { 
+                            type: 'bar', 
+                            data: { labels: halves, datasets: [{ label: labels[0], data: semiAnnualStats.map(h => h.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: semiAnnualStats.map(h => h.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, 
+                            options: splitOptions 
+                        });
+                    }
                 });
             }
         }
@@ -789,6 +904,9 @@
 
         // ===== الصفحة الرئيسية =====
         async function loadPage() {
+            // مسح مراجع الشارتات السابقة
+            chartInstances = [];
+            
             const deptStats = calculateDepartmentStats();
             const monthlyStats = calculateMonthlyStats();
             const quarterlyStats = calculateQuarterlyStats();
@@ -881,6 +999,15 @@
         window.changeYear = changeYear; window.changeMonth = changeMonth;
         window.changeQuarter = changeQuarter; window.changeType = changeType;
         window.showDiagnostic = showDiagnostic; window.logout = logout;
+
+        // ===== إعادة تحديث الشارتات عند تغيير حجم الشاشة (مع debounce) =====
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                resizeCharts();
+            }, 250);
+        });
 
         // ===== 🔒 Auth Guard & App Start =====
         onAuthStateChanged(auth, async (user) => {
