@@ -1,7 +1,8 @@
 // database.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { 
-    getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch, enableIndexedDbPersistence 
+    initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+    collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch 
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
@@ -18,22 +19,19 @@ const firebaseConfig = {
 
 // تهيئة Firebase
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export const auth = getAuth(app);
 
-// ========== تفعيل التخزين المؤقت لتقليل القراءات ==========
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code == 'failed-precondition') {
-        console.warn("تنبيه: التخزين المؤقت يعمل في تبويبة واحدة فقط في نفس الوقت.");
-    } else if (err.code == 'unimplemented') {
-        console.warn("تنبيه: متصفحك الحالي لا يدعم التخزين المؤقت.");
-    }
+// ========== تهيئة Firestore مع تفعيل الكاش بالطريقة الحديثة ==========
+// هذه الطريقة تخفي التحذير وتسمح للكاش بالعمل بسلاسة حتى لو فتح المستخدم عدة تبويبات
+export const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
 });
+
+export const auth = getAuth(app);
 
 export const DB = {
     // ========== تهيئة قاعدة البيانات ==========
     async init() {
-        console.log("✅ تم الاتصال بقاعدة بيانات Firestore بنجاح (مع تفعيل الكاش)");
+        console.log("✅ تم الاتصال بقاعدة بيانات Firestore بنجاح (مع الكاش الحديث)");
         return Promise.resolve();
     },
 
@@ -134,7 +132,7 @@ export const DB = {
         try {
             if (!dataArray || dataArray.length === 0) return [];
             
-            const CHUNK_SIZE = 50; // تقليص حجم الدفعة إلى 50 لضمان عدم ضغط السيرفر
+            const CHUNK_SIZE = 50; 
             const results = [];
 
             for (let i = 0; i < dataArray.length; i += CHUNK_SIZE) {
@@ -144,14 +142,13 @@ export const DB = {
                 chunk.forEach(item => {
                     const docRef = item.id ? doc(db, storeName, String(item.id)) : doc(collection(db, storeName));
                     const itemData = item.id ? item : { ...item, id: docRef.id };
-                    batch.set(docRef, itemData, { merge: true }); // دمج البيانات وتحديثها بدون تكرار
+                    batch.set(docRef, itemData, { merge: true }); 
                     results.push(itemData);
                 });
                 
                 await batch.commit();
                 console.log(`✅ تم دمج دفعة من ${chunk.length} عنصر في ${storeName}`);
                 
-                // مهلة زمنية ثانية بين كل دفعة وأخرى لراحة السيرفر تماماً
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
@@ -164,5 +161,4 @@ export const DB = {
     }
 };
 
-// جعل الكائن متاحاً على مستوى الـ Window لتجنب كسر الأكواد القديمة
 window.DB = DB;
