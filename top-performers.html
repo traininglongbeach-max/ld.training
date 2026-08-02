@@ -17,49 +17,53 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: #f0f4f8; }
+        body { background: #f0f4f8; overflow-x: hidden; }
 
-        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .logo h2 { color: #1e3a5f; }
+        .navbar { background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+        .logo h2 { color: #1e3a5f; font-size: clamp(1.2rem, 3vw, 1.8rem); }
         .logo span { color: #2b7a4b; }
         .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s; }
-        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: clamp(0.8rem, 1.5vw, 0.9rem); transition: 0.3s; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-links .home { background: #2b7a4b; color: white; }
         .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
-        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 clamp(1rem, 3vw, 1.5rem); }
         .page-header { margin-bottom: 2rem; }
-        .page-header h1 { color: #1e3a5f; font-size: 2rem; }
-        .page-header p { color: #718096; }
-        .section-title { font-size: 1.5rem; color: #1e3a5f; margin: 3rem 0 1.5rem 0; border-left: 5px solid #2b7a4b; padding-left: 10px; }
+        .page-header h1 { color: #1e3a5f; font-size: clamp(1.5rem, 4vw, 2rem); }
+        .page-header p { color: #718096; font-size: clamp(0.9rem, 1.5vw, 1rem); }
+        .section-title { font-size: clamp(1.2rem, 2.5vw, 1.5rem); color: #1e3a5f; margin: 3rem 0 1.5rem 0; border-left: 5px solid #2b7a4b; padding-left: 10px; }
 
-        .diagnostic-box { background: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; }
+        .diagnostic-box { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; }
         .diagnostic-box.show { display: block; }
-        .diagnostic-box h3 { color: #d97706; margin-bottom: 1rem; font-size: 1.3rem; }
-        .diagnostic-box .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-        .diagnostic-box .stat-item { background: #fffbeb; padding: 1rem; border-radius: 1rem; text-align: center; }
-        .diagnostic-box .stat-value { font-size: 1.5rem; font-weight: bold; color: #d97706; }
-        .diagnostic-box .stat-label { font-size: 0.8rem; color: #92400e; margin-top: 0.3rem; }
-        .diagnostic-box .mismatch-list { max-height: 200px; overflow-y: auto; background: #fef2f2; padding: 1rem; border-radius: 1rem; font-size: 0.85rem; color: #991b1b; margin-top: 1rem; }
+        .diagnostic-box h3 { color: #d97706; margin-bottom: 1rem; font-size: clamp(1.1rem, 2vw, 1.3rem); }
+        .diagnostic-box .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .diagnostic-box .stat-item { background: #fffbeb; padding: clamp(0.8rem, 1.5vw, 1rem); border-radius: 1rem; text-align: center; }
+        .diagnostic-box .stat-value { font-size: clamp(1.2rem, 2.5vw, 1.5rem); font-weight: bold; color: #d97706; }
+        .diagnostic-box .stat-label { font-size: clamp(0.7rem, 1.2vw, 0.8rem); color: #92400e; margin-top: 0.3rem; }
+        .diagnostic-box .mismatch-list { max-height: 200px; overflow-y: auto; background: #fef2f2; padding: 1rem; border-radius: 1rem; font-size: clamp(0.8rem, 1.2vw, 0.85rem); color: #991b1b; margin-top: 1rem; }
         .diagnostic-box .mismatch-list div { padding: 0.3rem 0; border-bottom: 1px solid #fecaca; }
 
-        .filter-bar { background: white; border-radius: 1rem; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .filter-bar { background: white; border-radius: 1rem; padding: clamp(0.8rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.5rem); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .filter-group { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
-        .filter-group label { font-weight: bold; color: #1e3a5f; }
-        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.9rem; background: white; cursor: pointer; }
+        .filter-group label { font-weight: bold; color: #1e3a5f; font-size: clamp(0.85rem, 1.2vw, 0.95rem); }
+        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: clamp(0.85rem, 1.2vw, 1rem); background: white; cursor: pointer; min-width: 120px; outline: none; transition: 0.3s; flex: 1 1 auto; max-width: 200px; }
+        .filter-select:focus { border-color: #2b7a4b; box-shadow: 0 0 0 3px rgba(43,122,75,0.1); }
 
         .charts-container { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem; }
-        .chart-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
-        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; }
-        .chart-wrapper { position: relative; width: 100%; }
+        .chart-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
+        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; font-size: clamp(1rem, 1.8vw, 1.2rem); }
+        .chart-wrapper { position: relative; width: 100%; min-height: 350px; }
+        canvas { max-height: 350px; width: 100% !important; height: auto !important; }
 
-        .top-employees { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
-        .top-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 630px; }
-        .top-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: 1.2rem; }
+        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
+
+        .top-employees { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(300px, 40vw, 630px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .top-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .top-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-size: clamp(1rem, 1.8vw, 1.2rem); }
         .top-list { display: flex; flex-direction: column; gap: 0.8rem; }
-        .top-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; transition: 0.3s; position: relative; overflow: hidden; }
+        .top-item { display: flex; align-items: center; gap: 1rem; padding: clamp(0.8rem, 1.2vw, 1rem); border-radius: 1rem; transition: 0.3s; position: relative; overflow: hidden; }
         .top-item::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 0 4px 4px 0; }
         .top-item:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
@@ -76,25 +80,85 @@
         .top-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); }
 
         .top-info { flex: 1; min-width: 0; }
-        .top-name { font-weight: 700; color: #1e3a5f; font-size: 1rem; margin-bottom: 5px; }
-        .top-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem; }
+        .top-name { font-weight: 700; color: #1e3a5f; font-size: clamp(0.9rem, 1.2vw, 1rem); margin-bottom: 5px; }
+        .top-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: clamp(0.7rem, 0.9vw, 0.75rem); }
         .top-meta span { padding: 0.2rem 0.6rem; border-radius: 1rem; font-weight: 500; }
         .meta-id { background: #dbeafe; color: #1e40af; }
         .meta-dept { background: #ede9fe; color: #5b21b6; }
         .meta-pos { background: #d1fae5; color: #065f46; }
 
         .top-stats { text-align: right; flex-shrink: 0; }
-        .top-value { font-weight: 800; font-size: 1.4rem; }
+        .top-value { font-weight: 800; font-size: clamp(1.2rem, 1.8vw, 1.4rem); }
         .top-value.hours { color: #10b981; }
-        .top-label { font-size: 0.7rem; color: #718096; }
+        .top-label { font-size: clamp(0.65rem, 0.8vw, 0.7rem); color: #718096; }
 
-        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
-        @media (max-width: 768px) { .top-employees { grid-template-columns: 1fr; } .filter-bar { flex-direction: column; align-items: stretch; } }
+        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
+
+        /* ================= Responsive Media Queries ================= */
+        @media (max-width: 1600px) {
+            .container { max-width: 95%; }
+        }
+
+        @media (max-width: 1400px) {
+            .container { max-width: 1140px; }
+        }
+
+        @media (max-width: 1200px) {
+            .container { max-width: 960px; }
+        }
+
+        @media (max-width: 992px) {
+            .container { max-width: 720px; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
+            .filter-group { flex-direction: column; align-items: stretch; width: 100%; text-align: center; }
+            .filter-select { width: 100%; min-width: 100%; max-width: 100%; }
+            .charts-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; text-align: center; padding: 1rem; }
+            .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
+            .nav-links a, .nav-links button { width: 100%; text-align: center; }
+            .container { max-width: 100%; padding: 0 1rem; }
+            
+            .page-header h1 { font-size: 1.6rem; }
+            
+            .diagnostic-box .stats-row { grid-template-columns: repeat(2, 1fr); }
+            
+            .top-employees { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 576px) {
+            .diagnostic-box .stats-row { grid-template-columns: 1fr; }
+            
+            .stat-card, .chart-card, .diagnostic-box { padding: 1.2rem; border-radius: 1rem; }
+            
+            canvas { max-height: 250px; }
+            .chart-wrapper { min-height: 250px; }
+            
+            .top-rank { width: 40px; height: 40px; font-size: 1rem; }
+        }
+
+        @media (max-width: 425px) {
+            .nav-links a, .nav-links button { width: 100%; text-align: center; }
+            .top-item { flex-wrap: wrap; justify-content: center; text-align: center; }
+            .top-stats { text-align: center; width: 100%; }
+            .top-meta { justify-content: center; }
+        }
+
+        @media (max-width: 375px) {
+            .page-header h1 { font-size: 1.4rem; }
+        }
+
+        @media (max-width: 320px) {
+            .navbar .logo h2 { font-size: 1.2rem; }
+            .top-rank { width: 35px; height: 35px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
     <div id="app">
-        <div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">
+        <div style="text-align:center; padding:100px 20px; font-size:1.5rem; color:#1e3a5f;">
             جاري تحميل البيانات من السيرفر وتحليل الأداء... ⏳
         </div>
     </div>
@@ -112,12 +176,13 @@
         let onJobData = { courses: [], sessions: [], enrollments: [] };
         let allEmployees = [];
         let activeEmployees = [];
-        let availableYears = [new Date().getFullYear()]; // لتخزين السنوات الموجودة فعلياً
+        let availableYears = [new Date().getFullYear()];
+        let isDataLoaded = false;
 
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let currentQuarter = -1;
-        let currentType = "all"; // الافتراضي عرض جميع الأنواع
+        let currentType = "all";
         
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const quarterNames = ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
@@ -129,7 +194,6 @@
             return EXCLUDED_COURSES.some(ex => courseName.toString().toLowerCase().includes(ex.toLowerCase()));
         }
 
-        // ===== 🛡️ دالة ذكية لتوحيد أسماء الأعمدة بغض النظر عن طريقة الإدخال =====
         function normalizeItem(obj) {
             const normalized = { ...obj };
             const lowerKeys = {};
@@ -149,7 +213,6 @@
             return normalized;
         }
 
-        // ===== 🕒 دالة ذكية لقراءة تواريخ الإكسيل أو التواريخ العادية =====
         function parseExcelDate(val) {
             if (!val) return null;
             if (typeof val === 'number') {
@@ -161,40 +224,55 @@
             return new Date(val);
         }
 
-        // ===== تحميل البيانات وتمريرها على فلتر التنظيف =====
+        // ===== تحميل البيانات (مرة واحدة فقط) =====
         async function loadAllData() {
-            await DB.init();
-            
-            const employeesData = await DB.getAll('employees');
-            if (employeesData && employeesData.length > 0) {
-                allEmployees = employeesData; // الموظفون تم توحيدهم أثناء الرفع
-                activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
-            } else {
-                allEmployees = [];
-                activeEmployees = [];
+            if (isDataLoaded) {
+                console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
+                return;
             }
             
-            offJobData.courses = ((await DB.getAll('offjob_courses')) || []).map(normalizeItem);
-            offJobData.sessions = ((await DB.getAll('offjob_sessions')) || []).map(normalizeItem);
-            offJobData.enrollments = ((await DB.getAll('offjob_enrollments')) || []).map(normalizeItem);
-            
-            onJobData.courses = ((await DB.getAll('onjob_courses')) || []).map(normalizeItem);
-            onJobData.sessions = ((await DB.getAll('onjob_sessions')) || []).map(normalizeItem);
-            onJobData.enrollments = ((await DB.getAll('onjob_enrollments')) || []).map(normalizeItem);
+            try {
+                console.log('🔥 تحميل البيانات من Firestore (المرة الأولى والأخيرة)');
+                
+                const [employeesData, offCourses, offSessions, offEnrollments, onCourses, onSessions, onEnrollments] = await Promise.all([
+                    DB.getAll('employees'),
+                    DB.getAll('offjob_courses'),
+                    DB.getAll('offjob_sessions'),
+                    DB.getAll('offjob_enrollments'),
+                    DB.getAll('onjob_courses'),
+                    DB.getAll('onjob_sessions'),
+                    DB.getAll('onjob_enrollments')
+                ]);
+                
+                allEmployees = employeesData || [];
+                activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
+                
+                offJobData.courses = (offCourses || []).map(normalizeItem);
+                offJobData.sessions = (offSessions || []).map(normalizeItem);
+                offJobData.enrollments = (offEnrollments || []).map(normalizeItem);
+                
+                onJobData.courses = (onCourses || []).map(normalizeItem);
+                onJobData.sessions = (onSessions || []).map(normalizeItem);
+                onJobData.enrollments = (onEnrollments || []).map(normalizeItem);
 
-            // استخراج السنوات المتاحة فعلياً في البيانات لتحديد السنة الافتراضية
-            const yearsSet = new Set();
-            [...offJobData.sessions, ...onJobData.sessions].forEach(s => {
-                const d = parseExcelDate(s.session_date);
-                if (d && !isNaN(d.getTime())) yearsSet.add(d.getFullYear());
-            });
+                const yearsSet = new Set();
+                [...offJobData.sessions, ...onJobData.sessions].forEach(s => {
+                    const d = parseExcelDate(s.session_date);
+                    if (d && !isNaN(d.getTime())) yearsSet.add(d.getFullYear());
+                });
 
-            if (yearsSet.size > 0) {
-                availableYears = Array.from(yearsSet).sort((a,b) => b - a);
-                // إذا كانت السنة الحالية غير موجودة، اجعل الافتراضية هي أحدث سنة
-                if (!availableYears.includes(currentYear)) {
-                    currentYear = availableYears[0];
+                if (yearsSet.size > 0) {
+                    availableYears = Array.from(yearsSet).sort((a,b) => b - a);
+                    if (!availableYears.includes(currentYear)) {
+                        currentYear = availableYears[0];
+                    }
                 }
+                
+                isDataLoaded = true;
+                console.log(`✅ تم الجلب: ${allEmployees.length} موظف | OffJob: ${offJobData.enrollments.length} | OnJob: ${onJobData.enrollments.length}`);
+            } catch (error) {
+                console.error('❌ Failed to fetch data from Firestore:', error);
+                throw error;
             }
         }
 
@@ -721,7 +799,6 @@
             const quarterName = currentQuarter === -1 ? "All Quarters" : quarterNames[currentQuarter];
             const typeName = currentType === 'offjob' ? 'Off Job' : (currentType === 'onjob' ? 'On Job' : 'All Trainings (Split View)');
             
-            // إضافة السنوات المتاحة إلى القائمة (مع دعم سنة 2026 في حال كانت مصفوفة السنوات فارغة)
             if (availableYears.length === 0) availableYears = [2026];
             const yearOptions = availableYears.map(y => `<option value="${y}" ${currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
 
@@ -750,7 +827,7 @@
                         <div class="filter-group"><label>📅 Month:</label><select id="monthSelect" class="filter-select" onchange="changeMonth()"><option value="-1" ${currentMonth===-1?'selected':''}>All Months</option>${monthNames.map((m,i)=>`<option value="${i}" ${currentMonth===i?'selected':''}>${m}</option>`).join('')}</select></div>
                         <div class="filter-group"><label>📊 Quarter:</label><select id="quarterSelect" class="filter-select" onchange="changeQuarter()">${quarterOptions}</select></div>
                         <div class="filter-group"><label>📚 Type:</label><select id="typeSelect" class="filter-select" onchange="changeType()"><option value="all" ${currentType==='all'?'selected':''}>All (Split View)</option><option value="offjob" ${currentType==='offjob'?'selected':''}>Off Job</option><option value="onjob" ${currentType==='onjob'?'selected':''}>On Job</option></select></div>
-                        <div class="filter-group"><span>📊 ${monthName} | ${quarterName} | ${currentYear} - ${typeName}</span></div>
+                        <div class="filter-group"><span style="color:#1e3a5f; font-weight:700;">📊 ${monthName} | ${quarterName} | ${currentYear} - ${typeName}</span></div>
                     </div>
 
                     <div class="section-title">📊 Department Analysis (All Employees)</div>
@@ -813,7 +890,7 @@
                     await loadPage();
                 } catch (error) {
                     console.error("Error loading page data:", error);
-                    document.getElementById('app').innerHTML = '<div style="text-align:center; padding:50px;">❌ حدث خطأ أثناء تحميل البيانات من السيرفر. يرجى مراجعة الصلاحيات والاتصال.</div>';
+                    document.getElementById('app').innerHTML = '<div style="text-align:center; padding:50px; font-size:1.2rem;">❌ حدث خطأ أثناء تحميل البيانات من السيرفر. يرجى مراجعة الصلاحيات والاتصال.</div>';
                 }
             } else {
                 window.location.href = 'login.html';
