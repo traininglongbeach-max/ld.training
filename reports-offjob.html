@@ -23,6 +23,7 @@
         .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: clamp(0.8rem, 1.5vw, 0.9rem); transition: 0.3s; }
         .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .refresh { background: #4299e1; color: white; }
         .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
@@ -82,18 +83,9 @@
         .footer { text-align: center; padding: 2rem; color: #718096; font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
 
         /* ================= Responsive Media Queries ================= */
-        @media (max-width: 1600px) {
-            .container { max-width: 95%; }
-        }
-
-        @media (max-width: 1400px) {
-            .container { max-width: 1140px; }
-        }
-
-        @media (max-width: 1200px) {
-            .container { max-width: 960px; }
-        }
-
+        @media (max-width: 1600px) { .container { max-width: 95%; } }
+        @media (max-width: 1400px) { .container { max-width: 1140px; } }
+        @media (max-width: 1200px) { .container { max-width: 960px; } }
         @media (max-width: 992px) {
             .container { max-width: 720px; }
             .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
@@ -101,52 +93,37 @@
             .month-select, .dept-select, .year-select, .quarter-select { width: 100%; min-width: 100%; max-width: 100%; }
             .charts-row { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 768px) {
             .navbar { flex-direction: column; text-align: center; padding: 1rem; }
             .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
             .nav-links a, .nav-links button { width: 100%; text-align: center; }
             .container { max-width: 100%; padding: 0 1rem; }
-            
             .page-header h1 { font-size: 1.6rem; }
-            
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            
             .export-btn, .export-btn-dept { width: 100%; }
-            
             th, td { padding: 0.6rem; font-size: 0.8rem; }
-            
             .diagnostic-box .stats-row { grid-template-columns: 1fr; }
-            
             .dept-stats-grid { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 576px) {
             .stats-grid { grid-template-columns: 1fr; }
-            
             .stat-card, .chart-card, .data-table-card, .diagnostic-box { padding: 1.2rem; border-radius: 1rem; }
             .stat-value { font-size: 1.6rem; }
-            
             canvas { max-height: 250px; }
-            
             .data-table-card h3 { font-size: 1.1rem; }
             .badge-sessions, .badge-attendees, .badge-hours { padding: 0.2rem 0.5rem; font-size: 0.75rem; }
-            
             table { min-width: 500px; }
         }
-
         @media (max-width: 425px) {
             .nav-links a, .nav-links button { width: 100%; text-align: center; }
             .btn-details { padding: 0.4rem 1rem; width: 100%; }
             table { min-width: 400px; }
         }
-
         @media (max-width: 375px) {
             .page-header h1 { font-size: 1.4rem; }
             .export-btn, .export-btn-dept { font-size: 1rem; padding: 0.7rem 1rem; }
             table { min-width: 350px; }
         }
-
         @media (max-width: 320px) {
             .navbar .logo h2 { font-size: 1.2rem; }
             table { min-width: 300px; }
@@ -164,7 +141,7 @@
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        // ========== بيانات التطبيق (سيتم تحميلها مرة واحدة فقط) ==========
+        // ========== بيانات التطبيق ==========
         let trainingData = { courses: [], sessions: [], enrollments: [] };
         let employees = [];
         let isDataLoaded = false;
@@ -192,7 +169,7 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // ===== تحميل البيانات من Firebase (مرة واحدة فقط مع منع التكرار) =====
+        // ===== تحميل البيانات من Firebase =====
         async function loadAllDataFromServer() {
             if (isDataLoaded) {
                 console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
@@ -200,7 +177,7 @@
             }
             
             try {
-                console.log('🔥 تحميل البيانات من Firestore (المرة الأولى والأخيرة)');
+                console.log('🔥 تحميل البيانات من Firestore');
                 
                 const [savedEmployees, courses, sessions, enrollments] = await Promise.all([
                     DB.getAll('employees'),
@@ -227,6 +204,42 @@
                 throw error;
             }
         }
+
+        // ===== وظيفة زر تحديث البيانات (Refresh Data) =====
+        window.refreshData = async function() {
+            const btn = document.getElementById('refreshBtn');
+            if (btn) {
+                btn.innerHTML = "⏳ Refreshing...";
+                btn.style.pointerEvents = "none";
+            }
+
+            try {
+                // إجبار النظام على تحميل البيانات مجدداً عن طريق تغيير الحالة
+                isDataLoaded = false;
+                
+                // تنظيف الكاش المحلي المرتبط بقاعدة البيانات (للتأكد من جلب البيانات الجديدة)
+                const collections = ['employees', 'offjob_courses', 'offjob_sessions', 'offjob_enrollments'];
+                collections.forEach(col => {
+                    localStorage.removeItem(col);
+                    localStorage.removeItem(col + '_timestamp');
+                    localStorage.removeItem(col + '_lastFetch');
+                });
+
+                // سحب البيانات من فايربيز وإعادة بناء الواجهة
+                await loadAllDataFromServer();
+                buildUI();
+                
+                alert("✅ Data refreshed successfully from Firebase!");
+            } catch (error) {
+                console.error("Error refreshing data:", error);
+                alert("❌ Error refreshing data. Check your connection.");
+            } finally {
+                if (btn) {
+                    btn.innerHTML = "🔄 Refresh Data";
+                    btn.style.pointerEvents = "auto";
+                }
+            }
+        };
 
         function calculateHoursFromTime(startTime, endTime) {
             if (!startTime || !endTime) return 0;
@@ -495,6 +508,7 @@
                     <div class="logo"><h2>🎓 Learning & Development <span>System</span></h2></div>
                     <div class="nav-links">
                         <a href="index.html" class="home">🏠 Home</a>
+                        <button id="refreshBtn" class="refresh">🔄 Refresh Data</button>
                         <button onclick="showDiagnostic()" class="diagnose">🔍 Diagnose Errors</button>
                         <button id="logoutBtn" class="logout">🚪 Logout</button>
                     </div>
@@ -589,6 +603,8 @@
             window.renderEmployeesTable('all');
             setTimeout(() => initCharts(deptStats, filteredSessions), 100);
 
+            // إضافة مستمعي الأحداث
+            document.getElementById('refreshBtn').addEventListener('click', window.refreshData);
             document.getElementById('yearSelect').addEventListener('change', (e) => { currentYear = parseInt(e.target.value); buildUI(); });
             document.getElementById('monthSelect').addEventListener('change', (e) => { selectedMonth = e.target.value; buildUI(); });
             document.getElementById('quarterSelect').addEventListener('change', (e) => { selectedQuarter = e.target.value; buildUI(); });
