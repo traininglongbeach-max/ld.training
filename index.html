@@ -164,6 +164,11 @@
         let isAdmin = false;
         let darkMode = localStorage.getItem('darkMode') === 'true';
 
+        // متغيرات الذاكرة المحسنة (لتقليل القراءة من قاعدة البيانات السحابية بشكل كبير)
+        let cachedSections = [];
+        let cachedLinks = [];
+        let isDataLoaded = false;
+
         // ===== TOAST =====
         function showToast(message, isError = false) {
             const toast = document.createElement('div');
@@ -226,19 +231,26 @@
             }
         }
 
-        // ===== RENDER SECTIONS FROM FIREBASE =====
+        // دالة التحميل الذكية لمرة واحدة (Zero Reads)
+        async function loadDataOnce() {
+            if (isDataLoaded) return;
+            await DB.init();
+            cachedSections = await DB.getAll('sections') || [];
+            cachedLinks = await DB.getAll('links') || [];
+            isDataLoaded = true;
+        }
+
+        // ===== RENDER SECTIONS FROM CACHED MEMORY =====
         async function renderSections() {
             const container = document.getElementById('sectionsContainer');
             if (!container) return;
 
-            await DB.init();
-            const sections = await DB.getAll('sections') || [];
-            const links = await DB.getAll('links') || [];
+            // جلب البيانات لمرة واحدة وحفظها في المتغيرات
+            await loadDataOnce();
 
-            const sectionsWithLinks = sections.map(section => ({
+            const sectionsWithLinks = cachedSections.map(section => ({
                 ...section,
-                // ربط الروابط بالأقسام بناءً على ID
-                links: links.filter(link => String(link.sectionId) === String(section.id))
+                links: cachedLinks.filter(link => String(link.sectionId) === String(section.id))
             }));
 
             if (sectionsWithLinks.length === 0) {
@@ -367,9 +379,11 @@
 
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(async () => {
-                await DB.init();
-                const sections = await DB.getAll('sections') || [];
-                const links = await DB.getAll('links') || [];
+                // التأكد من تحميل البيانات في الذاكرة لتجنب سحبها أثناء البحث (Zero Reads in Search)
+                if (!isDataLoaded) await loadDataOnce();
+                
+                const sections = cachedSections;
+                const links = cachedLinks;
 
                 const searchTerm = query.toLowerCase();
                 const results = [];
@@ -417,7 +431,7 @@
                     }
                 });
                 resultsContainer.innerHTML = html;
-            }, 300);
+            }, 100); // تم تقليل وقت التأخير لتسريع الاستجابة
         }
 
         function highlightText(text, term) {
@@ -515,6 +529,7 @@
             if (user) {
                 try {
                     // جلب بيانات المستخدم من Firestore لتحديد الدور (أدمن أو مستخدم)
+                    await DB.init();
                     const usersList = await DB.getAll('users') || [];
                     const foundUser = usersList.find(u => u.email === user.email || String(u.id) === String(user.uid));
                     
