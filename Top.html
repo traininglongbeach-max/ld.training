@@ -359,20 +359,48 @@
             return new Date(val);
         }
 
-        function calculateHoursFromTime(startTime, endTime) {
-            if (!startTime || !endTime) return 0;
-            let startParts = startTime.toString().split(':');
-            let endParts = endTime.toString().split(':');
-            let startHour = parseInt(startParts[0]);
-            let startMinute = parseInt(startParts[1]) || 0;
-            let endHour = parseInt(endParts[0]);
-            let endMinute = parseInt(endParts[1]) || 0;
-            let diffHours = endHour - startHour;
-            let diffMinutes = endMinute - startMinute;
-            if (diffHours < 0) diffHours = 24 + diffHours;
-            let hours = diffHours + (diffMinutes / 60);
-            return parseFloat(hours.toFixed(2));
-        }
+// دالة مساعدة لتحليل الوقت بمرونة واستخراجه كقيمة عشرية
+function parseTimeToHours(timeStr) {
+    if (!timeStr) return 0;
+    
+    // تنظيف النص وتحويله لحروف صغيرة لتسهيل المقارنة
+    let cleanStr = timeStr.toString().trim().toLowerCase();
+    
+    // استخراج الساعات، الدقائق، والـ (am/pm) إن وجدت
+    let match = cleanStr.match(/(\d{1,2}):(\d{1,2})(?::\d{1,2})?\s*(am|pm)?/);
+    if (!match) return 0;
+
+    let hours = parseInt(match[1], 10);
+    let minutes = parseInt(match[2], 10);
+    let modifier = match[3];
+
+    // معالجة صيغة 12 ساعة إذا كان موجوداً am أو pm
+    if (modifier === 'pm' && hours < 12) {
+        hours += 12; // تحويل المساء إلى نظام 24
+    }
+    if (modifier === 'am' && hours === 12) {
+        hours = 0; // تحويل 12 صباحاً إلى 00:00
+    }
+
+    return hours + (minutes / 60);
+}
+
+// الدالة الرئيسية المحدثة لحساب الفرق بين وقتين
+function calculateHoursFromTime(startTime, endTime) {
+    if (!startTime || !endTime) return 0;
+
+    let startHours = parseTimeToHours(startTime);
+    let endHours = parseTimeToHours(endTime);
+
+    let diffHours = endHours - startHours;
+
+    // معالجة الحالة إذا كان وقت الانتهاء بعد منتصف الليل (في اليوم التالي)
+    if (diffHours < 0) {
+        diffHours += 24;
+    }
+
+    return parseFloat(diffHours.toFixed(2));
+}
 
         function getSessionHours(session) {
             if (session.start_time == null || session.end_time == null) return 0;
