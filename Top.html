@@ -359,27 +359,28 @@
             return new Date(val);
         }
 
-// دالة مساعدة لتحليل الوقت بمرونة واستخراجه كقيمة عشرية
 function parseTimeToHours(timeStr) {
     if (!timeStr) return 0;
     
-    // تنظيف النص وتحويله لحروف صغيرة لتسهيل المقارنة
     let cleanStr = timeStr.toString().trim().toLowerCase();
     
-    // استخراج الساعات، الدقائق، والـ (am/pm) إن وجدت
-    let match = cleanStr.match(/(\d{1,2}):(\d{1,2})(?::\d{1,2})?\s*(am|pm)?/);
-    if (!match) return 0;
+    // تعديل الـ Regex ليدعم الوقت سواء بدقائق أو بدون (مثل "10", "10:30", "02pm")
+    let match = cleanStr.match(/(\d{1,2})(?::(\d{1,2}))?(?::\d{1,2})?\s*(am|pm)?/);
+    
+    if (!match) {
+        console.warn("⚠️ لم يتم التعرف على صيغة الوقت:", timeStr);
+        return 0;
+    }
 
-    let hours = parseInt(match[1], 10);
-    let minutes = parseInt(match[2], 10);
+    let hours = parseInt(match[1], 10) || 0;
+    let minutes = parseInt(match[2], 10) || 0;
     let modifier = match[3];
 
-    // معالجة صيغة 12 ساعة إذا كان موجوداً am أو pm
+    // معالجة صيغة 12 ساعة
     if (modifier === 'pm' && hours < 12) {
-        hours += 12; // تحويل المساء إلى نظام 24
-    }
-    if (modifier === 'am' && hours === 12) {
-        hours = 0; // تحويل 12 صباحاً إلى 00:00
+        hours += 12;
+    } else if (modifier === 'am' && hours === 12) {
+        hours = 0;
     }
 
     return hours + (minutes / 60);
@@ -394,7 +395,7 @@ function calculateHoursFromTime(startTime, endTime) {
 
     let diffHours = endHours - startHours;
 
-    // معالجة الحالة إذا كان وقت الانتهاء بعد منتصف الليل (في اليوم التالي)
+    // معالجة إذا كان التدريب يمتد لبعد منتصف الليل
     if (diffHours < 0) {
         diffHours += 24;
     }
@@ -402,17 +403,27 @@ function calculateHoursFromTime(startTime, endTime) {
     return parseFloat(diffHours.toFixed(2));
 }
 
-        function getSessionHours(session) {
-            if (session.start_time == null || session.end_time == null) return 0;
-            let start = session.start_time;
-            let end = session.end_time;
-            if (typeof start === "number" && typeof end === "number") {
-                let hours = (end - start) * 24;
-                if (hours < 0) hours += 24;
-                return Number(hours.toFixed(2));
-            }
-            return calculateHoursFromTime(start.toString(), end.toString());
-        }
+function getSessionHours(session) {
+    if (session.start_time == null || session.end_time == null) return 0;
+    
+    let start = session.start_time;
+    let end = session.end_time;
+    
+    // معالجة الأرقام في حالة استيراد البيانات كأرقام عشرية من إكسيل
+    if (typeof start === "number" && typeof end === "number") {
+        let hours = (end - start) * 24;
+        if (hours < 0) hours += 24;
+        return Number(hours.toFixed(2));
+    }
+    
+    let finalHours = calculateHoursFromTime(start.toString(), end.toString());
+    
+    // سطر مساعد للطباعة في الـ Console لمعرفة الساعات المحسوبة لكل كود جلسة
+    // يمكنك إزالة الـ // من السطر القادم لاحقاً لمراقبة الحسابات
+     console.log(`Session: ${session.session_code} | Start: ${start} | End: ${end} | Calculated: ${finalHours} hrs`);
+    
+    return finalHours;
+}
 
         // ===== تحميل البيانات مباشرة من Firestore =====
         async function loadAllData() {
