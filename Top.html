@@ -328,8 +328,6 @@
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
         // ========== Storage Variables ==========
-        const PAGE_CACHE_KEY = "TopPerformers_PermanentCache";
-        
         let offJobData = { courses: [], sessions: [], enrollments: [] };
         let onJobData = { courses: [], sessions: [], enrollments: [] };
         let allEmployees = [];
@@ -341,6 +339,8 @@
         let currentType = "offjob";
         
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        // الكورسات المستثناة من حساب أفضل موظف
         const EXCLUDED_COURSES = ['new hire induction', 'تعريف الموظفين الجدد', 'الهاسب'];
 
         function isExcludedCourse(courseName) {
@@ -366,7 +366,6 @@
             let match = cleanStr.match(/(\d{1,2})(?::(\d{1,2}))?(?::\d{1,2})?\s*(am|pm)?/);
             
             if (!match) {
-                console.warn("⚠️ لم يتم التعرف على صيغة الوقت:", timeStr);
                 return 0;
             }
 
@@ -409,38 +408,16 @@
             return calculateHoursFromTime(start.toString(), end.toString());
         }
 
-        // ===== تحميل البيانات (بنظام الكاش الدائم) =====
+        // ===== تحميل البيانات بالاعتماد على الكاش الذكي لـ database.js =====
         async function loadAllData() {
-            const cachedData = localStorage.getItem(PAGE_CACHE_KEY);
-            
-            if (cachedData) {
-                try {
-                    const parsed = JSON.parse(cachedData);
-                    allEmployees = parsed.allEmployees || [];
-                    activeEmployees = parsed.activeEmployees || [];
-                    offJobData = parsed.offJobData || { courses: [], sessions: [], enrollments: [] };
-                    onJobData = parsed.onJobData || { courses: [], sessions: [], enrollments: [] };
-                    availableYears = parsed.availableYears || [new Date().getFullYear()];
-                    console.log("✅ تم تحميل البيانات من الكاش المحلي بنجاح (0 Reads)");
-                    return; 
-                } catch (e) {
-                    console.error("خطأ في قراءة الكاش:", e);
-                }
-            }
-            
-            await fetchFromServerAndCache();
-        }
-
-        async function fetchFromServerAndCache() {
             const appDiv = document.getElementById('app');
-            if(appDiv) {
-                appDiv.innerHTML = '<div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">جاري سحب البيانات من السيرفر لأول مرة... ⏳</div>';
-            }
+            if(appDiv) appDiv.innerHTML = '<div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">جاري جلب البيانات... ⏳</div>';
             
             await DB.init();
             
-            const employeesData = await DB.getAll('employees');
-            allEmployees = employeesData || [];
+            // الاعتماد على DB.getAll لقراءة البيانات من الكاش أو سحبها إذا لم تكن موجودة
+            const employeesData = await DB.getAll('employees') || [];
+            allEmployees = employeesData;
             activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
             
             offJobData.courses = await DB.getAll('offjob_courses') || [];
@@ -463,15 +440,6 @@
                     currentYear = availableYears[0];
                 }
             }
-
-            // حفظ البيانات في الذاكرة المحلية
-            const dataToSave = { allEmployees, activeEmployees, offJobData, onJobData, availableYears };
-            try {
-                localStorage.setItem(PAGE_CACHE_KEY, JSON.stringify(dataToSave));
-                console.log("✅ تم حفظ البيانات في الكاش الدائم");
-            } catch (e) {
-                console.warn("⚠️ مساحة الكاش لا تكفي لحفظ كل البيانات، سيتم الاعتماد على السحب المباشر.");
-            }
         }
 
         // دالة زر التحديث اليدوي
@@ -482,20 +450,22 @@
                 btn.style.pointerEvents = "none";
             }
             
-            // مسح الكاش لإجبار النظام على القراءة من Firebase
-            localStorage.removeItem(PAGE_CACHE_KEY);
-            
-            // مسح الكاش الخاص بملف قاعدة البيانات (إن وجد)
+            // مسح الكاش الخاص بملف database.js لإجباره على سحب بيانات جديدة
             const collections = ['employees', 'offjob_courses', 'offjob_sessions', 'offjob_enrollments', 'onjob_courses', 'onjob_sessions', 'onjob_enrollments'];
-            collections.forEach(col => localStorage.removeItem(col));
+            collections.forEach(col => {
+                localStorage.removeItem(col);
+                localStorage.removeItem(col + '_timestamp');
+                localStorage.removeItem(col + '_lastFetch');
+            });
             
             try {
-                await fetchFromServerAndCache();
-                alert("✅ تم سحب أحدث البيانات من السيرفر بنجاح!");
-                loadPage();
+                await loadAllData(); 
+                alert("✅ تم سحب أحدث البيانات من السيرفر وتحديث الكاش بنجاح!");
+                loadPage(); 
             } catch (error) {
                 console.error("خطأ أثناء التحديث:", error);
                 alert("❌ حدث خطأ أثناء الاتصال بالسيرفر.");
+            } finally {
                 if(btn) {
                     btn.innerHTML = "🔄 تحديث البيانات";
                     btn.style.pointerEvents = "auto";
@@ -684,8 +654,10 @@
                 stats.sessions++;
                 if (course) stats.coursesSet.add(course.course_name);
                 
-                // لحساب الساعات حتى لو كان الكورس مستثنى (بناء على طلبك السابق)
-                stats.hours += getSessionHours(session);
+                // حساب الساعات فقط إذا كان الكورس غير مستثنى
+                if (!isExcludedCourse(course ? course.course_name : '')) {
+                    stats.hours += getSessionHours(session);
+                }
             });
             
             let result = Array.from(empMap.keys())
