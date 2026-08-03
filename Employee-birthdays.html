@@ -477,7 +477,7 @@
             performSearch(month, day);
         };
 
-        function performSearch(month, day) {
+function performSearch(month, day) {
             const grid = document.getElementById('employeesGrid');
             const statsDiv = document.getElementById('stats');
             
@@ -495,10 +495,41 @@
                 return;
             }
             
-            const filtered = employees.filter(emp => emp.month === month && emp.day === day);
+            // سطر مساعد لمراجعة شكل البيانات القادمة من قاعدة البيانات (تأكد منها في الـ Console)
+            console.log("Sample Employee Data:", employees[0]);
+            
+            const filtered = employees.filter(emp => {
+                // الحالة الأولى: البيانات محفوظة في حقول منفصلة (مع تحويل أي نص إلى رقم)
+                if (emp.month !== undefined && emp.day !== undefined) {
+                    return parseInt(emp.month) === month && parseInt(emp.day) === day;
+                }
+                
+                // الحالة الثانية: البيانات محفوظة ككلمات تبدأ بحرف كبير
+                if (emp.Month !== undefined && emp.Day !== undefined) {
+                    return parseInt(emp.Month) === month && parseInt(emp.Day) === day;
+                }
+
+                // الحالة الثالثة: البيانات محفوظة كتاريخ كامل (مثل: 1990-08-05)
+                let birthDateStr = emp.dob || emp.birthDate || emp.birthday || emp.dateOfBirth;
+                if (birthDateStr) {
+                    // إذا كان التاريخ مستورد كـ Excel Serial Number
+                    if (typeof birthDateStr === 'number') {
+                        let d = XLSX.SSF.parse_date_code(birthDateStr);
+                        return d.m === month && d.d === day;
+                    }
+                    
+                    // إذا كان التاريخ نصي
+                    let bDate = new Date(birthDateStr);
+                    if (!isNaN(bDate.getTime())) {
+                        return (bDate.getMonth() + 1) === month && bDate.getDate() === day;
+                    }
+                }
+
+                return false;
+            });
+
             displayResults(filtered, month, day);
         }
-
         function displayResults(employeesList, month, day) {
             const grid = document.getElementById('employeesGrid');
             const statsDiv = document.getElementById('stats');
