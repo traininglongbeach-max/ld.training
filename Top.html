@@ -47,6 +47,7 @@
         .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .nav-links .home { background: linear-gradient(135deg, #10b981, #059669); color: white; }
         .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .nav-links .refresh { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
         .nav-links .logout { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
 
         .container { max-width: 1500px; margin: 2rem auto; padding: 0 1.5rem; }
@@ -276,7 +277,6 @@
         .dept-name { font-weight: 700; color: #1e3a5f; font-size: 1.05rem; }
         .dept-details { color: #718096; font-size: 0.8rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 0.8rem; }
 
-        /* تعديل لعرض الرسوم البيانية تحت بعضها البعض */
         .charts-row {
             display: flex;
             flex-direction: column;
@@ -319,7 +319,7 @@
 <body>
     <div id="app">
         <div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">
-            جاري تحميل البيانات من السيرفر وتحليل الأداء... ⏳
+            جاري تحميل البيانات... ⏳
         </div>
     </div>
 
@@ -328,6 +328,8 @@
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
         // ========== Storage Variables ==========
+        const PAGE_CACHE_KEY = "TopPerformers_PermanentCache";
+        
         let offJobData = { courses: [], sessions: [], enrollments: [] };
         let onJobData = { courses: [], sessions: [], enrollments: [] };
         let allEmployees = [];
@@ -347,7 +349,6 @@
             return EXCLUDED_COURSES.some(ex => cn.includes(ex.toLowerCase()));
         }
 
-        // ===== 🕒 دالة ذكية لقراءة تواريخ الإكسيل =====
         function parseExcelDate(val) {
             if (!val) return null;
             if (typeof val === 'number') {
@@ -359,84 +360,88 @@
             return new Date(val);
         }
 
-function parseTimeToHours(timeStr) {
-    if (!timeStr) return 0;
-    
-    let cleanStr = timeStr.toString().trim().toLowerCase();
-    
-    // تعديل الـ Regex ليدعم الوقت سواء بدقائق أو بدون (مثل "10", "10:30", "02pm")
-    let match = cleanStr.match(/(\d{1,2})(?::(\d{1,2}))?(?::\d{1,2})?\s*(am|pm)?/);
-    
-    if (!match) {
-        console.warn("⚠️ لم يتم التعرف على صيغة الوقت:", timeStr);
-        return 0;
-    }
+        function parseTimeToHours(timeStr) {
+            if (!timeStr) return 0;
+            let cleanStr = timeStr.toString().trim().toLowerCase();
+            let match = cleanStr.match(/(\d{1,2})(?::(\d{1,2}))?(?::\d{1,2})?\s*(am|pm)?/);
+            
+            if (!match) {
+                console.warn("⚠️ لم يتم التعرف على صيغة الوقت:", timeStr);
+                return 0;
+            }
 
-    let hours = parseInt(match[1], 10) || 0;
-    let minutes = parseInt(match[2], 10) || 0;
-    let modifier = match[3];
+            let hours = parseInt(match[1], 10) || 0;
+            let minutes = parseInt(match[2], 10) || 0;
+            let modifier = match[3];
 
-    // معالجة صيغة 12 ساعة
-    if (modifier === 'pm' && hours < 12) {
-        hours += 12;
-    } else if (modifier === 'am' && hours === 12) {
-        hours = 0;
-    }
+            if (modifier === 'pm' && hours < 12) {
+                hours += 12;
+            } else if (modifier === 'am' && hours === 12) {
+                hours = 0;
+            }
 
-    return hours + (minutes / 60);
-}
+            return hours + (minutes / 60);
+        }
 
-// الدالة الرئيسية المحدثة لحساب الفرق بين وقتين
-function calculateHoursFromTime(startTime, endTime) {
-    if (!startTime || !endTime) return 0;
+        function calculateHoursFromTime(startTime, endTime) {
+            if (!startTime || !endTime) return 0;
+            let startHours = parseTimeToHours(startTime);
+            let endHours = parseTimeToHours(endTime);
+            let diffHours = endHours - startHours;
 
-    let startHours = parseTimeToHours(startTime);
-    let endHours = parseTimeToHours(endTime);
+            if (diffHours < 0) {
+                diffHours += 24;
+            }
+            return parseFloat(diffHours.toFixed(2));
+        }
 
-    let diffHours = endHours - startHours;
+        function getSessionHours(session) {
+            if (session.start_time == null || session.end_time == null) return 0;
+            let start = session.start_time;
+            let end = session.end_time;
+            
+            if (typeof start === "number" && typeof end === "number") {
+                let hours = (end - start) * 24;
+                if (hours < 0) hours += 24;
+                return Number(hours.toFixed(2));
+            }
+            
+            return calculateHoursFromTime(start.toString(), end.toString());
+        }
 
-    // معالجة إذا كان التدريب يمتد لبعد منتصف الليل
-    if (diffHours < 0) {
-        diffHours += 24;
-    }
-
-    return parseFloat(diffHours.toFixed(2));
-}
-
-function getSessionHours(session) {
-    if (session.start_time == null || session.end_time == null) return 0;
-    
-    let start = session.start_time;
-    let end = session.end_time;
-    
-    // معالجة الأرقام في حالة استيراد البيانات كأرقام عشرية من إكسيل
-    if (typeof start === "number" && typeof end === "number") {
-        let hours = (end - start) * 24;
-        if (hours < 0) hours += 24;
-        return Number(hours.toFixed(2));
-    }
-    
-    let finalHours = calculateHoursFromTime(start.toString(), end.toString());
-    
-    // سطر مساعد للطباعة في الـ Console لمعرفة الساعات المحسوبة لكل كود جلسة
-    // يمكنك إزالة الـ // من السطر القادم لاحقاً لمراقبة الحسابات
-     console.log(`Session: ${session.session_code} | Start: ${start} | End: ${end} | Calculated: ${finalHours} hrs`);
-    
-    return finalHours;
-}
-
-        // ===== تحميل البيانات مباشرة من Firestore =====
+        // ===== تحميل البيانات (بنظام الكاش الدائم) =====
         async function loadAllData() {
+            const cachedData = localStorage.getItem(PAGE_CACHE_KEY);
+            
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    allEmployees = parsed.allEmployees || [];
+                    activeEmployees = parsed.activeEmployees || [];
+                    offJobData = parsed.offJobData || { courses: [], sessions: [], enrollments: [] };
+                    onJobData = parsed.onJobData || { courses: [], sessions: [], enrollments: [] };
+                    availableYears = parsed.availableYears || [new Date().getFullYear()];
+                    console.log("✅ تم تحميل البيانات من الكاش المحلي بنجاح (0 Reads)");
+                    return; 
+                } catch (e) {
+                    console.error("خطأ في قراءة الكاش:", e);
+                }
+            }
+            
+            await fetchFromServerAndCache();
+        }
+
+        async function fetchFromServerAndCache() {
+            const appDiv = document.getElementById('app');
+            if(appDiv) {
+                appDiv.innerHTML = '<div style="text-align:center; padding:100px; font-size:1.5rem; color:#1e3a5f;">جاري سحب البيانات من السيرفر لأول مرة... ⏳</div>';
+            }
+            
             await DB.init();
             
             const employeesData = await DB.getAll('employees');
-            if (employeesData && employeesData.length > 0) {
-                allEmployees = employeesData;
-                activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
-            } else {
-                allEmployees = [];
-                activeEmployees = [];
-            }
+            allEmployees = employeesData || [];
+            activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
             
             offJobData.courses = await DB.getAll('offjob_courses') || [];
             offJobData.sessions = await DB.getAll('offjob_sessions') || [];
@@ -458,7 +463,45 @@ function getSessionHours(session) {
                     currentYear = availableYears[0];
                 }
             }
+
+            // حفظ البيانات في الذاكرة المحلية
+            const dataToSave = { allEmployees, activeEmployees, offJobData, onJobData, availableYears };
+            try {
+                localStorage.setItem(PAGE_CACHE_KEY, JSON.stringify(dataToSave));
+                console.log("✅ تم حفظ البيانات في الكاش الدائم");
+            } catch (e) {
+                console.warn("⚠️ مساحة الكاش لا تكفي لحفظ كل البيانات، سيتم الاعتماد على السحب المباشر.");
+            }
         }
+
+        // دالة زر التحديث اليدوي
+        window.forceRefreshData = async function() {
+            const btn = document.getElementById('refreshBtn');
+            if(btn) {
+                btn.innerHTML = "⏳ جاري التحديث...";
+                btn.style.pointerEvents = "none";
+            }
+            
+            // مسح الكاش لإجبار النظام على القراءة من Firebase
+            localStorage.removeItem(PAGE_CACHE_KEY);
+            
+            // مسح الكاش الخاص بملف قاعدة البيانات (إن وجد)
+            const collections = ['employees', 'offjob_courses', 'offjob_sessions', 'offjob_enrollments', 'onjob_courses', 'onjob_sessions', 'onjob_enrollments'];
+            collections.forEach(col => localStorage.removeItem(col));
+            
+            try {
+                await fetchFromServerAndCache();
+                alert("✅ تم سحب أحدث البيانات من السيرفر بنجاح!");
+                loadPage();
+            } catch (error) {
+                console.error("خطأ أثناء التحديث:", error);
+                alert("❌ حدث خطأ أثناء الاتصال بالسيرفر.");
+                if(btn) {
+                    btn.innerHTML = "🔄 تحديث البيانات";
+                    btn.style.pointerEvents = "auto";
+                }
+            }
+        };
 
         function filterByMonthAndYear(items, dateField) {
             return items.filter(item => {
@@ -640,8 +683,9 @@ function getSessionHours(session) {
                 let stats = empMap.get(empId);
                 stats.sessions++;
                 if (course) stats.coursesSet.add(course.course_name);
-                if (!isExcludedCourse(course ? course.course_name : '')) 
-                    stats.hours += getSessionHours(session);
+                
+                // لحساب الساعات حتى لو كان الكورس مستثنى (بناء على طلبك السابق)
+                stats.hours += getSessionHours(session);
             });
             
             let result = Array.from(empMap.keys())
@@ -793,123 +837,39 @@ function getSessionHours(session) {
             let empSorted = [...deptStats].sort((a, b) => b.uniqueEmployees - a.uniqueEmployees).slice(0, 10);
             let hoursSorted = [...deptStats].sort((a, b) => b.hours - a.hours).slice(0, 10);
             
-            // تحديد ألوان مختلفة بوضوح لكل شارت
-            let colorEmployees = '#3b82f6'; // أزرق شارت الموظفين
-            let colorHours = '#10b981'; // أخضر لشارت الساعات
+            let colorEmployees = '#3b82f6';
+            let colorHours = '#10b981';
             
-let chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    layout: {
-        padding: {
-            top: 45,
-            bottom: 15
-        }
-    },
-
-    plugins: {
-        legend: {
-            labels: {
-                color: '#4a5568',
-                font: {
-                    size: 20,      // تكبير نص الـ Legend
-                    family: 'Tajawal',
-                    weight: 'bold'
+            let chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 45, bottom: 15 } },
+                plugins: {
+                    legend: { labels: { color: '#4a5568', font: { size: 20, family: 'Tajawal', weight: 'bold' } } },
+                    datalabels: {
+                        display: true, color: '#1e3a5f', backgroundColor: null, borderRadius: 0, padding: 0,
+                        anchor: 'end', align: 'end', offset: 10,
+                        font: { size: 18, weight: 'bold', family: 'Tajawal' },
+                        formatter: v => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : ''
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#718096', stepSize: 1, font: { size: 18, family: 'Tajawal', weight: 'bold' } }, grid: { color: '#e2e8f0' } },
+                    x: { ticks: { color: '#718096', maxRotation: 45, font: { size: 18, family: 'Tajawal', weight: 'bold' } }, grid: { display: false } }
                 }
-            }
-        },
-
-        datalabels: {
-            display: true,
-            color: '#1e3a5f',
-
-            // إزالة المربع الأبيض
-            backgroundColor: null,
-            borderRadius: 0,
-            padding: 0,
-
-            anchor: 'end',
-            align: 'end',
-            offset: 10,
-
-            font: {
-                size: 18,          // تكبير الرقم فوق العمود
-                weight: 'bold',
-                family: 'Tajawal'
-            },
-
-            formatter: v =>
-                v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : ''
-        }
-    },
-
-    scales: {
-        y: {
-            beginAtZero: true,
-
-            ticks: {
-                color: '#718096',
-                stepSize: 1,
-                font: {
-                    size: 18,      // تكبير أرقام المحور الرأسي
-                    family: 'Tajawal',
-                    weight: 'bold'
-                }
-            },
-
-            grid: {
-                color: '#e2e8f0'
-            }
-        },
-
-        x: {
-            ticks: {
-                color: '#718096',
-                maxRotation: 45,
-
-                font: {
-                    size: 18,      // تكبير أسماء الأقسام
-                    family: 'Tajawal',
-                    weight: 'bold'
-                }
-            },
-
-            grid: {
-                display: false     // إخفاء خطوط الشبكة الرأسية (اختياري)
-            }
-        }
-    }
-};
+            };
             
             let ctx1 = document.getElementById('deptEmployeesChart');
             if (ctx1) new Chart(ctx1.getContext('2d'), { 
                 type: 'bar', 
-                data: { 
-                    labels: empSorted.map(d => d.department), 
-                    datasets: [{ 
-                        label: 'Employees', 
-                        data: empSorted.map(d => d.uniqueEmployees), 
-                        backgroundColor: colorEmployees, 
-                        borderRadius: 10, 
-                        barPercentage: 0.7 
-                    }] 
-                }, 
+                data: { labels: empSorted.map(d => d.department), datasets: [{ label: 'Employees', data: empSorted.map(d => d.uniqueEmployees), backgroundColor: colorEmployees, borderRadius: 10, barPercentage: 0.7 }] }, 
                 options: chartOptions 
             });
             
             let ctx2 = document.getElementById('deptHoursChart');
             if (ctx2) new Chart(ctx2.getContext('2d'), { 
                 type: 'bar', 
-                data: { 
-                    labels: hoursSorted.map(d => d.department), 
-                    datasets: [{ 
-                        label: 'Hours', 
-                        data: hoursSorted.map(d => d.hours), 
-                        backgroundColor: colorHours, 
-                        borderRadius: 10, 
-                        barPercentage: 0.7 
-                    }] 
-                }, 
+                data: { labels: hoursSorted.map(d => d.department), datasets: [{ label: 'Hours', data: hoursSorted.map(d => d.hours), backgroundColor: colorHours, borderRadius: 10, barPercentage: 0.7 }] }, 
                 options: chartOptions 
             });
         }
@@ -934,6 +894,7 @@ let chartOptions = {
                     <div class="logo"><h2>🏆 Top Performers <span>Analysis</span></h2></div>
                     <div class="nav-links">
                         <a href="index.html" class="home">🏠 Home</a>
+                        <button id="refreshBtn" onclick="forceRefreshData()" class="refresh">🔄 تحديث البيانات</button>
                         <button onclick="showDiagnostic()" class="diagnose">🔍 Diagnose</button>
                         <a href="#" onclick="logout()" class="logout">🚪 Logout</a>
                     </div>
@@ -981,14 +942,12 @@ let chartOptions = {
             try { await signOut(auth); window.location.href = 'login.html'; } catch(e) { console.error(e); }
         }
 
-        // إتاحة الدوال على الـ window لاستدعائها من HTML
         window.changeYear = changeYear;
         window.changeMonth = changeMonth;
         window.changeType = changeType;
         window.showDiagnostic = showDiagnostic;
         window.logout = logout;
 
-        // ===== 🔒 Auth Guard & Start Application =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
@@ -996,7 +955,7 @@ let chartOptions = {
                     await loadPage();
                 } catch (error) {
                     console.error("Error loading page data:", error);
-                    document.getElementById('app').innerHTML = '<div style="text-align:center; padding:50px;">❌ حدث خطأ أثناء تحميل البيانات من السيرفر.</div>';
+                    document.getElementById('app').innerHTML = '<div style="text-align:center; padding:50px;">❌ حدث خطأ أثناء تحميل البيانات.</div>';
                 }
             } else {
                 window.location.href = 'login.html';
