@@ -54,9 +54,9 @@
 
         .charts-container { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem; }
         .chart-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
-        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; font-size: clamp(1rem, 1.8vw, 1.2rem); }
-        .chart-wrapper { position: relative; width: 100%; min-height: 350px; max-height: 450px; }
-        .chart-wrapper canvas { width: 100% !important; height: 100% !important; max-height: 450px; }
+        .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; transition: font-size 0.3s ease; }
+        .chart-wrapper { position: relative; width: 100%; transition: height 0.3s ease, min-height 0.3s ease; }
+        .chart-wrapper canvas { width: 100% !important; height: 100% !important; }
 
         .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
 
@@ -108,18 +108,9 @@
         .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
 
         /* ================= Responsive Media Queries ================= */
-        @media (max-width: 1600px) {
-            .container { max-width: 95%; }
-        }
-
-        @media (max-width: 1400px) {
-            .container { max-width: 1140px; }
-        }
-
-        @media (max-width: 1200px) {
-            .container { max-width: 960px; }
-        }
-
+        @media (max-width: 1600px) { .container { max-width: 95%; } }
+        @media (max-width: 1400px) { .container { max-width: 1140px; } }
+        @media (max-width: 1200px) { .container { max-width: 960px; } }
         @media (max-width: 992px) {
             .container { max-width: 720px; }
             .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
@@ -127,58 +118,31 @@
             .filter-select { width: 100%; min-width: 100%; max-width: 100%; }
             .charts-row { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 768px) {
             .navbar { flex-direction: column; text-align: center; padding: 1rem; }
             .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
             .nav-links a, .nav-links button { width: 100%; text-align: center; }
             .container { max-width: 100%; padding: 0 1rem; }
-            
             .page-header h1 { font-size: 1.6rem; }
-            
             .diagnostic-box .stats-row { grid-template-columns: repeat(2, 1fr); }
-            
             .top-employees { grid-template-columns: 1fr; }
-            
-            .chart-wrapper { min-height: 280px; max-height: 350px; }
-            .chart-wrapper canvas { max-height: 350px; }
         }
-
         @media (max-width: 576px) {
             .diagnostic-box .stats-row { grid-template-columns: 1fr; }
-            
             .stat-card, .chart-card, .diagnostic-box { padding: 1rem; border-radius: 1rem; }
-            
-            .chart-wrapper { min-height: 220px; max-height: 280px; }
-            .chart-wrapper canvas { max-height: 280px; }
-            
             .top-rank { width: 40px; height: 40px; font-size: 1rem; }
-            
             .charts-row { gap: 1rem; }
             .charts-container { gap: 1rem; }
         }
-
         @media (max-width: 425px) {
             .nav-links a, .nav-links button { width: 100%; text-align: center; }
             .top-item { flex-wrap: wrap; justify-content: center; text-align: center; }
             .top-stats { text-align: center; width: 100%; }
             .top-meta { justify-content: center; }
-            
-            .chart-wrapper { min-height: 180px; max-height: 240px; }
-            .chart-wrapper canvas { max-height: 240px; }
         }
-
-        @media (max-width: 375px) {
-            .page-header h1 { font-size: 1.4rem; }
-            .chart-wrapper { min-height: 160px; max-height: 200px; }
-            .chart-wrapper canvas { max-height: 200px; }
-        }
-
         @media (max-width: 320px) {
             .navbar .logo h2 { font-size: 1.2rem; }
             .top-rank { width: 35px; height: 35px; font-size: 0.9rem; }
-            .chart-wrapper { min-height: 140px; max-height: 180px; }
-            .chart-wrapper canvas { max-height: 180px; }
         }
     </style>
 </head>
@@ -192,11 +156,6 @@
     <script type="module">
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-
-        const CHART_SIZES = {
-            main: { height: 450, titleFont: 1.5, dataFont: 20, axisFont: 18, padding: { top: 40, bottom: 20, left: 20, right: 30 } },
-            medium: { columns: 1, height: 370, titleFont: 1.2, dataFont: 18, axisFont: 18, padding: { top: 35, bottom: 18, left: 18, right: 28 }, gap: 1.5 }
-        };
 
         // مصفوفة لتخزين مراجع الشارتات لإعادة التحديث عند تغيير حجم الشاشة
         let chartInstances = [];
@@ -265,7 +224,6 @@
                 console.log('🔥 تحميل البيانات من Firestore' + (forceRefresh ? ' (تحديث إجباري)' : ' (المرة الأولى)'));
                 
                 if (forceRefresh) {
-                    // إظهار إشعار التحديث
                     const notice = document.getElementById('refreshNotice');
                     if (notice) {
                         notice.textContent = '🔄 جاري تحديث البيانات من السيرفر...';
@@ -724,19 +682,93 @@
             return `<div class="top-employees"><div class="top-card"><h3>🏆 Top Active Employees - By Hours</h3><div class="top-list">${renderList(topByHours)}</div></div></div>`;
         }
 
-        function applyChartSizes() {
-            const m = CHART_SIZES.main;
-            const med = CHART_SIZES.medium;
-            document.querySelectorAll('.chart-wrapper:not(.medium)').forEach(el => el.style.minHeight = m.height + 'px');
-            document.querySelectorAll('canvas:not(.medium-canvas)').forEach(el => el.style.maxHeight = m.height + 'px');
-            document.querySelectorAll('.chart-card:not(.medium) h3').forEach(el => el.style.fontSize = m.titleFont + 'rem');
-            document.querySelectorAll('.charts-row').forEach(el => { el.style.gridTemplateColumns = `repeat(${med.columns}, 1fr)`; el.style.gap = med.gap + 'rem'; });
-            document.querySelectorAll('.chart-wrapper.medium').forEach(el => el.style.minHeight = med.height + 'px');
-            document.querySelectorAll('canvas.medium-canvas').forEach(el => el.style.maxHeight = med.height + 'px');
-            document.querySelectorAll('.chart-card.medium h3').forEach(el => el.style.fontSize = med.titleFont + 'rem');
+        // ================= الإعدادات الذكية للشارت (Smart Settings) =================
+        function getChartSettings() {
+            const w = window.innerWidth;
+            if (w <= 375) {
+                return { height: 450, titleFont: 1.1, axisFont: 9, dataFont: 9, legendFont: 10, barThickness: 12, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 45, displayDataLabels: false };
+            } else if (w <= 576) {
+                return { height: 450, titleFont: 1.2, axisFont: 10, dataFont: 10, legendFont: 11, barThickness: 16, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 45, displayDataLabels: 'auto' };
+            } else if (w <= 768) {
+                return { height: 400, titleFont: 1.3, axisFont: 11, dataFont: 11, legendFont: 12, barThickness: 20, borderRadius: 6, padding: { top: 25, bottom: 10, left: 10, right: 10 }, rotation: 30, displayDataLabels: true };
+            } else if (w <= 1024) {
+                return { height: 380, titleFont: 1.4, axisFont: 13, dataFont: 13, legendFont: 13, barThickness: 25, borderRadius: 8, padding: { top: 30, bottom: 15, left: 15, right: 15 }, rotation: 0, displayDataLabels: true };
+            } else {
+                return { height: 350, titleFont: 1.5, axisFont: 14, dataFont: 14, legendFont: 14, barThickness: 35, borderRadius: 8, padding: { top: 35, bottom: 15, left: 15, right: 15 }, rotation: 0, displayDataLabels: true };
+            }
         }
 
-        // ===== دالة مساعدة لإنشاء شارت مع إعادة التحديث عند تغيير الحجم =====
+        function getBaseChartOptions() {
+            const s = getChartSettings();
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                resizeDelay: 50,
+                layout: { padding: s.padding },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: s.legendFont, family: "'Tajawal', sans-serif", weight: 'bold' },
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            padding: 15
+                        }
+                    },
+                    datalabels: {
+                        display: s.displayDataLabels,
+                        color: '#000',
+                        backgroundColor: 'rgba(255,255,255,0.85)',
+                        borderRadius: s.borderRadius,
+                        padding: { left: 6, right: 6, top: 4, bottom: 4 },
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 4,
+                        font: { weight: 'bold', size: s.dataFont, family: "'Tajawal', sans-serif" },
+                        formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : ''
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { font: { size: s.axisFont, family: "'Tajawal', sans-serif" } },
+                        grid: { display: false }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: s.axisFont, family: "'Tajawal', sans-serif", weight: 'bold' },
+                            maxRotation: s.rotation,
+                            minRotation: s.rotation,
+                            autoSkip: true,
+                            maxTicksLimit: window.innerWidth <= 576 ? 8 : 15
+                        },
+                        grid: { display: false }
+                    }
+                }
+            };
+        }
+
+        function getSplitChartOptions() {
+            const options = getBaseChartOptions();
+            options.plugins.legend.labels.generateLabels = () => [
+                { text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' },
+                { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }
+            ];
+            return options;
+        }
+
+        function applyChartSettingsToDOM() {
+            const s = getChartSettings();
+            document.querySelectorAll('.chart-wrapper').forEach(el => {
+                el.style.height = s.height + 'px';
+                el.style.minHeight = s.height + 'px';
+            });
+            document.querySelectorAll('.chart-card h3').forEach(el => {
+                el.style.fontSize = s.titleFont + 'rem';
+            });
+        }
+
+        // ===== دالة مساعدة لإنشاء شارت =====
         function createChart(ctx, config) {
             if (!ctx) return null;
             const chart = new Chart(ctx, config);
@@ -744,11 +776,38 @@
             return chart;
         }
 
-        // ===== دالة لإعادة تحديث جميع الشارتات عند تغيير حجم الشاشة =====
+        // ===== دالة لإعادة تحديث جميع الشارتات عند تغيير حجم الشاشة (Live Resize) =====
         function resizeCharts() {
+            applyChartSettingsToDOM();
+            const s = getChartSettings();
+
             chartInstances.forEach(chart => {
-                if (chart && chart.resize) {
-                    chart.resize();
+                if (chart && chart.options) {
+                    chart.options.layout.padding = s.padding;
+                    
+                    if (chart.options.scales.x.ticks) {
+                        chart.options.scales.x.ticks.font.size = s.axisFont;
+                        chart.options.scales.x.ticks.maxRotation = s.rotation;
+                        chart.options.scales.x.ticks.minRotation = s.rotation;
+                        chart.options.scales.x.ticks.maxTicksLimit = window.innerWidth <= 576 ? 8 : 15;
+                    }
+                    if (chart.options.scales.y.ticks) {
+                        chart.options.scales.y.ticks.font.size = s.axisFont;
+                    }
+                    if (chart.options.plugins.legend.labels) {
+                        chart.options.plugins.legend.labels.font.size = s.legendFont;
+                    }
+                    if (chart.options.plugins.datalabels) {
+                        chart.options.plugins.datalabels.font.size = s.dataFont;
+                        chart.options.plugins.datalabels.display = s.displayDataLabels;
+                        chart.options.plugins.datalabels.borderRadius = s.borderRadius;
+                    }
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.barThickness = s.barThickness;
+                        dataset.borderRadius = s.borderRadius;
+                    });
+
+                    chart.update('none'); // تحديث فوري وبدون أنيميشن لمنع التقطيع
                 }
             });
         }
@@ -757,17 +816,7 @@
         function initCharts(deptStats) {
             Chart.register(ChartDataLabels);
             const isSplit = deptStats.type === 'split';
-            const s = CHART_SIZES.main;
-            const chartOptions = { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                layout: { padding: s.padding }, 
-                plugins: { 
-                    legend: { position: 'top', labels: { font: { size: s.axisFont }, usePointStyle: true, pointStyle: 'rectRounded' } }, 
-                    datalabels: { display: true, color: '#000000', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
-                }, 
-                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
-            };
+            const s = getChartSettings();
             
             if (!isSplit) {
                 const data = deptStats.data;
@@ -777,15 +826,14 @@
                     if (ctx) {
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: sorted(key).map(d => d.department), datasets: [{ label, data: sorted(key).map(d => d[key]), backgroundColor: color, borderRadius: 10 }] }, 
-                            options: chartOptions 
+                            data: { labels: sorted(key).map(d => d.department), datasets: [{ label, data: sorted(key).map(d => d[key]), backgroundColor: color, borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getBaseChartOptions() 
                         });
                     }
                 });
             } else {
                 const offData = deptStats.offJob; const onData = deptStats.onJob;
                 const allDepts = [...new Set([...offData.map(d => d.department), ...onData.map(d => d.department)])].sort((a, b) => { const aTotal = (offData.find(d => d.department === a)?.uniqueEmployees || 0) + (onData.find(d => d.department === a)?.uniqueEmployees || 0); const bTotal = (offData.find(d => d.department === b)?.uniqueEmployees || 0) + (onData.find(d => d.department === b)?.uniqueEmployees || 0); return bTotal - aTotal; });
-                const splitOptions = { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { ...chartOptions.plugins.legend, labels: { ...chartOptions.plugins.legend.labels, generateLabels: () => [{ text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' }, { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }] } } } };
                 
                 [['deptEmployeesChart', 'uniqueEmployees', ['#078fff', '#ff7707'], ['👥 Off Job', '👥 On Job']], ['deptSessionsChart', 'sessions', ['#078fff', '#ff7707'], ['🎯 Off Job', '🎯 On Job']], ['deptHoursChart', 'hours', ['#078fff', '#ff7707'], ['⏰ Off Job', '⏰ On Job']]].forEach(([id, key, colors, labels]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
@@ -794,8 +842,8 @@
                         const onDataMap = {}; onData.forEach(d => onDataMap[d.department] = d[key]);
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: allDepts, datasets: [{ label: labels[0], data: allDepts.map(d => offDataMap[d] || 0), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: allDepts.map(d => onDataMap[d] || 0), backgroundColor: colors[1], borderRadius: 6 }] }, 
-                            options: splitOptions 
+                            data: { labels: allDepts, datasets: [{ label: labels[0], data: allDepts.map(d => offDataMap[d] || 0), backgroundColor: colors[0], borderRadius: s.borderRadius, barThickness: s.barThickness }, { label: labels[1], data: allDepts.map(d => onDataMap[d] || 0), backgroundColor: colors[1], borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getSplitChartOptions() 
                         });
                     }
                 });
@@ -804,18 +852,8 @@
 
         function initMonthlyCharts(monthlyStats) {
             Chart.register(ChartDataLabels);
-            const s = CHART_SIZES.main;
+            const s = getChartSettings();
             const isSplit = currentType === 'all';
-            const chartOptions = { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                layout: { padding: s.padding }, 
-                plugins: { 
-                    legend: { position: 'top', labels: { font: { size: s.axisFont }, usePointStyle: true, pointStyle: 'rectRounded' } }, 
-                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: { left: 8, right: 8, top: 5, bottom: 5 }, anchor: 'end', align: 'end', offset: 12, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
-                }, 
-                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
-            };
             const months = monthlyStats.map(m => m.monthName);
             
             if (!isSplit) {
@@ -825,20 +863,19 @@
                     if (ctx) {
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: months, datasets: [{ label, data: monthlyStats.map(m => m[key][keyProp]), backgroundColor: color, borderRadius: 10 }] }, 
-                            options: chartOptions 
+                            data: { labels: months, datasets: [{ label, data: monthlyStats.map(m => m[key][keyProp]), backgroundColor: color, borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getBaseChartOptions() 
                         });
                     }
                 });
             } else {
-                const splitOptions = { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { ...chartOptions.plugins.legend, labels: { ...chartOptions.plugins.legend.labels, generateLabels: () => [{ text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' }, { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }] } } } };
                 [['monthlyEmployeesChart', 'uniqueEmployees', ['#078fff', '#ff7707'], ['👥 Off Job', '👥 On Job']], ['monthlySessionsChart', 'sessions', ['#078fff', '#ff7707'], ['🎯 Off Job', '🎯 On Job']], ['monthlyHoursChart', 'hours', ['#078fff', '#ff7707'], ['⏰ Off Job', '⏰ On Job']]].forEach(([id, keyProp, colors, labels]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
                     if (ctx) {
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: months, datasets: [{ label: labels[0], data: monthlyStats.map(m => m.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: monthlyStats.map(m => m.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, 
-                            options: splitOptions 
+                            data: { labels: months, datasets: [{ label: labels[0], data: monthlyStats.map(m => m.offJob[keyProp]), backgroundColor: colors[0], borderRadius: s.borderRadius, barThickness: s.barThickness }, { label: labels[1], data: monthlyStats.map(m => m.onJob[keyProp]), backgroundColor: colors[1], borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getSplitChartOptions() 
                         });
                     }
                 });
@@ -847,18 +884,8 @@
 
         function initQuarterlyCharts(quarterlyStats) {
             Chart.register(ChartDataLabels);
-            const s = CHART_SIZES.medium;
+            const s = getChartSettings();
             const isSplit = currentType === 'all';
-            const chartOptions = { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                layout: { padding: s.padding }, 
-                plugins: { 
-                    legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14, usePointStyle: true, pointStyle: 'rectRounded' } }, 
-                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
-                }, 
-                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
-            };
             const quarters = quarterlyStats.map(q => q.quarter);
             
             if (!isSplit) {
@@ -868,20 +895,19 @@
                     if (ctx) {
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: quarters, datasets: [{ label, data: quarterlyStats.map(q => q[key][keyProp]), backgroundColor: color, borderRadius: 9 }] }, 
-                            options: chartOptions 
+                            data: { labels: quarters, datasets: [{ label, data: quarterlyStats.map(q => q[key][keyProp]), backgroundColor: color, borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getBaseChartOptions() 
                         });
                     }
                 });
             } else {
-                const splitOptions = { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { ...chartOptions.plugins.legend, labels: { ...chartOptions.plugins.legend.labels, generateLabels: () => [{ text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' }, { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }] } } } };
                 [['quarterlyEmployeesChart', 'uniqueEmployees', ['#078fff', '#ff7707'], ['👥 Off Job', '👥 On Job']], ['quarterlySessionsChart', 'sessions', ['#078fff', '#ff7707'], ['🎯 Off Job', '🎯 On Job']], ['quarterlyHoursChart', 'hours', ['#078fff', '#ff7707'], ['⏰ Off Job', '⏰ On Job']]].forEach(([id, keyProp, colors, labels]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
                     if (ctx) {
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: quarters, datasets: [{ label: labels[0], data: quarterlyStats.map(q => q.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: quarterlyStats.map(q => q.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, 
-                            options: splitOptions 
+                            data: { labels: quarters, datasets: [{ label: labels[0], data: quarterlyStats.map(q => q.offJob[keyProp]), backgroundColor: colors[0], borderRadius: s.borderRadius, barThickness: s.barThickness }, { label: labels[1], data: quarterlyStats.map(q => q.onJob[keyProp]), backgroundColor: colors[1], borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getSplitChartOptions() 
                         });
                     }
                 });
@@ -890,18 +916,8 @@
 
         function initSemiAnnualCharts(semiAnnualStats) {
             Chart.register(ChartDataLabels);
-            const s = CHART_SIZES.medium;
+            const s = getChartSettings();
             const isSplit = currentType === 'all';
-            const chartOptions = { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                layout: { padding: s.padding }, 
-                plugins: { 
-                    legend: { position: 'top', labels: { font: { size: s.axisFont }, boxWidth: 14, usePointStyle: true, pointStyle: 'rectRounded' } }, 
-                    datalabels: { display: true, color: '#1e3a5f', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 9, padding: { left: 7, right: 7, top: 4, bottom: 4 }, anchor: 'end', align: 'end', offset: 10, font: { weight: 'bold', size: s.dataFont }, formatter: (v) => v > 0 ? (v % 1 === 0 ? v : v.toFixed(1)) : 0 } 
-                }, 
-                scales: { y: { beginAtZero: true, ticks: { font: { size: s.axisFont } }, grid: { display: false } }, x: { ticks: { font: { size: s.axisFont } }, grid: { display: false } } } 
-            };
             const halves = semiAnnualStats.map(h => h.half);
             
             if (!isSplit) {
@@ -911,20 +927,19 @@
                     if (ctx) {
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: halves, datasets: [{ label, data: semiAnnualStats.map(h => h[key][keyProp]), backgroundColor: color, borderRadius: 9 }] }, 
-                            options: chartOptions 
+                            data: { labels: halves, datasets: [{ label, data: semiAnnualStats.map(h => h[key][keyProp]), backgroundColor: color, borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getBaseChartOptions() 
                         });
                     }
                 });
             } else {
-                const splitOptions = { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { ...chartOptions.plugins.legend, labels: { ...chartOptions.plugins.legend.labels, generateLabels: () => [{ text: 'Off Job', fillStyle: '#078fff', strokeStyle: '#078fff', pointStyle: 'rectRounded' }, { text: 'On Job', fillStyle: '#ff7707', strokeStyle: '#ff7707', pointStyle: 'rectRounded' }] } } } };
                 [['semiAnnualEmployeesChart', 'uniqueEmployees', ['#078fff', '#ff7707'], ['👥 Off Job', '👥 On Job']], ['semiAnnualSessionsChart', 'sessions', ['#078fff', '#ff7707'], ['🎯 Off Job', '🎯 On Job']], ['semiAnnualHoursChart', 'hours', ['#078fff', '#ff7707'], ['⏰ Off Job', '⏰ On Job']]].forEach(([id, keyProp, colors, labels]) => {
                     const ctx = document.getElementById(id)?.getContext('2d');
                     if (ctx) {
                         createChart(ctx, { 
                             type: 'bar', 
-                            data: { labels: halves, datasets: [{ label: labels[0], data: semiAnnualStats.map(h => h.offJob[keyProp]), backgroundColor: colors[0], borderRadius: 6 }, { label: labels[1], data: semiAnnualStats.map(h => h.onJob[keyProp]), backgroundColor: colors[1], borderRadius: 6 }] }, 
-                            options: splitOptions 
+                            data: { labels: halves, datasets: [{ label: labels[0], data: semiAnnualStats.map(h => h.offJob[keyProp]), backgroundColor: colors[0], borderRadius: s.borderRadius, barThickness: s.barThickness }, { label: labels[1], data: semiAnnualStats.map(h => h.onJob[keyProp]), backgroundColor: colors[1], borderRadius: s.borderRadius, barThickness: s.barThickness }] }, 
+                            options: getSplitChartOptions() 
                         });
                     }
                 });
@@ -937,7 +952,6 @@
             isRefreshing = true;
             
             try {
-                // إعادة تعيين علامة تحميل البيانات لفرض القراءة من Firestore
                 isDataLoaded = false;
                 await loadAllData(true);
                 await loadPage();
@@ -965,6 +979,7 @@
         // ===== الصفحة الرئيسية =====
         async function loadPage() {
             // مسح مراجع الشارتات السابقة
+            chartInstances.forEach(c => c.destroy());
             chartInstances = [];
             
             const deptStats = calculateDepartmentStats();
@@ -1045,7 +1060,7 @@
                 <div class="footer"><p>© 2026 Learning & Development System</p></div>
             `;
             
-            applyChartSizes();
+            applyChartSettingsToDOM();
             
             setTimeout(() => { 
                 initCharts(deptStats); 
