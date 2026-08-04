@@ -194,7 +194,6 @@
             const username = currentUser?.username || currentUser?.email || 'مستخدم';
 
             navLinks.innerHTML = `
-                <span class="user-welcome">👋 مرحباً ${escapeHtml(username)}</span>
                 <a href="reports-offjob.html" class="offjob-btn"><i class="fas fa-chart-bar"></i> Off Job Report</a>
                 <a href="reports-onjob.html" class="onjob-btn"><i class="fas fa-chart-line"></i> On Job Report</a>
                 <a href="top-performers.html" class="performers-btn"><i class="fas fa-trophy"></i> تحليل التقرير</a>
