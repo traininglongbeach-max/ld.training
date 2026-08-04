@@ -45,8 +45,9 @@
             font-size: 0.9rem;
             transition: 0.3s;
         }
-        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .refresh { background: #3182ce; color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
         .container {
@@ -335,6 +336,7 @@
             <div class="logo"><h2>🎓 Learning & Development <span>System</span></h2></div>
             <div class="nav-links">
                 <a href="index.html" class="home">🏠 Home</a>
+                <button onclick="window.refreshData()" class="refresh">🔄 Refresh Data</button>
                 <button onclick="window.logout()" class="logout">🚪 Logout</button>
             </div>
         </div>
@@ -388,32 +390,87 @@
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        let employees = [];
+        let employees = []; // سجلات أعياد الميلاد
+        let activeEmpIds = new Set(); // قائمة أكواد الموظفين النشطين (الذين لم يستقيلوا)
+        
+        const BDAY_CACHE_KEY = 'BirthdaysApp_DataCache';
         const COLLECTION_KEY = 'employee_birthdays_final';
         const PHOTO_PATH = 'employee_photos/'; 
 
+        // ===== 1. دالة التحميل الذكية من الذاكرة أو الفايربيز =====
         async function loadSavedData() {
+            // أولاً: التحقق من وجود كاش محلي لتجنب قراءات الفايربيز
+            const cachedData = localStorage.getItem(BDAY_CACHE_KEY);
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    employees = parsed.birthdays || [];
+                    activeEmpIds = new Set(parsed.activeIds || []);
+                    console.log("✅ تم تحميل البيانات من الكاش المحلي بنجاح (0 Reads)");
+                    return;
+                } catch (e) {
+                    console.error("خطأ في قراءة الكاش:", e);
+                }
+            }
+            // ثانياً: إذا لم يكن هناك كاش، نسحب من السيرفر
+            await fetchFromServerAndCache();
+        }
+
+        // ===== 2. سحب البيانات من السيرفر وتخزينها =====
+        async function fetchFromServerAndCache() {
             try {
                 await DB.init();
-                // جلب أعياد الميلاد من قاعدة بيانات Firebase
-                const data = await DB.getAll(COLLECTION_KEY);
-                if (data && data.length > 0) {
-                    employees = data;
-                    console.log(`✅ Loaded ${employees.length} birthdays from Firebase`);
-                } else {
-                    // Fallback to localStorage just in case it wasn't uploaded yet
-                    const saved = localStorage.getItem(COLLECTION_KEY);
-                    if (saved) {
-                        employees = JSON.parse(saved);
-                        console.log(`⚠️ Loaded ${employees.length} birthdays from local storage (Fallback)`);
-                    }
+                // جلب جدول أعياد الميلاد، وجدول الموظفين للتأكد من حالة كل موظف
+                const [bdayData, empData] = await Promise.all([
+                    DB.getAll(COLLECTION_KEY),
+                    DB.getAll('employees')
+                ]);
+                
+                employees = bdayData || [];
+                
+                const activeIds = [];
+                if (empData) {
+                    empData.forEach(e => {
+                        // فلترة الموظفين واستبعاد من حالته Left (مستقيل)
+                        if (e.status !== 'Left') {
+                            activeIds.push(String(e.id).trim());
+                        }
+                    });
                 }
+                activeEmpIds = new Set(activeIds);
+                
+                // حفظ البيانات في الكاش (localStorage) لتقليل سحب الداتا مستقبلاً
+                localStorage.setItem(BDAY_CACHE_KEY, JSON.stringify({
+                    birthdays: employees,
+                    activeIds: activeIds
+                }));
+                console.log(`✅ Loaded ${employees.length} birthdays from Firebase`);
             } catch (error) {
                 console.error("❌ Error loading data:", error);
-                const saved = localStorage.getItem(COLLECTION_KEY);
-                if (saved) employees = JSON.parse(saved);
+                alert("حدث خطأ أثناء جلب البيانات، سيتم محاولة استخدام آخر داتا محفوظة.");
             }
         }
+
+        // ===== 3. زر تحديث البيانات (إجبار النظام على الاتصال بالفايربيز) =====
+        window.refreshData = async () => {
+            document.getElementById('loadingScreen').style.display = 'block';
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('loadingScreen').innerHTML = '⏳ جاري تحديث البيانات من السيرفر...';
+            
+            // مسح جميع الكاشات القديمة المتعلقة بالصفحة
+            localStorage.removeItem(BDAY_CACHE_KEY);
+            localStorage.removeItem(COLLECTION_KEY);
+            localStorage.removeItem('employees');
+            localStorage.removeItem(COLLECTION_KEY + '_timestamp');
+            localStorage.removeItem('employees_timestamp');
+            
+            await fetchFromServerAndCache();
+            
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            showTodayBirthdays();
+            alert("✅ تم تحديث البيانات من السيرفر بنجاح!");
+        };
 
         function loadEmployeePhoto(imgElement, employeeCode) {
             const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -477,7 +534,7 @@
             performSearch(month, day);
         };
 
-function performSearch(month, day) {
+        function performSearch(month, day) {
             const grid = document.getElementById('employeesGrid');
             const statsDiv = document.getElementById('stats');
             
@@ -495,41 +552,38 @@ function performSearch(month, day) {
                 return;
             }
             
-            // سطر مساعد لمراجعة شكل البيانات القادمة من قاعدة البيانات (تأكد منها في الـ Console)
-            console.log("Sample Employee Data:", employees[0]);
-            
             const filtered = employees.filter(emp => {
-                // الحالة الأولى: البيانات محفوظة في حقول منفصلة (مع تحويل أي نص إلى رقم)
+                // 1. فلترة الموظفين المستقيلين: إذا لم يكن الكود موجوداً في قائمة activeEmpIds يتم استبعاده
+                let empCode = String(emp.code || emp.id || '').trim();
+                if (activeEmpIds.size > 0 && !activeEmpIds.has(empCode)) {
+                    return false; // تخطي وعم عرض الموظف إذا كان مستقيلاً أو غير موجود في النظام
+                }
+
+                // 2. التحقق من تاريخ الميلاد بعدة صيغ
                 if (emp.month !== undefined && emp.day !== undefined) {
                     return parseInt(emp.month) === month && parseInt(emp.day) === day;
                 }
-                
-                // الحالة الثانية: البيانات محفوظة ككلمات تبدأ بحرف كبير
                 if (emp.Month !== undefined && emp.Day !== undefined) {
                     return parseInt(emp.Month) === month && parseInt(emp.Day) === day;
                 }
 
-                // الحالة الثالثة: البيانات محفوظة كتاريخ كامل (مثل: 1990-08-05)
                 let birthDateStr = emp.dob || emp.birthDate || emp.birthday || emp.dateOfBirth;
                 if (birthDateStr) {
-                    // إذا كان التاريخ مستورد كـ Excel Serial Number
                     if (typeof birthDateStr === 'number') {
                         let d = XLSX.SSF.parse_date_code(birthDateStr);
                         return d.m === month && d.d === day;
                     }
-                    
-                    // إذا كان التاريخ نصي
                     let bDate = new Date(birthDateStr);
                     if (!isNaN(bDate.getTime())) {
                         return (bDate.getMonth() + 1) === month && bDate.getDate() === day;
                     }
                 }
-
                 return false;
             });
 
             displayResults(filtered, month, day);
         }
+
         function displayResults(employeesList, month, day) {
             const grid = document.getElementById('employeesGrid');
             const statsDiv = document.getElementById('stats');
@@ -538,14 +592,14 @@ function performSearch(month, day) {
             if (!grid) return;
             
             if (employeesList.length === 0) {
-                grid.innerHTML = `<div class="empty-state"><i class="fas fa-sad-tear"></i><p>No birthdays found on ${monthNames[month-1]} ${day}</p></div>`;
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-sad-tear"></i><p>No active employee birthdays found on ${monthNames[month-1]} ${day}</p></div>`;
                 if (statsDiv) statsDiv.style.display = 'none';
                 return;
             }
 
             if (statsDiv) {
                 statsDiv.style.display = 'block';
-                statsDiv.innerHTML = `🎉 ${employeesList.length} employee(s) celebrating on ${monthNames[month-1]} ${day} 🎉`;
+                statsDiv.innerHTML = `🎉 ${employeesList.length} active employee(s) celebrating on ${monthNames[month-1]} ${day} 🎉`;
             }
 
             grid.innerHTML = '';
@@ -558,23 +612,23 @@ function performSearch(month, day) {
                 imageDiv.className = 'card-image';
                 
                 const img = document.createElement('img');
-                img.alt = emp.code;
+                img.alt = emp.code || emp.id;
                 img.style.display = 'none';
                 imageDiv.appendChild(img);
                 
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'card-info';
                 infoDiv.innerHTML = `
-                    <div class="employee-name"><i class="fas fa-user"></i> ${escapeHtml(emp.name)}</div>
+                    <div class="employee-name"><i class="fas fa-user"></i> ${escapeHtml(emp.name || emp.fullName || emp.Full_Name)}</div>
                     <div class="employee-detail">
                         <i class="fas fa-building"></i>
                         <span class="detail-label">Department:</span>
-                        <span class="detail-value">${escapeHtml(emp.department) || 'Not specified'}</span>
+                        <span class="detail-value">${escapeHtml(emp.department || emp.Dep || emp.department) || 'Not specified'}</span>
                     </div>
                     <div class="employee-detail">
                         <i class="fas fa-briefcase"></i>
                         <span class="detail-label">Position:</span>
-                        <span class="detail-value">${escapeHtml(emp.position) || 'Not specified'}</span>
+                        <span class="detail-value">${escapeHtml(emp.position || emp.Position) || 'Not specified'}</span>
                     </div>
                     <div class="birthday-badge"><i class="fas fa-birthday-cake"></i> Happy Birthday!</div>
                 `;
@@ -583,7 +637,7 @@ function performSearch(month, day) {
                 card.appendChild(infoDiv);
                 grid.appendChild(card);
                 
-                loadEmployeePhoto(img, emp.code);
+                loadEmployeePhoto(img, emp.code || emp.id);
             });
         }
 
