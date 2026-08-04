@@ -187,7 +187,7 @@
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        let currentData = { sections: [], links: [], users: [], materials: [] };
+        let currentData = { sections: [], links: [], users: [], materials: [], schedule: [] };
         let currentEditId = null;
         let currentEditSectionId = null;
 
@@ -217,13 +217,14 @@
             const links = await DB.getAll('links') || [];
             const users = await DB.getAll('users') || [];
             const materials = await DB.getAll('materials') || [];
+            const schedule = await DB.getAll('training_schedule') || [];
             
             const sectionsWithLinks = sections.map(section => ({
                 ...section,
                 links: links.filter(link => String(link.sectionId) === String(section.id))
             }));
             
-            currentData = { sections: sectionsWithLinks, links, users, materials };
+            currentData = { sections: sectionsWithLinks, links, users, materials, schedule };
         }
 
         async function clearCollection(collectionName) {
@@ -512,7 +513,7 @@
                     showUploadProgress('جاري الرفع...', 60);
                     await DB.bulkInsert('training_schedule', scheduleData);
                     localStorage.setItem('schedule_last_update', new Date().toISOString());
-                    showUploadProgress('اكتمل!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${scheduleData.length} جلسة في الجدول`); }, 1000);
+                    showUploadProgress('اكتمل!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${scheduleData.length} جلسة في الجدول`); window.location.reload();}, 1000);
                 } else { hideUploadProgress(); showImportStatus('⚠️ الملف لا يطابق النموذج المطلوب', true); }
             });
         };
@@ -557,7 +558,7 @@
             setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
         }
 
-        // ================== العمليات (الأقسام، الروابط، المواد، المستخدمين) ==================
+        // ================== العمليات (الأقسام، الروابط، المواد، المستخدمين، الجدول) ==================
         
         async function addSection() {
             const name = document.getElementById('sectionName')?.value;
@@ -778,6 +779,118 @@
             }
         }
 
+        // ================== إدارة جدول التدريب (Schedule) ==================
+
+        async function addSchedule() {
+            const date = document.getElementById('scheduleDate')?.value;
+            const topic = document.getElementById('scheduleTopic')?.value;
+            const time = document.getElementById('scheduleTime')?.value;
+            const category = document.getElementById('scheduleCategory')?.value || 'عام';
+            
+            if (!date || !topic || !time) { showMsg('scheduleMsg', '❌ الرجاء إدخال التاريخ، الموضوع والوقت', true); return; }
+
+            const newSession = { date, topic, time, required_category: category, imported_at: new Date().toISOString(), status: 'scheduled' };
+            const id = await DB.insert('training_schedule', newSession);
+            newSession.id = id;
+            
+            if (!currentData.schedule) currentData.schedule = [];
+            currentData.schedule.push(newSession);
+
+            showMsg('scheduleMsg', '✅ تم إضافة الجلسة بنجاح');
+            document.getElementById('scheduleDate').value = ''; 
+            document.getElementById('scheduleTopic').value = ''; 
+            document.getElementById('scheduleTime').value = ''; 
+            document.getElementById('scheduleCategory').value = '';
+            renderScheduleList();
+        }
+
+        async function deleteSchedule(id) {
+            if (confirm('⚠️ هل أنت متأكد من حذف هذه الجلسة من الجدول؟')) {
+                await DB.delete('training_schedule', id);
+                currentData.schedule = currentData.schedule.filter(s => String(s.id) !== String(id));
+                renderScheduleList(); 
+                showMsg('scheduleMsg', '🗑️ تم الحذف');
+            }
+        }
+
+        function openEditSchedule(id) {
+            const session = currentData.schedule.find(s => String(s.id) === String(id));
+            if (session) {
+                currentEditId = id;
+                document.getElementById('editScheduleDate').value = session.date;
+                document.getElementById('editScheduleTopic').value = session.topic;
+                document.getElementById('editScheduleTime').value = session.time;
+                document.getElementById('editScheduleCategory').value = session.required_category || '';
+                document.getElementById('editScheduleModal').style.display = 'flex';
+            }
+        }
+
+        async function saveScheduleEdit() {
+            const session = currentData.schedule.find(s => String(s.id) === String(currentEditId));
+            if (session) {
+                session.date = document.getElementById('editScheduleDate').value;
+                session.topic = document.getElementById('editScheduleTopic').value;
+                session.time = document.getElementById('editScheduleTime').value;
+                session.required_category = document.getElementById('editScheduleCategory').value;
+
+                await DB.update('training_schedule', { 
+                    id: session.id, 
+                    date: session.date, 
+                    topic: session.topic, 
+                    time: session.time, 
+                    required_category: session.required_category 
+                });
+                closeModal('editScheduleModal'); 
+                renderScheduleList(); 
+                showMsg('scheduleMsg', '✅ تم التعديل');
+            }
+        }
+
+        function renderScheduleList() {
+            const container = document.getElementById('scheduleList');
+            if (!container) return;
+            
+            const sortedSchedule = [...(currentData.schedule || [])].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            if (sortedSchedule.length === 0) { 
+                container.innerHTML = '<div style="text-align:center; padding:2rem; color:#a0aec0;">📭 لا توجد جلسات مجدولة</div>'; 
+                return; 
+            }
+
+            container.innerHTML = `
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>التاريخ</th>
+                            <th>الوقت</th>
+                            <th>الموضوع</th>
+                            <th>الفئة</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedSchedule.map((s, index) => `
+                        <tr>
+                            <td>${index+1}</td>
+                            <td style="direction:ltr; text-align:right;">${escapeHtml(s.date)}</td>
+                            <td style="direction:ltr; text-align:right;">${escapeHtml(s.time)}</td>
+                            <td><strong>${escapeHtml(s.topic)}</strong></td>
+                            <td><span style="background:#e2e8f0; padding:4px 8px; border-radius:5px; font-size:0.8rem;">${escapeHtml(s.required_category||'عام')}</span></td>
+                            <td class="action-buttons">
+                                <button class="edit-btn" onclick="openEditSchedule('${s.id}')">✏️</button>
+                                <button class="delete-btn" onclick="deleteSchedule('${s.id}')">🗑️</button>
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        // ================== دوال العرض المشتركة ==================
+
         function updateLinksSectionDropdown() {
             const select = document.getElementById('linkSection');
             if(select) select.innerHTML = currentData.sections.map(s => `<option value="${s.id}">${s.icon||'📁'} ${s.name}</option>`).join('');
@@ -795,7 +908,7 @@
             let allLinks = [];
             currentData.sections.forEach(section => { if (section.links) section.links.forEach(link => allLinks.push({ ...link, sectionName: section.name, sectionIcon: section.icon || '📁', sectionId: section.id })); });
             if (allLinks.length === 0) { container.innerHTML = '<div style="text-align:center; padding:3rem; color:#a0aec0;">📭 لا توجد روابط</div>'; return; }
-            container.innerHTML = `<div class="links-table-container"><h3>📋 جميع الروابط المضافة (${allLinks.length})</h3><div class="table-wrapper"><table class="links-table"><thead><tr><th>#</th><th>القسم</th><th>العنوان</th><th>الرابط</th><th>النوع</th><th>مشاهدات</th><th>إجراء</th></tr></thead><tbody>${allLinks.map((link, index) => `<tr><td>${index + 1}</td><td>${link.sectionIcon} ${escapeHtml(link.sectionName)}</td><td><strong>${escapeHtml(link.title)}</strong></td><td><span style="direction:ltr; display:inline-block; font-size:0.8rem;">${escapeHtml(link.url).substring(0,25)}...</span></td><td><span class="badge-type ${link.type === 'internal' ? 'badge-internal' : 'badge-external'}">${link.type === 'internal' ? 'داخلي' : 'خارجي'}</span></td><td>👁️ ${link.views||0}</td><td><div style="display:flex; gap:0.3rem; justify-content:center;"><button class="btn-sm btn-edit" onclick="openEditLink('${link.sectionId}','${link.id}')">✏️</button><button class="btn-sm ${link.pinned ? 'btn-unpin' : 'btn-pin'}" onclick="togglePin('${link.sectionId}','${link.id}')">${link.pinned ? '📌' : '📍'}</button><button class="btn-sm btn-delete" onclick="deleteLink('${link.sectionId}','${link.id}')">🗑️</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
+            container.innerHTML = `<div class="links-table-container"><h3>📋 جميع الروابط المضافة (${allLinks.length})</h3><div class="table-wrapper"><table class="links-table"><thead><tr><th>#</th><th>القسم</th><th>العنوان</th><th>الرابط</th><th>النوع</th><th>مشاهدات</th><th>إجراء</th></tr></thead><tbody>${allLinks.map((link, index) => `<tr><td>${index + 1}</td><td>${link.sectionIcon} ${escapeHtml(link.sectionName)}</td><td><strong>${escapeHtml(link.title)}</strong></td><td><span style="direction:ltr; display:inline-block; font-size:0.8rem;">${escapeHtml(link.url).substring(0,25)}...</span></td><td><span class="badge-type ${link.type === 'internal' ? 'badge-internal' : 'badge-external'}">${link.type === 'internal' ? 'داخلي' : 'خارجي'}</span></td><td>👁️ ${link.views||0}</td><td><div style="display:flex; gap:0.3rem; justify-content:flex-end;"><button class="btn-sm edit-btn" onclick="openEditLink('${link.sectionId}','${link.id}')">✏️</button><button class="btn-sm edit-btn" onclick="togglePin('${link.sectionId}','${link.id}')">${link.pinned ? '📌' : '📍'}</button><button class="btn-sm delete-btn" onclick="deleteLink('${link.sectionId}','${link.id}')">🗑️</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
         }
 
         function renderMaterialsList() {
@@ -916,6 +1029,7 @@
                         <button class="tab-btn active" onclick="switchTab('sections', event)">📂 تصنيفات الروابط</button>
                         <button class="tab-btn" onclick="switchTab('links', event)">🔗 الروابط السريعة</button>
                         <button class="tab-btn" onclick="switchTab('materials', event)">📚 مكتبة المواد التدريبية</button>
+                        <button class="tab-btn" onclick="switchTab('schedule', event)">📅 جدول التدريب</button>
                         <button class="tab-btn" onclick="switchTab('users', event)">👥 صلاحيات الدخول</button>
                         <button class="tab-btn" onclick="switchTab('danger', event)" style="color:#e53e3e;">⚠️ منطقة الخطر</button>
                     </div>
@@ -959,6 +1073,22 @@
                         <div class="admin-card"><h3>📚 المواد المتاحة</h3><div id="materialsList"></div></div>
                     </div>
 
+                    <div id="scheduleTab" class="tab-content">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-calendar-alt"></i> إضافة جلسة تدريب للجدول</h3>
+                            <div id="scheduleMsg" class="msg"></div>
+                            <input type="date" id="scheduleDate" required>
+                            <input type="text" id="scheduleTime" placeholder="الوقت (مثال: 10:00 AM)" required>
+                            <input type="text" id="scheduleTopic" placeholder="موضوع التدريب (Topic) *" required>
+                            <input type="text" id="scheduleCategory" placeholder="الفئة (Category)">
+                            <button class="primary-btn" onclick="addSchedule()">💾 إضافة للجدول</button>
+                        </div>
+                        <div class="admin-card">
+                            <h3>📅 الجلسات المجدولة</h3>
+                            <div id="scheduleList"></div>
+                        </div>
+                    </div>
+
                     <div id="usersTab" class="tab-content">
                         <div class="admin-card">
                             <h3><i class="fas fa-user-shield"></i> ترقية الحسابات</h3>
@@ -990,17 +1120,19 @@
                 <div id="editSectionModal" class="modal"><div class="modal-content"><h3>✏️ تعديل القسم</h3><input type="text" id="editSectionName"><input type="text" id="editSectionIcon"><input type="text" id="editSectionDesc"><div class="modal-buttons"><button class="save-btn" onclick="saveSectionEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editSectionModal')">إلغاء</button></div></div></div>
                 <div id="editLinkModal" class="modal"><div class="modal-content"><h3>✏️ تعديل الرابط</h3><input type="text" id="editLinkTitle"><input type="url" id="editLinkUrl"><select id="editLinkType"><option value="internal">داخلي</option><option value="external">خارجي</option></select><div class="modal-buttons"><button class="save-btn" onclick="saveLinkEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editLinkModal')">إلغاء</button></div></div></div>
                 <div id="editMaterialModal" class="modal"><div class="modal-content"><h3>✏️ تعديل المادة التدريبية</h3><input type="text" id="editMaterialTitle" placeholder="العنوان"><textarea id="editMaterialDesc" placeholder="الوصف" rows="2"></textarea><input type="text" id="editMaterialCategory" placeholder="التصنيف"><select id="editMaterialType"><option value="pdf">PDF</option><option value="video">فيديو</option><option value="ppt">PPT</option><option value="doc">Word</option><option value="excel">Excel</option><option value="link">رابط</option><option value="other">أخرى</option></select><input type="url" id="editMaterialUrl" placeholder="الرابط"><div class="modal-buttons"><button class="save-btn" onclick="saveMaterialEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editMaterialModal')">إلغاء</button></div></div></div>
+                <div id="editScheduleModal" class="modal"><div class="modal-content"><h3>✏️ تعديل جلسة التدريب</h3><input type="date" id="editScheduleDate"><input type="text" id="editScheduleTime" placeholder="الوقت (مثال: 10:00 AM)"><input type="text" id="editScheduleTopic" placeholder="موضوع التدريب"><input type="text" id="editScheduleCategory" placeholder="الفئة"><div class="modal-buttons"><button class="save-btn" onclick="saveScheduleEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editScheduleModal')">إلغاء</button></div></div></div>
                 <div id="editUserModal" class="modal"><div class="modal-content"><h3>✏️ تعديل المستخدم</h3><input type="email" id="editUserName"><select id="editUserRole"><option value="user">مستخدم عادي</option><option value="admin">أدمن</option></select><div class="modal-buttons"><button class="save-btn" onclick="saveUserEdit()">💾 تأكيد التعديل</button><button class="cancel-btn" onclick="closeModal('editUserModal')">إلغاء</button></div></div></div>
 
                 <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
             `;
             
-            renderSectionsList(); updateLinksSectionDropdown(); renderLinksList(); renderMaterialsList(); renderUsersList();
+            renderSectionsList(); updateLinksSectionDropdown(); renderLinksList(); renderMaterialsList(); renderUsersList(); renderScheduleList();
         }
 
         window.addSection = addSection; window.deleteSection = deleteSection; window.openEditSection = openEditSection; window.saveSectionEdit = saveSectionEdit;
         window.addLink = addLink; window.deleteLink = deleteLink; window.openEditLink = openEditLink; window.saveLinkEdit = saveLinkEdit; window.togglePin = togglePin;
         window.addMaterial = addMaterial; window.deleteMaterial = deleteMaterial; window.openEditMaterial = openEditMaterial; window.saveMaterialEdit = saveMaterialEdit;
+        window.addSchedule = addSchedule; window.deleteSchedule = deleteSchedule; window.openEditSchedule = openEditSchedule; window.saveScheduleEdit = saveScheduleEdit;
         window.addUser = addUser; window.deleteUser = deleteUser; window.openEditUser = openEditUser; window.saveUserEdit = saveUserEdit;
         window.closeModal = closeModal; window.switchTab = switchTab; window.exportData = exportData; window.importData = importData;
         window.logout = logout;
