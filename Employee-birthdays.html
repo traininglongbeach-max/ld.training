@@ -392,6 +392,7 @@
 
         let employees = []; // سجلات أعياد الميلاد
         let activeEmpIds = new Set(); // قائمة أكواد الموظفين النشطين (الذين لم يستقيلوا)
+        let fullEmpDataMap = new Map(); // خريطة لتخزين بيانات الموظفين (بما فيها photoUrl)
         
         const BDAY_CACHE_KEY = 'BirthdaysApp_DataCache';
         const COLLECTION_KEY = 'employee_birthdays_final';
@@ -406,6 +407,7 @@
                     const parsed = JSON.parse(cachedData);
                     employees = parsed.birthdays || [];
                     activeEmpIds = new Set(parsed.activeIds || []);
+                    if (parsed.fullEmpData) fullEmpDataMap = new Map(parsed.fullEmpData);
                     console.log("✅ تم تحميل البيانات من الكاش المحلي بنجاح (0 Reads)");
                     return;
                 } catch (e) {
@@ -420,7 +422,7 @@
         async function fetchFromServerAndCache() {
             try {
                 await DB.init();
-                // جلب جدول أعياد الميلاد، وجدول الموظفين للتأكد من حالة كل موظف
+                // جلب جدول أعياد الميلاد، وجدول الموظفين للتأكد من حالة كل موظف ورابط الصورة
                 const [bdayData, empData] = await Promise.all([
                     DB.getAll(COLLECTION_KEY),
                     DB.getAll('employees')
@@ -429,12 +431,17 @@
                 employees = bdayData || [];
                 
                 const activeIds = [];
+                const empMapForCache = [];
                 if (empData) {
                     empData.forEach(e => {
+                        let empCode = String(e.id).trim();
                         // فلترة الموظفين واستبعاد من حالته Left (مستقيل)
                         if (e.status !== 'Left') {
-                            activeIds.push(String(e.id).trim());
+                            activeIds.push(empCode);
                         }
+                        // تخزين البيانات الإضافية لاستخدام رابط Cloudinary إذا وُجد
+                        fullEmpDataMap.set(empCode, e);
+                        empMapForCache.push([empCode, e]);
                     });
                 }
                 activeEmpIds = new Set(activeIds);
@@ -442,7 +449,8 @@
                 // حفظ البيانات في الكاش (localStorage) لتقليل سحب الداتا مستقبلاً
                 localStorage.setItem(BDAY_CACHE_KEY, JSON.stringify({
                     birthdays: employees,
-                    activeIds: activeIds
+                    activeIds: activeIds,
+                    fullEmpData: empMapForCache
                 }));
                 console.log(`✅ Loaded ${employees.length} birthdays from Firebase`);
             } catch (error) {
@@ -472,7 +480,8 @@
             alert("✅ تم تحديث البيانات من السيرفر بنجاح!");
         };
 
-        function loadEmployeePhoto(imgElement, employeeCode) {
+        // تعديل الدالة لاستقبال رابط الصورة إذا كان موجوداً
+        function loadEmployeePhoto(imgElement, employeeCode, cloudPhotoUrl) {
             const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             let currentIndex = 0;
             
@@ -503,7 +512,23 @@
                 };
                 testImg.src = photoUrl;
             }
-            tryNextExtension();
+
+            // فحص رابط Cloudinary أولاً
+            if (cloudPhotoUrl) {
+                const cloudImg = new Image();
+                cloudImg.onload = function() {
+                    imgElement.src = cloudPhotoUrl;
+                    imgElement.style.display = 'block';
+                    imgElement.parentElement.classList.add('has-image');
+                };
+                cloudImg.onerror = function() {
+                    // في حال فشل تحميل الصورة من الكلاود لأي سبب، نعود للطريقة الافتراضية
+                    tryNextExtension();
+                };
+                cloudImg.src = cloudPhotoUrl;
+            } else {
+                tryNextExtension();
+            }
         }
 
         window.searchSpecificDate = () => {
@@ -605,6 +630,11 @@
             grid.innerHTML = '';
             
             employeesList.forEach(emp => {
+                const empCode = String(emp.code || emp.id).trim();
+                // جلب بيانات الموظف المكتملة للحصول على رابط الصورة (photoUrl)
+                const fullData = fullEmpDataMap.get(empCode) || {};
+                const cloudPhotoUrl = fullData.photoUrl || null;
+
                 const card = document.createElement('div');
                 card.className = 'employee-card';
                 
@@ -612,7 +642,7 @@
                 imageDiv.className = 'card-image';
                 
                 const img = document.createElement('img');
-                img.alt = emp.code || emp.id;
+                img.alt = empCode;
                 img.style.display = 'none';
                 imageDiv.appendChild(img);
                 
@@ -637,7 +667,8 @@
                 card.appendChild(infoDiv);
                 grid.appendChild(card);
                 
-                loadEmployeePhoto(img, emp.code || emp.id);
+                // تمرير الرابط الخاص بـ Cloudinary
+                loadEmployeePhoto(img, empCode, cloudPhotoUrl);
             });
         }
 
