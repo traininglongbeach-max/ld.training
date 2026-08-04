@@ -40,6 +40,7 @@
         }
         .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
         .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .refresh { background: #3182ce; color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
         .container { max-width: 1600px; margin: 2rem auto; padding: 0 1.5rem; }
@@ -221,6 +222,7 @@
         <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
         <div class="nav-links">
             <a href="index.html" class="home">🏠 الرئيسية</a>
+            <button onclick="refreshData()" class="refresh">🔄 تحديث البيانات</button>
             <button onclick="logout()" class="logout">🚪 تسجيل خروج</button>
         </div>
     </div>
@@ -378,6 +380,27 @@
         let filterStatus = "all";
         let currentEditId = null;
         let currentUserRole = null;
+
+        // ========== دوال التحديث =================
+        async function refreshData() {
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 2rem;">⏳ جاري جلب أحدث البيانات من السيرفر...</td></tr>';
+            
+            // مسح الكاش المحلي لضمان جلب البيانات من الفايربيز
+            localStorage.removeItem('employees');
+            localStorage.removeItem('employees_timestamp');
+            localStorage.removeItem('offjob_enrollments');
+            localStorage.removeItem('offjob_enrollments_timestamp');
+            
+            showToast('⏳ جاري تحديث البيانات...', false);
+            
+            try {
+                await updateUI();
+                showToast('✅ تم تحديث البيانات بنجاح');
+            } catch (error) {
+                console.error(error);
+                showToast('❌ حدث خطأ أثناء التحديث', true);
+            }
+        }
 
         // ========== دوال ضغط ورفع الصور (Cloudinary) ==========
         
@@ -935,6 +958,7 @@
         window.closePhotoModal = closePhotoModal;
         window.logout = logout;
         window.openAddModal = openAddModal;
+        window.refreshData = refreshData; // تم ربط الدالة الجديدة
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
