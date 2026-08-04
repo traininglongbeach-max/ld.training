@@ -108,8 +108,6 @@
         .section-card .link-item { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 1rem; background: #f7fafc; border-radius: 0.8rem; transition: var(--transition); text-decoration: none; color: var(--text); }
         .section-card .link-item:hover { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; transform: translateX(-5px); }
         .section-card .link-item .link-title { font-weight: 500; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
-        .section-card .link-item .view-count { font-size: 0.7rem; color: #a0aec0; }
-        .section-card .link-item:hover .view-count { color: rgba(255, 255, 255, 0.7); }
         .section-card .pinned-badge { background: var(--accent); color: var(--primary); padding: 0.1rem 0.5rem; border-radius: 1rem; font-size: 0.6rem; font-weight: 700; }
         .section-card .empty-links { text-align: center; padding: 1rem; color: #a0aec0; }
         .footer { text-align: center; padding: 2.5rem; color: var(--text-light); background: white; border-top: 1px solid #e2e8f0; font-size: 0.9rem; }
@@ -196,6 +194,7 @@
             const username = currentUser?.username || currentUser?.email || 'مستخدم';
 
             navLinks.innerHTML = `
+                <span class="user-welcome">👋 مرحباً ${escapeHtml(username)}</span>
                 <a href="reports-offjob.html" class="offjob-btn"><i class="fas fa-chart-bar"></i> Off Job Report</a>
                 <a href="reports-onjob.html" class="onjob-btn"><i class="fas fa-chart-line"></i> On Job Report</a>
                 <a href="top-performers.html" class="performers-btn"><i class="fas fa-trophy"></i> تحليل التقرير</a>
@@ -286,13 +285,12 @@
                         </div>
                         <div class="links-list">
                             ${sortedLinks.length > 0 ? sortedLinks.map(link => `
-                                <a href="${link.url || '#'}" class="link-item" onclick="handleLinkClick(event, '${section.id}', '${link.id}')">
+                                <a href="${link.url || '#'}" class="link-item" onclick="handleLinkClick(event)">
                                     <span class="link-title">
                                         <span class="link-icon">${link.pinned ? '📌' : '🔗'}</span>
                                         <span>${escapeHtml(link.title)}</span>
                                         ${link.pinned ? '<span class="pinned-badge">مثبت</span>' : ''}
                                     </span>
-                                    ${link.views ? `<span class="view-count">👁️ ${link.views}</span>` : ''}
                                 </a>
                             `).join('') : '<div class="empty-links">📭 لا توجد روابط حالياً</div>'}
                         </div>
@@ -313,24 +311,10 @@
             }, 100);
         }
 
-        // ===== HANDLE LINK CLICK & TRACK VIEW =====
-        async function trackView(sectionId, linkId) {
-            try {
-                // تحديث مباشر للعنصر في قاعدة البيانات بدون مسح الجدول
-                const link = await DB.get('links', linkId);
-                if (link) {
-                    await DB.update('links', { id: linkId, views: (link.views || 0) + 1 });
-                }
-            } catch(e) {
-                console.error('Failed to track view', e);
-            }
-        }
-
-        function handleLinkClick(event, sectionId, linkId) {
+        // ===== HANDLE LINK CLICK =====
+        function handleLinkClick(event) {
             const linkElement = event.currentTarget;
             const href = linkElement.getAttribute('href');
-            
-            trackView(sectionId, linkId);
 
             if (!href || href === '#') {
                 event.preventDefault();
@@ -402,7 +386,7 @@
                     const titleMatch = link.title.toLowerCase().includes(searchTerm);
                     const urlMatch = link.url && link.url.toLowerCase().includes(searchTerm);
                     if (titleMatch || urlMatch) {
-                        results.push({ type: 'link', name: link.title, linkId: link.id, sectionId: section.id, sectionName: section.name, sectionIcon: section.icon || '📁', url: link.url || '#', pinned: link.pinned || false, views: link.views || 0, match: titleMatch ? 'العنوان' : 'الرابط' });
+                        results.push({ type: 'link', name: link.title, linkId: link.id, sectionId: section.id, sectionName: section.name, sectionIcon: section.icon || '📁', url: link.url || '#', pinned: link.pinned || false, match: titleMatch ? 'العنوان' : 'الرابط' });
                     }
                 });
 
@@ -426,7 +410,7 @@
                     } else {
                         const isInternal = r.url && (r.url.startsWith('#') || r.url.endsWith('.html') || !r.url.startsWith('http'));
                         const clickHandler = isInternal ? `window.location.href='${r.url}'` : `window.open('${r.url}', '_blank')`;
-                        html += `<div class="search-result-item" onclick="${clickHandler}; trackView('${r.sectionId}', '${r.linkId}')"><span class="icon">${r.pinned ? '📌' : '🔗'}</span><div class="info"><div class="title">${highlightText(r.name, searchTerm)}</div><div class="sub"><span>${r.sectionIcon} ${escapeHtml(r.sectionName)}</span>${r.pinned ? '<span class="section-tag">⭐ مثبت</span>' : ''}${r.views > 0 ? `<span>👁️ ${r.views}</span>` : ''}<span class="section-tag">${r.match}</span></div></div><span class="badge link">رابط</span></div>`;
+                        html += `<div class="search-result-item" onclick="${clickHandler};"><span class="icon">${r.pinned ? '📌' : '🔗'}</span><div class="info"><div class="title">${highlightText(r.name, searchTerm)}</div><div class="sub"><span>${r.sectionIcon} ${escapeHtml(r.sectionName)}</span>${r.pinned ? '<span class="section-tag">⭐ مثبت</span>' : ''}<span class="section-tag">${r.match}</span></div></div><span class="badge link">رابط</span></div>`;
                     }
                 });
                 resultsContainer.innerHTML = html;
@@ -519,7 +503,6 @@
         window.searchContent = searchContent;
         window.clearSearch = clearSearch;
         window.goToResult = goToResult;
-        window.trackView = trackView;
         window.setFilter = setFilter;
         window.handleLinkClick = handleLinkClick;
 
