@@ -489,8 +489,10 @@
                     if (code && name && month && day) newEmployees.push({ code, name, department, position, month, day });
                 }
                 if (newEmployees.length > 0) {
-                    localStorage.setItem('employee_birthdays_final', JSON.stringify(newEmployees));
-                    showUploadProgress('اكتمل بنجاح!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${newEmployees.length} سجل أعياد ميلاد`); }, 1000);
+                    showUploadProgress('جاري الرفع على السيرفر...', 60);
+                    await DB.bulkInsert('employee_birthdays_final', newEmployees);
+                    showUploadProgress('اكتمل بنجاح!', 100); 
+                    setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${newEmployees.length} سجل أعياد ميلاد`); window.location.reload(); }, 1000);
                 } else { hideUploadProgress(); showImportStatus('⚠️ لا يوجد بيانات صحيحة', true); }
             });
         };
@@ -512,7 +514,6 @@
                 if (scheduleData.length > 0) {
                     showUploadProgress('جاري الرفع...', 60);
                     await DB.bulkInsert('training_schedule', scheduleData);
-                    localStorage.setItem('schedule_last_update', new Date().toISOString());
                     showUploadProgress('اكتمل!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${scheduleData.length} جلسة في الجدول`); window.location.reload();}, 1000);
                 } else { hideUploadProgress(); showImportStatus('⚠️ الملف لا يطابق النموذج المطلوب', true); }
             });
@@ -529,7 +530,7 @@
                         category: String(row['Category'] || row['التصنيف'] || 'عام'),
                         type: String(row['Type'] || row['النوع'] || 'pdf').toLowerCase(),
                         fileUrl: String(row['URL'] || row['الرابط'] || '#'),
-                        createdAt: Date.now(), views: 0, downloads: 0
+                        createdAt: Date.now()
                     };
                 }).filter(m => m.title);
 
@@ -540,9 +541,6 @@
                         mat.id = id;
                         currentData.materials.push(mat);
                     }
-                    let existingMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
-                    localStorage.setItem('training_materials_data', JSON.stringify([...existingMaterials, ...newMaterials]));
-                    
                     showUploadProgress('اكتمل!', 100); setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${newMaterials.length} مادة تدريبية`); buildAdminUI(); }, 1000);
                 } else { hideUploadProgress(); showImportStatus('⚠️ الملف لا يطابق النموذج المطلوب', true); }
             });
@@ -609,7 +607,7 @@
             const url = document.getElementById('linkUrl')?.value;
             const type = document.getElementById('linkType')?.value;
             if (!title || !sectionId) { showMsg('linkMsg', '❌ بيانات ناقصة', true); return; }
-            const newLink = { sectionId, title, url: url||'#', type, views: 0, pinned: false };
+            const newLink = { sectionId, title, url: url||'#', type, pinned: false };
             const id = await DB.insert('links', newLink);
             newLink.id = id;
             const section = currentData.sections.find(s => String(s.id) === String(sectionId));
@@ -680,14 +678,10 @@
             const fileUrl = document.getElementById('materialUrl')?.value || '#';
             if (!title) { showMsg('materialMsg', '❌ الرجاء إدخال عنوان المادة', true); return; }
 
-            const newMaterial = { title, description, category, type, fileUrl, createdAt: Date.now(), views: 0, downloads: 0 };
+            const newMaterial = { title, description, category, type, fileUrl, createdAt: Date.now() };
             const id = await DB.insert('materials', newMaterial);
             newMaterial.id = id;
             currentData.materials.push(newMaterial);
-            
-            const localMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
-            localMaterials.push(newMaterial);
-            localStorage.setItem('training_materials_data', JSON.stringify(localMaterials));
 
             showMsg('materialMsg', '✅ تم إضافة المادة التدريبية بنجاح');
             document.getElementById('materialTitle').value = ''; document.getElementById('materialDesc').value = ''; document.getElementById('materialUrl').value = '';
@@ -698,9 +692,6 @@
             if (confirm('⚠️ هل أنت متأكد من حذف هذه المادة؟')) {
                 await DB.delete('materials', id);
                 currentData.materials = currentData.materials.filter(m => String(m.id) !== String(id));
-                const localMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
-                const updatedLocal = localMaterials.filter(m => String(m.id) !== String(id));
-                localStorage.setItem('training_materials_data', JSON.stringify(updatedLocal));
                 renderMaterialsList(); showMsg('materialMsg', '🗑️ تم الحذف');
             }
         }
@@ -728,12 +719,6 @@
                 material.fileUrl = document.getElementById('editMaterialUrl').value;
 
                 await DB.update('materials', { id: material.id, title: material.title, description: material.description, category: material.category, type: material.type, fileUrl: material.fileUrl });
-                const localMaterials = JSON.parse(localStorage.getItem('training_materials_data') || '[]');
-                const localIndex = localMaterials.findIndex(m => String(m.id) === String(material.id));
-                if(localIndex > -1) {
-                    localMaterials[localIndex] = { ...localMaterials[localIndex], ...material };
-                    localStorage.setItem('training_materials_data', JSON.stringify(localMaterials));
-                }
                 closeModal('editMaterialModal'); renderMaterialsList(); showMsg('materialMsg', '✅ تم التعديل');
             }
         }
@@ -908,14 +893,14 @@
             let allLinks = [];
             currentData.sections.forEach(section => { if (section.links) section.links.forEach(link => allLinks.push({ ...link, sectionName: section.name, sectionIcon: section.icon || '📁', sectionId: section.id })); });
             if (allLinks.length === 0) { container.innerHTML = '<div style="text-align:center; padding:3rem; color:#a0aec0;">📭 لا توجد روابط</div>'; return; }
-            container.innerHTML = `<div class="links-table-container"><h3>📋 جميع الروابط المضافة (${allLinks.length})</h3><div class="table-wrapper"><table class="links-table"><thead><tr><th>#</th><th>القسم</th><th>العنوان</th><th>الرابط</th><th>النوع</th><th>مشاهدات</th><th>إجراء</th></tr></thead><tbody>${allLinks.map((link, index) => `<tr><td>${index + 1}</td><td>${link.sectionIcon} ${escapeHtml(link.sectionName)}</td><td><strong>${escapeHtml(link.title)}</strong></td><td><span style="direction:ltr; display:inline-block; font-size:0.8rem;">${escapeHtml(link.url).substring(0,25)}...</span></td><td><span class="badge-type ${link.type === 'internal' ? 'badge-internal' : 'badge-external'}">${link.type === 'internal' ? 'داخلي' : 'خارجي'}</span></td><td>👁️ ${link.views||0}</td><td><div style="display:flex; gap:0.3rem; justify-content:flex-end;"><button class="btn-sm edit-btn" onclick="openEditLink('${link.sectionId}','${link.id}')">✏️</button><button class="btn-sm edit-btn" onclick="togglePin('${link.sectionId}','${link.id}')">${link.pinned ? '📌' : '📍'}</button><button class="btn-sm delete-btn" onclick="deleteLink('${link.sectionId}','${link.id}')">🗑️</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
+            container.innerHTML = `<div class="links-table-container"><h3>📋 جميع الروابط المضافة (${allLinks.length})</h3><div class="table-wrapper"><table class="links-table"><thead><tr><th>#</th><th>القسم</th><th>العنوان</th><th>الرابط</th><th>النوع</th><th>إجراء</th></tr></thead><tbody>${allLinks.map((link, index) => `<tr><td>${index + 1}</td><td>${link.sectionIcon} ${escapeHtml(link.sectionName)}</td><td><strong>${escapeHtml(link.title)}</strong></td><td><span style="direction:ltr; display:inline-block; font-size:0.8rem;">${escapeHtml(link.url).substring(0,25)}...</span></td><td><span class="badge-type ${link.type === 'internal' ? 'badge-internal' : 'badge-external'}">${link.type === 'internal' ? 'داخلي' : 'خارجي'}</span></td><td><div style="display:flex; gap:0.3rem; justify-content:flex-end;"><button class="btn-sm edit-btn" onclick="openEditLink('${link.sectionId}','${link.id}')">✏️</button><button class="btn-sm edit-btn" onclick="togglePin('${link.sectionId}','${link.id}')">${link.pinned ? '📌' : '📍'}</button><button class="btn-sm delete-btn" onclick="deleteLink('${link.sectionId}','${link.id}')">🗑️</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
         }
 
         function renderMaterialsList() {
             const container = document.getElementById('materialsList');
             if (!container) return;
             if (currentData.materials.length === 0) { container.innerHTML = '<div style="text-align:center; padding:2rem; color:#a0aec0;">📭 لا توجد مواد تدريبية مضافة حتى الآن</div>'; return; }
-            container.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>#</th><th>العنوان والوصف</th><th>التصنيف</th><th>النوع</th><th>تفاعل</th><th>إجراء</th></tr></thead><tbody>${currentData.materials.map((m, index) => `<tr><td>${index+1}</td><td style="text-align:right;"><strong>${escapeHtml(m.title)}</strong><br><span style="font-size:0.75rem;color:#718096;">${escapeHtml(m.description).substring(0,35)}...</span></td><td><span style="background:#edf2f7; padding:4px 8px; border-radius:5px; font-size:0.8rem;">${escapeHtml(m.category)}</span></td><td><span class="badge-type ${getTypeClass(m.type)}">${m.type.toUpperCase()}</span></td><td style="font-size:0.8rem; color:#4a5568;">👁️ ${m.views||0} | 📥 ${m.downloads||0}</td><td class="action-buttons"><button class="edit-btn" onclick="openEditMaterial('${m.id}')">✏️</button><button class="delete-btn" onclick="deleteMaterial('${m.id}')">🗑️</button></td></tr>`).join('')}</tbody></table></div>`;
+            container.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>#</th><th>العنوان والوصف</th><th>التصنيف</th><th>النوع</th><th>إجراء</th></tr></thead><tbody>${currentData.materials.map((m, index) => `<tr><td>${index+1}</td><td style="text-align:right;"><strong>${escapeHtml(m.title)}</strong><br><span style="font-size:0.75rem;color:#718096;">${escapeHtml(m.description).substring(0,35)}...</span></td><td><span style="background:#edf2f7; padding:4px 8px; border-radius:5px; font-size:0.8rem;">${escapeHtml(m.category)}</span></td><td><span class="badge-type ${getTypeClass(m.type)}">${m.type.toUpperCase()}</span></td><td class="action-buttons"><button class="edit-btn" onclick="openEditMaterial('${m.id}')">✏️</button><button class="delete-btn" onclick="deleteMaterial('${m.id}')">🗑️</button></td></tr>`).join('')}</tbody></table></div>`;
         }
 
         function renderUsersList() {
@@ -1109,8 +1094,8 @@
                                 <button onclick="clearAllCollectionData('offjob_enrollments', 'تدريبات Off-Job')" style="background:#c53030; color:white;">🗑️ محو تدريبات Off-Job</button>
                                 <button onclick="clearAllCollectionData('employees', 'الموظفين')" style="background:#9b2c2c; color:white;">🗑️ مسح دليل الموظفين</button>
                                 <button onclick="clearAllCollectionData('training_schedule', 'جدول التدريب')" style="background:#7f1d1d; color:white;">🗑️ إفراغ جدول التدريب</button>
-                                <button onclick="clearLocalData('employee_birthdays_final', 'أعياد الميلاد')" style="background:white; border:2px solid #e53e3e; color:#e53e3e;">🗑️ مسح أعياد الميلاد (محلي)</button>
-                                <button onclick="clearLocalData('training_materials_data', 'مواد التدريب')" style="background:white; border:2px solid #c53030; color:#c53030;">🗑️ مسح المكتبة (محلي)</button>
+                                <button onclick="clearAllCollectionData('employee_birthdays_final', 'أعياد الميلاد')" style="background:white; border:2px solid #e53e3e; color:#e53e3e;">🗑️ مسح أعياد الميلاد</button>
+                                <button onclick="clearAllCollectionData('materials', 'مواد التدريب')" style="background:white; border:2px solid #c53030; color:#c53030;">🗑️ مسح المكتبة</button>
                             </div>
                         </div>
                     </div>
@@ -1135,6 +1120,7 @@
         window.addSchedule = addSchedule; window.deleteSchedule = deleteSchedule; window.openEditSchedule = openEditSchedule; window.saveScheduleEdit = saveScheduleEdit;
         window.addUser = addUser; window.deleteUser = deleteUser; window.openEditUser = openEditUser; window.saveUserEdit = saveUserEdit;
         window.closeModal = closeModal; window.switchTab = switchTab; window.exportData = exportData; window.importData = importData;
+        window.clearAllCollectionData = clearAllCollectionData; window.clearAllOnJobData = clearAllOnJobData;
         window.logout = logout;
 
         // ================== المصادقة ==================
