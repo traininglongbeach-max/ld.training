@@ -482,7 +482,7 @@
 
         // الدالة المسؤولة عن تحميل الصورة
         function loadEmployeePhoto(imgElement, employeeCode, cloudPhotoUrl) {
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'JPG', 'JPEG', 'PNG'];
             let currentIndex = 0;
             
             function tryNextExtension() {
@@ -514,7 +514,7 @@
             }
 
             // فحص رابط Cloudinary أولاً
-            if (cloudPhotoUrl) {
+            if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined') {
                 const cloudImg = new Image();
                 cloudImg.onload = function() {
                     imgElement.src = cloudPhotoUrl;
@@ -585,9 +585,12 @@
                     return false; 
                 }
 
-                // 2. مطابقة الشهر واليوم بشكل مباشر من التعديل الجديد في الإكسيل
-                if (emp.month !== undefined && emp.day !== undefined) {
-                    return parseInt(emp.month) === month && parseInt(emp.day) === day;
+                // 2. مطابقة الشهر واليوم بشكل مباشر
+                let empMonth = emp.month || emp.Month;
+                let empDay = emp.day || emp.Day;
+
+                if (empMonth !== undefined && empDay !== undefined) {
+                    return parseInt(empMonth) === month && parseInt(empDay) === day;
                 }
                 
                 return false;
@@ -638,9 +641,10 @@
                 
                 // حساب عمر الموظف إذا كان حقل السنة (year) متوفراً
                 let ageString = '';
-                if(emp.year && !isNaN(parseInt(emp.year))) {
+                let empYear = emp.year || emp.Year;
+                if(empYear && !isNaN(parseInt(empYear))) {
                     const currentYear = new Date().getFullYear();
-                    const age = currentYear - parseInt(emp.year);
+                    const age = currentYear - parseInt(empYear);
                     // نضع العمر بين قوسين بجانب الاسم
                     ageString = ` <span style="color:#718096; font-size:0.9rem;">(${age}y)</span>`;
                 }
