@@ -556,17 +556,17 @@
             const html = `
                 ${renderLastCodesCard()}
                 
-                <div class="enrollment-card">
+<div class="enrollment-card">
                     <h3>⚡ تسجيل سريع لمتدرب</h3>
                     <div class="enrollment-form">
                         <div class="form-group">
                             <label>📝 كود الجلسة</label>
                             <input type="number" id="quickSessionCode" placeholder="مثال: 2100" list="sessionsList">
-                            <datalist id="sessionsList">${sessions.map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('')}</datalist>
+                            <datalist id="sessionsList">${[...sessions].sort((a, b) => a.session_code - b.session_code).map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('')}</datalist>
                         </div>
                         <div class="form-group">
                             <label>👤 كود الموظف</label>
-                            <input type="number" id="quickEmployeeId" placeholder="مثال: 12236" list="employeesDatalist">
+                            <input type="number" id="quickEmployeeId" placeholder="مثال: 12230" list="employeesDatalist">
                             <datalist id="employeesDatalist">${employeesList.map(emp => `<option value="${emp.id}">${emp.id} - ${emp.fullName || ''}</option>`).join('')}</datalist>
                         </div>
                         <div class="form-group">
@@ -583,7 +583,7 @@
                     <div class="enrollment-form">
                         <div class="form-group">
                             <label>📝 كود الجلسة</label>
-                            <select id="batchSessionCode"><option value="">اختر الجلسة</option>${sessions.map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('')}</select>
+                            <select id="batchSessionCode"><option value="">اختر الجلسة</option>${[...sessions].sort((a, b) => a.session_code - b.session_code).map(s => `<option value="${s.session_code}">${s.session_code}</option>`).join('')}</select>
                         </div>
                         <div class="form-group">
                             <label>📌 الحالة</label>
