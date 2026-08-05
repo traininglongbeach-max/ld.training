@@ -25,7 +25,6 @@
 
         .container { max-width: 1400px; margin: 2.5rem auto; padding: 0 1.5rem; }
 
-        /* تبويبات حديثة */
         .tabs { display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; justify-content: center; background: white; padding: 0.8rem; border-radius: 100px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .tab-btn { background: transparent; border: none; padding: 0.8rem 2rem; border-radius: 100px; font-size: 1.05rem; font-weight: 700; cursor: pointer; color: #718096; transition: 0.3s; }
         .tab-btn:hover { color: #1e3a5f; background: #f7fafc; }
@@ -63,7 +62,6 @@
         .badge-type { padding: 0.3rem 1rem; border-radius: 2rem; font-size: 0.8rem; font-weight: 700; display: inline-block; text-align: center; min-width: 70px; }
         .badge-pdf { background: #fed7d7; color: #c53030; } .badge-video { background: #e9d8fd; color: #6b46c1; } .badge-ppt { background: #feebc8; color: #c05621; } .badge-doc { background: #bee3f8; color: #2b6cb0; } .badge-excel { background: #c6f6d5; color: #22543d; } .badge-other { background: #e2e8f0; color: #4a5568; }
 
-        /* الكروت العصرية في المربع الخاص بالاستيراد */
         .import-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
         .import-card { background: white; padding: 2rem 1.5rem; border-radius: 1.5rem; text-align: center; border: 2px solid #e2e8f0; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: space-between; }
         .import-card:hover { border-color: #3182ce; box-shadow: 0 10px 30px rgba(49, 130, 206, 0.1); transform: translateY(-5px); }
@@ -84,7 +82,6 @@
         .backup-buttons button { flex: 1; min-width: 250px; padding: 1rem; border-radius: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem; cursor: pointer; font-weight: 600; border: none; transition: 0.3s;}
         .backup-buttons button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
 
-        /* شاشة التحميل للعمليات */
         #uploadProgressModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
         .progress-box { background: #1e293b; border: 1px solid #334155; padding: 3.5rem 3rem; border-radius: 2rem; width: 90%; max-width: 550px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .progress-bar-container { background: #0f172a; border-radius: 100px; height: 20px; width: 100%; margin: 2rem 0; overflow: hidden; position: relative; border: 1px solid #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
@@ -94,7 +91,6 @@
         .progress-text { font-weight: 800; color: #38bdf8; font-size: 1.8rem; font-family: monospace; }
         .progress-subtext { color: #94a3b8; font-size: 1.1rem; margin-top: 0.5rem; font-weight: 500; }
 
-        /* نوافذ المودال (التحرير) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
         .modal-content { background: white; border-radius: 1.5rem; padding: 2.5rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: modalEnter 0.3s ease-out; }
         @keyframes modalEnter { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -104,64 +100,15 @@
 
         .footer { text-align: center; padding: 2rem; color: #a0aec0; font-weight: 500; }
 
-        /* ================= Responsive Media Queries ================= */
-
-        @media (max-width: 1600px) {
-            .container { max-width: 95%; }
-        }
-
-        @media (max-width: 1400px) {
-            .container { max-width: 1140px; }
-        }
-
-        @media (max-width: 1200px) {
-            .container { max-width: 960px; }
-            .import-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-        }
-
-        @media (max-width: 992px) {
-            .container { max-width: 720px; }
-            .backup-buttons button { min-width: calc(50% - 1rem); }
-        }
-
-        @media (max-width: 768px) {
-            .container { max-width: 100%; padding: 0 1rem; }
-            .navbar { flex-direction: column; justify-content: center; text-align: center; padding: 1rem; }
-            .nav-links { justify-content: center; width: 100%; }
-            .admin-card { padding: 1.5rem; margin-bottom: 1.5rem; }
-            .tabs { border-radius: 1rem; }
-            .backup-buttons button { min-width: 100%; flex: 1 1 100%; }
-        }
-
-        @media (max-width: 576px) {
-            .admin-card { padding: 1.2rem; }
-            .import-grid { grid-template-columns: 1fr; }
-            .tab-btn { width: 100%; padding: 0.6rem 1rem; border-radius: 10px; }
-            .progress-box { padding: 2.5rem 1.5rem; width: 95%; }
-            .modal-content { padding: 1.5rem; width: 95%; }
-            .logo h2 { font-size: 1.2rem; }
-            .table-wrapper { border-radius: 0.5rem; }
-        }
-
-        @media (max-width: 425px) {
-            th, td { padding: 0.8rem 0.5rem; font-size: 0.85rem; }
-            button.primary-btn { width: 100%; }
-            .modal-buttons { flex-direction: column; }
-            input, select, textarea { padding: 0.8rem 1rem; }
-        }
-
-        @media (max-width: 375px) {
-            .admin-card h3 { font-size: 1.1rem; }
-            .progress-text { font-size: 1.3rem; }
-            .import-card { padding: 1.5rem 1rem; }
-            .import-card .icon-wrapper { width: 60px; height: 60px; font-size: 1.5rem; }
-        }
-
-        @media (max-width: 320px) {
-            .logo h2 { font-size: 1.1rem; }
-            .nav-links a, .nav-links button { width: 100%; text-align: center; font-size: 0.8rem; }
-            .tab-btn { font-size: 0.85rem; }
-        }
+        @media (max-width: 1600px) { .container { max-width: 95%; } }
+        @media (max-width: 1400px) { .container { max-width: 1140px; } }
+        @media (max-width: 1200px) { .container { max-width: 960px; } .import-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
+        @media (max-width: 992px) { .container { max-width: 720px; } .backup-buttons button { min-width: calc(50% - 1rem); } }
+        @media (max-width: 768px) { .container { max-width: 100%; padding: 0 1rem; } .navbar { flex-direction: column; justify-content: center; text-align: center; padding: 1rem; } .nav-links { justify-content: center; width: 100%; } .admin-card { padding: 1.5rem; margin-bottom: 1.5rem; } .tabs { border-radius: 1rem; } .backup-buttons button { min-width: 100%; flex: 1 1 100%; } }
+        @media (max-width: 576px) { .admin-card { padding: 1.2rem; } .import-grid { grid-template-columns: 1fr; } .tab-btn { width: 100%; padding: 0.6rem 1rem; border-radius: 10px; } .progress-box { padding: 2.5rem 1.5rem; width: 95%; } .modal-content { padding: 1.5rem; width: 95%; } .logo h2 { font-size: 1.2rem; } .table-wrapper { border-radius: 0.5rem; } }
+        @media (max-width: 425px) { th, td { padding: 0.8rem 0.5rem; font-size: 0.85rem; } button.primary-btn { width: 100%; } .modal-buttons { flex-direction: column; } input, select, textarea { padding: 0.8rem 1rem; } }
+        @media (max-width: 375px) { .admin-card h3 { font-size: 1.1rem; } .progress-text { font-size: 1.3rem; } .import-card { padding: 1.5rem 1rem; } .import-card .icon-wrapper { width: 60px; height: 60px; font-size: 1.5rem; } }
+        @media (max-width: 320px) { .logo h2 { font-size: 1.1rem; } .nav-links a, .nav-links button { width: 100%; text-align: center; font-size: 0.8rem; } .tab-btn { font-size: 0.85rem; } }
     </style>
 </head>
 <body>
@@ -171,7 +118,6 @@
         </div>
     </div>
 
-    <!-- شاشة التحميل للعمليات -->
     <div id="uploadProgressModal">
         <div class="progress-box">
             <h3 style="color: #f8fafc; font-size: 1.6rem; margin-bottom: 0.5rem; font-weight:800;">⚡ جاري تنفيذ العملية بأمان</h3>
@@ -252,7 +198,19 @@
             let filename = "Template.xlsx";
 
             if(type === 'employees') {
-                ws = XLSX.utils.json_to_sheet([{ 'Employee ID': '12345', 'Full Name': 'Ahmed Ali', 'Dep': 'HR', 'Position': 'Manager', 'Level': 'HODs', 'Hire Date': '2020-01-15', 'Status': 'Active' }]);
+                // مطابقة تامة للأعمدة المطلوبة
+                ws = XLSX.utils.json_to_sheet([{ 
+                    'Employee ID': '12345', 
+                    'Full Name': 'Ahmed Ali', 
+                    'Dep': 'HR', 
+                    'Position': 'Manager', 
+                    'Level': 'HODs', 
+                    'Hire Date': '2020-01-15', 
+                    'Year': '1990',
+                    'Month': '5', 
+                    'Day': '14',
+                    'Status': 'Active'
+                }]);
                 XLSX.utils.book_append_sheet(wb, ws, "Employees");
                 filename = "Employees_Template.xlsx";
             } 
@@ -265,11 +223,6 @@
                 XLSX.utils.book_append_sheet(wb, wsSessions, "Sessions");
                 XLSX.utils.book_append_sheet(wb, wsEnrollments, "Enrollments");
                 filename = `${type === 'onjob' ? 'OnJob' : 'OffJob'}_Template.xlsx`;
-            } 
-            else if (type === 'birthdays') {
-                ws = XLSX.utils.json_to_sheet([{ 'Employee ID': '12345', 'Full Name': 'Ahmed Ali', 'Month': '5', 'Day': '14', 'Dep': 'FO', 'Position': 'Receptionist' }]);
-                XLSX.utils.book_append_sheet(wb, ws, "Birthdays");
-                filename = "Birthdays_Template.xlsx";
             } 
             else if (type === 'schedule') {
                 ws = XLSX.utils.json_to_sheet([{ 'Date': '2026-05-01', 'Topic': 'Fire Safety', 'Time': '10:00 AM', 'Category': 'Safety' }]);
@@ -383,7 +336,7 @@
                 localStorage.removeItem(key);
                 showToast(`🗑️ تم حذف ${name} بنجاح`);
             }
-        };
+        }
 
         function convertExcelDate(excelDate) {
             if (!excelDate) return null;
@@ -412,31 +365,76 @@
         }
 
         // ================== دوال الاستيراد عبر ملفات إكسيل ==================
+        
         window.importEmployeesExcel = (file) => {
             processExcelUpload(file, async (workbook) => {
-                showUploadProgress('تحليل بيانات الموظفين...', 30);
+                showUploadProgress('تحليل بيانات الموظفين وأعياد الميلاد...', 30);
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 const rawData = XLSX.utils.sheet_to_json(sheet);
-                const employees = rawData.map(row => {
+                
+                const employees = [];
+                const birthdays = [];
+
+                rawData.forEach(row => {
                     let hireDate = row['Hire Date'] || row['hire_date'] || '';
                     if (hireDate && typeof hireDate === 'number') hireDate = convertExcelDate(hireDate);
-                    return {
-                        id: parseInt(row['Employee ID'] || row['employee_id'] || row['id']),
-                        fullName: String(row['Full Name'] || row['full_name'] || row['name'] || '').trim(),
-                        department: String(row['Dep'] || row['department'] || '').trim(),
-                        position: String(row['Position'] || row['position'] || '').trim(),
-                        level: String(row['Level'] || row['level'] || '').trim(),
-                        hireDate: hireDate,
-                        status: (row['Status'] || row['status']) === 'Left' ? 'Left' : 'Active'
-                    };
-                }).filter(emp => emp.id && emp.fullName);
+                    
+                    const id = parseInt(row['Employee ID'] || row['employee_id'] || row['id']);
+                    const fullName = String(row['Full Name'] || row['full_name'] || row['name'] || '').trim();
+                    const department = String(row['Dep'] || row['department'] || '').trim();
+                    const position = String(row['Position'] || row['position'] || '').trim();
+                    
+                    if (id && fullName) {
+                        // 1. إضافة الموظف
+                        employees.push({
+                            id: id,
+                            fullName: fullName,
+                            department: department,
+                            position: position,
+                            level: String(row['Level'] || row['level'] || '').trim(),
+                            hireDate: hireDate,
+                            status: (row['Status'] || row['status']) === 'Left' ? 'Left' : 'Active'
+                        });
+
+                        // 2. التحقق من وجود بيانات يوم وشهر وسنة الميلاد المطابقة للإكسيل
+                        const bYear = parseInt(row['Year'] || row['year']);
+                        const bMonth = parseInt(row['Month'] || row['month']);
+                        const bDay = parseInt(row['Day'] || row['day']);
+                        
+                        // نعتمد على الشهر واليوم بشكل أساسي لجدول أعياد الميلاد
+                        if (!isNaN(bMonth) && !isNaN(bDay)) {
+                            birthdays.push({
+                                code: String(id), // الكود كـ String كما هو معتاد
+                                name: fullName,
+                                department: department,
+                                position: position,
+                                year: isNaN(bYear) ? null : bYear, // إضافة السنة إذا كانت موجودة
+                                month: bMonth,
+                                day: bDay
+                            });
+                        }
+                    }
+                });
                 
                 if(employees.length > 0) {
-                    showUploadProgress('رفع ودمج الموظفين على دفعات...', 60);
+                    showUploadProgress('رفع ودمج الموظفين على السيرفر...', 50);
                     await DB.bulkInsert('employees', employees);
+                    
+                    if(birthdays.length > 0) {
+                        showUploadProgress('رفع بيانات أعياد الميلاد...', 80);
+                        await DB.bulkInsert('employee_birthdays_final', birthdays);
+                    }
+                    
                     showUploadProgress('اكتمل بنجاح!', 100);
-                    setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم دمج ${employees.length} موظف بنجاح`); window.location.reload(); }, 1000);
-                } else { hideUploadProgress(); showImportStatus(`⚠️ لا توجد بيانات صحيحة في الملف`, true); }
+                    setTimeout(() => { 
+                        hideUploadProgress(); 
+                        showImportStatus(`✅ تم دمج ${employees.length} موظف و ${birthdays.length} سجل أعياد ميلاد بنجاح`); 
+                        window.location.reload(); 
+                    }, 1500);
+                } else { 
+                    hideUploadProgress(); 
+                    showImportStatus(`⚠️ لا توجد بيانات صحيحة في الملف`, true); 
+                }
             });
         };
 
@@ -465,35 +463,6 @@
                 if (enrollments.length > 0) await DB.bulkInsert('onjob_enrollments', enrollments);
                 showUploadProgress('اكتمل بنجاح!', 100);
                 setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم تحديث بيانات On Job`); window.location.reload(); }, 1000);
-            });
-        };
-
-        window.importBirthdaysExcel = (file) => {
-            processExcelUpload(file, async (workbook) => {
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                const headers = rows[0];
-                let colCode = -1, colName = -1, colDep = -1, colPosition = -1, colMonth = -1, colDay = -1;
-                headers.forEach((h, i) => { const header = String(h).trim(); if (header === 'Employee ID') colCode = i; if (header === 'Full Name') colName = i; if (header === 'Dep') colDep = i; if (header === 'Position') colPosition = i; if (header === 'Month') colMonth = i; if (header === 'Day') colDay = i; });
-                
-                if (colCode === -1 || colName === -1 || colMonth === -1 || colDay === -1) { hideUploadProgress(); showImportStatus('⚠️ الملف لا يطابق النموذج المطلوب', true); return; }
-                const newEmployees = [];
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i]; if (!row) continue;
-                    const code = row[colCode] ? String(row[colCode]).trim() : '';
-                    const name = row[colName] ? String(row[colName]).trim() : '';
-                    const month = row[colMonth] ? parseInt(row[colMonth]) : null;
-                    const day = row[colDay] ? parseInt(row[colDay]) : null;
-                    const department = colDep !== -1 && row[colDep] ? String(row[colDep]).trim() : '';
-                    const position = colPosition !== -1 && row[colPosition] ? String(row[colPosition]).trim() : '';
-                    if (code && name && month && day) newEmployees.push({ code, name, department, position, month, day });
-                }
-                if (newEmployees.length > 0) {
-                    showUploadProgress('جاري الرفع على السيرفر...', 60);
-                    await DB.bulkInsert('employee_birthdays_final', newEmployees);
-                    showUploadProgress('اكتمل بنجاح!', 100); 
-                    setTimeout(() => { hideUploadProgress(); showImportStatus(`✅ تم رفع ${newEmployees.length} سجل أعياد ميلاد`); window.location.reload(); }, 1000);
-                } else { hideUploadProgress(); showImportStatus('⚠️ لا يوجد بيانات صحيحة', true); }
             });
         };
 
@@ -925,14 +894,14 @@
                     
                     <div class="admin-card" style="background: linear-gradient(to right, #ffffff, #f8fafc); border-right: 5px solid #3182ce;">
                         <h3 style="color:#2b6cb0;">🚀 دمج البيانات الذكي (Data Sync Hub)</h3>
-                        <p style="margin-bottom:1.5rem; color:#64748b; font-size:0.95rem;">ارفع ملفات الإكسيل لتحديث النظام لحظياً. قم بتحميل النموذج أولاً لتعبئته بالصيغة الصحيحة المدعومة.</p>
+                        <p style="margin-bottom:1.5rem; color:#64748b; font-size:0.95rem;">ارفع ملفات الإكسيل لتحديث النظام لحظياً. تم دمج بيانات الموظفين وأعياد الميلاد في ملف واحد لتسهيل العمل.</p>
                         
                         <div class="import-grid">
                             
                             <div class="import-card">
                                 <div class="icon-wrapper" style="background:#ebf8ff; color:#3182ce;">👥</div>
-                                <h4>الموظفين (Employees)</h4>
-                                <p>تحديث الهيكل الوظيفي والتعيينات</p>
+                                <h4>الموظفين وأعياد الميلاد</h4>
+                                <p>تحديث الهيكل الوظيفي وتواريخ الميلاد بضغطة واحدة</p>
                                 <input type="file" id="employeesExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importEmployeesExcel(this.files[0])">
                                 <div class="btn-group">
                                     <button class="btn btn-import" onclick="document.getElementById('employeesExcelInput').click()">📤 رفع البيانات (Import)</button>
@@ -959,17 +928,6 @@
                                 <div class="btn-group">
                                     <button class="btn btn-import" style="background:#dd6b20;" onclick="document.getElementById('onjobExcelInput').click()">📤 رفع البيانات (Import)</button>
                                     <button class="btn btn-template" onclick="downloadTemplate('onjob')">📄 نموذج الإكسيل (Template)</button>
-                                </div>
-                            </div>
-
-                            <div class="import-card">
-                                <div class="icon-wrapper" style="background:#fef3c7; color:#d97706;">🎂</div>
-                                <h4>أعياد الميلاد (Birthdays)</h4>
-                                <p>جدول الاحتفالات وتواريخ الميلاد</p>
-                                <input type="file" id="birthdaysExcelInput" accept=".xlsx, .xls" style="display:none" onchange="importBirthdaysExcel(this.files[0])">
-                                <div class="btn-group">
-                                    <button class="btn btn-import" style="background:#d97706;" onclick="document.getElementById('birthdaysExcelInput').click()">📤 رفع البيانات (Import)</button>
-                                    <button class="btn btn-template" onclick="downloadTemplate('birthdays')">📄 نموذج الإكسيل (Template)</button>
                                 </div>
                             </div>
 
