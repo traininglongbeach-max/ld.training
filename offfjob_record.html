@@ -536,7 +536,7 @@
             document.getElementById('sessionStatus').value = item?.status || 'Active';
             document.getElementById('sessionNotes').value = item?.notes || '';
             
-            document.getElementById('sessionCourseCode').innerHTML = '<option value="">اختر الكورس</option>' + courses.map(c => 
+            document.getElementById('sessionCourseCode').innerHTML = '<option value="">اختر الكورس</option>' + [...courses].sort((a, b) => a.course_code - b.course_code).map(c => 
                 `<option value="${c.course_code}" ${item?.course_code == c.course_code ? 'selected' : ''}>${c.course_code} - ${c.course_name}</option>`
             ).join('');
             
