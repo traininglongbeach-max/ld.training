@@ -390,17 +390,15 @@
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        let employees = []; // سجلات أعياد الميلاد
-        let activeEmpIds = new Set(); // قائمة أكواد الموظفين النشطين (الذين لم يستقيلوا)
-        let fullEmpDataMap = new Map(); // خريطة لتخزين بيانات الموظفين (بما فيها photoUrl)
+        let employees = []; 
+        let activeEmpIds = new Set(); 
+        let fullEmpDataMap = new Map(); 
         
         const BDAY_CACHE_KEY = 'BirthdaysApp_DataCache';
         const COLLECTION_KEY = 'employee_birthdays_final';
-        const PHOTO_PATH = 'employee_photos/'; 
 
         // ===== 1. دالة التحميل الذكية من الذاكرة أو الفايربيز =====
         async function loadSavedData() {
-            // أولاً: التحقق من وجود كاش محلي لتجنب قراءات الفايربيز
             const cachedData = localStorage.getItem(BDAY_CACHE_KEY);
             if (cachedData) {
                 try {
@@ -414,7 +412,6 @@
                     console.error("خطأ في قراءة الكاش:", e);
                 }
             }
-            // ثانياً: إذا لم يكن هناك كاش، نسحب من السيرفر
             await fetchFromServerAndCache();
         }
 
@@ -422,7 +419,6 @@
         async function fetchFromServerAndCache() {
             try {
                 await DB.init();
-                // جلب جدول أعياد الميلاد، وجدول الموظفين للتأكد من حالة كل موظف ورابط الصورة
                 const [bdayData, empData] = await Promise.all([
                     DB.getAll(COLLECTION_KEY),
                     DB.getAll('employees')
@@ -435,18 +431,15 @@
                 if (empData) {
                     empData.forEach(e => {
                         let empCode = String(e.id).trim();
-                        // فلترة الموظفين واستبعاد من حالته Left (مستقيل)
                         if (e.status !== 'Left') {
                             activeIds.push(empCode);
                         }
-                        // تخزين البيانات الإضافية لاستخدام رابط Cloudinary إذا وُجد
                         fullEmpDataMap.set(empCode, e);
                         empMapForCache.push([empCode, e]);
                     });
                 }
                 activeEmpIds = new Set(activeIds);
                 
-                // حفظ البيانات في الكاش (localStorage) لتقليل سحب الداتا مستقبلاً
                 localStorage.setItem(BDAY_CACHE_KEY, JSON.stringify({
                     birthdays: employees,
                     activeIds: activeIds,
@@ -465,7 +458,6 @@
             document.getElementById('mainContent').style.display = 'none';
             document.getElementById('loadingScreen').innerHTML = '⏳ جاري تحديث البيانات من السيرفر...';
             
-            // مسح جميع الكاشات القديمة المتعلقة بالصفحة
             localStorage.removeItem(BDAY_CACHE_KEY);
             localStorage.removeItem(COLLECTION_KEY);
             localStorage.removeItem('employees');
@@ -480,54 +472,59 @@
             alert("✅ تم تحديث البيانات من السيرفر بنجاح!");
         };
 
-        // الدالة المسؤولة عن تحميل الصورة
+        // ===== 4. الدالة الذكية والمحدثة لتحميل الصور من Cloudinary مباشرة =====
         function loadEmployeePhoto(imgElement, employeeCode, cloudPhotoUrl) {
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'JPG', 'JPEG', 'PNG'];
-            let currentIndex = 0;
-            
-            function tryNextExtension() {
-                if (currentIndex >= imageExtensions.length) {
-                    if (imgElement.parentElement) {
-                        imgElement.parentElement.innerHTML = `
-                            <div class="no-image">
-                                <i class="fas fa-user-circle"></i>
-                                <span>${employeeCode}</span>
-                            </div>
-                        `;
-                    }
-                    return;
+            function showDefaultPlaceholder() {
+                if (imgElement.parentElement) {
+                    imgElement.parentElement.innerHTML = `
+                        <div class="no-image">
+                            <i class="fas fa-user-circle"></i>
+                            <span>${employeeCode}</span>
+                        </div>
+                    `;
                 }
-                const extension = imageExtensions[currentIndex];
-                const photoUrl = `${PHOTO_PATH}${employeeCode}.${extension}`;
-                
-                const testImg = new Image();
-                testImg.onload = function() {
-                    imgElement.src = photoUrl;
-                    imgElement.style.display = 'block';
-                    imgElement.parentElement.classList.add('has-image');
-                };
-                testImg.onerror = function() {
-                    currentIndex++;
-                    tryNextExtension();
-                };
-                testImg.src = photoUrl;
             }
 
-            // فحص رابط Cloudinary أولاً
-            if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined') {
+            // البحث المباشر في حساب كلاوديناري الخاص بك (باستخدام رقم الموظف)
+            function checkCloudinaryDirectly() {
+                const exts = ['webp', 'jpg', 'jpeg', 'png', 'JPG', 'PNG', 'JPEG'];
+                let i = 0;
+                function tryNext() {
+                    if (i >= exts.length) {
+                        showDefaultPlaceholder();
+                        return;
+                    }
+                    const url = `https://res.cloudinary.com/so9u5deh/image/upload/${employeeCode}.${exts[i]}`;
+                    const testImg = new Image();
+                    testImg.onload = function() {
+                        imgElement.src = url;
+                        imgElement.style.display = 'block';
+                        if (imgElement.parentElement) imgElement.parentElement.classList.add('has-image');
+                    };
+                    testImg.onerror = function() {
+                        i++;
+                        tryNext();
+                    };
+                    testImg.src = url;
+                }
+                tryNext();
+            }
+
+            // 1. أولاً نجرب الرابط المحفوظ في الداتا بيز إذا كان موجوداً
+            if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined' && cloudPhotoUrl.trim() !== '') {
                 const cloudImg = new Image();
                 cloudImg.onload = function() {
                     imgElement.src = cloudPhotoUrl;
                     imgElement.style.display = 'block';
-                    imgElement.parentElement.classList.add('has-image');
+                    if (imgElement.parentElement) imgElement.parentElement.classList.add('has-image');
                 };
                 cloudImg.onerror = function() {
-                    // في حال فشل تحميل الصورة من الكلاود لأي سبب، نعود للطريقة الافتراضية
-                    tryNextExtension();
+                    checkCloudinaryDirectly();
                 };
                 cloudImg.src = cloudPhotoUrl;
             } else {
-                tryNextExtension();
+                // 2. إذا لم يكن محفوظاً في الداتا بيز، ابحث عنه في Cloudinary برقم الموظف
+                checkCloudinaryDirectly();
             }
         }
 
@@ -559,7 +556,6 @@
             performSearch(month, day);
         };
 
-        // التعديل الرئيسي في دالة البحث: الآن تقرأ الحقول (month, day) بشكل مباشر وصريح
         function performSearch(month, day) {
             const grid = document.getElementById('employeesGrid');
             const statsDiv = document.getElementById('stats');
@@ -579,13 +575,11 @@
             }
             
             const filtered = employees.filter(emp => {
-                // 1. فلترة الموظفين المستقيلين
                 let empCode = String(emp.code || emp.id || '').trim();
                 if (activeEmpIds.size > 0 && !activeEmpIds.has(empCode)) {
                     return false; 
                 }
 
-                // 2. مطابقة الشهر واليوم بشكل مباشر
                 let empMonth = emp.month || emp.Month;
                 let empDay = emp.day || emp.Day;
 
@@ -621,7 +615,6 @@
             
             employeesList.forEach(emp => {
                 const empCode = String(emp.code || emp.id).trim();
-                // جلب بيانات الموظف المكتملة للحصول على رابط الصورة (photoUrl)
                 const fullData = fullEmpDataMap.get(empCode) || {};
                 const cloudPhotoUrl = fullData.photoUrl || null;
 
@@ -639,13 +632,11 @@
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'card-info';
                 
-                // حساب عمر الموظف إذا كان حقل السنة (year) متوفراً
                 let ageString = '';
                 let empYear = emp.year || emp.Year;
                 if(empYear && !isNaN(parseInt(empYear))) {
                     const currentYear = new Date().getFullYear();
                     const age = currentYear - parseInt(empYear);
-                    // نضع العمر بين قوسين بجانب الاسم
                     ageString = ` <span style="color:#718096; font-size:0.9rem;">(${age}y)</span>`;
                 }
 
@@ -668,7 +659,7 @@
                 card.appendChild(infoDiv);
                 grid.appendChild(card);
                 
-                // تمرير الرابط الخاص بـ Cloudinary
+                // تمرير الرابط الخاص بـ Cloudinary للبحث عن الصورة
                 loadEmployeePhoto(img, empCode, cloudPhotoUrl);
             });
         }
