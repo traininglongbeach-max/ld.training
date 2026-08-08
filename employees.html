@@ -986,31 +986,62 @@
             window.location.href = 'login.html';
         }
 
-        function showEmployeePhoto(employeeId, employeeName, department, position, cloudPhotoUrl) {
+function showEmployeePhoto(employeeId, employeeName, department, position, cloudPhotoUrl) {
             const modal = document.getElementById('photoModal');
             const imageContainer = document.getElementById('photoModalImageContainer');
             const nameDisplay = document.getElementById('photoModalName');
             const detailsDisplay = document.getElementById('photoModalDetails');
             
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'JPG', 'JPEG', 'PNG'];
-            let currentIndex = 0;
-            
-            imageContainer.innerHTML = `<div class="no-photo"><i class="fas fa-spinner fa-spin" style="font-size: 50px;"></i><span>⏳ جاري تحميل الصورة...</span></div>`;
             nameDisplay.textContent = employeeName;
             detailsDisplay.textContent = `الكود: ${employeeId} | القسم: ${department || 'غير محدد'} | الوظيفة: ${position || 'غير محددة'}`;
             modal.style.display = 'flex';
             
-            function tryNextExtension() {
-                if (currentIndex >= imageExtensions.length) {
-                    imageContainer.innerHTML = `<div class="no-photo"><span style="font-size: 40px; display:block;">👤</span><span>لا توجد صورة للموظف</span><span style="font-size: 14px; margin-top: 5px;">الكود: ${employeeId}</span></div>`;
-                    return;
-                }
-                const photoUrl = `${PHOTO_PATH}${employeeId}.${imageExtensions[currentIndex]}`;
-                const testImg = new Image();
-                testImg.onload = function() { imageContainer.innerHTML = `<img src="${photoUrl}" alt="${employeeName}">`; };
-                testImg.onerror = function() { currentIndex++; tryNextExtension(); };
-                testImg.src = photoUrl;
+            // دالة عرض الأيقونة الافتراضية إذا فشلت كل المحاولات
+            function showDefaultPlaceholder() {
+                imageContainer.innerHTML = `<div class="no-photo"><span style="font-size: 40px; display:block;">👤</span><span>لا توجد صورة للموظف</span><span style="font-size: 14px; margin-top: 5px;">الكود: ${employeeId}</span></div>`;
             }
+
+            // دالة البحث المباشر في Cloudinary باستخدام كود الموظف
+            function checkCloudinaryDirectly() {
+                const exts = ['webp', 'jpg', 'jpeg', 'png'];
+                let i = 0;
+                function tryNext() {
+                    if (i >= exts.length) {
+                        showDefaultPlaceholder();
+                        return;
+                    }
+                    const url = `https://res.cloudinary.com/so9u5deh/image/upload/${employeeId}.${exts[i]}`;
+                    const testImg = new Image();
+                    testImg.onload = function() {
+                        imageContainer.innerHTML = `<img src="${url}" alt="${employeeName}">`;
+                    };
+                    testImg.onerror = function() {
+                        i++;
+                        tryNext();
+                    };
+                    testImg.src = url;
+                }
+                tryNext();
+            }
+
+            imageContainer.innerHTML = `<div class="no-photo"><i class="fas fa-spinner fa-spin" style="font-size: 50px;"></i><span>⏳ جاري تحميل الصورة...</span></div>`;
+
+            // 1. أولاً نجرب الرابط المحفوظ في الداتا بيز (إن وُجد)
+            if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined' && cloudPhotoUrl.trim() !== '') {
+                const cloudImg = new Image();
+                cloudImg.onload = function() { 
+                    imageContainer.innerHTML = `<img src="${cloudPhotoUrl}" alt="${employeeName}">`; 
+                };
+                cloudImg.onerror = function() { 
+                    // إذا فشل الرابط، نجرب البحث المباشر بكود الموظف
+                    checkCloudinaryDirectly(); 
+                };
+                cloudImg.src = cloudPhotoUrl;
+            } else {
+                // 2. إذا لم يكن مسجلاً بالداتا بيز، نبحث مباشرة في Cloudinary
+                checkCloudinaryDirectly();
+            }
+        }
 
             if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined') {
                 const cloudImg = new Image();
