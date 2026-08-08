@@ -366,10 +366,8 @@
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        const PHOTO_PATH = 'employee_photos/';
-
         let employees = [];
-        let birthdaysMap = {}; // خريطة لتخزين أعياد الميلاد باستخدام كود الموظف
+        let birthdaysMap = {}; 
         let searchTerm = "";
         let filterDept = "all";
         let filterPosition = "all";
@@ -382,11 +380,10 @@
         async function refreshData() {
             document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 2rem;">⏳ جاري جلب أحدث البيانات من السيرفر...</td></tr>';
             
-            // مسح الكاش المحلي لضمان جلب البيانات من الفايربيز
             localStorage.removeItem('employees');
             localStorage.removeItem('employees_timestamp');
             localStorage.removeItem('employee_birthdays_final');
-            localStorage.removeItem('employee_birthdays_final_timestamp'); // تم إضافة مسح هذا الـ Cache لحل مشكلة عدم الظهور
+            localStorage.removeItem('employee_birthdays_final_timestamp');
             
             showToast('⏳ جاري تحديث البيانات...', false);
             
@@ -521,18 +518,6 @@
             return dateStr;
         }
 
-        function getFilteredEmployeesForDropdowns() {
-            let filtered = [...employees];
-            if (searchTerm && searchTerm !== "") {
-                filtered = filtered.filter(emp => emp.id.toString().includes(searchTerm) || emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()));
-            }
-            if (filterDept !== 'all') filtered = filtered.filter(emp => emp.department === filterDept);
-            if (filterPosition !== 'all') filtered = filtered.filter(emp => emp.position === filterPosition);
-            if (filterLevel !== 'all') filtered = filtered.filter(emp => emp.level === filterLevel);
-            if (filterStatus !== 'all') filtered = filtered.filter(emp => (emp.status || 'Active') === filterStatus);
-            return filtered;
-        }
-
         function getUniqueDepartments() {
             const depts = new Set();
             employees.forEach(emp => { if (emp.department) depts.add(emp.department); });
@@ -540,16 +525,14 @@
         }
 
         function getUniquePositions() {
-            const filtered = getFilteredEmployeesForDropdowns();
             const positions = new Set();
-            filtered.forEach(emp => { if (emp.position) positions.add(emp.position); });
+            employees.forEach(emp => { if (emp.position) positions.add(emp.position); });
             return Array.from(positions).sort();
         }
 
         function getUniqueLevels() {
-            const filtered = getFilteredEmployeesForDropdowns();
             const levels = new Set();
-            filtered.forEach(emp => { if (emp.level) levels.add(emp.level); });
+            employees.forEach(emp => { if (emp.level) levels.add(emp.level); });
             return Array.from(levels).sort();
         }
 
@@ -616,7 +599,6 @@
                 tableBody.innerHTML = filtered.map(emp => {
                     const empIdStr = emp.id.toString().trim();
                     
-                    // حساب تاريخ الميلاد والعمر من birthdaysMap
                     let birthInfoHTML = '-';
                     const bData = birthdaysMap[empIdStr];
                     
@@ -742,7 +724,6 @@
             
             await DB.insert('employees', newEmp);
             
-            // إضافة بيانات أعياد الميلاد إن وجدت
             const bYear = parseInt(document.getElementById('empBirthYear').value);
             const bMonth = parseInt(document.getElementById('empBirthMonth').value);
             const bDay = parseInt(document.getElementById('empBirthDay').value);
@@ -820,7 +801,6 @@
                 
                 await DB.update('employees', emp);
                 
-                // تعديل بيانات عيد الميلاد
                 const bYear = parseInt(document.getElementById('editBirthYear').value);
                 const bMonth = parseInt(document.getElementById('editBirthMonth').value);
                 const bDay = parseInt(document.getElementById('editBirthDay').value);
@@ -986,7 +966,7 @@
             window.location.href = 'login.html';
         }
 
-function showEmployeePhoto(employeeId, employeeName, department, position, cloudPhotoUrl) {
+        function showEmployeePhoto(employeeId, employeeName, department, position, cloudPhotoUrl) {
             const modal = document.getElementById('photoModal');
             const imageContainer = document.getElementById('photoModalImageContainer');
             const nameDisplay = document.getElementById('photoModalName');
@@ -996,12 +976,10 @@ function showEmployeePhoto(employeeId, employeeName, department, position, cloud
             detailsDisplay.textContent = `الكود: ${employeeId} | القسم: ${department || 'غير محدد'} | الوظيفة: ${position || 'غير محددة'}`;
             modal.style.display = 'flex';
             
-            // دالة عرض الأيقونة الافتراضية إذا فشلت كل المحاولات
             function showDefaultPlaceholder() {
                 imageContainer.innerHTML = `<div class="no-photo"><span style="font-size: 40px; display:block;">👤</span><span>لا توجد صورة للموظف</span><span style="font-size: 14px; margin-top: 5px;">الكود: ${employeeId}</span></div>`;
             }
 
-            // دالة البحث المباشر في Cloudinary باستخدام كود الموظف
             function checkCloudinaryDirectly() {
                 const exts = ['webp', 'jpg', 'jpeg', 'png'];
                 let i = 0;
@@ -1026,32 +1004,17 @@ function showEmployeePhoto(employeeId, employeeName, department, position, cloud
 
             imageContainer.innerHTML = `<div class="no-photo"><i class="fas fa-spinner fa-spin" style="font-size: 50px;"></i><span>⏳ جاري تحميل الصورة...</span></div>`;
 
-            // 1. أولاً نجرب الرابط المحفوظ في الداتا بيز (إن وُجد)
             if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined' && cloudPhotoUrl.trim() !== '') {
                 const cloudImg = new Image();
                 cloudImg.onload = function() { 
                     imageContainer.innerHTML = `<img src="${cloudPhotoUrl}" alt="${employeeName}">`; 
                 };
                 cloudImg.onerror = function() { 
-                    // إذا فشل الرابط، نجرب البحث المباشر بكود الموظف
                     checkCloudinaryDirectly(); 
                 };
                 cloudImg.src = cloudPhotoUrl;
             } else {
-                // 2. إذا لم يكن مسجلاً بالداتا بيز، نبحث مباشرة في Cloudinary
                 checkCloudinaryDirectly();
-            }
-        }
-
-            if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined') {
-                const cloudImg = new Image();
-                cloudImg.onload = function() { imageContainer.innerHTML = `<img src="${cloudPhotoUrl}" alt="${employeeName}">`; };
-                cloudImg.onerror = function() { 
-                    tryNextExtension(); 
-                };
-                cloudImg.src = cloudPhotoUrl;
-            } else {
-                tryNextExtension();
             }
         }
 
