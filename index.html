@@ -160,10 +160,8 @@
         let isAdmin = false;
         let darkMode = localStorage.getItem('darkMode') === 'true';
 
-        // متغيرات الذاكرة المحسنة (لتقليل القراءة من قاعدة البيانات السحابية بشكل كبير)
         let cachedSections = [];
         let cachedLinks = [];
-        let isDataLoaded = false;
 
         // ===== TOAST =====
         function showToast(message, isError = false) {
@@ -189,13 +187,13 @@
             if (!navLinks) return;
 
             const darkIcon = darkMode ? '☀️' : '🌙';
-            const username = currentUser?.username || currentUser?.email || 'مستخدم';
 
             navLinks.innerHTML = `
                 <a href="reports-offjob.html" class="offjob-btn"><i class="fas fa-chart-bar"></i> Off Job Report</a>
                 <a href="reports-onjob.html" class="onjob-btn"><i class="fas fa-chart-line"></i> On Job Report</a>
                 <a href="top-performers.html" class="performers-btn"><i class="fas fa-trophy"></i> تحليل التقرير</a>
                 ${isAdmin ? `<a href="admin.html" class="admin"><i class="fas fa-cog"></i> لوحة التحكم</a>` : ''}
+                <button class="update-btn" onclick="refreshData()"><i class="fas fa-sync-alt"></i> تحديث الروابط</button>
                 <button class="dark-mode-btn" onclick="toggleDarkMode()">${darkIcon}</button>
                 <button onclick="logout()" class="logout" style="border:none;"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</button>
             `;
@@ -226,22 +224,33 @@
             }
         }
 
-        // دالة التحميل الذكية لمرة واحدة (Zero Reads)
-        async function loadDataOnce() {
-            if (isDataLoaded) return;
+        // دالة التحميل الفعالة
+        async function loadDataAndRender() {
             await DB.init();
             cachedSections = await DB.getAll('sections') || [];
             cachedLinks = await DB.getAll('links') || [];
-            isDataLoaded = true;
+            renderSections();
         }
 
-        // ===== RENDER SECTIONS FROM CACHED MEMORY =====
-        async function renderSections() {
+        // زر تحديث الروابط (مسح الكاش)
+        window.refreshData = async () => {
+            const container = document.getElementById('sectionsContainer');
+            if (container) container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem;"><div class="spinner" style="font-size:3rem; animation: spin 1s infinite linear;">🔄</div><p>جاري تحديث البيانات...</p></div>';
+            
+            // مسح الكاش المحلي لإجبار النظام على جلب البيانات من السحابة
+            localStorage.removeItem('sections');
+            localStorage.removeItem('links');
+            localStorage.removeItem('sections_timestamp');
+            localStorage.removeItem('links_timestamp');
+            
+            await loadDataAndRender();
+            showToast('✅ تم جلب أحدث الروابط بنجاح');
+        };
+
+        // ===== RENDER SECTIONS =====
+        function renderSections() {
             const container = document.getElementById('sectionsContainer');
             if (!container) return;
-
-            // جلب البيانات لمرة واحدة وحفظها في المتغيرات
-            await loadDataOnce();
 
             const sectionsWithLinks = cachedSections.map(section => ({
                 ...section,
@@ -358,9 +367,7 @@
             resultsContainer.classList.add('active');
 
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                // التأكد من تحميل البيانات في الذاكرة لتجنب سحبها أثناء البحث (Zero Reads in Search)
-                if (!isDataLoaded) await loadDataOnce();
+            searchTimeout = setTimeout(() => {
                 
                 const sections = cachedSections;
                 const links = cachedLinks;
@@ -411,7 +418,7 @@
                     }
                 });
                 resultsContainer.innerHTML = html;
-            }, 100); // تم تقليل وقت التأخير لتسريع الاستجابة
+            }, 100); 
         }
 
         function highlightText(text, term) {
@@ -483,7 +490,9 @@
             `;
 
             updateNavbar();
-            renderSections();
+            
+            // تحميل البيانات وعرضها 
+            loadDataAndRender();
 
             window.addEventListener('scroll', () => {
                 const navbar = document.getElementById('navbar');
@@ -507,7 +516,6 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    // جلب بيانات المستخدم من Firestore لتحديد الدور (أدمن أو مستخدم)
                     await DB.init();
                     const usersList = await DB.getAll('users') || [];
                     const foundUser = usersList.find(u => u.email === user.email || String(u.id) === String(user.uid));
