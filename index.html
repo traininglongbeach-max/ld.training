@@ -161,7 +161,6 @@
         let isAdmin = false;
         let darkMode = localStorage.getItem('darkMode') === 'true';
 
-        // متغيرات الذاكرة المحسنة (لتقليل القراءة من قاعدة البيانات السحابية بشكل كبير)
         let cachedSections = [];
         let cachedLinks = [];
 
@@ -235,7 +234,7 @@
         }
 
         // ===============================================
-        // زر تحديث الروابط - يمسح كاش الصفحة الرئيسية فقط
+        // التعديل السحري الجذري لتفريغ الكاش في كل المتصفحات
         // ===============================================
         window.refreshData = () => {
             const container = document.getElementById('sectionsContainer');
@@ -243,15 +242,19 @@
                 container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem;"><div class="spinner" style="font-size:3rem; animation: spin 1s infinite linear;">🔄</div><p>جاري تحديث البيانات...</p></div>';
             }
             
-            // مسح الكاش المتعلق بالصفحة الرئيسية فقط (الأقسام والروابط)
-            localStorage.removeItem('sections');
-            localStorage.removeItem('links');
-            localStorage.removeItem('sections_timestamp');
-            localStorage.removeItem('links_timestamp');
+            // 1. استخراج حالة الدارك مود لحفظها
+            const isDark = localStorage.getItem('darkMode');
             
-            showToast('✅ تم تنظيف ذاكرة الروابط.. جاري التحديث');
+            // 2. مسح الكاش المحلي و الجلسة بالكامل لإجبار database.js على نسيان الداتا القديمة
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 3. إرجاع الدارك مود
+            if (isDark !== null) localStorage.setItem('darkMode', isDark);
+            
+            showToast('✅ تم تنظيف ذاكرة المتصفح بالكامل.. جاري التحديث');
 
-            // عمل Hard Reload للصفحة لضمان مسح الـ Memory Cache
+            // 4. التوجيه לרابط جديد وهمي لكسر كاش المتصفح الإجباري (Hard Cache Bypass)
             setTimeout(() => {
                 const newUrl = window.location.pathname + '?refresh=' + new Date().getTime();
                 window.location.href = newUrl;
@@ -528,7 +531,6 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    // جلب بيانات المستخدم من Firestore لتحديد الدور (أدمن أو مستخدم)
                     await DB.init();
                     const usersList = await DB.getAll('users') || [];
                     const foundUser = usersList.find(u => u.email === user.email || String(u.id) === String(user.uid));
