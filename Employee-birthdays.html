@@ -269,17 +269,6 @@
             font-weight: 500;
         }
 
-        .birthday-badge {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            padding: 8px 10px;
-            border-radius: 20px;
-            text-align: center;
-            margin-top: auto;
-            font-weight: bold;
-            color: white;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
-        }
 
         .empty-state {
             text-align: center;
@@ -650,7 +639,6 @@
                         <span class="detail-label">Position:</span>
                         <span class="detail-value">${escapeHtml(emp.position || emp.Position) || 'Not specified'}</span>
                     </div>
-                    <div class="birthday-badge"><i class="fas fa-birthday-cake"></i> Happy Birthday!</div>
                 `;
                 
                 card.appendChild(imageDiv);
