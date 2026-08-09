@@ -234,24 +234,27 @@
             renderSections();
         }
 
-        // زر تحديث الروابط المُعدّل ليمسح الذاكرة بالكامل ويعيد تحميل الصفحة
+        // ===============================================
+        // زر تحديث الروابط - يمسح كاش الصفحة الرئيسية فقط
+        // ===============================================
         window.refreshData = () => {
             const container = document.getElementById('sectionsContainer');
             if (container) {
                 container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem;"><div class="spinner" style="font-size:3rem; animation: spin 1s infinite linear;">🔄</div><p>جاري تحديث البيانات...</p></div>';
             }
             
-            // مسح الكاش المحلي (LocalStorage) لكل المفاتيح المحتملة
+            // مسح الكاش المتعلق بالصفحة الرئيسية فقط (الأقسام والروابط)
             localStorage.removeItem('sections');
             localStorage.removeItem('links');
             localStorage.removeItem('sections_timestamp');
             localStorage.removeItem('links_timestamp');
             
-            showToast('✅ تم تنظيف الذاكرة.. جاري إعادة التحميل');
+            showToast('✅ تم تنظيف ذاكرة الروابط.. جاري التحديث');
 
-            // عمل Hard Reload لمسح الـ Memory Cache الخاص بـ database.js
+            // عمل Hard Reload للصفحة لضمان مسح الـ Memory Cache
             setTimeout(() => {
-                window.location.reload(true);
+                const newUrl = window.location.pathname + '?refresh=' + new Date().getTime();
+                window.location.href = newUrl;
             }, 800);
         };
 
@@ -525,6 +528,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
+                    // جلب بيانات المستخدم من Firestore لتحديد الدور (أدمن أو مستخدم)
                     await DB.init();
                     const usersList = await DB.getAll('users') || [];
                     const foundUser = usersList.find(u => u.email === user.email || String(u.id) === String(user.uid));
