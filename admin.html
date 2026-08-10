@@ -118,6 +118,7 @@
         </div>
     </div>
 
+    <!-- شاشة التحميل للعمليات -->
     <div id="uploadProgressModal">
         <div class="progress-box">
             <h3 id="progressMainTitle" style="color: #f8fafc; font-size: 1.6rem; margin-bottom: 0.5rem; font-weight:800;">⚡ جاري تنفيذ العملية بأمان</h3>
@@ -308,9 +309,9 @@
             } 
             else if (type === 'offjob' || type === 'onjob') {
                 let trType = type === 'onjob' ? 'On Job' : 'Off Job';
-                let wsCourses = XLSX.utils.json_to_sheet([{ 'course_code': 'C100', 'course_name': 'Leadership Skills', 'training_type': trType }]);
-                let wsSessions = XLSX.utils.json_to_sheet([{ 'session_code': 'S1001', 'course_code': 'C100', 'session_date': '2026-05-20', 'start_time': '09:00', 'end_time': '11:00', 'trainer_name': 'Dr. Smith' }]);
-                let wsEnrollments = XLSX.utils.json_to_sheet([{ 'employee_id': '12345', 'session_code': 'S1001', 'enrollment_status': 'Completed', 'score': '95' }]);
+                let wsCourses = XLSX.utils.json_to_sheet([{ 'course_code': 'C100', 'course_name': 'Leadership Skills', 'description': '', 'category': '', 'target_audience': '', 'duration_hours': '', 'training_type': trType, 'status': 'Active' }]);
+                let wsSessions = XLSX.utils.json_to_sheet([{ 'session_code': 'S1001', 'course_code': 'C100', 'trainer_name': 'Dr. Smith', 'session_date': '2026-05-20', 'start_time': '09:00', 'end_time': '11:00', 'location': '', 'max_capacity': '', 'status': 'Completed', 'notes': '' }]);
+                let wsEnrollments = XLSX.utils.json_to_sheet([{ 'employee_id': '12345', 'session_code': 'S1001', 'enrollment_status': 'Completed', 'completion_date': '2026-05-20', 'score': '95', 'feedback': '' }]);
                 XLSX.utils.book_append_sheet(wb, wsCourses, "Courses");
                 XLSX.utils.book_append_sheet(wb, wsSessions, "Sessions");
                 XLSX.utils.book_append_sheet(wb, wsEnrollments, "Enrollments");
@@ -974,7 +975,7 @@
                 </div>
                 <div class="container">
                     
-                    <div class="admin-card" style="background: linear-gradient(to right, #ffffff, #f8fafc); border-right: 5px solid #3182ce;">
+                    <div class="admin-card" style="background: white; border-right: 5px solid #3182ce;">
                         <h3 style="color:#2b6cb0;">🚀 دمج البيانات الذكي (Data Sync Hub)</h3>
                         <p style="margin-bottom:1.5rem; color:#64748b; font-size:0.95rem;">ارفع ملفات الإكسيل أو الصور لتحديث النظام لحظياً.</p>
                         
@@ -1052,13 +1053,61 @@
                     </div>
 
                     <div class="admin-card" style="background: white; border-right: 5px solid #2b7a4b;">
-                        <h3>📁 التصدير والنسخ الاحتياطي (Export & Backup)</h3>
+                        <h3>📁 التصدير المخصص والنسخ الاحتياطي (Advanced Export & Backup)</h3>
+                        
+                        <!-- قسم تصدير الموظفين -->
+                        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">
+                            <h4 style="color:#2b7a4b; margin-bottom: 1rem; font-size: 1.1rem;"><i class="fas fa-users"></i> تصدير بيانات الموظفين</h4>
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                                <select id="empExportType" onchange="toggleEmpExportFilters()" style="flex:1; min-width:250px; padding:0.8rem; border-radius:0.5rem; border:1px solid #cbd5e0; font-size: 0.95rem;">
+                                    <option value="all">تصدير جميع الموظفين (الكل)</option>
+                                    <option value="date">تصدير التعيينات الجديدة (حسب تاريخ التعيين)</option>
+                                    <option value="level">تصدير موظفين حسب المستوى (Level)</option>
+                                    <option value="dept">تصدير موظفين حسب القسم (Department)</option>
+                                </select>
+                                
+                                <div id="empDateFilter" style="display:none; gap:0.5rem; align-items:center; flex-wrap: wrap;">
+                                    <span style="font-weight:bold; color:#4a5568;">من:</span> <input type="date" id="empDateFrom" style="padding:0.7rem; border-radius:0.5rem; border:1px solid #cbd5e0;">
+                                    <span style="font-weight:bold; color:#4a5568;">إلى:</span> <input type="date" id="empDateTo" style="padding:0.7rem; border-radius:0.5rem; border:1px solid #cbd5e0;">
+                                </div>
+                                
+                                <div id="empLevelFilter" style="display:none;">
+                                    <select id="empLevelSelect" style="padding:0.8rem; border-radius:0.5rem; border:1px solid #cbd5e0; min-width: 150px;">
+                                    </select>
+                                </div>
+                                
+                                <div id="empDeptFilter" style="display:none;">
+                                    <select id="empDeptSelect" style="padding:0.8rem; border-radius:0.5rem; border:1px solid #cbd5e0; min-width: 150px;">
+                                    </select>
+                                </div>
+
+                                <button onclick="exportFilteredEmployees()" style="background:#2b7a4b; color:white; border:none; padding:0.8rem 1.5rem; border-radius:0.5rem; cursor:pointer; font-weight:bold; transition: 0.3s;"><i class="fas fa-file-excel"></i> تصدير الموظفين</button>
+                            </div>
+                        </div>
+
+                        <!-- قسم تصدير Off-Job -->
+                        <div style="background: #fdf6e3; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1.5rem; border: 1px solid #fbd38d;">
+                            <h4 style="color:#d69e2e; margin-bottom: 1rem; font-size: 1.1rem;"><i class="fas fa-chalkboard-teacher"></i> تصدير تدريبات Off-Job</h4>
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                                <select id="offJobExportType" onchange="toggleOffJobExportFilters()" style="flex:1; min-width:250px; padding:0.8rem; border-radius:0.5rem; border:1px solid #fbd38d; font-size: 0.95rem;">
+                                    <option value="all">تصدير جميع التدريبات</option>
+                                    <option value="month">تصدير تدريبات شهر معين</option>
+                                </select>
+                                
+                                <div id="offJobMonthFilter" style="display:none;">
+                                    <input type="month" id="offJobMonthInput" style="padding:0.7rem; border-radius:0.5rem; border:1px solid #fbd38d;">
+                                </div>
+
+                                <button onclick="exportFilteredOffJob()" style="background:#d69e2e; color:white; border:none; padding:0.8rem 1.5rem; border-radius:0.5rem; cursor:pointer; font-weight:bold; transition: 0.3s;"><i class="fas fa-file-excel"></i> تصدير Off-Job</button>
+                            </div>
+                        </div>
+
+                        <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 2rem 0;">
+
                         <div class="backup-buttons">
-                            <button onclick="exportData()" style="background:linear-gradient(135deg, #1e3a5f, #2b6cb0); color:white; box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);">📥 تحميل نسخة احتياطية كاملة (JSON)</button>
-                            <button onclick="importData()" style="background:linear-gradient(135deg, #2b7a4b, #1e5a38); color:white; box-shadow: 0 4px 10px rgba(43, 122, 75, 0.3);">📤 استعادة نسخة احتياطية (JSON)</button>
-                            <button onclick="exportExcelData('employees', 'Employees_Export')" style="background:white; border: 2px solid #2b7a4b; color:#2b7a4b;">📊 استخراج إكسيل الموظفين</button>
-                            <button onclick="exportExcelData('offjob_enrollments', 'OffJob_Export')" style="background:white; border: 2px solid #d69e2e; color:#d69e2e;">📊 استخراج إكسيل Off-Job</button>
-                            <button onclick="exportExcelData('onjob_enrollments', 'OnJob_Export')" style="background:white; border: 2px solid #3182ce; color:#3182ce;">📊 استخراج إكسيل On-Job</button>
+                            <button onclick="exportExcelData('onjob_enrollments', 'OnJob_Export')" style="background:white; border: 2px solid #3182ce; color:#3182ce;">📊 تصدير تدريبات On-Job بالكامل</button>
+                            <button onclick="exportData()" style="background:linear-gradient(135deg, #1e3a5f, #2b6cb0); color:white; box-shadow: 0 4px 10px rgba(30, 58, 95, 0.3);">📥 تحميل نسخة احتياطية كاملة للنظام (JSON)</button>
+                            <button onclick="importData()" style="background:linear-gradient(135deg, #2b7a4b, #1e5a38); color:white; box-shadow: 0 4px 10px rgba(43, 122, 75, 0.3);">📤 استعادة نسخة احتياطية للنظام (JSON)</button>
                         </div>
                     </div>
 
@@ -1164,6 +1213,18 @@
             `;
             
             renderSectionsList(); updateLinksSectionDropdown(); renderLinksList(); renderMaterialsList(); renderUsersList(); renderScheduleList();
+
+            // تجهيز بيانات القوائم المنسدلة (الأقسام والمستويات) لفلتر التصدير
+            setTimeout(() => {
+                const depts = [...new Set(currentData.employees.map(e => e.department).filter(Boolean))].sort();
+                const levels = [...new Set(currentData.employees.map(e => e.level).filter(Boolean))].sort();
+                
+                const deptSelect = document.getElementById('empDeptSelect');
+                if(deptSelect) deptSelect.innerHTML = depts.map(d => `<option value="${d}">${d}</option>`).join('');
+                
+                const levelSelect = document.getElementById('empLevelSelect');
+                if(levelSelect) levelSelect.innerHTML = levels.map(l => `<option value="${l}">${l}</option>`).join('');
+            }, 100);
         }
 
         window.addSection = addSection; window.deleteSection = deleteSection; window.openEditSection = openEditSection; window.saveSectionEdit = saveSectionEdit;
@@ -1174,6 +1235,159 @@
         window.closeModal = closeModal; window.switchTab = switchTab; window.exportData = exportData; window.importData = importData;
         window.clearAllCollectionData = clearAllCollectionData; window.clearAllOnJobData = clearAllOnJobData;
         window.logout = logout;
+
+        // ===== دوال التصدير المخصص (Export Logic) =====
+        window.toggleEmpExportFilters = () => {
+            const type = document.getElementById('empExportType').value;
+            document.getElementById('empDateFilter').style.display = type === 'date' ? 'flex' : 'none';
+            document.getElementById('empLevelFilter').style.display = type === 'level' ? 'block' : 'none';
+            document.getElementById('empDeptFilter').style.display = type === 'dept' ? 'block' : 'none';
+        };
+
+        window.toggleOffJobExportFilters = () => {
+            const type = document.getElementById('offJobExportType').value;
+            document.getElementById('offJobMonthFilter').style.display = type === 'month' ? 'block' : 'none';
+        };
+
+        window.exportFilteredEmployees = () => {
+            const type = document.getElementById('empExportType').value;
+            let dataToExport = [...currentData.employees];
+            let title = "Employees_Export";
+
+            if (type === 'date') {
+                const from = document.getElementById('empDateFrom').value;
+                const to = document.getElementById('empDateTo').value;
+                if(!from || !to) { showToast('⚠️ يرجى تحديد تاريخ البداية والنهاية', true); return; }
+                dataToExport = dataToExport.filter(e => e.hireDate && e.hireDate >= from && e.hireDate <= to);
+                title += `_NewHires_${from}_to_${to}`;
+            } else if (type === 'level') {
+                const lvl = document.getElementById('empLevelSelect').value;
+                dataToExport = dataToExport.filter(e => e.level === lvl);
+                title += `_Level_${lvl}`;
+            } else if (type === 'dept') {
+                const dept = document.getElementById('empDeptSelect').value;
+                dataToExport = dataToExport.filter(e => e.department === dept);
+                title += `_Dept_${dept}`;
+            } else {
+                title += `_All`;
+            }
+
+            if(dataToExport.length === 0) { showToast('⚠️ لا توجد بيانات مطابقة للفلتر', true); return; }
+            
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Employees');
+            XLSX.writeFile(wb, `${title}.xlsx`);
+            showToast('✅ تم التصدير بنجاح');
+        };
+
+        window.exportFilteredOffJob = async () => {
+            try {
+                showToast('⏳ جاري تحضير البيانات...', false);
+                
+                // جلب كل البيانات المطلوبة
+                let allEnrollments = await DB.getAll('offjob_enrollments') || [];
+                let allSessions = await DB.getAll('offjob_sessions') || [];
+                let allCourses = await DB.getAll('offjob_courses') || [];
+                
+                const type = document.getElementById('offJobExportType').value;
+                let title = "OffJob_Export";
+                
+                let filteredEnrollments = allEnrollments;
+                let filteredSessions = allSessions;
+                let filteredCourses = allCourses;
+
+                if (type === 'month') {
+                    const monthVal = document.getElementById('offJobMonthInput').value; // YYYY-MM
+                    if (!monthVal) { showToast('⚠️ يرجى تحديد الشهر والسنة', true); return; }
+                    
+                    // 1. فلترة الجلسات التي تمت في هذا الشهر
+                    filteredSessions = allSessions.filter(s => s.session_date && String(s.session_date).startsWith(monthVal));
+                    
+                    if(filteredSessions.length === 0) {
+                        showToast('⚠️ لا توجد جلسات أو تدريبات مطابقة لهذا الشهر', true); 
+                        return;
+                    }
+
+                    // استخراج أكواد الجلسات المطابقة
+                    const sessionCodes = filteredSessions.map(s => String(s.session_code));
+                    
+                    // 2. فلترة التسجيلات بناءً على هذه الجلسات
+                    filteredEnrollments = allEnrollments.filter(e => sessionCodes.includes(String(e.session_code)));
+                    
+                    // 3. فلترة الكورسات بناءً على هذه الجلسات
+                    const courseCodes = [...new Set(filteredSessions.map(s => String(s.course_code)))];
+                    filteredCourses = allCourses.filter(c => courseCodes.includes(String(c.course_code)));
+
+                    title += `_${monthVal}`;
+                } else {
+                    title += `_All`;
+                }
+
+                if(filteredEnrollments.length === 0 && filteredSessions.length === 0) { 
+                    showToast('⚠️ لا توجد بيانات لتصديرها', true); 
+                    return; 
+                }
+
+                // تنظيف البيانات (إزالة الحقول الزائدة مثل id) لتطابق النموذج الأصلي قدر الإمكان
+                const cleanCourses = filteredCourses.map(c => ({
+                    course_code: c.course_code,
+                    course_name: c.course_name,
+                    description: c.description || '',
+                    category: c.category || '',
+                    target_audience: c.target_audience || '',
+                    duration_hours: c.duration_hours || '',
+                    training_type: c.training_type || 'Off Job',
+                    status: c.status || 'Active'
+                }));
+
+                const cleanSessions = filteredSessions.map(s => ({
+                    session_code: s.session_code,
+                    course_code: s.course_code,
+                    trainer_name: s.trainer_name || '',
+                    session_date: s.session_date || '',
+                    start_time: s.start_time || '',
+                    end_time: s.end_time || '',
+                    location: s.location || '',
+                    max_capacity: s.max_capacity || '',
+                    status: s.status || 'Completed',
+                    notes: s.notes || ''
+                }));
+
+                const cleanEnrollments = filteredEnrollments.map(e => ({
+                    employee_id: e.employee_id,
+                    session_code: e.session_code,
+                    enrollment_status: e.enrollment_status || 'Completed',
+                    completion_date: e.completion_date || (e.registered_at ? String(e.registered_at).substring(0,10) : ''),
+                    score: e.score !== null && e.score !== undefined ? e.score : '',
+                    feedback: e.feedback || ''
+                }));
+
+                const wb = XLSX.utils.book_new();
+                
+                if (cleanCourses.length > 0) {
+                    const wsCourses = XLSX.utils.json_to_sheet(cleanCourses);
+                    XLSX.utils.book_append_sheet(wb, wsCourses, "Courses");
+                }
+                
+                if (cleanSessions.length > 0) {
+                    const wsSessions = XLSX.utils.json_to_sheet(cleanSessions);
+                    XLSX.utils.book_append_sheet(wb, wsSessions, "Sessions");
+                }
+                
+                if (cleanEnrollments.length > 0) {
+                    const wsEnrollments = XLSX.utils.json_to_sheet(cleanEnrollments);
+                    XLSX.utils.book_append_sheet(wb, wsEnrollments, "Enrollments");
+                }
+
+                XLSX.writeFile(wb, `${title}.xlsx`);
+                showToast('✅ تم تصدير بيانات Off-Job بنجاح');
+
+            } catch(e) {
+                console.error(e);
+                showToast('❌ حدث خطأ أثناء التصدير', true);
+            }
+        };
 
         // ================== المصادقة ==================
         onAuthStateChanged(auth, async (user) => {
