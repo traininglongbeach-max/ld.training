@@ -165,11 +165,13 @@
             showToast('🔄 تم التحديث بنجاح');
         };
 
-        // ==== التحقق من وجود الكود في الكورسات أو السيشنات ====
-        function isCodeExists(code, excludeCourseCode = null, excludeSessionCode = null) {
-            const courseExists = courses.some(c => parseInt(c.course_code) === code && c.course_code !== excludeCourseCode);
-            const sessionExists = sessions.some(s => parseInt(s.session_code) === code && s.session_code !== excludeSessionCode);
-            return courseExists || sessionExists;
+        // ==== التحقق من وجود الكود ====
+        function isCourseCodeExists(code) {
+            return courses.some(c => parseInt(c.course_code) === code);
+        }
+
+        function isSessionCodeExists(code) {
+            return sessions.some(s => parseInt(s.session_code) === code);
         }
 
         // حفظ وتحديث مباشر لجدول الكورسات في Firestore
@@ -197,7 +199,7 @@
             };
             
             if (editMode) {
-                if (newCodeNum !== oldCode && isCodeExists(newCodeNum)) {
+                if (newCodeNum !== oldCode && isCourseCodeExists(newCodeNum)) {
                     showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
                     return;
                 }
@@ -211,7 +213,7 @@
                 if (index !== -1) courses[index] = data;
                 showToast('✅ تم تحديث الكورس بالسيرفر');
             } else {
-                if (isCodeExists(newCodeNum)) {
+                if (isCourseCodeExists(newCodeNum)) {
                     showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
                     return;
                 }
@@ -261,7 +263,7 @@
             };
             
             if (editMode) {
-                if (newCodeNum !== oldCode && isCodeExists(newCodeNum)) {
+                if (newCodeNum !== oldCode && isSessionCodeExists(newCodeNum)) {
                     showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
                     return;
                 }
@@ -275,7 +277,7 @@
                 if (index !== -1) sessions[index] = data;
                 showToast('✅ تم تحديث الجلسة بالسيرفر');
             } else {
-                if (isCodeExists(newCodeNum)) {
+                if (isSessionCodeExists(newCodeNum)) {
                     showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
                     return;
                 }
