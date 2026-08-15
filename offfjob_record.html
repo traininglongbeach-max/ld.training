@@ -117,6 +117,19 @@
         .footer { text-align: center; padding: 1rem; color: #718096; font-size: 0.7rem; margin-top: 1rem; }
         .toast-msg { position: fixed; bottom: 1rem; right: 1rem; left: 1rem; background: #2b7a4b; color: white; padding: 0.6rem; border-radius: 2rem; text-align: center; z-index: 1000; font-size: 0.8rem; max-width: calc(100% - 2rem); margin: 0 auto; }
         .toast-msg.error { background: #e53e3e; }
+        
+        /* ستايلات عرض الكورسات */
+        .courses-list-card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+        .course-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 1rem; transition: 0.2s; }
+        .course-item:hover { background: #f7fafc; }
+        .course-info { flex: 1; }
+        .course-info .course-code { display: inline-block; background: #2b7a4b; color: white; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.4rem; }
+        .course-info .course-name { font-weight: bold; color: #1e3a5f; font-size: 1rem; }
+        .course-info .course-meta { font-size: 0.8rem; color: #718096; margin-top: 0.4rem; }
+        .course-actions button { margin-right: 0.5rem; padding: 0.4rem 0.8rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 0.8rem; }
+        .course-actions .btn-edit { background: #ed8936; }
+        .course-actions .btn-delete { background: #e53e3e; }
+        .course-actions .btn-sessions { background: #4299e1; }
     </style>
 </head>
 <body>
@@ -139,6 +152,20 @@
         let enrollments = [];
         let searchTerm = "";
         
+        // دالة لتنظيف النصوص لتجنب أخطاء المتصفح
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // دالة توليد التاريخ الحالي المحلي
+        function getLocalISODate() {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            return (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1).split('T')[0];
+        }
+        
         function showToast(msg, isError = false) { 
             const toast = document.createElement('div'); 
             toast.className = 'toast-msg' + (isError ? ' error' : ''); 
@@ -147,14 +174,13 @@
             setTimeout(() => toast.remove(), 3000); 
         }
         
-        // جلب البيانات بشكل حي من Firestore بدلاً من الاستبدال الشامل
+        // جلب البيانات بشكل حي من Firestore
         async function loadAllDataFromDB() {
             await DB.init();
             courses = await DB.getAll('offjob_courses') || [];
             sessions = await DB.getAll('offjob_sessions') || [];
             enrollments = await DB.getAll('offjob_enrollments') || [];
             employeesList = await DB.getAll('employees') || [];
-            
             console.log(`📊 تم تحميل البيانات من السيرفر بنجاح`);
         }
         
@@ -166,12 +192,12 @@
         };
 
         // ==== التحقق من وجود الكود ====
-        function isCourseCodeExists(code) {
-            return courses.some(c => parseInt(c.course_code) === code);
+        function isCourseCodeExists(code, excludeCode = null) {
+            return courses.some(c => parseInt(c.course_code) === code && parseInt(c.course_code) !== excludeCode);
         }
 
-        function isSessionCodeExists(code) {
-            return sessions.some(s => parseInt(s.session_code) === code);
+        function isSessionCodeExists(code, excludeCode = null) {
+            return sessions.some(s => parseInt(s.session_code) === code && parseInt(s.session_code) !== excludeCode);
         }
 
         // حفظ وتحديث مباشر لجدول الكورسات في Firestore
@@ -200,7 +226,7 @@
             
             if (editMode) {
                 if (newCodeNum !== oldCode && isCourseCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل لكورس آخر!`, true);
                     return;
                 }
                 if (newCodeNum !== oldCode) {
@@ -209,12 +235,12 @@
                 } else {
                     await DB.update('offjob_courses', data);
                 }
-                const index = courses.findIndex(c => c.course_code === oldCode);
+                const index = courses.findIndex(c => parseInt(c.course_code) === oldCode);
                 if (index !== -1) courses[index] = data;
-                showToast('✅ تم تحديث الكورس بالسيرفر');
+                showToast('✅ تم تحديث الكورس بنجاح');
             } else {
                 if (isCourseCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل لكورس آخر!`, true);
                     return;
                 }
                 await DB.insert('offjob_courses', data);
@@ -228,8 +254,13 @@
 
         window.deleteCourse = async (courseCode) => {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا الكورس من السيرفر نهائياً؟')) return;
+            const relatedSessions = sessions.filter(s => parseInt(s.course_code) === parseInt(courseCode));
+            if(relatedSessions.length > 0) {
+                if(!confirm(`⚠️ انتباه: هذا الكورس مرتبط بـ ${relatedSessions.length} جلسات! حذفه قد يسبب مشاكل بالبيانات. هل تريد الاستمرار في الحذف؟`)) return;
+            }
+
             await DB.delete('offjob_courses', String(courseCode));
-            courses = courses.filter(c => c.course_code != courseCode);
+            courses = courses.filter(c => parseInt(c.course_code) !== parseInt(courseCode));
             renderPage();
             showToast('🗑️ تم الحذف بنجاح');
         };
@@ -264,7 +295,7 @@
             
             if (editMode) {
                 if (newCodeNum !== oldCode && isSessionCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل لجلسة أخرى!`, true);
                     return;
                 }
                 if (newCodeNum !== oldCode) {
@@ -273,12 +304,20 @@
                 } else {
                     await DB.update('offjob_sessions', data);
                 }
-                const index = sessions.findIndex(s => s.session_code === oldCode);
+                const index = sessions.findIndex(s => parseInt(s.session_code) === oldCode);
                 if (index !== -1) sessions[index] = data;
-                showToast('✅ تم تحديث الجلسة بالسيرفر');
+                
+                const sessionsModal = document.getElementById('sessionsModal');
+                if (sessionsModal.style.display === 'flex') {
+                    const currentCourseCode = parseInt(sessionsModal.dataset.currentCourseCode);
+                    const currentCourseName = sessionsModal.dataset.currentCourseName;
+                    window.showCourseSessions(currentCourseCode, currentCourseName);
+                }
+
+                showToast('✅ تم تحديث الجلسة بنجاح');
             } else {
                 if (isSessionCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل لجلسة أخرى!`, true);
                     return;
                 }
                 await DB.insert('offjob_sessions', data);
@@ -293,10 +332,15 @@
         window.deleteSession = async (sessionCode) => {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذه الجلسة من السيرفر نهائياً؟')) return;
             await DB.delete('offjob_sessions', String(sessionCode));
-            sessions = sessions.filter(s => s.session_code != sessionCode);
+            sessions = sessions.filter(s => parseInt(s.session_code) !== parseInt(sessionCode));
             renderPage();
-            // إغلاق مودال الجلسات إذا كان مفتوحاً
-            document.getElementById('sessionsModal').style.display = 'none';
+            
+            const sessionsModal = document.getElementById('sessionsModal');
+            if (sessionsModal.style.display === 'flex') {
+                const currentCourseCode = parseInt(sessionsModal.dataset.currentCourseCode);
+                const currentCourseName = sessionsModal.dataset.currentCourseName;
+                window.showCourseSessions(currentCourseCode, currentCourseName);
+            }
             showToast('🗑️ تم الحذف بنجاح');
         };
 
@@ -322,7 +366,7 @@
                 showToast('❌ الأكواد يجب أن تكون أرقاماً صحيحة', true); return;
             }
             
-            if (!sessions.some(s => s.session_code === sessionCode)) {
+            if (!sessions.some(s => parseInt(s.session_code) === sessionCode)) {
                 showToast(`❌ الجلسة ${sessionCode} غير موجودة!`, true); return;
             }
             
@@ -337,7 +381,7 @@
                 session_code: sessionCode,
                 enrollment_status: String(status),
                 score: scoreRaw !== '' ? parseFloat(scoreRaw) : null,
-                completion_date: new Date().toISOString().slice(0,10),
+                completion_date: getLocalISODate(),
                 feedback: '',
                 registered_manually: true,
                 registered_at: new Date().toISOString()
@@ -350,7 +394,6 @@
             showToast(`✅ تم تسجيل الموظف بالسيرفر بنجاح`);
             document.getElementById('quickEmployeeId').value = '';
             document.getElementById('quickScore').value = '';
-            renderPage();
         };
         
         window.batchAddEnrollments = async () => {
@@ -362,7 +405,7 @@
             if (!sessionCodeRaw) { showToast('⚠️ يرجى اختيار الجلسة أولاً', true); return; }
             const sessionCode = parseInt(sessionCodeRaw);
             
-            if (!sessions.some(s => s.session_code === sessionCode)) {
+            if (!sessions.some(s => parseInt(s.session_code) === sessionCode)) {
                 showToast(`❌ الجلسة ${sessionCode} غير موجودة!`, true); return;
             }
             
@@ -385,13 +428,13 @@
                             session_code: sessionCode,
                             enrollment_status: String(status),
                             score: score,
-                            completion_date: new Date().toISOString().slice(0,10),
+                            completion_date: getLocalISODate(),
                             feedback: '',
                             registered_manually: true,
                             registered_at: new Date().toISOString()
                         };
                         newEnrollments.push(enrollmentData);
-                        enrollments.push(enrollmentData); // تحديث القائمة المحلية
+                        enrollments.push(enrollmentData); 
                     }
                 }
             });
@@ -407,7 +450,6 @@
             showToast(msg);
             document.getElementById('batchEmployeeIds').value = '';
             document.getElementById('batchScore').value = '';
-            renderPage();
         };
         
         window.deleteEnrollmentByCode = async () => {
@@ -431,7 +473,6 @@
             document.getElementById('deleteSessionCode').value = '';
             document.getElementById('deleteEmployeeId').value = '';
             showToast('✅ تم الحذف من السيرفر بنجاح');
-            renderPage();
         };
 
         window.exportEnrollmentsToExcel = () => {
@@ -456,12 +497,12 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sessionsData), 'Sessions');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(enrollmentsData), 'Enrollments');
             
-            XLSX.writeFile(wb, `OffJob_System_Backup_${new Date().toISOString().slice(0,10)}.xlsx`);
+            XLSX.writeFile(wb, `OffJob_System_Backup_${getLocalISODate()}.xlsx`);
             showToast('📥 تم التصدير بنجاح');
         };
         
         window.showCourseSessions = (courseCode, courseName) => {
-            const relatedSessions = sessions.filter(s => s.course_code == courseCode);
+            const relatedSessions = sessions.filter(s => parseInt(s.course_code) === parseInt(courseCode));
             relatedSessions.sort((a, b) => new Date(b.session_date) - new Date(a.session_date));
             
             let sessionsHtml = '';
@@ -475,12 +516,12 @@
                             <div class="session-info">
                                 <span class="session-code">🎯 ${session.session_code}</span>
                                 <span class="session-date">📅 ${session.session_date || 'غير محدد'}</span>
-                                ${session.trainer_name ? `<span class="session-trainer">👨‍🏫 المدرب: ${session.trainer_name}</span>` : ''}
+                                ${session.trainer_name ? `<span class="session-trainer">👨‍🏫 المدرب: ${escapeHtml(session.trainer_name)}</span>` : ''}
                                 ${session.start_time ? `<span class="session-time">🕐 ${session.start_time} - ${session.end_time}</span>` : ''}
                             </div>
                             <div class="session-actions">
-                                <button onclick='window.openSessionModal(${JSON.stringify(session)})' style="background:#ed8936;">✏️ تعديل</button>
-                                <button onclick='window.deleteSession(${session.session_code})' style="background:#e53e3e;">🗑️ حذف</button>
+                                <button onclick="window.openSessionModal('${session.session_code}')" style="background:#ed8936;">✏️ تعديل</button>
+                                <button onclick="window.deleteSession('${session.session_code}')" style="background:#e53e3e;">🗑️ حذف</button>
                             </div>
                         </div>
                     `;
@@ -490,7 +531,11 @@
             
             document.getElementById('sessionsModalTitle').innerText = `📚 جلسات كورس: ${courseCode} - ${courseName}`;
             document.getElementById('sessionsModalContent').innerHTML = sessionsHtml;
-            document.getElementById('sessionsModal').style.display = 'flex';
+            
+            const modal = document.getElementById('sessionsModal');
+            modal.dataset.currentCourseCode = courseCode;
+            modal.dataset.currentCourseName = courseName;
+            modal.style.display = 'flex';
         };
 
         function getLastCodes() {
@@ -511,7 +556,58 @@
             `;
         }
 
-        window.openCourseModal = (item = null) => {
+        // دالة لعرض قائمة الكورسات بالكامل
+        function renderCoursesList() {
+            let filteredCourses = [...courses].sort((a, b) => parseInt(a.course_code) - parseInt(b.course_code));
+            
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filteredCourses = filteredCourses.filter(c => 
+                    String(c.course_code).includes(term) || 
+                    (c.course_name && c.course_name.toLowerCase().includes(term))
+                );
+            }
+
+            if (filteredCourses.length === 0) {
+                return `<div class="courses-list-card"><div class="empty-msg">📭 لا توجد كورسات متاحة حالياً.</div></div>`;
+            }
+
+            let html = `
+                <div class="courses-list-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #e2e8f0; margin-bottom: 1.5rem; padding-bottom: 0.8rem;">
+                        <h3 style="color: #1e3a5f; font-size: 1.3rem; font-weight: 800; margin:0; border:none; padding:0;">📚 قائمة الكورسات (${filteredCourses.length})</h3>
+                    </div>
+                    <div class="courses-list">
+            `;
+            
+            filteredCourses.forEach(course => {
+                const sessionCount = sessions.filter(s => parseInt(s.course_code) === parseInt(course.course_code)).length;
+                html += `
+                    <div class="course-item">
+                        <div class="course-info">
+                            <span class="course-code">${course.course_code}</span>
+                            <div class="course-name">${escapeHtml(course.course_name)}</div>
+                            <div class="course-meta">
+                                ${course.category ? `<span>🏷️ ${escapeHtml(course.category)}</span> | ` : ''}
+                                <span>⏱️ ${course.duration_hours || 0} ساعات</span> | 
+                                <span>🎯 ${sessionCount} جلسات</span>
+                            </div>
+                        </div>
+                        <div class="course-actions">
+                            <button class="btn-sessions" onclick="window.showCourseSessions('${course.course_code}', '${escapeHtml(course.course_name).replace(/'/g, "\\'")}')">👁️ عرض الجلسات</button>
+                            <button class="btn-edit" onclick="window.openCourseModal('${course.course_code}')">✏️ تعديل</button>
+                            <button class="btn-delete" onclick="window.deleteCourse('${course.course_code}')">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div></div>`;
+            return html;
+        }
+
+        window.openCourseModal = (code = null) => {
+            const item = code ? courses.find(c => String(c.course_code) === String(code)) : null;
             document.getElementById('courseModalTitle').innerText = item ? '✏️ تعديل كورس' : '➕ إضافة كورس جديد';
             document.getElementById('courseCode').value = item?.course_code || '';
             document.getElementById('courseName').value = item?.course_name || '';
@@ -526,10 +622,11 @@
             document.getElementById('courseModal').style.display = 'flex';
         };
         
-        window.openSessionModal = (item = null) => {
+        window.openSessionModal = (code = null) => {
+            const item = code ? sessions.find(s => String(s.session_code) === String(code)) : null;
             document.getElementById('sessionModalTitle').innerText = item ? '✏️ تعديل جلسة' : '➕ إضافة جلسة جديدة';
             document.getElementById('sessionCode').value = item?.session_code || '';
-            document.getElementById('sessionDate').value = item?.session_date || '';
+            document.getElementById('sessionDate').value = (item && item.session_date) ? String(item.session_date).substring(0,10) : '';
             document.getElementById('trainerName').value = item?.trainer_name || '';
             document.getElementById('sessionStartTime').value = item?.start_time || '';
             document.getElementById('sessionEndTime').value = item?.end_time || '';
@@ -538,8 +635,8 @@
             document.getElementById('sessionStatus').value = item?.status || 'Active';
             document.getElementById('sessionNotes').value = item?.notes || '';
             
-            document.getElementById('sessionCourseCode').innerHTML = '<option value="">اختر الكورس</option>' + [...courses].sort((a, b) => a.course_code - b.course_code).map(c => 
-                `<option value="${c.course_code}" ${item?.course_code == c.course_code ? 'selected' : ''}>${c.course_code} - ${c.course_name}</option>`
+            document.getElementById('sessionCourseCode').innerHTML = '<option value="">اختر الكورس</option>' + [...courses].sort((a, b) => parseInt(a.course_code) - parseInt(b.course_code)).map(c => 
+                `<option value="${c.course_code}" ${item?.course_code == c.course_code ? 'selected' : ''}>${c.course_code} - ${escapeHtml(c.course_name)}</option>`
             ).join('');
             
             document.getElementById('sessionModal').dataset.editMode = item ? 'true' : 'false';
@@ -558,7 +655,23 @@
             const html = `
                 ${renderLastCodesCard()}
                 
-<div class="enrollment-card">
+                <div class="action-bar">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 بحث في الكورسات..." value="${searchTerm}" onkeyup="if(event.key==='Enter') window.searchData()">
+                        <button onclick="window.searchData()">بحث</button>
+                        ${searchTerm ? '<button onclick="window.clearSearch()" style="background:#718096;">✖️ إلغاء</button>' : ''}
+                    </div>
+                    <div class="action-buttons">
+                        <button onclick="window.addCourse()" style="background:#2b7a4b;">📚 إضافة كورس</button>
+                        <button onclick="window.addSession()" style="background:#4299e1;">🎯 إضافة جلسة</button>
+                        <button onclick="window.refreshFromLocal()" style="background:#9f7aea;">🔄 تحديث من السيرفر</button>
+                        <button onclick="window.exportEnrollmentsToExcel()" style="background:#ed8936;">📤 تصدير لـ Excel</button>
+                    </div>
+                </div>
+
+                ${renderCoursesList()}
+                
+                <div class="enrollment-card">
                     <h3>⚡ تسجيل سريع لمتدرب</h3>
                     <div class="enrollment-form">
                         <div class="form-group">
@@ -606,20 +719,6 @@
                         <div class="form-group"><label>📝 كود الجلسة</label><input type="number" id="deleteSessionCode" placeholder="مثال: 2100"></div>
                         <div class="form-group"><label>👤 كود الموظف</label><input type="number" id="deleteEmployeeId" placeholder="مثال: 12306"></div>
                         <button onclick="window.deleteEnrollmentByCode()">🗑️ حذف التسجيل</button>
-                    </div>
-                </div>
-                
-                <div class="action-bar">
-                    <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="🔍 بحث في الكورسات..." value="${searchTerm}" onkeyup="if(event.key==='Enter') window.searchData()">
-                        <button onclick="window.searchData()">بحث</button>
-                        ${searchTerm ? '<button onclick="window.clearSearch()" style="background:#718096;">✖️ إلغاء</button>' : ''}
-                    </div>
-                    <div class="action-buttons">
-                        <button onclick="window.addCourse()" style="background:#2b7a4b;">📚 إضافة كورس</button>
-                        <button onclick="window.addSession()" style="background:#4299e1;">🎯 إضافة جلسة</button>
-                        <button onclick="window.refreshFromLocal()" style="background:#9f7aea;">🔄 تحديث من السيرفر</button>
-                        <button onclick="window.exportEnrollmentsToExcel()" style="background:#ed8936;">📤 تصدير لـ Excel</button>
                     </div>
                 </div>
             `;
@@ -698,7 +797,14 @@
                     `;
                     renderPage();
                 } catch(error) {
-                    document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px; color:#e53e3e;">❌ خطأ في الاتصال بقاعدة البيانات</div>`;
+                    console.error("تفاصيل الخطأ:", error);
+                    document.getElementById('app').innerHTML = `
+                        <div style="text-align:center; padding:50px;">
+                            <h2 style="color:#e53e3e; margin-bottom:10px;">❌ خطأ في الاتصال بقاعدة البيانات</h2>
+                            <p style="color:#4a5568; font-size:14px;">يرجى التأكد من اتصالك بالإنترنت أو مراجعة صلاحيات Firebase.</p>
+                            <p style="color:#a0aec0; font-size:12px; margin-top:10px; direction:ltr;">Error details in console</p>
+                        </div>
+                    `;
                 }
             } else {
                 window.location.href = 'login.html';
