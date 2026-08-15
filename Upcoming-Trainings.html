@@ -35,6 +35,13 @@
         .quick-filter-bar .filter-btn:hover { border-color: #2b7a4b; color: #2b7a4b; }
         .quick-filter-bar .filter-btn.active { background: #2b7a4b; color: white; border-color: #2b7a4b; }
         .quick-filter-bar .filter-btn.active-today { background: #f59e0b; color: white; border-color: #f59e0b; }
+        
+        .quick-filter-bar .filter-group { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .quick-filter-bar .month-box { display: flex; align-items: center; gap: 0.5rem; border: 2px solid #e2e8f0; border-radius: 2rem; padding: 0.35rem 1rem; background: #f8fafc; }
+        .quick-filter-bar .month-box input { border: none; background: transparent; outline: none; font-weight: 600; color: #1e3a5f; font-family: 'Tajawal', sans-serif; }
+        .quick-filter-bar .month-box button { background: #e53e3e; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; padding: 0; transition: 0.3s; }
+        .quick-filter-bar .month-box button:hover { transform: scale(1.1); }
+        
         .quick-filter-bar .search-box { display: flex; gap: 0.5rem; align-items: center; }
         .quick-filter-bar .search-box input { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.85rem; width: 220px; outline: none; }
         .quick-filter-bar .search-box input:focus { border-color: #2b7a4b; }
@@ -112,6 +119,7 @@
             .quick-filter-bar { flex-direction: column; align-items: stretch; }
             .quick-filter-bar .search-box input { width: 100%; }
             .quick-filter-bar .filter-buttons { justify-content: center; }
+            .quick-filter-bar .filter-group { flex-direction: column; align-items: stretch; }
             .stats-grid { grid-template-columns: repeat(3, 1fr); }
             .cards-grid { grid-template-columns: 1fr; }
             .page-header { flex-direction: column; text-align: center; }
@@ -136,8 +144,15 @@
         // ========== Variables ==========
         let allSessions = [];
         let filteredSessions = [];
-        let currentFilter = 'today';
+        let currentFilter = 'all'; // التعديل: الافتراضي هو عرض كل جلسات الشهر المختار
         let searchTerm = "";
+        
+        // التعديل: توليد الشهر الحالي تلقائياً ليكون القيمة الافتراضية للفلتر
+        const todayObj = new Date();
+        const currentYear = todayObj.getFullYear();
+        const currentMonth = String(todayObj.getMonth() + 1).padStart(2, '0');
+        let selectedMonth = `${currentYear}-${currentMonth}`; // YYYY-MM
+        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -217,8 +232,15 @@
 
         // ========== Apply Filters ==========
         function applyFilters() {
-            let filtered = [...allSessions];
+            // 1. فلتر الشهر يؤثر على الإحصائيات وعلى كل القوائم
+            let baseSessions = [...allSessions];
+            if (selectedMonth) {
+                baseSessions = baseSessions.filter(s => s.date && String(s.date).startsWith(selectedMonth));
+            }
 
+            let filtered = [...baseSessions];
+
+            // 2. فلاتر التبويبات (اليوم، الغد، الأسبوع، ...)
             if (currentFilter === 'today') {
                 filtered = filtered.filter(s => getDateDiff(s.date) === 0);
             } else if (currentFilter === 'tomorrow') {
@@ -238,6 +260,7 @@
                 filtered = filtered.filter(s => s.status === 'postponed');
             }
 
+            // 3. فلتر البحث النصي
             if (searchTerm.trim()) {
                 const term = searchTerm.trim().toLowerCase();
                 filtered = filtered.filter(s =>
@@ -247,6 +270,7 @@
                 );
             }
 
+            // ترتيب زمني
             filtered.sort((a, b) => {
                 const da = parseDateSafely(a.date);
                 const db = parseDateSafely(b.date);
@@ -256,7 +280,7 @@
             });
 
             filteredSessions = filtered;
-            return filtered;
+            return baseSessions; // تُرجع البيانات بعد فلتر الشهر لحساب الإحصائيات
         }
 
         // ========== Status Update Functions ==========
@@ -307,14 +331,16 @@
         // ========== Render Page ==========
         async function renderPage() {
             const { count, lastUpdate } = await loadDataFromDB();
-            applyFilters();
+            
+            // تطبيق الفلاتر والحصول على البيانات الأساسية للشهر المحدد
+            const baseSessions = applyFilters();
 
-            const total = allSessions.length;
-            const completed = allSessions.filter(s => s.status === 'completed').length;
-            const cancelled = allSessions.filter(s => s.status === 'cancelled').length;
-            const postponed = allSessions.filter(s => s.status === 'postponed').length;
-            const pending = allSessions.filter(s => s.status !== 'completed' && s.status !== 'cancelled' && s.status !== 'postponed').length;
-            const todaySessions = allSessions.filter(s => getDateDiff(s.date) === 0).length;
+            const total = baseSessions.length;
+            const completed = baseSessions.filter(s => s.status === 'completed').length;
+            const cancelled = baseSessions.filter(s => s.status === 'cancelled').length;
+            const postponed = baseSessions.filter(s => s.status === 'postponed').length;
+            const pending = baseSessions.filter(s => s.status !== 'completed' && s.status !== 'cancelled' && s.status !== 'postponed').length;
+            const todaySessions = baseSessions.filter(s => getDateDiff(s.date) === 0).length;
             const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
             function renderCard(s) {
@@ -438,7 +464,7 @@
             if (allSessions.length === 0) {
                 contentHtml = `<div class="no-data"><span class="icon">📭</span>No training schedule data available<br><span style="font-size:0.8rem; color:#a0aec0;">Please import the monthly schedule from the Admin Dashboard</span></div>`;
             } else if (filteredSessions.length === 0) {
-                contentHtml = `<div class="no-data"><span class="icon">🔍</span>No sessions match your search</div>`;
+                contentHtml = `<div class="no-data"><span class="icon">🔍</span>No sessions match your search or filters</div>`;
             } else if (['all', 'completed', 'pending', 'cancelled', 'postponed'].includes(currentFilter)) {
                 contentHtml = renderGroupedSessions();
             } else {
@@ -483,10 +509,17 @@
                         <div class="filter-buttons">
                             ${filterBtns}
                         </div>
-                        <div class="search-box">
-                            <input type="text" id="searchInput" placeholder="🔍 Search..." value="${searchTerm}" onkeyup="if(event.key==='Enter') window.doSearch()">
-                            <button onclick="window.doSearch()">Search</button>
-                            ${searchTerm ? `<button onclick="window.clearSearch()" style="background:#718096;">✖</button>` : ''}
+                        <div class="filter-group">
+                            <div class="month-box">
+                                <span style="font-size:1.2rem;">📅</span>
+                                <input type="month" id="monthInput" value="${selectedMonth}" onchange="window.handleMonthChange()">
+                                ${selectedMonth ? `<button onclick="window.clearMonth()" title="Clear Month Filter">✖</button>` : ''}
+                            </div>
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="🔍 Search..." value="${searchTerm}" onkeyup="if(event.key==='Enter') window.doSearch()">
+                                <button onclick="window.doSearch()">Search</button>
+                                ${searchTerm ? `<button onclick="window.clearSearch()" style="background:#718096;">✖</button>` : ''}
+                            </div>
                         </div>
                     </div>
 
@@ -515,6 +548,18 @@
         window.setFilter = (filter) => { currentFilter = filter; renderPage(); };
         window.doSearch = () => { searchTerm = document.getElementById('searchInput').value; renderPage(); };
         window.clearSearch = () => { searchTerm = ''; document.getElementById('searchInput').value = ''; renderPage(); };
+        
+        // Month Filter Controllers
+        window.handleMonthChange = () => { 
+            selectedMonth = document.getElementById('monthInput').value; 
+            currentFilter = 'all'; // التعديل: التبديل إلى 'all' تلقائياً عند تغيير الشهر
+            renderPage(); 
+        };
+        window.clearMonth = () => { 
+            selectedMonth = ""; 
+            renderPage(); 
+        };
+        
         window.logout = async () => { await signOut(auth); window.location.href = 'login.html'; };
 
         // ===== Init Auth =====
