@@ -4,17 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>إدارة الكورسات والجلسات - نظام إدارة التعليم والتطوير</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- تحويل السكريبتات لتعمل بنظام Modules للاتصال بفايربيز -->
+
+    <!-- Firebase Modules -->
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
-    
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: #f0f4f8; color: #1a202c; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background: #f0f4f8;
+            color: #1a202c;
+        }
+
         .navbar {
             background: white;
             padding: 0.8rem 2rem;
@@ -28,10 +38,25 @@
             top: 0;
             z-index: 100;
         }
-        .logo h2 { color: #1e3a5f; font-size: 1.3rem; font-weight: 800; }
-        .logo span { color: #2b7a4b; }
-        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .nav-links a, .nav-links button {
+
+        .logo h2 {
+            color: #1e3a5f;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .logo span {
+            color: #2b7a4b;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a,
+        .nav-links button {
             text-decoration: none;
             padding: 0.5rem 1rem;
             border-radius: 2rem;
@@ -41,67 +66,377 @@
             font-size: 0.85rem;
             transition: 0.3s;
         }
-        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
-        .nav-links .home { background: #1e3a5f; color: white; }
-        .nav-links .back { background: #2b7a4b; color: white; }
-        .nav-links .logout { background: #e53e3e; color: white; }
-        
-        .container { max-width: 1300px; margin: 2rem auto; padding: 0 1.5rem; }
-        
-        .header-section { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .header-section h1 { color: #1e3a5f; display: flex; align-items: center; gap: 0.5rem; font-size: 1.8rem; }
-        
-        .action-bar { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        .btn-add { background: linear-gradient(135deg, #2b7a4b, #1e5a38); color: white; padding: 0.8rem 1.5rem; border-radius: 1rem; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(43, 122, 75, 0.2); }
-        .btn-add:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(43, 122, 75, 0.3); }
-        .btn-add.session { background: linear-gradient(135deg, #3182ce, #2b6cb0); box-shadow: 0 4px 10px rgba(49, 130, 206, 0.2); }
-        .btn-add.session:hover { box-shadow: 0 6px 15px rgba(49, 130, 206, 0.3); }
 
-        .search-box { display: flex; flex: 1; max-width: 400px; background: white; border-radius: 1rem; padding: 0.5rem 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); align-items: center; gap: 0.5rem; border: 1px solid #e2e8f0; }
-        .search-box input { border: none; outline: none; width: 100%; font-size: 0.95rem; background: transparent; }
+        .nav-links a:hover,
+        .nav-links button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
-        @media (max-width: 992px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .nav-links .home {
+            background: #1e3a5f;
+            color: white;
+        }
 
-        .card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .card h3 { color: #1e3a5f; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid #edf2f7; display: flex; align-items: center; gap: 0.5rem; font-size: 1.2rem; }
-        
-        .list-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; transition: 0.2s; }
-        .list-item:hover { background: #ebf4ff; border-color: #bee3f8; transform: translateX(-5px); }
-        
-        .item-info { flex: 1; }
-        .item-badge { background: #1e3a5f; color: white; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; display: inline-block; }
-        .item-badge.session { background: #3182ce; }
-        .item-title { font-weight: bold; color: #2d3748; font-size: 1.1rem; margin-bottom: 0.3rem; }
-        .item-desc { font-size: 0.85rem; color: #718096; }
-        
-        .item-actions { display: flex; gap: 0.5rem; }
-        .item-actions button { padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 0.85rem; transition: 0.2s; }
-        .btn-edit { background: #ed8936; }
-        .btn-edit:hover { background: #dd6b20; }
-        .btn-delete { background: #e53e3e; }
-        .btn-delete:hover { background: #c53030; }
-        
-        .empty-state { text-align: center; padding: 3rem 1rem; color: #a0aec0; }
-        .empty-state i { font-size: 3rem; margin-bottom: 1rem; color: #cbd5e0; }
+        .nav-links .back {
+            background: #2b7a4b;
+            color: white;
+        }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); justify-content: center; align-items: center; z-index: 1000; padding: 1rem; backdrop-filter: blur(5px); }
-        .modal-content { background: white; border-radius: 1.5rem; padding: 2rem; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: scaleIn 0.3s ease; }
-        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-content h3 { color: #1e3a5f; margin-bottom: 1.5rem; font-size: 1.4rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 0.85rem; color: #4a5568; margin-bottom: 0.4rem; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 0.8rem; font-size: 0.95rem; outline: none; transition: 0.3s; background: #f8fafc; color: #2d3748; }
-        input:focus, select:focus, textarea:focus { border-color: #3182ce; background: white; }
-        .modal-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
-        .modal-buttons button { flex: 1; padding: 0.8rem; font-size: 1rem; border-radius: 0.8rem; }
-        
-        .toast-msg { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #2b7a4b; color: white; padding: 1rem 2rem; border-radius: 2rem; text-align: center; z-index: 9999; font-size: 1rem; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; }
-        .toast-msg.error { background: #e53e3e; }
-        @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        .nav-links .logout {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .header-section {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-section h1 {
+            color: #1e3a5f;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #2b7a4b, #1e5a38);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 10px rgba(43, 122, 75, 0.2);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(43, 122, 75, 0.3);
+        }
+
+        .btn-add.session {
+            background: linear-gradient(135deg, #3182ce, #2b6cb0);
+            box-shadow: 0 4px 10px rgba(49, 130, 206, 0.2);
+        }
+
+        .btn-add.session:hover {
+            box-shadow: 0 6px 15px rgba(49, 130, 206, 0.3);
+        }
+
+        .search-box {
+            display: flex;
+            flex: 1;
+            max-width: 400px;
+            background: white;
+            border-radius: 1rem;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 0.95rem;
+            background: transparent;
+        }
+
+        .search-box button {
+            border: none;
+            background: transparent;
+            color: #718096;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.3rem;
+        }
+
+        .search-box button:hover {
+            color: #3182ce;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            color: #1e3a5f;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .list-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            transition: 0.2s;
+        }
+
+        .list-item:hover {
+            background: #ebf4ff;
+            border-color: #bee3f8;
+            transform: translateX(-5px);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-badge {
+            background: #1e3a5f;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .item-badge.session {
+            background: #3182ce;
+        }
+
+        .item-title {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .item-desc {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .item-actions button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-edit {
+            background: #ed8936;
+        }
+
+        .btn-edit:hover {
+            background: #dd6b20;
+        }
+
+        .btn-delete {
+            background: #e53e3e;
+        }
+
+        .btn-delete:hover {
+            background: #c53030;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #a0aec0;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #cbd5e0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h3 {
+            color: #1e3a5f;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-bottom: 0.4rem;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.8rem;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.3s;
+            background: #f8fafc;
+            color: #2d3748;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #3182ce;
+            background: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border-radius: 0.8rem;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2b7a4b;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            text-align: center;
+            z-index: 9999;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast-msg.error {
+            background: #e53e3e;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
+
 <body>
+
     <div id="app">
         <div style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f;">
             ⏳ جاري التحقق من الصلاحيات وتحميل البيانات...
@@ -109,378 +444,1904 @@
     </div>
 
     <script type="module">
+
         import { auth, DB } from './database.js';
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        import {
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
 
         let courses = [];
         let sessions = [];
         let searchTerm = "";
 
+
+        // =========================================================
+        // HTML ESCAPE
+        // =========================================================
+
         function escapeHtml(text) {
+
             if (!text) return '';
+
             const div = document.createElement('div');
+
             div.textContent = text;
+
             return div.innerHTML;
         }
 
-        function showToast(msg, isError = false) { 
-            const toast = document.createElement('div'); 
-            toast.className = 'toast-msg' + (isError ? ' error' : ''); 
-            toast.textContent = msg; 
-            document.body.appendChild(toast); 
-            setTimeout(() => toast.remove(), 3000); 
+
+        // =========================================================
+        // FORMAT SESSION DATE FOR DISPLAY
+        // يدعم Excel Serial Date مثل 46233
+        // =========================================================
+
+        function formatSessionDate(dateValue) {
+
+            if (
+                dateValue === null ||
+                dateValue === undefined ||
+                dateValue === ''
+            ) {
+                return '-';
+            }
+
+
+            // Excel Serial Date
+            if (
+                !isNaN(dateValue) &&
+                Number(dateValue) > 30000
+            ) {
+
+                const excelSerial = Number(dateValue);
+
+                const excelEpoch =
+                    new Date(Date.UTC(1899, 11, 30));
+
+                const date =
+                    new Date(
+                        excelEpoch.getTime() +
+                        excelSerial * 86400000
+                    );
+
+
+                return date.toLocaleDateString(
+                    'ar-EG',
+                    {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }
+                );
+            }
+
+
+            // YYYY-MM-DD أو أي تاريخ صالح
+
+            const date = new Date(dateValue);
+
+
+            if (!isNaN(date.getTime())) {
+
+                return date.toLocaleDateString(
+                    'ar-EG',
+                    {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }
+                );
+            }
+
+
+            return String(dateValue);
         }
 
+
+        // =========================================================
+        // FORMAT DATE FOR HTML INPUT TYPE DATE
+        // =========================================================
+
+        function formatDateForInput(dateValue) {
+
+            if (
+                dateValue === null ||
+                dateValue === undefined ||
+                dateValue === ''
+            ) {
+                return '';
+            }
+
+
+            // Excel Serial Date مثل 46233
+
+            if (
+                !isNaN(dateValue) &&
+                Number(dateValue) > 30000
+            ) {
+
+                const excelSerial = Number(dateValue);
+
+                const excelEpoch =
+                    new Date(Date.UTC(1899, 11, 30));
+
+                const date =
+                    new Date(
+                        excelEpoch.getTime() +
+                        excelSerial * 86400000
+                    );
+
+
+                return date.toISOString().split('T')[0];
+            }
+
+
+            // YYYY-MM-DD أو أي تاريخ صالح
+
+            const date = new Date(dateValue);
+
+
+            if (!isNaN(date.getTime())) {
+
+                return date.toISOString().split('T')[0];
+            }
+
+
+            return '';
+        }
+
+
+        // =========================================================
+        // TOAST MESSAGE
+        // =========================================================
+
+        function showToast(msg, isError = false) {
+
+            const toast =
+                document.createElement('div');
+
+            toast.className =
+                'toast-msg' +
+                (isError ? ' error' : '');
+
+            toast.textContent = msg;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+
+        // =========================================================
+        // LOAD DATA
+        // =========================================================
+
         async function loadData() {
+
             await DB.init();
-            courses = await DB.getAll('offjob_courses') || [];
-            sessions = await DB.getAll('offjob_sessions') || [];
+
+            courses =
+                await DB.getAll('offjob_courses') || [];
+
+            sessions =
+                await DB.getAll('offjob_sessions') || [];
+
             renderUI();
         }
 
-        function isCodeExists(code, excludeCourseCode = null, excludeSessionCode = null) {
-            const courseExists = courses.some(c => parseInt(c.course_code) === code && c.course_code !== excludeCourseCode);
-            const sessionExists = sessions.some(s => parseInt(s.session_code) === code && s.session_code !== excludeSessionCode);
+
+        // =========================================================
+        // CHECK CODE EXISTS
+        // =========================================================
+
+        function isCodeExists(
+            code,
+            excludeCourseCode = null,
+            excludeSessionCode = null
+        ) {
+
+            const courseExists =
+                courses.some(
+                    c =>
+                        parseInt(c.course_code) === code &&
+                        c.course_code !== excludeCourseCode
+                );
+
+
+            const sessionExists =
+                sessions.some(
+                    s =>
+                        parseInt(s.session_code) === code &&
+                        s.session_code !== excludeSessionCode
+                );
+
+
             return courseExists || sessionExists;
         }
 
-        // ================== COURSES LOGIC ==================
+
+        // =========================================================
+        // COURSES LOGIC
+        // =========================================================
+
         window.openCourseModal = (code = null) => {
-            const item = code ? courses.find(c => String(c.course_code) === String(code)) : null;
-            document.getElementById('courseModalTitle').innerHTML = item ? '<i class="fas fa-edit"></i> تعديل كورس' : '<i class="fas fa-plus-circle"></i> إضافة كورس جديد';
-            document.getElementById('courseCode').value = item?.course_code || '';
-            document.getElementById('courseName').value = item?.course_name || '';
-            document.getElementById('courseDescription').value = item?.description || '';
-            document.getElementById('courseCategory').value = item?.category || '';
-            document.getElementById('courseTargetAudience').value = item?.target_audience || '';
-            document.getElementById('courseDuration').value = item?.duration_hours || '';
-            document.getElementById('courseTrainingType').value = item?.training_type || 'Off Job';
-            document.getElementById('courseStatus').value = item?.status || 'Active';
-            
-            document.getElementById('courseModal').dataset.editMode = item ? 'true' : 'false';
-            document.getElementById('courseModal').dataset.oldCode = item?.course_code || '';
-            document.getElementById('courseModal').style.display = 'flex';
+
+            const item =
+                code
+                    ? courses.find(
+                        c =>
+                            String(c.course_code) ===
+                            String(code)
+                    )
+                    : null;
+
+
+            document.getElementById(
+                'courseModalTitle'
+            ).innerHTML =
+
+                item
+                    ? '<i class="fas fa-edit"></i> تعديل كورس'
+                    : '<i class="fas fa-plus-circle"></i> إضافة كورس جديد';
+
+
+            document.getElementById('courseCode').value =
+                item?.course_code || '';
+
+            document.getElementById('courseName').value =
+                item?.course_name || '';
+
+            document.getElementById('courseDescription').value =
+                item?.description || '';
+
+            document.getElementById('courseCategory').value =
+                item?.category || '';
+
+            document.getElementById('courseTargetAudience').value =
+                item?.target_audience || '';
+
+            document.getElementById('courseDuration').value =
+                item?.duration_hours || '';
+
+            document.getElementById('courseTrainingType').value =
+                item?.training_type || 'Off Job';
+
+            document.getElementById('courseStatus').value =
+                item?.status || 'Active';
+
+
+            document.getElementById(
+                'courseModal'
+            ).dataset.editMode =
+                item ? 'true' : 'false';
+
+
+            document.getElementById(
+                'courseModal'
+            ).dataset.oldCode =
+                item?.course_code || '';
+
+
+            document.getElementById(
+                'courseModal'
+            ).style.display = 'flex';
         };
 
+
         window.saveCourse = async () => {
-            const code = document.getElementById('courseCode').value.trim();
-            const editMode = document.getElementById('courseModal').dataset.editMode === 'true';
-            const oldCode = parseInt(document.getElementById('courseModal').dataset.oldCode);
-            const newCodeNum = parseInt(code);
-            
-            if (!code || !document.getElementById('courseName').value.trim() || isNaN(newCodeNum)) { 
-                showToast('❌ الرجاء إدخال كود صحيح واسم الكورس', true); return; 
+
+            const code =
+                document.getElementById(
+                    'courseCode'
+                ).value.trim();
+
+
+            const editMode =
+                document.getElementById(
+                    'courseModal'
+                ).dataset.editMode === 'true';
+
+
+            const oldCode =
+                parseInt(
+                    document.getElementById(
+                        'courseModal'
+                    ).dataset.oldCode
+                );
+
+
+            const newCodeNum =
+                parseInt(code);
+
+
+            if (
+                !code ||
+                !document.getElementById(
+                    'courseName'
+                ).value.trim() ||
+                isNaN(newCodeNum)
+            ) {
+
+                showToast(
+                    '❌ الرجاء إدخال كود صحيح واسم الكورس',
+                    true
+                );
+
+                return;
             }
 
+
             const data = {
+
                 id: String(newCodeNum),
+
                 course_code: newCodeNum,
-                course_name: document.getElementById('courseName').value.trim(),
-                description: document.getElementById('courseDescription').value.trim(),
-                category: document.getElementById('courseCategory').value.trim(),
-                target_audience: document.getElementById('courseTargetAudience').value.trim(),
-                duration_hours: Number(document.getElementById('courseDuration').value) || 0,
-                training_type: document.getElementById('courseTrainingType').value,
-                status: document.getElementById('courseStatus').value
+
+                course_name:
+                    document.getElementById(
+                        'courseName'
+                    ).value.trim(),
+
+                description:
+                    document.getElementById(
+                        'courseDescription'
+                    ).value.trim(),
+
+                category:
+                    document.getElementById(
+                        'courseCategory'
+                    ).value.trim(),
+
+                target_audience:
+                    document.getElementById(
+                        'courseTargetAudience'
+                    ).value.trim(),
+
+                duration_hours:
+                    Number(
+                        document.getElementById(
+                            'courseDuration'
+                        ).value
+                    ) || 0,
+
+                training_type:
+                    document.getElementById(
+                        'courseTrainingType'
+                    ).value,
+
+                status:
+                    document.getElementById(
+                        'courseStatus'
+                    ).value
             };
-            
+
+
             if (editMode) {
-                if (newCodeNum !== oldCode && isCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true); return;
+
+                if (
+                    newCodeNum !== oldCode &&
+                    isCodeExists(newCodeNum)
+                ) {
+
+                    showToast(
+                        `❌ الكود ${newCodeNum} مستخدم بالفعل!`,
+                        true
+                    );
+
+                    return;
                 }
+
+
                 if (newCodeNum !== oldCode) {
-                    await DB.delete('offjob_courses', String(oldCode));
-                    await DB.insert('offjob_courses', data);
+
+                    await DB.delete(
+                        'offjob_courses',
+                        String(oldCode)
+                    );
+
+                    await DB.insert(
+                        'offjob_courses',
+                        data
+                    );
+
                 } else {
-                    await DB.update('offjob_courses', data);
+
+                    await DB.update(
+                        'offjob_courses',
+                        data
+                    );
                 }
-                const index = courses.findIndex(c => parseInt(c.course_code) === oldCode);
-                if (index !== -1) courses[index] = data;
+
+
+                const index =
+                    courses.findIndex(
+                        c =>
+                            parseInt(c.course_code) ===
+                            oldCode
+                    );
+
+
+                if (index !== -1) {
+                    courses[index] = data;
+                }
+
+
                 showToast('✅ تم تحديث الكورس');
+
             } else {
+
                 if (isCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true); return;
+
+                    showToast(
+                        `❌ الكود ${newCodeNum} مستخدم بالفعل!`,
+                        true
+                    );
+
+                    return;
                 }
-                await DB.insert('offjob_courses', data);
+
+
+                await DB.insert(
+                    'offjob_courses',
+                    data
+                );
+
                 courses.push(data);
+
                 showToast('✅ تم إضافة الكورس');
             }
-            
+
+
             renderUI();
+
             window.closeModal('courseModal');
         };
 
+
         window.deleteCourse = async (courseCode) => {
-            if (!confirm('⚠️ سيتم حذف هذا الكورس نهائياً! هل أنت متأكد؟')) return;
-            const relatedSessions = sessions.filter(s => parseInt(s.course_code) === parseInt(courseCode));
-            if(relatedSessions.length > 0) {
-                if(!confirm(`⚠️ هذا الكورس مرتبط بـ ${relatedSessions.length} جلسات! حذفه قد يسبب مشاكل بالبيانات. الاستمرار؟`)) return;
+
+            if (
+                !confirm(
+                    '⚠️ سيتم حذف هذا الكورس نهائياً! هل أنت متأكد؟'
+                )
+            ) {
+                return;
             }
 
-            await DB.delete('offjob_courses', String(courseCode));
-            courses = courses.filter(c => parseInt(c.course_code) !== parseInt(courseCode));
+
+            const relatedSessions =
+                sessions.filter(
+                    s =>
+                        parseInt(s.course_code) ===
+                        parseInt(courseCode)
+                );
+
+
+            if (relatedSessions.length > 0) {
+
+                if (
+                    !confirm(
+                        `⚠️ هذا الكورس مرتبط بـ ${relatedSessions.length} جلسات! حذفه قد يسبب مشاكل بالبيانات. الاستمرار؟`
+                    )
+                ) {
+                    return;
+                }
+            }
+
+
+            await DB.delete(
+                'offjob_courses',
+                String(courseCode)
+            );
+
+
+            courses =
+                courses.filter(
+                    c =>
+                        parseInt(c.course_code) !==
+                        parseInt(courseCode)
+                );
+
+
             renderUI();
+
             showToast('🗑️ تم حذف الكورس');
         };
 
-        // ================== SESSIONS LOGIC ==================
+
+        // =========================================================
+        // SESSIONS LOGIC
+        // =========================================================
+
         window.openSessionModal = (code = null) => {
-            const item = code ? sessions.find(s => String(s.session_code) === String(code)) : null;
-            document.getElementById('sessionModalTitle').innerHTML = item ? '<i class="fas fa-edit"></i> تعديل جلسة' : '<i class="fas fa-plus-circle"></i> إضافة جلسة جديدة';
-            document.getElementById('sessionCode').value = item?.session_code || '';
-            document.getElementById('sessionDate').value = (item && item.session_date) ? String(item.session_date).substring(0,10) : '';
-            document.getElementById('trainerName').value = item?.trainer_name || '';
-            document.getElementById('sessionStartTime').value = item?.start_time || '';
-            document.getElementById('sessionEndTime').value = item?.end_time || '';
-            document.getElementById('sessionLocation').value = item?.location || '';
-            document.getElementById('sessionMaxCapacity').value = item?.max_capacity || '';
-            document.getElementById('sessionStatus').value = item?.status || 'Active';
-            document.getElementById('sessionNotes').value = item?.notes || '';
-            
+
+            const item =
+                code
+                    ? sessions.find(
+                        s =>
+                            String(s.session_code) ===
+                            String(code)
+                    )
+                    : null;
+
+
+            document.getElementById(
+                'sessionModalTitle'
+            ).innerHTML =
+
+                item
+                    ? '<i class="fas fa-edit"></i> تعديل جلسة'
+                    : '<i class="fas fa-plus-circle"></i> إضافة جلسة جديدة';
+
+
+            document.getElementById('sessionCode').value =
+                item?.session_code || '';
+
+
+            // تحويل التاريخ إلى YYYY-MM-DD
+            document.getElementById('sessionDate').value =
+                item && item.session_date
+                    ? formatDateForInput(
+                        item.session_date
+                    )
+                    : '';
+
+
+            document.getElementById('trainerName').value =
+                item?.trainer_name || '';
+
+            document.getElementById('sessionStartTime').value =
+                item?.start_time || '';
+
+            document.getElementById('sessionEndTime').value =
+                item?.end_time || '';
+
+            document.getElementById('sessionLocation').value =
+                item?.location || '';
+
+            document.getElementById('sessionMaxCapacity').value =
+                item?.max_capacity || '';
+
+            document.getElementById('sessionStatus').value =
+                item?.status || 'Active';
+
+            document.getElementById('sessionNotes').value =
+                item?.notes || '';
+
+
             // تعبئة قائمة الكورسات
-            document.getElementById('sessionCourseCode').innerHTML = '<option value="">اختر الكورس</option>' + [...courses].sort((a, b) => parseInt(a.course_code) - parseInt(b.course_code)).map(c => 
-                `<option value="${c.course_code}" ${item?.course_code == c.course_code ? 'selected' : ''}>${c.course_code} - ${escapeHtml(c.course_name)}</option>`
-            ).join('');
-            
-            document.getElementById('sessionModal').dataset.editMode = item ? 'true' : 'false';
-            document.getElementById('sessionModal').dataset.oldCode = item?.session_code || '';
-            document.getElementById('sessionModal').style.display = 'flex';
+
+            document.getElementById(
+                'sessionCourseCode'
+            ).innerHTML =
+
+                '<option value="">اختر الكورس</option>' +
+
+                [...courses]
+                    .sort(
+                        (a, b) =>
+                            parseInt(a.course_code) -
+                            parseInt(b.course_code)
+                    )
+                    .map(
+                        c =>
+                            `<option value="${c.course_code}" ${
+                                item?.course_code == c.course_code
+                                    ? 'selected'
+                                    : ''
+                            }>
+                                ${c.course_code} - ${escapeHtml(c.course_name)}
+                            </option>`
+                    )
+                    .join('');
+
+
+            document.getElementById(
+                'sessionModal'
+            ).dataset.editMode =
+                item ? 'true' : 'false';
+
+
+            document.getElementById(
+                'sessionModal'
+            ).dataset.oldCode =
+                item?.session_code || '';
+
+
+            document.getElementById(
+                'sessionModal'
+            ).style.display = 'flex';
         };
 
+
         window.saveSession = async () => {
-            const code = document.getElementById('sessionCode').value.trim();
-            const courseCode = document.getElementById('sessionCourseCode').value.trim();
-            const editMode = document.getElementById('sessionModal').dataset.editMode === 'true';
-            const oldCode = parseInt(document.getElementById('sessionModal').dataset.oldCode);
-            const newCodeNum = parseInt(code);
-            const courseCodeNum = parseInt(courseCode);
-            
-            if (!code || !courseCode || isNaN(newCodeNum) || isNaN(courseCodeNum)) { 
-                showToast('❌ الرجاء إدخال كود الجلسة واختيار الكورس', true); return; 
+
+            const code =
+                document.getElementById(
+                    'sessionCode'
+                ).value.trim();
+
+
+            const courseCode =
+                document.getElementById(
+                    'sessionCourseCode'
+                ).value.trim();
+
+
+            const editMode =
+                document.getElementById(
+                    'sessionModal'
+                ).dataset.editMode === 'true';
+
+
+            const oldCode =
+                parseInt(
+                    document.getElementById(
+                        'sessionModal'
+                    ).dataset.oldCode
+                );
+
+
+            const newCodeNum =
+                parseInt(code);
+
+
+            const courseCodeNum =
+                parseInt(courseCode);
+
+
+            if (
+                !code ||
+                !courseCode ||
+                isNaN(newCodeNum) ||
+                isNaN(courseCodeNum)
+            ) {
+
+                showToast(
+                    '❌ الرجاء إدخال كود الجلسة واختيار الكورس',
+                    true
+                );
+
+                return;
             }
 
+
             const data = {
+
                 id: String(newCodeNum),
+
                 session_code: newCodeNum,
+
                 course_code: courseCodeNum,
-                trainer_name: document.getElementById('trainerName').value.trim(),
-                session_date: document.getElementById('sessionDate').value,
-                start_time: document.getElementById('sessionStartTime').value,
-                end_time: document.getElementById('sessionEndTime').value,
-                location: document.getElementById('sessionLocation').value.trim(),
-                max_capacity: Number(document.getElementById('sessionMaxCapacity').value) || null,
-                status: document.getElementById('sessionStatus').value,
-                notes: document.getElementById('sessionNotes').value.trim()
+
+                trainer_name:
+                    document.getElementById(
+                        'trainerName'
+                    ).value.trim(),
+
+                session_date:
+                    document.getElementById(
+                        'sessionDate'
+                    ).value,
+
+                start_time:
+                    document.getElementById(
+                        'sessionStartTime'
+                    ).value,
+
+                end_time:
+                    document.getElementById(
+                        'sessionEndTime'
+                    ).value,
+
+                location:
+                    document.getElementById(
+                        'sessionLocation'
+                    ).value.trim(),
+
+                max_capacity:
+                    Number(
+                        document.getElementById(
+                            'sessionMaxCapacity'
+                        ).value
+                    ) || null,
+
+                status:
+                    document.getElementById(
+                        'sessionStatus'
+                    ).value,
+
+                notes:
+                    document.getElementById(
+                        'sessionNotes'
+                    ).value.trim()
             };
-            
+
+
             if (editMode) {
-                if (newCodeNum !== oldCode && isCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true); return;
+
+                if (
+                    newCodeNum !== oldCode &&
+                    isCodeExists(newCodeNum)
+                ) {
+
+                    showToast(
+                        `❌ الكود ${newCodeNum} مستخدم بالفعل!`,
+                        true
+                    );
+
+                    return;
                 }
+
+
                 if (newCodeNum !== oldCode) {
-                    await DB.delete('offjob_sessions', String(oldCode));
-                    await DB.insert('offjob_sessions', data);
+
+                    await DB.delete(
+                        'offjob_sessions',
+                        String(oldCode)
+                    );
+
+                    await DB.insert(
+                        'offjob_sessions',
+                        data
+                    );
+
                 } else {
-                    await DB.update('offjob_sessions', data);
+
+                    await DB.update(
+                        'offjob_sessions',
+                        data
+                    );
                 }
-                const index = sessions.findIndex(s => parseInt(s.session_code) === oldCode);
-                if (index !== -1) sessions[index] = data;
+
+
+                const index =
+                    sessions.findIndex(
+                        s =>
+                            parseInt(s.session_code) ===
+                            oldCode
+                    );
+
+
+                if (index !== -1) {
+                    sessions[index] = data;
+                }
+
+
                 showToast('✅ تم تحديث الجلسة');
+
             } else {
+
                 if (isCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true); return;
+
+                    showToast(
+                        `❌ الكود ${newCodeNum} مستخدم بالفعل!`,
+                        true
+                    );
+
+                    return;
                 }
-                await DB.insert('offjob_sessions', data);
+
+
+                await DB.insert(
+                    'offjob_sessions',
+                    data
+                );
+
                 sessions.push(data);
+
                 showToast('✅ تم إضافة الجلسة');
             }
-            
+
+
             renderUI();
+
             window.closeModal('sessionModal');
         };
 
+
         window.deleteSession = async (sessionCode) => {
-            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الجلسة نهائياً؟')) return;
-            await DB.delete('offjob_sessions', String(sessionCode));
-            sessions = sessions.filter(s => parseInt(s.session_code) !== parseInt(sessionCode));
+
+            if (
+                !confirm(
+                    '⚠️ هل أنت متأكد من حذف هذه الجلسة نهائياً؟'
+                )
+            ) {
+                return;
+            }
+
+
+            await DB.delete(
+                'offjob_sessions',
+                String(sessionCode)
+            );
+
+
+            sessions =
+                sessions.filter(
+                    s =>
+                        parseInt(s.session_code) !==
+                        parseInt(sessionCode)
+                );
+
+
             renderUI();
+
             showToast('🗑️ تم حذف الجلسة');
         };
 
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
-        window.handleSearch = () => { searchTerm = document.getElementById('searchInput').value.trim().toLowerCase(); renderUI(); };
 
-        // ================== RENDER UI ==================
+        // =========================================================
+        // CLOSE MODAL
+        // =========================================================
+
+        window.closeModal = (id) => {
+
+            document.getElementById(id).style.display =
+                'none';
+        };
+
+
+        // =========================================================
+        // SEARCH
+        // البحث فقط عند Enter أو الضغط على زر البحث
+        // =========================================================
+
+        window.handleSearch = () => {
+
+            searchTerm =
+                document.getElementById(
+                    'searchInput'
+                ).value
+                .trim()
+                .toLowerCase();
+
+
+            renderUI();
+        };
+
+
+        // =========================================================
+        // RENDER UI
+        // =========================================================
+
         function renderUI() {
-            let filteredCourses = [...courses].sort((a,b) => parseInt(a.course_code) - parseInt(b.course_code));
-            let filteredSessions = [...sessions].sort((a,b) => parseInt(a.session_code) - parseInt(b.session_code));
+
+            // =====================================================
+            // COURSES SORT
+            // تصاعدي
+            // =====================================================
+
+            let filteredCourses =
+                [...courses].sort(
+                    (a, b) =>
+                        parseInt(a.course_code) -
+                        parseInt(b.course_code)
+                );
+
+
+            // =====================================================
+            // SESSIONS SORT
+            // تنازلي - الأكبر إلى الأصغر
+            // =====================================================
+
+            let filteredSessions =
+                [...sessions].sort(
+                    (a, b) =>
+                        parseInt(b.session_code) -
+                        parseInt(a.session_code)
+                );
+
+
+            // =====================================================
+            // SEARCH FILTER
+            // =====================================================
 
             if (searchTerm) {
-                filteredCourses = filteredCourses.filter(c => String(c.course_code).includes(searchTerm) || c.course_name.toLowerCase().includes(searchTerm));
-                filteredSessions = filteredSessions.filter(s => String(s.session_code).includes(searchTerm) || String(s.course_code).includes(searchTerm) || (s.trainer_name && s.trainer_name.toLowerCase().includes(searchTerm)));
+
+                filteredCourses =
+                    filteredCourses.filter(
+                        c =>
+                            String(c.course_code)
+                                .includes(searchTerm) ||
+
+                            (c.course_name &&
+                                c.course_name
+                                    .toLowerCase()
+                                    .includes(searchTerm))
+                    );
+
+
+                filteredSessions =
+                    filteredSessions.filter(
+                        s =>
+                            String(s.session_code)
+                                .includes(searchTerm) ||
+
+                            String(s.course_code)
+                                .includes(searchTerm) ||
+
+                            (
+                                s.trainer_name &&
+                                s.trainer_name
+                                    .toLowerCase()
+                                    .includes(searchTerm)
+                            )
+                    );
             }
 
-            let coursesHtml = filteredCourses.length === 0 ? `<div class="empty-state"><i class="fas fa-folder-open"></i><p>لا توجد كورسات متاحة</p></div>` : filteredCourses.map(c => `
-                <div class="list-item">
-                    <div class="item-info">
-                        <span class="item-badge">كورس: ${c.course_code}</span>
-                        <div class="item-title">${escapeHtml(c.course_name)}</div>
-                        <div class="item-desc">⏱️ ${c.duration_hours || 0} ساعات | 🏷️ ${escapeHtml(c.category || 'عام')}</div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-edit" onclick="window.openCourseModal('${c.course_code}')"><i class="fas fa-edit"></i> تعديل</button>
-                        <button class="btn-delete" onclick="window.deleteCourse('${c.course_code}')"><i class="fas fa-trash"></i> حذف</button>
-                    </div>
-                </div>
-            `).join('');
 
-            let sessionsHtml = filteredSessions.length === 0 ? `<div class="empty-state"><i class="fas fa-calendar-times"></i><p>لا توجد جلسات متاحة</p></div>` : filteredSessions.map(s => {
-                const parentCourse = courses.find(c => parseInt(c.course_code) === parseInt(s.course_code));
-                const courseName = parentCourse ? parentCourse.course_name : 'كورس غير معروف';
-                return `
-                <div class="list-item">
-                    <div class="item-info">
-                        <span class="item-badge session">جلسة: ${s.session_code}</span>
-                        <div class="item-title">📚 يتبع لكورس: ${escapeHtml(courseName)}</div>
-                        <div class="item-desc">📅 ${s.session_date || '-'} | 👨‍🏫 ${escapeHtml(s.trainer_name || 'غير محدد')}</div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-edit" onclick="window.openSessionModal('${s.session_code}')"><i class="fas fa-edit"></i> تعديل</button>
-                        <button class="btn-delete" onclick="window.deleteSession('${s.session_code}')"><i class="fas fa-trash"></i> حذف</button>
-                    </div>
-                </div>
-            `}).join('');
+            // =====================================================
+            // COURSES HTML
+            // =====================================================
+
+            const coursesHtml =
+                filteredCourses.length === 0
+
+                    ? `
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>لا توجد كورسات متاحة</p>
+                        </div>
+                    `
+
+                    : filteredCourses
+                        .map(
+                            c => `
+                                <div class="list-item">
+
+                                    <div class="item-info">
+
+                                        <span class="item-badge">
+                                            كورس: ${c.course_code}
+                                        </span>
+
+                                        <div class="item-title">
+                                            ${escapeHtml(c.course_name)}
+                                        </div>
+
+                                        <div class="item-desc">
+                                            ⏱️ ${c.duration_hours || 0} ساعات
+                                            |
+                                            🏷️ ${escapeHtml(c.category || 'عام')}
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="item-actions">
+
+                                        <button
+                                            class="btn-edit"
+                                            onclick="window.openCourseModal('${c.course_code}')"
+                                        >
+                                            <i class="fas fa-edit"></i>
+                                            تعديل
+                                        </button>
+
+
+                                        <button
+                                            class="btn-delete"
+                                            onclick="window.deleteCourse('${c.course_code}')"
+                                        >
+                                            <i class="fas fa-trash"></i>
+                                            حذف
+                                        </button>
+
+                                    </div>
+
+                                </div>
+                            `
+                        )
+                        .join('');
+
+
+            // =====================================================
+            // SESSIONS HTML
+            // =====================================================
+
+            const sessionsHtml =
+                filteredSessions.length === 0
+
+                    ? `
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>لا توجد جلسات متاحة</p>
+                        </div>
+                    `
+
+                    : filteredSessions
+                        .map(
+                            s => {
+
+                                const parentCourse =
+                                    courses.find(
+                                        c =>
+                                            parseInt(c.course_code) ===
+                                            parseInt(s.course_code)
+                                    );
+
+
+                                const courseName =
+                                    parentCourse
+                                        ? parentCourse.course_name
+                                        : 'كورس غير معروف';
+
+
+                                return `
+                                    <div class="list-item">
+
+                                        <div class="item-info">
+
+                                            <span class="item-badge session">
+                                                جلسة: ${s.session_code}
+                                            </span>
+
+
+                                            <div class="item-title">
+                                                📚 يتبع لكورس:
+                                                ${escapeHtml(courseName)}
+                                            </div>
+
+
+                                            <div class="item-desc">
+
+                                                📅 ${formatSessionDate(s.session_date)}
+
+                                                |
+
+                                                👨‍🏫
+                                                ${escapeHtml(
+                                                    s.trainer_name ||
+                                                    'غير محدد'
+                                                )}
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="item-actions">
+
+                                            <button
+                                                class="btn-edit"
+                                                onclick="window.openSessionModal('${s.session_code}')"
+                                            >
+                                                <i class="fas fa-edit"></i>
+                                                تعديل
+                                            </button>
+
+
+                                            <button
+                                                class="btn-delete"
+                                                onclick="window.deleteSession('${s.session_code}')"
+                                            >
+                                                <i class="fas fa-trash"></i>
+                                                حذف
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+                                `;
+                            }
+                        )
+                        .join('');
+
+
+            // =====================================================
+            // PAGE HTML
+            // =====================================================
 
             document.getElementById('content').innerHTML = `
+
                 <div class="header-section">
-                    <h1><i class="fas fa-tasks"></i> إدارة الكورسات والجلسات</h1>
+
+                    <h1>
+                        <i class="fas fa-tasks"></i>
+                        إدارة الكورسات والجلسات
+                    </h1>
+
+
                     <div class="search-box">
-                        <i class="fas fa-search" style="color:#a0aec0;"></i>
-                        <input type="text" id="searchInput" placeholder="بحث بالاسم أو الكود..." value="${searchTerm}" onkeyup="window.handleSearch()">
+
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="بحث بالاسم أو الكود..."
+                            value="${escapeHtml(searchTerm)}"
+
+                            onkeydown="
+                                if(event.key === 'Enter')
+                                    window.handleSearch()
+                            "
+                        >
+
+
+                        <button
+                            type="button"
+                            onclick="window.handleSearch()"
+                            title="بحث"
+                        >
+                            <i class="fas fa-search"></i>
+                        </button>
+
                     </div>
+
                 </div>
 
+
                 <div class="dashboard-grid">
-                    <!-- عمود الكورسات -->
+
+
+                    <!-- =========================================
+                         COURSES
+                    ========================================== -->
+
                     <div class="card">
-                        <h3><i class="fas fa-book-open"></i> الكورسات المسجلة (${filteredCourses.length})</h3>
+
+                        <h3>
+                            <i class="fas fa-book-open"></i>
+
+                            الكورسات المسجلة
+                            (${filteredCourses.length})
+                        </h3>
+
+
                         <div class="action-bar">
-                            <button class="btn-add" onclick="window.openCourseModal()"><i class="fas fa-plus"></i> إضافة كورس جديد</button>
+
+                            <button
+                                class="btn-add"
+                                onclick="window.openCourseModal()"
+                            >
+                                <i class="fas fa-plus"></i>
+                                إضافة كورس جديد
+                            </button>
+
                         </div>
+
+
                         <div class="lists-container">
+
                             ${coursesHtml}
+
                         </div>
+
                     </div>
 
-                    <!-- عمود الجلسات -->
+
+                    <!-- =========================================
+                         SESSIONS
+                    ========================================== -->
+
                     <div class="card">
-                        <h3><i class="fas fa-calendar-check"></i> الجلسات التدريبية (${filteredSessions.length})</h3>
+
+                        <h3>
+
+                            <i class="fas fa-calendar-check"></i>
+
+                            الجلسات التدريبية
+                            (${filteredSessions.length})
+
+                        </h3>
+
+
                         <div class="action-bar">
-                            <button class="btn-add session" onclick="window.openSessionModal()"><i class="fas fa-plus"></i> إنشاء جلسة جديدة</button>
+
+                            <button
+                                class="btn-add session"
+                                onclick="window.openSessionModal()"
+                            >
+                                <i class="fas fa-plus"></i>
+                                إنشاء جلسة جديدة
+                            </button>
+
                         </div>
+
+
                         <div class="lists-container">
+
                             ${sessionsHtml}
+
                         </div>
+
                     </div>
+
                 </div>
             `;
         }
 
-        async function logout() { 
-            await signOut(auth); 
-            window.location.href = 'login.html'; 
+
+        // =========================================================
+        // LOGOUT
+        // =========================================================
+
+        async function logout() {
+
+            await signOut(auth);
+
+            window.location.href =
+                'login.html';
         }
+
+
         window.logout = logout;
 
-        // ===== الحماية والمصادقة للاتصال بـ Firebase =====
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    await DB.init();
-                    let userData = null;
+
+        // =========================================================
+        // AUTHENTICATION & ADMIN CHECK
+        // =========================================================
+
+        onAuthStateChanged(
+            auth,
+            async (user) => {
+
+                if (user) {
+
                     try {
-                        userData = await DB.get('users', user.uid);
-                    } catch (e) {}
 
-                    // التحقق الصارم من صلاحية الأدمن
-                    if (userData && (userData.role === 'admin' || userData.role === 'Admin')) {
-                        
-                        document.getElementById('app').innerHTML = `
-                            <div class="navbar">
-                                <div class="logo"><h2>🎓 <span>نظام</span> الإدارة - <span style="color:#e53e3e;">⚙️ لوحة تحكم Off Job</span></h2></div>
-                                <div class="nav-links">
-                                    <a href="index.html" class="home"><i class="fas fa-home"></i> الرئيسية</a>
-                                    <button onclick="logout()" class="logout"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</button>
+                        await DB.init();
+
+
+                        let userData = null;
+
+
+                        try {
+
+                            userData =
+                                await DB.get(
+                                    'users',
+                                    user.uid
+                                );
+
+                        } catch (e) {
+
+                            console.error(
+                                'Error loading user data:',
+                                e
+                            );
+                        }
+
+
+                        // =================================================
+                        // ADMIN CHECK
+                        // =================================================
+
+                        if (
+                            userData &&
+                            (
+                                userData.role === 'admin' ||
+                                userData.role === 'Admin'
+                            )
+                        ) {
+
+
+                            document.getElementById(
+                                'app'
+                            ).innerHTML = `
+
+                                <!-- NAVBAR -->
+
+                                <div class="navbar">
+
+                                    <div class="logo">
+
+                                        <h2>
+
+                                            🎓
+                                            <span>نظام</span>
+                                            الإدارة -
+
+                                            <span
+                                                style="color:#e53e3e;"
+                                            >
+                                                ⚙️ لوحة تحكم Off Job
+                                            </span>
+
+                                        </h2>
+
+                                    </div>
+
+
+                                    <div class="nav-links">
+
+                                        <a
+                                            href="index.html"
+                                            class="home"
+                                        >
+                                            <i class="fas fa-home"></i>
+                                            الرئيسية
+                                        </a>
+
+
+                                        <button
+                                            onclick="logout()"
+                                            class="logout"
+                                        >
+                                            <i class="fas fa-sign-out-alt"></i>
+                                            تسجيل خروج
+                                        </button>
+
+                                    </div>
+
                                 </div>
-                            </div>
-                            <div class="container">
-                                <div id="content"></div>
-                            </div>
-                            
-                            <!-- Course Modal -->
-                            <div id="courseModal" class="modal">
-                                <div class="modal-content">
-                                    <h3 id="courseModalTitle"><i class="fas fa-plus-circle"></i> إضافة كورس</h3>
-                                    <div class="form-group"><label>كود الكورس *</label><input type="number" id="courseCode"></div>
-                                    <div class="form-group"><label>اسم الكورس *</label><input type="text" id="courseName"></div>
-                                    <div class="form-group"><label>الوصف</label><textarea id="courseDescription" rows="2"></textarea></div>
-                                    <div style="display:flex; gap:1rem;">
-                                        <div class="form-group" style="flex:1;"><label>التصنيف</label><select id="courseCategory"><option value="">-- اختر --</option><option value="Compliance">Compliance</option><option value="Service">Service</option><option value="Soft Skills">Soft Skills</option></select></div>
-                                        <div class="form-group" style="flex:1;"><label>⏱️ الساعات</label><input type="number" id="courseDuration" step="0.5"></div>
-                                    </div>
-                                    <div class="form-group"><label>الجمهور المستهدف</label><input type="text" id="courseTargetAudience"></div>
-                                    <div style="display:flex; gap:1rem;">
-                                        <div class="form-group" style="flex:1;"><label>نوع التدريب</label><select id="courseTrainingType"><option value="Off Job">Off Job</option><option value="Outsourced">Outsourced</option><option value="Online">Online</option><option value="Blended">Blended</option></select></div>
-                                        <div class="form-group" style="flex:1;"><label>الحالة</label><select id="courseStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Archived">Archived</option></select></div>
-                                    </div>
-                                    <div class="modal-buttons">
-                                        <button onclick="window.saveCourse()" style="background:#2b7a4b; color:white;">💾 حفظ البيانات</button>
-                                        <button onclick="window.closeModal('courseModal')" style="background:#e2e8f0; color:#4a5568;">إلغاء</button>
-                                    </div>
+
+
+                                <!-- CONTAINER -->
+
+                                <div class="container">
+
+                                    <div id="content"></div>
+
                                 </div>
-                            </div>
-                            
-                            <!-- Session Modal -->
-                            <div id="sessionModal" class="modal">
-                                <div class="modal-content">
-                                    <h3 id="sessionModalTitle"><i class="fas fa-plus-circle"></i> إضافة جلسة</h3>
-                                    <div style="display:flex; gap:1rem;">
-                                        <div class="form-group" style="flex:1;"><label>كود الجلسة *</label><input type="number" id="sessionCode"></div>
-                                        <div class="form-group" style="flex:2;"><label>الكورس التابع له *</label><select id="sessionCourseCode"></select></div>
+
+
+                                <!-- =====================================
+                                     COURSE MODAL
+                                ====================================== -->
+
+                                <div
+                                    id="courseModal"
+                                    class="modal"
+                                >
+
+                                    <div class="modal-content">
+
+                                        <h3
+                                            id="courseModalTitle"
+                                        >
+                                            <i class="fas fa-plus-circle"></i>
+                                            إضافة كورس
+                                        </h3>
+
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                كود الكورس *
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                id="courseCode"
+                                            >
+
+                                        </div>
+
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                اسم الكورس *
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="courseName"
+                                            >
+
+                                        </div>
+
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                الوصف
+                                            </label>
+
+                                            <textarea
+                                                id="courseDescription"
+                                                rows="2"
+                                            ></textarea>
+
+                                        </div>
+
+
+                                        <div
+                                            style="
+                                                display:flex;
+                                                gap:1rem;
+                                            "
+                                        >
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    التصنيف
+                                                </label>
+
+                                                <select
+                                                    id="courseCategory"
+                                                >
+
+                                                    <option value="">
+                                                        -- اختر --
+                                                    </option>
+
+                                                    <option value="Compliance">
+                                                        Compliance
+                                                    </option>
+
+                                                    <option value="Service">
+                                                        Service
+                                                    </option>
+
+                                                    <option value="Soft Skills">
+                                                        Soft Skills
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    ⏱️ الساعات
+                                                </label>
+
+                                                <input
+                                                    type="number"
+                                                    id="courseDuration"
+                                                    step="0.5"
+                                                >
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                الجمهور المستهدف
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="courseTargetAudience"
+                                            >
+
+                                        </div>
+
+
+                                        <div
+                                            style="
+                                                display:flex;
+                                                gap:1rem;
+                                            "
+                                        >
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    نوع التدريب
+                                                </label>
+
+                                                <select
+                                                    id="courseTrainingType"
+                                                >
+
+                                                    <option value="Off Job">
+                                                        Off Job
+                                                    </option>
+
+                                                    <option value="Outsourced">
+                                                        Outsourced
+                                                    </option>
+
+                                                    <option value="Online">
+                                                        Online
+                                                    </option>
+
+                                                    <option value="Blended">
+                                                        Blended
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    الحالة
+                                                </label>
+
+                                                <select
+                                                    id="courseStatus"
+                                                >
+
+                                                    <option value="Active">
+                                                        Active
+                                                    </option>
+
+                                                    <option value="Inactive">
+                                                        Inactive
+                                                    </option>
+
+                                                    <option value="Archived">
+                                                        Archived
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="modal-buttons">
+
+                                            <button
+                                                onclick="window.saveCourse()"
+                                                style="
+                                                    background:#2b7a4b;
+                                                    color:white;
+                                                "
+                                            >
+                                                💾 حفظ البيانات
+                                            </button>
+
+
+                                            <button
+                                                onclick="
+                                                    window.closeModal(
+                                                        'courseModal'
+                                                    )
+                                                "
+                                                style="
+                                                    background:#e2e8f0;
+                                                    color:#4a5568;
+                                                "
+                                            >
+                                                إلغاء
+                                            </button>
+
+                                        </div>
+
                                     </div>
-                                    <div class="form-group"><label>👨‍🏫 المدرب</label><input type="text" id="trainerName"></div>
-                                    <div style="display:flex; gap:1rem;">
-                                        <div class="form-group" style="flex:1;"><label>📅 التاريخ</label><input type="date" id="sessionDate"></div>
-                                        <div class="form-group" style="flex:1;"><label>🕐 وقت البداية</label><input type="time" id="sessionStartTime"></div>
-                                        <div class="form-group" style="flex:1;"><label>🕐 وقت النهاية</label><input type="time" id="sessionEndTime"></div>
-                                    </div>
-                                    <div style="display:flex; gap:1rem;">
-                                        <div class="form-group" style="flex:2;"><label>📍 الموقع</label><input type="text" id="sessionLocation"></div>
-                                        <div class="form-group" style="flex:1;"><label>👥 السعة</label><input type="number" id="sessionMaxCapacity"></div>
-                                        <div class="form-group" style="flex:1;"><label>الحالة</label><select id="sessionStatus"><option value="Active">Active</option><option value="Cancelled">Cancelled</option><option value="Completed">Completed</option><option value="Scheduled">Scheduled</option></select></div>
-                                    </div>
-                                    <div class="form-group"><label>ملاحظات</label><textarea id="sessionNotes" rows="2"></textarea></div>
-                                    <div class="modal-buttons">
-                                        <button onclick="window.saveSession()" style="background:#3182ce; color:white;">💾 حفظ الجلسة</button>
-                                        <button onclick="window.closeModal('sessionModal')" style="background:#e2e8f0; color:#4a5568;">إلغاء</button>
-                                    </div>
+
                                 </div>
+
+
+                                <!-- =====================================
+                                     SESSION MODAL
+                                ====================================== -->
+
+                                <div
+                                    id="sessionModal"
+                                    class="modal"
+                                >
+
+                                    <div class="modal-content">
+
+                                        <h3
+                                            id="sessionModalTitle"
+                                        >
+                                            <i class="fas fa-plus-circle"></i>
+                                            إضافة جلسة
+                                        </h3>
+
+
+                                        <div
+                                            style="
+                                                display:flex;
+                                                gap:1rem;
+                                            "
+                                        >
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    كود الجلسة *
+                                                </label>
+
+                                                <input
+                                                    type="number"
+                                                    id="sessionCode"
+                                                >
+
+                                            </div>
+
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:2;"
+                                            >
+
+                                                <label>
+                                                    الكورس التابع له *
+                                                </label>
+
+                                                <select
+                                                    id="sessionCourseCode"
+                                                ></select>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                👨‍🏫 المدرب
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="trainerName"
+                                            >
+
+                                        </div>
+
+
+                                        <div
+                                            style="
+                                                display:flex;
+                                                gap:1rem;
+                                            "
+                                        >
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    📅 التاريخ
+                                                </label>
+
+                                                <input
+                                                    type="date"
+                                                    id="sessionDate"
+                                                >
+
+                                            </div>
+
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    🕐 وقت البداية
+                                                </label>
+
+                                                <input
+                                                    type="time"
+                                                    id="sessionStartTime"
+                                                >
+
+                                            </div>
+
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    🕐 وقت النهاية
+                                                </label>
+
+                                                <input
+                                                    type="time"
+                                                    id="sessionEndTime"
+                                                >
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div
+                                            style="
+                                                display:flex;
+                                                gap:1rem;
+                                            "
+                                        >
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:2;"
+                                            >
+
+                                                <label>
+                                                    📍 الموقع
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    id="sessionLocation"
+                                                >
+
+                                            </div>
+
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    👥 السعة
+                                                </label>
+
+                                                <input
+                                                    type="number"
+                                                    id="sessionMaxCapacity"
+                                                >
+
+                                            </div>
+
+
+                                            <div
+                                                class="form-group"
+                                                style="flex:1;"
+                                            >
+
+                                                <label>
+                                                    الحالة
+                                                </label>
+
+                                                <select
+                                                    id="sessionStatus"
+                                                >
+
+                                                    <option value="Active">
+                                                        Active
+                                                    </option>
+
+                                                    <option value="Cancelled">
+                                                        Cancelled
+                                                    </option>
+
+                                                    <option value="Completed">
+                                                        Completed
+                                                    </option>
+
+                                                    <option value="Scheduled">
+                                                        Scheduled
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                ملاحظات
+                                            </label>
+
+                                            <textarea
+                                                id="sessionNotes"
+                                                rows="2"
+                                            ></textarea>
+
+                                        </div>
+
+
+                                        <div class="modal-buttons">
+
+                                            <button
+                                                onclick="window.saveSession()"
+                                                style="
+                                                    background:#3182ce;
+                                                    color:white;
+                                                "
+                                            >
+                                                💾 حفظ الجلسة
+                                            </button>
+
+
+                                            <button
+                                                onclick="
+                                                    window.closeModal(
+                                                        'sessionModal'
+                                                    )
+                                                "
+                                                style="
+                                                    background:#e2e8f0;
+                                                    color:#4a5568;
+                                                "
+                                            >
+                                                إلغاء
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            `;
+
+
+                            // تحميل البيانات بعد تجهيز الصفحة
+
+                            await loadData();
+
+
+                        } else {
+
+                            alert(
+                                "❌ غير مصرح لك بدخول صفحة الإدارة المتقدمة. سيتم توجيهك للصفحة الرئيسية."
+                            );
+
+
+                            window.location.href =
+                                'index.html';
+                        }
+
+
+                    } catch (error) {
+
+                        console.error(error);
+
+
+                        document.getElementById(
+                            'app'
+                        ).innerHTML = `
+
+                            <div
+                                style="
+                                    text-align:center;
+                                    padding:50px;
+                                "
+                            >
+
+                                <h2
+                                    style="
+                                        color:#e53e3e;
+                                    "
+                                >
+                                    ❌ خطأ في الاتصال بقاعدة البيانات
+                                </h2>
+
                             </div>
+
                         `;
-
-                        await loadData();
-                    } else {
-                        alert("❌ غير مصرح لك بدخول صفحة الإدارة المتقدمة. سيتم توجيهك للصفحة الرئيسية.");
-                        window.location.href = 'index.html';
                     }
-                } catch(error) {
-                    console.error(error);
-                    document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;"><h2 style="color:#e53e3e;">❌ خطأ في الاتصال بقاعدة البيانات</h2></div>`;
+
+
+                } else {
+
+                    window.location.href =
+                        'login.html';
                 }
-            } else {
-                window.location.href = 'login.html';
             }
-        });
+        );
+
     </script>
+
 </body>
 </html>
