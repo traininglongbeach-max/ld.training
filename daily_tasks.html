@@ -4,8 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    
-    <!-- ⛔ منع الكاش نهائياً -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -53,9 +51,6 @@
             overflow: hidden;
         }
 
-        /* ============================================================
-           SCROLLBAR
-        ============================================================ */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -174,6 +169,16 @@
 
         .btn-logout:hover {
             background: #d63031;
+        }
+
+        .btn-refresh {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-refresh:hover {
+            background: #00a381;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
         }
 
         /* ============================================================
@@ -302,25 +307,6 @@
             color: var(--gray);
             font-size: 0.8rem;
             font-weight: 500;
-        }
-
-        .stat-card .stat-info .stat-change {
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-top: 3px;
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 20px;
-        }
-
-        .stat-change.up {
-            background: #E8F8F5;
-            color: var(--success);
-        }
-
-        .stat-change.down {
-            background: #FDEDEC;
-            color: var(--danger);
         }
 
         /* ============================================================
@@ -464,7 +450,6 @@
             flex-wrap: wrap;
         }
 
-        /* Buttons */
         .btn {
             border: none;
             border-radius: 12px;
@@ -1277,7 +1262,6 @@
         let currentUser = null;
         let isAdmin = false;
         let showCompleted = false;
-        let peopleOnVacation = [];
         let dataLoaded = false;
 
         /* ============================================================
@@ -1334,8 +1318,10 @@
             return name.charAt(0).toUpperCase();
         }
 
+        // 🔥 دالة للتحقق من حالة الإجازة من بيانات Firebase
         function isPersonOnVacation(personId) {
-            return peopleOnVacation.includes(String(personId));
+            const person = people.find(p => String(p.id) === String(personId));
+            return person ? person.onVacation === true : false;
         }
 
         function getRecurrenceName(type) {
@@ -1466,16 +1452,54 @@
             }
         }
 
-        window.toggleVacation = function(personId) {
-            const index = peopleOnVacation.indexOf(String(personId));
-            if (index > -1) {
-                peopleOnVacation.splice(index, 1);
-                showToast(`✅ تم إلغاء إجازة ${getPersonName(personId)}`, 'success');
-            } else {
-                peopleOnVacation.push(String(personId));
-                showToast(`📅 تم تسجيل إجازة ${getPersonName(personId)}`, 'success');
+        /* ============================================================
+           TOGGLE VACATION - 🔥 حفظ في Firebase
+        ============================================================ */
+        window.toggleVacation = async function(personId) {
+            const person = people.find(p => String(p.id) === String(personId));
+            if (!person) {
+                showToast('❌ لم يتم العثور على الشخص', 'error');
+                return;
             }
-            render();
+
+            setLoading(true);
+
+            try {
+                // تبديل حالة الإجازة
+                const newVacationStatus = !person.onVacation;
+                
+                const updatedPerson = {
+                    ...person,
+                    onVacation: newVacationStatus,
+                    updated_at: new Date().toISOString()
+                };
+
+                // 🔥 حفظ في Firebase
+                await DB.update('daily_task_people', updatedPerson);
+
+                // تحديث البيانات محلياً
+                const index = people.findIndex(p => String(p.id) === String(personId));
+                if (index !== -1) {
+                    people[index] = updatedPerson;
+                }
+
+                const message = newVacationStatus 
+                    ? `📅 تم تسجيل إجازة ${person.name} وحفظها في Firebase`
+                    : `✅ تم إلغاء إجازة ${person.name} وحفظها في Firebase`;
+                
+                showToast(message, 'success');
+                
+                // إعادة عرض الصفحة
+                render();
+                renderPeopleManager();
+                updatePeopleSelects();
+
+            } catch (error) {
+                console.error('❌ فشل تحديث حالة الإجازة:', error);
+                showToast('❌ فشل حفظ حالة الإجازة في Firebase', 'error');
+            } finally {
+                setLoading(false);
+            }
         };
 
         /* ============================================================
@@ -1505,7 +1529,6 @@
             await DB.init();
 
             try {
-                // 🔥 قراءة مباشرة من Firebase مع تعطيل الكاش
                 const peopleResult = await DB.getAll('daily_task_people', { cache: false });
                 const templatesResult = await DB.getAll('daily_task_templates', { cache: false });
                 const recordsResult = await DB.getAll('daily_task_records', { cache: false });
@@ -1514,17 +1537,16 @@
                 taskTemplates = templatesResult || [];
                 taskRecords = recordsResult || [];
 
-                console.log('✅ تم تحميل البيانات من Firebase (بدون كاش):', {
+                console.log('✅ تم تحميل البيانات من Firebase:', {
                     people: people.length,
                     templates: taskTemplates.length,
                     records: taskRecords.length
                 });
 
-                console.log('📋 عينة من القوالب:', taskTemplates.slice(0, 3));
+                console.log('📋 الأشخاص مع حالة الإجازة:', people.map(p => ({ name: p.name, onVacation: p.onVacation })));
 
             } catch (error) {
                 console.error('❌ فشل تحميل البيانات من Firebase:', error);
-                // محاولة مرة أخرى بطريقة مختلفة
                 try {
                     const peopleResult = await DB.getAll('daily_task_people');
                     const templatesResult = await DB.getAll('daily_task_templates');
@@ -1563,7 +1585,13 @@
             if (people.length === 0) {
                 const defaultPeople = ['مينا', 'يوانا', 'دينا', 'محمد'];
                 for (const name of defaultPeople) {
-                    const person = { id: generateId('person'), name, active: true, created_at: new Date().toISOString() };
+                    const person = { 
+                        id: generateId('person'), 
+                        name, 
+                        active: true, 
+                        onVacation: false,
+                        created_at: new Date().toISOString() 
+                    };
                     await DB.insert('daily_task_people', person);
                     people.push(person);
                 }
@@ -2026,10 +2054,6 @@
            PEOPLE MANAGEMENT
         ============================================================ */
         window.openPeopleModal = function() {
-            if (!isAdmin) {
-                showToast('❌ فقط الأدمن يمكنه إدارة الأشخاص', 'error');
-                return;
-            }
             renderPeopleManager();
             document.getElementById('peopleModal').style.display = 'flex';
             document.body.classList.add('modal-open');
@@ -2063,9 +2087,15 @@
                             <button class="btn btn-warning btn-sm" onclick="editPerson('${escapeHtml(person.id)}')">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="deletePerson('${escapeHtml(person.id)}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            ${isAdmin ? `
+                                <button class="btn btn-danger btn-sm" onclick="deletePerson('${escapeHtml(person.id)}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : `
+                                <button class="btn btn-danger btn-sm" disabled title="غير مسموح للحذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            `}
                         </div>
                     </div>
                 `;
@@ -2073,11 +2103,6 @@
         }
 
         window.addPerson = async function() {
-            if (!isAdmin) {
-                showToast('❌ فقط الأدمن يمكنه إضافة أشخاص', 'error');
-                return;
-            }
-
             const input = document.getElementById('newPersonName');
             const name = input.value.trim();
             if (!name) return showToast('❌ اكتب اسم الشخص', 'error');
@@ -2089,6 +2114,7 @@
                 id: generateId('person'),
                 name,
                 active: true,
+                onVacation: false,
                 created_at: new Date().toISOString()
             };
 
@@ -2111,11 +2137,6 @@
         };
 
         window.editPerson = async function(id) {
-            if (!isAdmin) {
-                showToast('❌ فقط الأدمن يمكنه تعديل الأشخاص', 'error');
-                return;
-            }
-
             const person = people.find(p => String(p.id) === String(id));
             if (!person) return;
 
@@ -2165,7 +2186,6 @@
             try {
                 await DB.delete('daily_task_people', person.id);
                 people = people.filter(p => String(p.id) !== String(person.id));
-                peopleOnVacation = peopleOnVacation.filter(pid => String(pid) !== String(person.id));
                 renderPeopleManager();
                 updatePeopleSelects();
                 render();
@@ -2296,7 +2316,6 @@
             const content = document.getElementById('content');
             if (!content) return;
 
-            // 🔥 تحديث البيانات من Firebase قبل العرض (لضمان أحدث البيانات)
             const records = getRecordsForDate(selectedDate);
 
             const pendingRecords = records.filter(r => !isRecordFullyCompleted(r));
@@ -2308,6 +2327,7 @@
             const today = getToday();
             const overdue = selectedDate < today ? pending : 0;
             const activePeople = people.filter(p => p.active !== false);
+            const vacationPeople = people.filter(p => isPersonOnVacation(p.id));
 
             const peopleStats = activePeople.map(person => {
                 let totalAssigned = 0;
@@ -2395,7 +2415,7 @@
                             <div class="stat-info">
                                 <div class="stat-number">${activePeople.length}</div>
                                 <div class="stat-label">الأشخاص</div>
-                                ${peopleOnVacation.length > 0 ? `<div style="font-size:0.65rem;color:var(--danger);">📅 ${peopleOnVacation.length} في إجازة</div>` : ''}
+                                ${vacationPeople.length > 0 ? `<div style="font-size:0.65rem;color:var(--danger);">📅 ${vacationPeople.length} في إجازة</div>` : ''}
                             </div>
                         </div>
                     </div>
@@ -2451,10 +2471,10 @@
                                     <span style="font-weight:600;font-size:0.85rem;">📋 عدد القوالب</span>
                                     <span style="font-weight:800;color:var(--primary);font-size:0.9rem;">${taskTemplates.length}</span>
                                 </div>
-                                ${peopleOnVacation.length > 0 ? `
+                                ${vacationPeople.length > 0 ? `
                                 <div style="display:flex;justify-content:space-between;padding:8px 12px;background:#FDEDEC;border-radius:10px;border:1px solid var(--danger);">
                                     <span style="font-weight:600;font-size:0.85rem;">📅 في إجازة</span>
-                                    <span style="font-weight:800;color:var(--danger);font-size:0.9rem;">${peopleOnVacation.length} شخص</span>
+                                    <span style="font-weight:800;color:var(--danger);font-size:0.9rem;">${vacationPeople.length} شخص</span>
                                 </div>
                                 ` : ''}
                             </div>
@@ -2480,11 +2500,9 @@
                             <button class="btn btn-secondary" onclick="openSelfTaskModal()">
                                 <i class="fas fa-user-check"></i> تسجيل مهمة باسمي
                             </button>
-                            ${isAdmin ? `
-                                <button class="btn btn-secondary" onclick="openPeopleModal()">
-                                    <i class="fas fa-users-cog"></i> إدارة الأشخاص
-                                </button>
-                            ` : ''}
+                            <button class="btn btn-secondary" onclick="openPeopleModal()">
+                                <i class="fas fa-users-cog"></i> إدارة الأشخاص
+                            </button>
                         </div>
                     </div>
 
@@ -2513,11 +2531,9 @@
                                 <span class="count-badge">${pending}</span>
                             </div>
                             <div style="display:flex;gap:8px;align-items:center;">
-                                ${isAdmin ? `
-                                    <span style="font-size:0.7rem;color:var(--gray);">
-                                        <i class="fas fa-info-circle"></i> الأشخاص في إجازة لا يحتسبون
-                                    </span>
-                                ` : ''}
+                                <span style="font-size:0.7rem;color:var(--gray);">
+                                    <i class="fas fa-info-circle"></i> الأشخاص في إجازة لا يحتسبون
+                                </span>
                             </div>
                         </div>
 
@@ -2724,6 +2740,11 @@
                                 <i class="fas fa-home"></i>
                                 الرئيسية
                             </a>
+                            <div class="user-badge">
+                                <i class="fas fa-user-circle"></i>
+                                <span>${escapeHtml(userData?.name || 'مستخدم')}</span>
+                                ${isAdmin ? '<span style="background:var(--primary);color:white;padding:2px 8px;border-radius:20px;font-size:0.6rem;">أدمن</span>' : ''}
+                            </div>
                             <button class="btn-nav btn-logout" onclick="logout()">
                                 <i class="fas fa-sign-out-alt"></i>
                                 خروج
@@ -2828,7 +2849,7 @@
                             </div>
                             <div style="margin-bottom:12px;padding:8px 12px;background:#F5F6FA;border-radius:10px;font-size:0.75rem;color:var(--gray);">
                                 <i class="fas fa-info-circle"></i> 
-                                اضغط على زر <strong>"إجازة"</strong> لتحديد شخص في إجازة، سيتم استبعاده من متطلبات إتمام المهام
+                                اضغط على زر <strong>"إجازة"</strong> لتحديد شخص في إجازة، سيتم حفظها في Firebase
                             </div>
                             <div id="peopleManager"></div>
                             <div class="modal-buttons">
@@ -2842,7 +2863,6 @@
                 const startDateInput = document.getElementById('taskStartDate');
                 if (startDateInput) startDateInput.value = selectedDate;
 
-                // 🔥 تحميل البيانات مباشرة من Firebase (بدون كاش)
                 await loadData();
 
             } catch (error) {
