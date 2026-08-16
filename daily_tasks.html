@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    
+    <!-- ⛔⛔⛔ منع الكاش نهائياً في هذه الصفحة فقط ⛔⛔⛔ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -1253,6 +1255,27 @@
         } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
         /* ============================================================
+           🔥 تعطيل الكاش في هذه الصفحة فقط
+           ============================================================ */
+        // مسح أي بيانات مخزنة مؤقتاً خاصة بهذه الصفحة
+        try {
+            // مسح LocalStorage للمجموعات المستخدمة في هذه الصفحة
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('daily_task') || key.includes('firestore'))) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                console.log(`🗑️ تم حذف الكاش: ${key}`);
+            });
+        } catch (e) {
+            console.warn('⚠️ لا يمكن مسح الكاش:', e);
+        }
+
+        /* ============================================================
            GLOBAL VARIABLES
         ============================================================ */
         let people = [];
@@ -1318,7 +1341,6 @@
             return name.charAt(0).toUpperCase();
         }
 
-        // 🔥 دالة للتحقق من حالة الإجازة من بيانات Firebase
         function isPersonOnVacation(personId) {
             const person = people.find(p => String(p.id) === String(personId));
             return person ? person.onVacation === true : false;
@@ -1465,31 +1487,27 @@
             setLoading(true);
 
             try {
-                // تبديل حالة الإجازة
                 const newVacationStatus = !person.onVacation;
-                
+
                 const updatedPerson = {
                     ...person,
                     onVacation: newVacationStatus,
                     updated_at: new Date().toISOString()
                 };
 
-                // 🔥 حفظ في Firebase
                 await DB.update('daily_task_people', updatedPerson);
 
-                // تحديث البيانات محلياً
                 const index = people.findIndex(p => String(p.id) === String(personId));
                 if (index !== -1) {
                     people[index] = updatedPerson;
                 }
 
-                const message = newVacationStatus 
-                    ? `📅 تم تسجيل إجازة ${person.name} وحفظها في Firebase`
-                    : `✅ تم إلغاء إجازة ${person.name} وحفظها في Firebase`;
-                
+                const message = newVacationStatus ?
+                    `📅 تم تسجيل إجازة ${person.name} وحفظها في Firebase` :
+                    `✅ تم إلغاء إجازة ${person.name} وحفظها في Firebase`;
+
                 showToast(message, 'success');
-                
-                // إعادة عرض الصفحة
+
                 render();
                 renderPeopleManager();
                 updatePeopleSelects();
@@ -1523,12 +1541,13 @@
         }
 
         /* ============================================================
-           LOAD DATA - 🔥 قراءة مباشرة من Firebase بدون كاش
+           🔥 LOAD DATA - قراءة مباشرة من Firebase (بدون كاش)
         ============================================================ */
         async function loadData() {
             await DB.init();
 
             try {
+                // 🔥 استخدام cache: false في جميع القراءات
                 const peopleResult = await DB.getAll('daily_task_people', { cache: false });
                 const templatesResult = await DB.getAll('daily_task_templates', { cache: false });
                 const recordsResult = await DB.getAll('daily_task_records', { cache: false });
@@ -1537,16 +1556,15 @@
                 taskTemplates = templatesResult || [];
                 taskRecords = recordsResult || [];
 
-                console.log('✅ تم تحميل البيانات من Firebase:', {
+                console.log('✅ تم تحميل البيانات من Firebase (بدون كاش):', {
                     people: people.length,
                     templates: taskTemplates.length,
                     records: taskRecords.length
                 });
 
-                console.log('📋 الأشخاص مع حالة الإجازة:', people.map(p => ({ name: p.name, onVacation: p.onVacation })));
-
             } catch (error) {
                 console.error('❌ فشل تحميل البيانات من Firebase:', error);
+                // محاولة مرة أخرى بدون cache
                 try {
                     const peopleResult = await DB.getAll('daily_task_people');
                     const templatesResult = await DB.getAll('daily_task_templates');
@@ -1585,24 +1603,68 @@
             if (people.length === 0) {
                 const defaultPeople = ['مينا', 'يوانا', 'دينا', 'محمد'];
                 for (const name of defaultPeople) {
-                    const person = { 
-                        id: generateId('person'), 
-                        name, 
-                        active: true, 
+                    const person = {
+                        id: generateId('person'),
+                        name,
+                        active: true,
                         onVacation: false,
-                        created_at: new Date().toISOString() 
+                        created_at: new Date().toISOString()
                     };
                     await DB.insert('daily_task_people', person);
                     people.push(person);
                 }
             }
 
-            // توليد السجلات للتاريخ الحالي
             await generateRecordsForDate(selectedDate);
             dataLoaded = true;
             render();
             updatePeopleSelects();
         }
+
+        /* ============================================================
+           🔥 REFRESH DATA - تحديث يدوي من Firebase
+        ============================================================ */
+        window.refreshData = async function() {
+            setLoading(true);
+            try {
+                // 🔥 إعادة تحميل البيانات من Firebase (بدون كاش)
+                const peopleResult = await DB.getAll('daily_task_people', { cache: false });
+                const templatesResult = await DB.getAll('daily_task_templates', { cache: false });
+                const recordsResult = await DB.getAll('daily_task_records', { cache: false });
+
+                people = peopleResult || [];
+                taskTemplates = templatesResult || [];
+                taskRecords = recordsResult || [];
+
+                // إعادة التطبيع
+                taskTemplates = taskTemplates.map(template => ({
+                    ...template,
+                    person_ids: normalizePersonIds(template)
+                }));
+
+                taskRecords = taskRecords.map(record => {
+                    const personIds = normalizePersonIds(record);
+                    const completedIds = normalizeCompletedPeopleIds(record);
+                    return {
+                        ...record,
+                        person_ids: personIds,
+                        completed_people_ids: completedIds,
+                        status: isRecordFullyCompleted({ ...record, person_ids: personIds, completed_people_ids: completedIds }) ?
+                            'completed' : 'pending'
+                    };
+                });
+
+                await generateRecordsForDate(selectedDate);
+                render();
+                updatePeopleSelects();
+                showToast('✅ تم تحديث البيانات من Firebase', 'success');
+            } catch (error) {
+                console.error('❌ فشل تحديث البيانات:', error);
+                showToast('❌ فشل تحديث البيانات من Firebase', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
 
         /* ============================================================
            GENERATE RECORDS
@@ -1611,8 +1673,6 @@
             const dueTemplates = taskTemplates.filter(template =>
                 template.active !== false && isTaskDue(template, date)
             );
-
-            console.log(`📋 قوالب مستحقة للتاريخ ${date}:`, dueTemplates.length);
 
             for (const template of dueTemplates) {
                 const recordId = `daily_${template.id}_${date}`;
@@ -2375,6 +2435,9 @@
                             <span style="background:#EEF2F7;padding:4px 14px;border-radius:20px;font-weight:600;color:var(--gray);font-size:0.7rem;">
                                 <i class="fas fa-database"></i> ${taskTemplates.length} قالب
                             </span>
+                            <button class="btn btn-refresh btn-sm" onclick="refreshData()">
+                                <i class="fas fa-sync"></i> تحديث
+                            </button>
                         </div>
                     </div>
 
@@ -2518,7 +2581,7 @@
                             <button class="btn btn-secondary btn-sm" onclick="goYesterday()">⬅️ أمس</button>
                         </div>
                         <div class="date-actions">
-                            <button class="btn btn-secondary btn-sm" onclick="render()"><i class="fas fa-sync"></i> تحديث</button>
+                            <button class="btn btn-secondary btn-sm" onclick="render()"><i class="fas fa-sync"></i> إعادة تحميل</button>
                         </div>
                     </div>
 
@@ -2740,6 +2803,10 @@
                                 <i class="fas fa-home"></i>
                                 الرئيسية
                             </a>
+                            <button class="btn-nav btn-refresh" onclick="refreshData()">
+                                <i class="fas fa-sync"></i>
+                                تحديث
+                            </button>
                             <div class="user-badge">
                                 <i class="fas fa-user-circle"></i>
                                 <span>${escapeHtml(userData?.name || 'مستخدم')}</span>
