@@ -1,0 +1,6013 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <title>
+        Daily Tasks Report - نظام إدارة التعليم والتطوير
+    </title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #f0f4f8;
+            color: #1a202c;
+            min-height: 100vh;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* =====================================================
+           NAVBAR
+        ===================================================== */
+
+        .navbar {
+            background: #fff;
+            padding: 12px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.08);
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 15px;
+            flex-wrap: wrap;
+
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo h2 {
+            color: #1e3a5f;
+            font-size: 1.25rem;
+            font-weight: 800;
+            line-height: 1.5;
+        }
+
+        .logo span {
+            color: #2b7a4b;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a,
+        .nav-links button {
+            text-decoration: none;
+
+            padding: 9px 16px;
+
+            border-radius: 30px;
+
+            font-weight: 700;
+            cursor: pointer;
+
+            border: none;
+
+            font-size: .85rem;
+
+            color: white;
+
+            white-space: nowrap;
+        }
+
+        .home {
+            background: #1e3a5f;
+        }
+
+        .logout {
+            background: #e53e3e;
+        }
+
+        /* =====================================================
+           CONTAINER
+        ===================================================== */
+
+        .container {
+            width: 100%;
+            max-width: 1450px;
+
+            margin: 25px auto;
+
+            padding: 0 18px;
+        }
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+
+            flex-wrap: wrap;
+
+            margin-bottom: 20px;
+        }
+
+        .page-title h1 {
+            color: #1e3a5f;
+            font-size: clamp(1.35rem, 2vw, 1.8rem);
+        }
+
+        .page-title p {
+            color: #718096;
+            margin-top: 5px;
+            font-size: .9rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+
+            padding: 11px 16px;
+
+            cursor: pointer;
+
+            font-weight: 700;
+
+            transition: .2s;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 6px;
+
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #2b7a4b;
+            color: white;
+        }
+
+        .btn-blue {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-orange {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-gray {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-dark {
+            background: #1e3a5f;
+            color: white;
+        }
+
+        /* =====================================================
+           CONTROL CARD
+        ===================================================== */
+
+        .control-card {
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 18px;
+
+            box-shadow: 0 4px 20px rgba(0,0,0,.05);
+
+            margin-bottom: 20px;
+        }
+
+        .control-grid {
+            display: grid;
+
+            grid-template-columns:
+                minmax(180px, 1.5fr)
+                minmax(120px, 1fr)
+                minmax(120px, 1fr)
+                minmax(180px, 1.5fr)
+                auto;
+
+            gap: 10px;
+
+            align-items: end;
+        }
+
+        .form-group label {
+            display: block;
+
+            font-size: .8rem;
+
+            font-weight: 700;
+
+            color: #4a5568;
+
+            margin-bottom: 6px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+
+            border: 2px solid #e2e8f0;
+
+            background: #f8fafc;
+
+            border-radius: 11px;
+
+            padding: 11px;
+
+            outline: none;
+
+            transition: .2s;
+
+            color: #2d3748;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #3182ce;
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        /* =====================================================
+           STATS
+        ===================================================== */
+
+        .stats-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, minmax(0, 1fr));
+
+            gap: 15px;
+
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 18px;
+
+            box-shadow: 0 4px 20px rgba(0,0,0,.05);
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            min-width: 0;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+
+            min-width: 50px;
+
+            border-radius: 15px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 1.25rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+
+            font-weight: 800;
+
+            color: #1e3a5f;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: .78rem;
+        }
+
+        .icon-total {
+            background: #ebf4ff;
+            color: #3182ce;
+        }
+
+        .icon-done {
+            background: #e6fffa;
+            color: #2b7a4b;
+        }
+
+        .icon-pending {
+            background: #fffaf0;
+            color: #dd6b20;
+        }
+
+        .icon-overdue {
+            background: #fff5f5;
+            color: #e53e3e;
+        }
+
+        .icon-people {
+            background: #faf5ff;
+            color: #805ad5;
+        }
+
+        /* =====================================================
+           MAIN GRID
+        ===================================================== */
+
+        .main-grid {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 2fr)
+                minmax(300px, 1fr);
+
+            gap: 20px;
+
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 20px;
+
+            box-shadow: 0 4px 20px rgba(0,0,0,.05);
+
+            min-width: 0;
+        }
+
+        .card-title {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 10px;
+
+            border-bottom: 2px solid #edf2f7;
+
+            padding-bottom: 13px;
+
+            margin-bottom: 15px;
+        }
+
+        .card-title h3 {
+            color: #1e3a5f;
+
+            font-size: 1.05rem;
+        }
+
+        /* =====================================================
+           TASK LIST
+        ===================================================== */
+
+        .task-list {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 12px;
+        }
+
+        .task-item {
+            border: 1px solid #e2e8f0;
+
+            background: #f8fafc;
+
+            border-radius: 15px;
+
+            padding: 15px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            gap: 15px;
+
+            transition: .2s;
+        }
+
+        .task-item:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,.05);
+        }
+
+        .task-item.done {
+            border-right: 5px solid #2b7a4b;
+        }
+
+        .task-item.pending {
+            border-right: 5px solid #ed8936;
+        }
+
+        .task-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-name {
+            font-weight: 800;
+
+            color: #2d3748;
+
+            font-size: 1rem;
+
+            margin-bottom: 8px;
+
+            line-height: 1.6;
+        }
+
+        .task-description {
+            color: #718096;
+
+            font-size: .82rem;
+
+            margin-bottom: 9px;
+
+            line-height: 1.6;
+        }
+
+        .task-meta {
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 6px;
+
+            color: #718096;
+
+            font-size: .75rem;
+        }
+
+        /* =====================================================
+           BADGES
+        ===================================================== */
+
+        .badge {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 4px;
+
+            padding: 5px 8px;
+
+            border-radius: 7px;
+
+            font-size: .7rem;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+        .badge-person {
+            background: #ebf4ff;
+            color: #2b6cb0;
+        }
+
+        .badge-daily {
+            background: #e6fffa;
+            color: #276749;
+        }
+
+        .badge-weekly {
+            background: #faf5ff;
+            color: #6b46c1;
+        }
+
+        .badge-monthly {
+            background: #fffaf0;
+            color: #c05621;
+        }
+
+        .badge-once {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        /* =====================================================
+           ASSIGNEES
+        ===================================================== */
+
+        .assignees-box {
+            margin-top: 12px;
+
+            background: white;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 12px;
+
+            padding: 10px;
+        }
+
+        .assignees-title {
+            font-size: .75rem;
+
+            font-weight: 800;
+
+            color: #4a5568;
+
+            margin-bottom: 8px;
+        }
+
+        .assignee-list {
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 7px;
+        }
+
+        .assignee-chip {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            padding: 6px 9px;
+
+            border-radius: 9px;
+
+            background: #f7fafc;
+
+            border: 1px solid #e2e8f0;
+
+            font-size: .72rem;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+        .assignee-chip:hover {
+            border-color: #3182ce;
+        }
+
+        .assignee-chip.completed {
+            background: #e6fffa;
+
+            border-color: #9ae6b4;
+
+            color: #276749;
+        }
+
+        .assignee-chip.pending {
+            color: #744210;
+        }
+
+        .assignee-check {
+            width: 20px;
+            height: 20px;
+
+            border-radius: 6px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background: #edf2f7;
+
+            color: #718096;
+
+            font-size: .65rem;
+        }
+
+        .assignee-chip.completed .assignee-check {
+            background: #2b7a4b;
+            color: white;
+        }
+
+        /* =====================================================
+           TASK ACTIONS
+        ===================================================== */
+
+        .task-actions {
+            display: flex;
+
+            gap: 6px;
+
+            flex-wrap: wrap;
+
+            flex-shrink: 0;
+        }
+
+        .task-actions button {
+            border: none;
+
+            border-radius: 8px;
+
+            padding: 8px 10px;
+
+            cursor: pointer;
+
+            font-weight: 700;
+
+            min-width: 38px;
+        }
+
+        .btn-complete {
+            background: #2b7a4b;
+            color: white;
+        }
+
+        .btn-uncomplete {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-small-edit {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-small-delete {
+            background: #e53e3e;
+            color: white;
+        }
+
+        /* =====================================================
+           PERFORMANCE
+        ===================================================== */
+
+        .performance-row {
+            margin-bottom: 17px;
+        }
+
+        .performance-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            margin-bottom: 5px;
+        }
+
+        .performance-name {
+            font-weight: 700;
+            font-size: .85rem;
+        }
+
+        .performance-value {
+            color: #2b7a4b;
+            font-weight: 700;
+            font-size: .8rem;
+        }
+
+        .progress {
+            height: 9px;
+
+            background: #edf2f7;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+
+            background: #2b7a4b;
+
+            border-radius: 10px;
+
+            transition: width .3s;
+        }
+
+        /* =====================================================
+           PEOPLE
+        ===================================================== */
+
+        .person-row {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            padding: 11px;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 11px;
+
+            margin-bottom: 7px;
+
+            background: #f8fafc;
+        }
+
+        .person-name {
+            font-weight: 700;
+        }
+
+        .person-count {
+            color: #718096;
+            font-size: .75rem;
+        }
+
+        /* =====================================================
+           PEOPLE SELECTOR
+        ===================================================== */
+
+        .people-selector {
+            border: 2px solid #e2e8f0;
+
+            background: #f8fafc;
+
+            border-radius: 12px;
+
+            padding: 10px;
+
+            max-height: 240px;
+
+            overflow-y: auto;
+        }
+
+        .people-search {
+            margin-bottom: 9px;
+        }
+
+        .person-option {
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 9px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+        }
+
+        .person-option:hover {
+            background: #edf2f7;
+        }
+
+        .person-option input {
+            width: auto;
+        }
+
+        .selected-count {
+            margin-top: 7px;
+
+            color: #3182ce;
+
+            font-size: .75rem;
+
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           EMPTY
+        ===================================================== */
+
+        .empty-state {
+            text-align: center;
+
+            padding: 45px 15px;
+
+            color: #a0aec0;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+
+            margin-bottom: 12px;
+        }
+
+        /* =====================================================
+           MODAL
+        ===================================================== */
+
+        .modal {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(15,23,42,.7);
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 999;
+
+            padding: 15px;
+
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+
+            width: 100%;
+
+            max-width: 700px;
+
+            max-height: calc(100vh - 30px);
+
+            overflow-y: auto;
+
+            border-radius: 20px;
+
+            padding: 22px;
+
+            box-shadow: 0 25px 50px rgba(0,0,0,.25);
+
+            margin: auto;
+        }
+
+        .modal-title {
+            color: #1e3a5f;
+
+            margin-bottom: 18px;
+
+            border-bottom: 2px solid #edf2f7;
+
+            padding-bottom: 12px;
+
+            font-size: 1.15rem;
+        }
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 14px;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .modal-buttons {
+            display: flex;
+
+            gap: 8px;
+
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        /* =====================================================
+           TOAST
+        ===================================================== */
+
+        .toast {
+            position: fixed;
+
+            bottom: 25px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            background: #2b7a4b;
+
+            color: white;
+
+            padding: 12px 20px;
+
+            border-radius: 30px;
+
+            font-weight: 700;
+
+            z-index: 5000;
+
+            box-shadow: 0 10px 30px rgba(0,0,0,.2);
+
+            max-width: calc(100vw - 30px);
+
+            text-align: center;
+
+            animation: toastIn .2s ease;
+        }
+
+        .toast.error {
+            background: #e53e3e;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        /* =====================================================
+           LOADING
+        ===================================================== */
+
+        .loading-overlay {
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(255,255,255,.85);
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 10000;
+        }
+
+        .loading-box {
+            background: white;
+
+            padding: 25px 35px;
+
+            border-radius: 18px;
+
+            box-shadow: 0 10px 40px rgba(0,0,0,.12);
+
+            text-align: center;
+
+            color: #1e3a5f;
+
+            font-weight: 700;
+        }
+
+        .loading-box i {
+            font-size: 2rem;
+
+            margin-bottom: 10px;
+        }
+
+        /* =====================================================
+           RESPONSIVE - 1200
+        ===================================================== */
+
+        @media (max-width: 1200px) {
+
+            .stats-grid {
+                grid-template-columns:
+                    repeat(3, minmax(0, 1fr));
+            }
+
+            .control-grid {
+                grid-template-columns:
+                    repeat(3, minmax(0, 1fr));
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        /* =====================================================
+           RESPONSIVE - 800
+        ===================================================== */
+
+        @media (max-width: 800px) {
+
+            .navbar {
+                padding: 10px 14px;
+            }
+
+            .navbar .logo {
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .container {
+                padding: 0 10px;
+                margin: 15px auto;
+            }
+
+            .page-header {
+                align-items: stretch;
+            }
+
+            .page-title {
+                text-align: center;
+                width: 100%;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+            }
+
+            .control-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .stats-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+        }
+
+        /* =====================================================
+           RESPONSIVE - 600
+        ===================================================== */
+
+        @media (max-width: 600px) {
+
+            .navbar {
+                position: relative;
+            }
+
+            .logo h2 {
+                font-size: 1rem;
+            }
+
+            .nav-links a,
+            .nav-links button {
+                flex: 1;
+                text-align: center;
+                padding: 9px 10px;
+            }
+
+            .control-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 9px;
+            }
+
+            .stat-card {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .stat-icon {
+                width: 42px;
+                min-width: 42px;
+                height: 42px;
+                border-radius: 12px;
+            }
+
+            .stat-number {
+                font-size: 1.25rem;
+            }
+
+            .stat-label {
+                font-size: .68rem;
+            }
+
+            .card {
+                padding: 14px;
+                border-radius: 15px;
+            }
+
+            .task-item {
+                flex-direction: column;
+            }
+
+            .task-actions {
+                width: 100%;
+            }
+
+            .task-actions button {
+                flex: 1;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+
+            .modal {
+                padding: 8px;
+            }
+
+            .modal-content {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .person-row {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .person-row > div:last-child {
+                width: 100%;
+            }
+
+            .person-row button {
+                flex: 1;
+            }
+
+        }
+
+        /* =====================================================
+           RESPONSIVE - 400
+        ===================================================== */
+
+        @media (max-width: 400px) {
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                flex-direction: column;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+
+            .nav-links {
+                flex-direction: column;
+            }
+
+            .nav-links a,
+            .nav-links button {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div id="app">
+
+    <div style="
+        text-align:center;
+        padding:150px 20px;
+        color:#1e3a5f;
+        font-size:1.2rem;
+    ">
+
+        ⏳ جاري التحقق من الصلاحيات...
+
+    </div>
+
+</div>
+
+
+<div
+    id="loadingOverlay"
+    class="loading-overlay">
+
+    <div class="loading-box">
+
+        <i class="fas fa-spinner fa-spin"></i>
+
+        <div>
+            جاري الحفظ...
+        </div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+import { auth, DB } from './database.js';
+
+import {
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+
+/* =========================================================
+   GLOBAL VARIABLES
+========================================================= */
+
+let people = [];
+
+let taskTemplates = [];
+
+let taskRecords = [];
+
+let selectedDate = getToday();
+
+let currentUser = null;
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function getToday() {
+
+    const d = new Date();
+
+    const year = d.getFullYear();
+
+    const month =
+        String(d.getMonth() + 1)
+            .padStart(2, '0');
+
+    const day =
+        String(d.getDate())
+            .padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+
+}
+
+
+function formatDate(date) {
+
+    if (!date)
+        return '-';
+
+    const d =
+        new Date(date + 'T00:00:00');
+
+    return d.toLocaleDateString(
+        'ar-EG',
+        {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }
+    );
+
+}
+
+
+function escapeHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return '';
+    }
+
+    const div =
+        document.createElement('div');
+
+    div.textContent =
+        String(value);
+
+    return div.innerHTML;
+
+}
+
+
+function generateId(prefix = 'task') {
+
+    return `${prefix}_${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 10)}`;
+
+}
+
+
+function showToast(message, error = false) {
+
+    const oldToast =
+        document.querySelector('.toast');
+
+    if (oldToast)
+        oldToast.remove();
+
+    const toast =
+        document.createElement('div');
+
+    toast.className =
+        'toast' + (error ? ' error' : '');
+
+    toast.textContent =
+        message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+
+        if (toast)
+            toast.remove();
+
+    }, 3000);
+
+}
+
+
+function setLoading(show) {
+
+    const overlay =
+        document.getElementById(
+            'loadingOverlay'
+        );
+
+    if (!overlay)
+        return;
+
+    overlay.style.display =
+        show ? 'flex' : 'none';
+
+}
+
+
+function getPersonName(personId) {
+
+    const person =
+        people.find(
+            p =>
+                String(p.id) ===
+                String(personId)
+        );
+
+    return person
+        ? person.name
+        : 'غير محدد';
+
+}
+
+
+function getPersonNames(personIds = []) {
+
+    return personIds
+        .map(id => getPersonName(id))
+        .filter(Boolean);
+
+}
+
+
+function getRecurrenceName(type) {
+
+    const names = {
+
+        daily: 'يومية',
+
+        weekly: 'أسبوعية',
+
+        monthly: 'شهرية',
+
+        once: 'مرة واحدة'
+
+    };
+
+    return names[type] || type;
+
+}
+
+
+function getRecurrenceBadge(type) {
+
+    const classes = {
+
+        daily: 'badge-daily',
+
+        weekly: 'badge-weekly',
+
+        monthly: 'badge-monthly',
+
+        once: 'badge-once'
+
+    };
+
+    return `
+
+        <span class="badge ${
+            classes[type] || 'badge-once'
+        }">
+
+            <i class="fas fa-repeat"></i>
+
+            ${escapeHtml(
+                getRecurrenceName(type)
+            )}
+
+        </span>
+
+    `;
+
+}
+
+
+/* =========================================================
+   NORMALIZE OLD / NEW DATA
+========================================================= */
+
+function normalizePersonIds(item) {
+
+    if (
+        Array.isArray(
+            item.person_ids
+        )
+    ) {
+
+        return item.person_ids
+            .map(String);
+
+    }
+
+
+    if (
+        item.person_id !== null &&
+        item.person_id !== undefined &&
+        item.person_id !== ''
+    ) {
+
+        return [
+            String(item.person_id)
+        ];
+
+    }
+
+
+    return [];
+
+}
+
+
+function normalizeCompletedPeopleIds(record) {
+
+    if (
+        Array.isArray(
+            record.completed_people_ids
+        )
+    ) {
+
+        return record.completed_people_ids
+            .map(String);
+
+    }
+
+
+    /*
+       Compatibility مع السجلات القديمة
+       التي كانت تعتمد على completed_by
+    */
+
+    if (
+        record.status === 'completed' &&
+        record.person_id
+    ) {
+
+        return [
+            String(record.person_id)
+        ];
+
+    }
+
+
+    return [];
+
+}
+
+
+function getRecordPersonIds(record) {
+
+    return normalizePersonIds(record);
+
+}
+
+
+function isPersonCompleted(record, personId) {
+
+    const completed =
+        normalizeCompletedPeopleIds(
+            record
+        );
+
+    return completed.includes(
+        String(personId)
+    );
+
+}
+
+
+function isRecordFullyCompleted(record) {
+
+    const assigned =
+        getRecordPersonIds(record);
+
+    const completed =
+        normalizeCompletedPeopleIds(
+            record
+        );
+
+    if (assigned.length === 0) {
+
+        return record.status ===
+            'completed';
+
+    }
+
+    return assigned.every(
+        id =>
+            completed.includes(
+                String(id)
+            )
+    );
+
+}
+
+
+/* =========================================================
+   PEOPLE SELECTOR
+========================================================= */
+
+function renderPeopleSelector(
+    selectedIds = []
+) {
+
+    const container =
+        document.getElementById(
+            'peopleSelector'
+        );
+
+    if (!container)
+        return;
+
+
+    const search =
+        document.getElementById(
+            'peopleSearch'
+        );
+
+
+    const searchValue =
+        search
+            ? search.value
+                .trim()
+                .toLowerCase()
+            : '';
+
+
+    const activePeople =
+        people.filter(
+            p =>
+                p.active !== false &&
+                (
+                    !searchValue ||
+                    String(p.name)
+                        .toLowerCase()
+                        .includes(searchValue)
+                )
+        );
+
+
+    if (activePeople.length === 0) {
+
+        container.innerHTML = `
+
+            <div style="
+                padding:15px;
+                text-align:center;
+                color:#a0aec0;
+            ">
+
+                لا يوجد أشخاص
+
+            </div>
+
+        `;
+
+        updateSelectedCount();
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        activePeople
+            .map(person => {
+
+                const checked =
+                    selectedIds
+                        .map(String)
+                        .includes(
+                            String(person.id)
+                        );
+
+
+                return `
+
+                    <label class="person-option">
+
+                        <input
+                            type="checkbox"
+                            class="person-checkbox"
+                            value="${escapeHtml(person.id)}"
+                            ${checked ? 'checked' : ''}>
+
+                        <span>
+
+                            ${escapeHtml(
+                                person.name
+                            )}
+
+                        </span>
+
+                    </label>
+
+                `;
+
+            })
+            .join('');
+
+
+    container
+        .querySelectorAll(
+            '.person-checkbox'
+        )
+        .forEach(checkbox => {
+
+            checkbox.addEventListener(
+                'change',
+                updateSelectedCount
+            );
+
+        });
+
+
+    updateSelectedCount();
+
+}
+
+
+function getSelectedPersonIds() {
+
+    return Array.from(
+        document.querySelectorAll(
+            '.person-checkbox:checked'
+        )
+    )
+        .map(
+            checkbox =>
+                String(checkbox.value)
+        );
+
+}
+
+
+function updateSelectedCount() {
+
+    const count =
+        document.querySelectorAll(
+            '.person-checkbox:checked'
+        ).length;
+
+
+    const element =
+        document.getElementById(
+            'selectedPeopleCount'
+        );
+
+
+    if (element) {
+
+        element.textContent =
+            `تم اختيار ${count} شخص`;
+
+    }
+
+}
+
+
+window.filterPeople =
+function() {
+
+    renderPeopleSelector(
+        getSelectedPersonIds()
+    );
+
+};
+
+
+/* =========================================================
+   UPDATE PEOPLE SELECTS
+========================================================= */
+
+function updatePeopleSelects() {
+
+    const selfPerson =
+        document.getElementById(
+            'selfPerson'
+        );
+
+
+    if (!selfPerson)
+        return;
+
+
+    const currentValue =
+        selfPerson.value;
+
+
+    selfPerson.innerHTML = `
+
+        <option value="">
+            -- اختر اسمك --
+        </option>
+
+        ${
+            people
+                .filter(
+                    p =>
+                        p.active !== false
+                )
+                .map(
+                    p => `
+
+                        <option
+                            value="${escapeHtml(p.id)}">
+
+                            ${escapeHtml(
+                                p.name
+                            )}
+
+                        </option>
+
+                    `
+                )
+                .join('')
+        }
+
+    `;
+
+
+    if (
+        currentValue &&
+        people.some(
+            p =>
+                String(p.id) ===
+                String(currentValue)
+        )
+    ) {
+
+        selfPerson.value =
+            currentValue;
+
+    }
+
+}
+
+
+/* =========================================================
+   DATE LOGIC
+========================================================= */
+
+function isTaskDue(
+    template,
+    date
+) {
+
+    if (!template.start_date)
+        return false;
+
+
+    if (
+        date <
+        template.start_date
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
+        template.end_date &&
+        date >
+        template.end_date
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
+        template.recurrence ===
+        'once'
+    ) {
+
+        return (
+            date ===
+            template.start_date
+        );
+
+    }
+
+
+    const target =
+        new Date(
+            template.start_date +
+            'T00:00:00'
+        );
+
+
+    const current =
+        new Date(
+            date +
+            'T00:00:00'
+        );
+
+
+    const diff =
+        Math.floor(
+            (
+                current -
+                target
+            ) /
+            (
+                1000 *
+                60 *
+                60 *
+                24
+            )
+        );
+
+
+    if (
+        template.recurrence ===
+        'daily'
+    ) {
+
+        return diff >= 0;
+
+    }
+
+
+    if (
+        template.recurrence ===
+        'weekly'
+    ) {
+
+        return (
+            diff >= 0 &&
+            diff % 7 === 0
+        );
+
+    }
+
+
+    if (
+        template.recurrence ===
+        'monthly'
+    ) {
+
+        return (
+            target.getDate() ===
+            current.getDate()
+        );
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =========================================================
+   LOAD DATA
+========================================================= */
+
+async function loadData() {
+
+    await DB.init();
+
+
+    people =
+        await DB.getAll(
+            'daily_task_people'
+        ) || [];
+
+
+    taskTemplates =
+        await DB.getAll(
+            'daily_task_templates'
+        ) || [];
+
+
+    taskRecords =
+        await DB.getAll(
+            'daily_task_records'
+        ) || [];
+
+
+    /*
+       Normalize old data
+    */
+
+    taskTemplates =
+        taskTemplates.map(
+            template => ({
+
+                ...template,
+
+                person_ids:
+                    normalizePersonIds(
+                        template
+                    )
+
+            })
+        );
+
+
+    taskRecords =
+        taskRecords.map(
+            record => {
+
+                const personIds =
+                    normalizePersonIds(
+                        record
+                    );
+
+                const completedIds =
+                    normalizeCompletedPeopleIds(
+                        record
+                    );
+
+                return {
+
+                    ...record,
+
+                    person_ids:
+                        personIds,
+
+                    completed_people_ids:
+                        completedIds,
+
+                    status:
+                        isRecordFullyCompleted({
+                            ...record,
+                            person_ids:
+                                personIds,
+                            completed_people_ids:
+                                completedIds
+                        })
+                            ? 'completed'
+                            : 'pending'
+
+                };
+
+            }
+        );
+
+
+    /*
+       Create default people only if
+       collection is completely empty.
+    */
+
+    if (
+        people.length === 0
+    ) {
+
+        const defaultPeople = [
+
+            'مينا',
+            'يوانا',
+            'دينا',
+            'محمد'
+
+        ];
+
+
+        for (
+            const name
+            of defaultPeople
+        ) {
+
+            const person = {
+
+                id:
+                    generateId(
+                        'person'
+                    ),
+
+                name,
+
+                active: true,
+
+                created_at:
+                    new Date()
+                        .toISOString()
+
+            };
+
+
+            await DB.insert(
+                'daily_task_people',
+                person
+            );
+
+
+            people.push(person);
+
+        }
+
+    }
+
+
+    await generateRecordsForDate(
+        selectedDate
+    );
+
+
+    render();
+
+    updatePeopleSelects();
+
+}
+
+
+/* =========================================================
+   GENERATE RECORDS
+========================================================= */
+
+async function generateRecordsForDate(date) {
+
+    const dueTemplates =
+        taskTemplates.filter(
+            template =>
+                template.active !== false &&
+                isTaskDue(
+                    template,
+                    date
+                )
+        );
+
+
+    for (
+        const template
+        of dueTemplates
+    ) {
+
+        const recordId =
+            `daily_${template.id}_${date}`;
+
+
+        /*
+           Prevent duplicate in memory
+        */
+
+        const existsInMemory =
+            taskRecords.some(
+                existingRecord =>
+                    String(
+                        existingRecord.id
+                    ) ===
+                    String(recordId)
+            );
+
+
+        if (existsInMemory) {
+
+            continue;
+
+        }
+
+
+        /*
+           Direct Firestore check
+        */
+
+        let existingRecord =
+            null;
+
+
+        try {
+
+            existingRecord =
+                await DB.get(
+                    'daily_task_records',
+                    recordId
+                );
+
+        } catch (error) {
+
+            existingRecord =
+                null;
+
+        }
+
+
+        if (existingRecord) {
+
+            const normalized =
+                {
+
+                    ...existingRecord,
+
+                    person_ids:
+                        normalizePersonIds(
+                            existingRecord
+                        ),
+
+                    completed_people_ids:
+                        normalizeCompletedPeopleIds(
+                            existingRecord
+                        )
+
+                };
+
+
+            normalized.status =
+                isRecordFullyCompleted(
+                    normalized
+                )
+                    ? 'completed'
+                    : 'pending';
+
+
+            taskRecords.push(
+                normalized
+            );
+
+
+            continue;
+
+        }
+
+
+        /*
+           New record
+        */
+
+        const personIds =
+            normalizePersonIds(
+                template
+            );
+
+
+        const newRecord = {
+
+            id:
+                recordId,
+
+            template_id:
+                template.id,
+
+            task_name:
+                template.task_name,
+
+            description:
+                template.description ||
+                '',
+
+            person_ids:
+                personIds,
+
+            /*
+               Keep old field for compatibility
+            */
+
+            person_id:
+                personIds.length
+                    ? personIds[0]
+                    : null,
+
+            task_date:
+                date,
+
+            recurrence:
+                template.recurrence,
+
+            status:
+                'pending',
+
+            completed_people_ids:
+                [],
+
+            completed_at:
+                null,
+
+            completed_by:
+                null,
+
+            created_at:
+                new Date()
+                    .toISOString()
+
+        };
+
+
+        await DB.insert(
+            'daily_task_records',
+            newRecord
+        );
+
+
+        taskRecords.push(
+            newRecord
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GET RECORDS
+========================================================= */
+
+function getRecordsForDate(date) {
+
+    return taskRecords
+
+        .filter(
+            record =>
+                String(
+                    record.task_date
+                ) ===
+                String(date)
+        )
+
+        .sort(
+            (a, b) =>
+                String(a.task_name)
+                    .localeCompare(
+                        String(b.task_name),
+                        'ar'
+                    )
+        );
+
+}
+
+
+/* =========================================================
+   OPEN ADD TASK MODAL
+========================================================= */
+
+window.openTaskModal =
+function(record = null) {
+
+    const title =
+        document.getElementById(
+            'taskModalTitle'
+        );
+
+    const taskId =
+        document.getElementById(
+            'taskId'
+        );
+
+    const taskName =
+        document.getElementById(
+            'taskName'
+        );
+
+    const taskDescription =
+        document.getElementById(
+            'taskDescription'
+        );
+
+    const taskRecurrence =
+        document.getElementById(
+            'taskRecurrence'
+        );
+
+    const taskStartDate =
+        document.getElementById(
+            'taskStartDate'
+        );
+
+    const taskEndDate =
+        document.getElementById(
+            'taskEndDate'
+        );
+
+
+    if (!title)
+        return;
+
+
+    title.innerHTML =
+        record
+            ? '✏️ تعديل المهمة'
+            : '➕ إضافة مهمة جديدة';
+
+
+    taskId.value =
+        record?.id || '';
+
+
+    taskName.value =
+        record?.task_name || '';
+
+
+    taskDescription.value =
+        record?.description || '';
+
+
+    taskRecurrence.value =
+        record?.recurrence ||
+        'once';
+
+
+    taskStartDate.value =
+        record?.task_date ||
+        selectedDate;
+
+
+    taskEndDate.value =
+        '';
+
+
+    const personIds =
+        record
+            ? normalizePersonIds(
+                record
+            )
+            : [];
+
+
+    renderPeopleSelector(
+        personIds
+    );
+
+
+    document.getElementById(
+        'taskModal'
+    ).style.display =
+        'flex';
+
+
+    document.body.classList.add(
+        'modal-open'
+    );
+
+};
+
+
+/* =========================================================
+   SAVE TASK
+========================================================= */
+
+window.saveTask =
+async function() {
+
+    const id =
+        document.getElementById(
+            'taskId'
+        ).value;
+
+
+    const taskName =
+        document.getElementById(
+            'taskName'
+        )
+        .value
+        .trim();
+
+
+    const description =
+        document.getElementById(
+            'taskDescription'
+        )
+        .value
+        .trim();
+
+
+    const personIds =
+        getSelectedPersonIds();
+
+
+    const recurrence =
+        document.getElementById(
+            'taskRecurrence'
+        ).value;
+
+
+    const startDate =
+        document.getElementById(
+            'taskStartDate'
+        ).value;
+
+
+    const endDate =
+        document.getElementById(
+            'taskEndDate'
+        ).value;
+
+
+    if (!taskName) {
+
+        showToast(
+            '❌ اكتب اسم المهمة',
+            true
+        );
+
+        return;
+
+    }
+
+
+    if (!startDate) {
+
+        showToast(
+            '❌ اختر تاريخ بداية المهمة',
+            true
+        );
+
+        return;
+
+    }
+
+
+    if (personIds.length === 0) {
+
+        showToast(
+            '❌ اختر شخصًا واحدًا على الأقل',
+            true
+        );
+
+        return;
+
+    }
+
+
+    setLoading(true);
+
+
+    try {
+
+        const now =
+            new Date()
+                .toISOString();
+
+
+        /* =================================================
+           ADD
+        ================================================= */
+
+        if (!id) {
+
+            const template = {
+
+                id:
+                    generateId(
+                        'template'
+                    ),
+
+                task_name:
+                    taskName,
+
+                description:
+                    description,
+
+                person_ids:
+                    personIds,
+
+                /*
+                   Compatibility
+                */
+
+                person_id:
+                    personIds[0] ||
+                    null,
+
+                recurrence:
+                    recurrence,
+
+                start_date:
+                    startDate,
+
+                end_date:
+                    endDate ||
+                    null,
+
+                active:
+                    true,
+
+                created_at:
+                    now,
+
+                updated_at:
+                    now
+
+            };
+
+
+            /*
+               SAVE TEMPLATE TO FIREBASE
+            */
+
+            await DB.insert(
+                'daily_task_templates',
+                template
+            );
+
+
+            taskTemplates.push(
+                template
+            );
+
+
+            /*
+               Generate today's record
+               if task is due.
+            */
+
+            await generateRecordsForDate(
+                selectedDate
+            );
+
+
+            showToast(
+                '✅ تم إضافة المهمة وحفظها في Firebase'
+            );
+
+        }
+
+
+        /* =================================================
+           EDIT
+        ================================================= */
+
+        else {
+
+            const oldTemplate =
+                taskTemplates.find(
+                    template =>
+                        String(
+                            template.id
+                        ) ===
+                        String(id)
+                );
+
+
+            if (!oldTemplate) {
+
+                showToast(
+                    '❌ لم يتم العثور على المهمة',
+                    true
+                );
+
+                return;
+
+            }
+
+
+            const updatedTemplate = {
+
+                ...oldTemplate,
+
+                task_name:
+                    taskName,
+
+                description:
+                    description,
+
+                person_ids:
+                    personIds,
+
+                person_id:
+                    personIds[0] ||
+                    null,
+
+                recurrence:
+                    recurrence,
+
+                start_date:
+                    startDate,
+
+                end_date:
+                    endDate ||
+                    null,
+
+                active:
+                    true,
+
+                updated_at:
+                    now
+
+            };
+
+
+            /*
+               SAVE EDIT TO FIREBASE
+            */
+
+            await DB.update(
+                'daily_task_templates',
+                updatedTemplate
+            );
+
+
+            const templateIndex =
+                taskTemplates.findIndex(
+                    template =>
+                        String(
+                            template.id
+                        ) ===
+                        String(id)
+                );
+
+
+            if (
+                templateIndex !==
+                -1
+            ) {
+
+                taskTemplates[
+                    templateIndex
+                ] =
+                    updatedTemplate;
+
+            }
+
+
+            /*
+               Update existing records
+               belonging to this template.
+            */
+
+            const relatedRecords =
+                taskRecords.filter(
+                    item =>
+                        String(
+                            item.template_id
+                        ) ===
+                        String(id)
+                );
+
+
+            for (
+                const existingRecord
+                of relatedRecords
+            ) {
+
+                const oldCompleted =
+                    normalizeCompletedPeopleIds(
+                        existingRecord
+                    );
+
+
+                /*
+                   Keep completion state only
+                   for people still assigned.
+                */
+
+                const validCompleted =
+                    oldCompleted.filter(
+                        completedPersonId =>
+                            personIds.includes(
+                                String(
+                                    completedPersonId
+                                )
+                            )
+                    );
+
+
+                const updatedRecord = {
+
+                    ...existingRecord,
+
+                    task_name:
+                        taskName,
+
+                    description:
+                        description,
+
+                    person_ids:
+                        personIds,
+
+                    person_id:
+                        personIds[0] ||
+                        null,
+
+                    recurrence:
+                        recurrence,
+
+                    completed_people_ids:
+                        validCompleted,
+
+                    status:
+                        personIds.length > 0 &&
+                        personIds.every(
+                            personId =>
+                                validCompleted
+                                    .includes(
+                                        String(
+                                            personId
+                                        )
+                                    )
+                        )
+                            ? 'completed'
+                            : 'pending',
+
+                    updated_at:
+                        now
+
+                };
+
+
+                if (
+                    updatedRecord.status ===
+                    'completed'
+                ) {
+
+                    updatedRecord.completed_at =
+                        existingRecord.completed_at ||
+                        now;
+
+                } else {
+
+                    updatedRecord.completed_at =
+                        null;
+
+                }
+
+
+                await DB.update(
+                    'daily_task_records',
+                    updatedRecord
+                );
+
+
+                const recordIndex =
+                    taskRecords.findIndex(
+                        item =>
+                            String(
+                                item.id
+                            ) ===
+                            String(
+                                existingRecord.id
+                            )
+                    );
+
+
+                if (
+                    recordIndex !==
+                    -1
+                ) {
+
+                    taskRecords[
+                        recordIndex
+                    ] =
+                        updatedRecord;
+
+                }
+
+            }
+
+
+            await generateRecordsForDate(
+                selectedDate
+            );
+
+
+            showToast(
+                '✅ تم تعديل المهمة وحفظ التعديل في Firebase'
+            );
+
+        }
+
+
+        closeModal(
+            'taskModal'
+        );
+
+
+        render();
+
+
+    } catch (error) {
+
+        console.error(
+            'SAVE TASK ERROR:',
+            error
+        );
+
+
+        showToast(
+            '❌ حدث خطأ أثناء الحفظ: ' +
+            error.message,
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   TOGGLE PERSON COMPLETION
+========================================================= */
+
+window.togglePersonTask =
+async function(
+    recordId,
+    personId
+) {
+
+    const taskRecord =
+        taskRecords.find(
+            record =>
+                String(
+                    record.id
+                ) ===
+                String(recordId)
+        );
+
+
+    if (!taskRecord)
+        return;
+
+
+    const assignedIds =
+        normalizePersonIds(
+            taskRecord
+        );
+
+
+    if (
+        !assignedIds.includes(
+            String(personId)
+        )
+    ) {
+
+        showToast(
+            '❌ هذا الشخص غير مسند إلى المهمة',
+            true
+        );
+
+        return;
+
+    }
+
+
+    let completedIds =
+        normalizeCompletedPeopleIds(
+            taskRecord
+        );
+
+
+    const normalizedPersonId =
+        String(personId);
+
+
+    if (
+        completedIds.includes(
+            normalizedPersonId
+        )
+    ) {
+
+        completedIds =
+            completedIds.filter(
+                id =>
+                    String(id) !==
+                    normalizedPersonId
+            );
+
+    } else {
+
+        completedIds.push(
+            normalizedPersonId
+        );
+
+    }
+
+
+    const fullyCompleted =
+        assignedIds.length > 0 &&
+        assignedIds.every(
+            id =>
+                completedIds.includes(
+                    String(id)
+                )
+        );
+
+
+    const now =
+        new Date()
+            .toISOString();
+
+
+    const updatedRecord = {
+
+        ...taskRecord,
+
+        person_ids:
+            assignedIds,
+
+        completed_people_ids:
+            completedIds,
+
+        status:
+            fullyCompleted
+                ? 'completed'
+                : 'pending',
+
+        completed_at:
+            fullyCompleted
+                ? now
+                : null,
+
+        completed_by:
+            fullyCompleted
+                ? currentUser?.uid ||
+                    null
+                : null,
+
+        updated_at:
+            now
+
+    };
+
+
+    setLoading(true);
+
+
+    try {
+
+        /*
+           SAVE PERSON COMPLETION
+           TO FIREBASE
+        */
+
+        await DB.update(
+            'daily_task_records',
+            updatedRecord
+        );
+
+
+        const index =
+            taskRecords.findIndex(
+                record =>
+                    String(
+                        record.id
+                    ) ===
+                    String(recordId)
+            );
+
+
+        if (index !== -1) {
+
+            taskRecords[index] =
+                updatedRecord;
+
+        }
+
+
+        render();
+
+
+    } catch (error) {
+
+        console.error(
+            'TOGGLE COMPLETION ERROR:',
+            error
+        );
+
+
+        showToast(
+            '❌ فشل حفظ حالة التنفيذ: ' +
+            error.message,
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   COMPLETE ALL PEOPLE
+========================================================= */
+
+window.completeTask =
+async function(recordId) {
+
+    const taskRecord =
+        taskRecords.find(
+            record =>
+                String(
+                    record.id
+                ) ===
+                String(recordId)
+        );
+
+
+    if (!taskRecord)
+        return;
+
+
+    const personIds =
+        normalizePersonIds(
+            taskRecord
+        );
+
+
+    if (personIds.length === 0) {
+
+        showToast(
+            '❌ لا يوجد أشخاص مسندة إليهم المهمة',
+            true
+        );
+
+        return;
+
+    }
+
+
+    const now =
+        new Date()
+            .toISOString();
+
+
+    const updatedRecord = {
+
+        ...taskRecord,
+
+        completed_people_ids:
+            personIds,
+
+        status:
+            'completed',
+
+        completed_at:
+            now,
+
+        completed_by:
+            currentUser?.uid ||
+            null,
+
+        updated_at:
+            now
+
+    };
+
+
+    setLoading(true);
+
+
+    try {
+
+        await DB.update(
+            'daily_task_records',
+            updatedRecord
+        );
+
+
+        const index =
+            taskRecords.findIndex(
+                record =>
+                    String(
+                        record.id
+                    ) ===
+                    String(recordId)
+            );
+
+
+        if (index !== -1) {
+
+            taskRecords[index] =
+                updatedRecord;
+
+        }
+
+
+        showToast(
+            '✅ تم تنفيذ المهمة لجميع الأشخاص'
+        );
+
+
+        render();
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            '❌ فشل حفظ المهمة',
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   UNCOMPLETE ALL
+========================================================= */
+
+window.uncompleteTask =
+async function(recordId) {
+
+    const taskRecord =
+        taskRecords.find(
+            record =>
+                String(
+                    record.id
+                ) ===
+                String(recordId)
+        );
+
+
+    if (!taskRecord)
+        return;
+
+
+    const updatedRecord = {
+
+        ...taskRecord,
+
+        completed_people_ids:
+            [],
+
+        status:
+            'pending',
+
+        completed_at:
+            null,
+
+        completed_by:
+            null,
+
+        updated_at:
+            new Date()
+                .toISOString()
+
+    };
+
+
+    setLoading(true);
+
+
+    try {
+
+        await DB.update(
+            'daily_task_records',
+            updatedRecord
+        );
+
+
+        const index =
+            taskRecords.findIndex(
+                record =>
+                    String(
+                        record.id
+                    ) ===
+                    String(recordId)
+            );
+
+
+        if (index !== -1) {
+
+            taskRecords[index] =
+                updatedRecord;
+
+        }
+
+
+        showToast(
+            '↩️ تم إعادة المهمة لجميع الأشخاص'
+        );
+
+
+        render();
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            '❌ فشل تحديث المهمة',
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   DELETE TASK
+========================================================= */
+
+window.deleteTask =
+async function(recordId) {
+
+    const taskRecord =
+        taskRecords.find(
+            record =>
+                String(
+                    record.id
+                ) ===
+                String(recordId)
+        );
+
+
+    if (!taskRecord)
+        return;
+
+
+    const templateId =
+        taskRecord.template_id;
+
+
+    const confirmation =
+        confirm(
+            '⚠️ هل أنت متأكد من حذف هذه المهمة؟\n\n' +
+            'سيتم حذف المهمة من Firebase ولن يتم توليدها مرة أخرى.'
+        );
+
+
+    if (!confirmation)
+        return;
+
+
+    setLoading(true);
+
+
+    try {
+
+        /*
+           DELETE TEMPLATE
+        */
+
+        if (templateId) {
+
+            const template =
+                taskTemplates.find(
+                    item =>
+                        String(
+                            item.id
+                        ) ===
+                        String(templateId)
+                );
+
+
+            if (template) {
+
+                await DB.delete(
+                    'daily_task_templates',
+                    template.id
+                );
+
+
+                taskTemplates =
+                    taskTemplates.filter(
+                        item =>
+                            String(
+                                item.id
+                            ) !==
+                            String(template.id)
+                    );
+
+            }
+
+        }
+
+
+        /*
+           DELETE ALL RECORDS
+           FOR THIS TEMPLATE
+        */
+
+        const relatedRecords =
+            taskRecords.filter(
+                record =>
+                    (
+                        templateId &&
+                        String(
+                            record.template_id
+                        ) ===
+                        String(templateId)
+                    ) ||
+                    String(
+                        record.id
+                    ) ===
+                    String(recordId)
+            );
+
+
+        for (
+            const relatedRecord
+            of relatedRecords
+        ) {
+
+            await DB.delete(
+                'daily_task_records',
+                relatedRecord.id
+            );
+
+        }
+
+
+        taskRecords =
+            taskRecords.filter(
+                record =>
+                    !relatedRecords.some(
+                        deletedRecord =>
+                            String(
+                                deletedRecord.id
+                            ) ===
+                            String(record.id)
+                    )
+            );
+
+
+        showToast(
+            '🗑️ تم حذف المهمة من Firebase'
+        );
+
+
+        render();
+
+
+    } catch (error) {
+
+        console.error(
+            'DELETE TASK ERROR:',
+            error
+        );
+
+
+        showToast(
+            '❌ فشل حذف المهمة: ' +
+            error.message,
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   SELF REGISTER TASK
+========================================================= */
+
+window.openSelfTaskModal =
+function() {
+
+    updatePeopleSelects();
+
+
+    document.getElementById(
+        'selfTaskModal'
+    ).style.display =
+        'flex';
+
+
+    document.body.classList.add(
+        'modal-open'
+    );
+
+};
+
+
+window.saveSelfTask =
+async function() {
+
+    const personId =
+        document.getElementById(
+            'selfPerson'
+        ).value;
+
+
+    const taskName =
+        document.getElementById(
+            'selfTaskName'
+        )
+        .value
+        .trim();
+
+
+    const description =
+        document.getElementById(
+            'selfTaskDescription'
+        )
+        .value
+        .trim();
+
+
+    if (
+        !personId ||
+        !taskName
+    ) {
+
+        showToast(
+            '❌ اختر اسمك واكتب المهمة',
+            true
+        );
+
+        return;
+
+    }
+
+
+    const now =
+        new Date()
+            .toISOString();
+
+
+    const selfRecord = {
+
+        id:
+            generateId(
+                'record'
+            ),
+
+        template_id:
+            null,
+
+        task_name:
+            taskName,
+
+        description:
+            description,
+
+        person_ids:
+            [
+                String(personId)
+            ],
+
+        person_id:
+            String(personId),
+
+        task_date:
+            selectedDate,
+
+        recurrence:
+            'once',
+
+        status:
+            'completed',
+
+        completed_people_ids:
+            [
+                String(personId)
+            ],
+
+        completed_at:
+            now,
+
+        completed_by:
+            currentUser?.uid ||
+            null,
+
+        created_at:
+            now,
+
+        self_registered:
+            true
+
+    };
+
+
+    setLoading(true);
+
+
+    try {
+
+        await DB.insert(
+            'daily_task_records',
+            selfRecord
+        );
+
+
+        taskRecords.push(
+            selfRecord
+        );
+
+
+        closeModal(
+            'selfTaskModal'
+        );
+
+
+        document.getElementById(
+            'selfTaskName'
+        ).value = '';
+
+
+        document.getElementById(
+            'selfTaskDescription'
+        ).value = '';
+
+
+        showToast(
+            '✅ تم تسجيل المهمة وحفظها في Firebase'
+        );
+
+
+        render();
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            '❌ فشل حفظ المهمة',
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   PEOPLE MANAGEMENT
+========================================================= */
+
+window.openPeopleModal =
+function() {
+
+    renderPeopleManager();
+
+
+    document.getElementById(
+        'peopleModal'
+    ).style.display =
+        'flex';
+
+
+    document.body.classList.add(
+        'modal-open'
+    );
+
+};
+
+
+function renderPeopleManager() {
+
+    const container =
+        document.getElementById(
+            'peopleManager'
+        );
+
+
+    if (!container)
+        return;
+
+
+    if (people.length === 0) {
+
+        container.innerHTML = `
+
+            <div class="empty-state">
+
+                لا يوجد أشخاص
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        people
+            .map(
+                person => `
+
+                    <div class="person-row">
+
+                        <div>
+
+                            <div class="person-name">
+
+                                ${escapeHtml(
+                                    person.name
+                                )}
+
+                            </div>
+
+                            <div class="person-count">
+
+                                ${
+                                    person.active !== false
+                                        ? 'نشط'
+                                        : 'غير نشط'
+                                }
+
+                            </div>
+
+                        </div>
+
+
+                        <div style="
+                            display:flex;
+                            gap:6px;
+                        ">
+
+                            <button
+                                class="btn btn-orange"
+                                onclick="editPerson('${escapeHtml(person.id)}')">
+
+                                <i class="fas fa-edit"></i>
+
+                                تعديل
+
+                            </button>
+
+
+                            <button
+                                class="btn btn-danger"
+                                onclick="deletePerson('${escapeHtml(person.id)}')">
+
+                                <i class="fas fa-trash"></i>
+
+                                حذف
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `
+            )
+            .join('');
+
+}
+
+
+/* =========================================================
+   ADD PERSON
+========================================================= */
+
+window.addPerson =
+async function() {
+
+    const input =
+        document.getElementById(
+            'newPersonName'
+        );
+
+
+    const name =
+        input.value.trim();
+
+
+    if (!name) {
+
+        showToast(
+            '❌ اكتب اسم الشخص',
+            true
+        );
+
+        return;
+
+    }
+
+
+    const exists =
+        people.some(
+            person =>
+                String(
+                    person.name
+                )
+                    .trim()
+                    .toLowerCase() ===
+                name
+                    .toLowerCase()
+        );
+
+
+    if (exists) {
+
+        showToast(
+            '❌ هذا الاسم موجود بالفعل',
+            true
+        );
+
+        return;
+
+    }
+
+
+    const person = {
+
+        id:
+            generateId(
+                'person'
+            ),
+
+        name,
+
+        active:
+            true,
+
+        created_at:
+            new Date()
+                .toISOString()
+
+    };
+
+
+    setLoading(true);
+
+
+    try {
+
+        await DB.insert(
+            'daily_task_people',
+            person
+        );
+
+
+        people.push(
+            person
+        );
+
+
+        input.value =
+            '';
+
+
+        renderPeopleManager();
+
+        updatePeopleSelects();
+
+        renderPeopleSelector(
+            getSelectedPersonIds()
+        );
+
+
+        showToast(
+            '✅ تم إضافة الشخص وحفظه في Firebase'
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            '❌ فشل إضافة الشخص',
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   EDIT PERSON
+========================================================= */
+
+window.editPerson =
+async function(id) {
+
+    const person =
+        people.find(
+            item =>
+                String(
+                    item.id
+                ) ===
+                String(id)
+        );
+
+
+    if (!person)
+        return;
+
+
+    const newName =
+        prompt(
+            'اكتب الاسم الجديد:',
+            person.name
+        );
+
+
+    if (
+        newName === null ||
+        !newName.trim()
+    ) {
+
+        return;
+
+    }
+
+
+    const updatedPerson = {
+
+        ...person,
+
+        name:
+            newName.trim(),
+
+        updated_at:
+            new Date()
+                .toISOString()
+
+    };
+
+
+    setLoading(true);
+
+
+    try {
+
+        await DB.update(
+            'daily_task_people',
+            updatedPerson
+        );
+
+
+        const index =
+            people.findIndex(
+                item =>
+                    String(
+                        item.id
+                    ) ===
+                    String(id)
+            );
+
+
+        if (index !== -1) {
+
+            people[index] =
+                updatedPerson;
+
+        }
+
+
+        renderPeopleManager();
+
+        updatePeopleSelects();
+
+        render();
+
+
+        showToast(
+            '✅ تم تعديل الاسم وحفظه في Firebase'
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            '❌ فشل تعديل الاسم',
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   DELETE PERSON
+========================================================= */
+
+window.deletePerson =
+async function(id) {
+
+    const person =
+        people.find(
+            item =>
+                String(
+                    item.id
+                ) ===
+                String(id)
+        );
+
+
+    if (!person)
+        return;
+
+
+    const confirmation =
+        confirm(
+            `هل تريد حذف "${person.name}"؟\n\n` +
+            'لن يتم حذف سجلات المهام القديمة.'
+        );
+
+
+    if (!confirmation)
+        return;
+
+
+    setLoading(true);
+
+
+    try {
+
+        await DB.delete(
+            'daily_task_people',
+            person.id
+        );
+
+
+        people =
+            people.filter(
+                item =>
+                    String(
+                        item.id
+                    ) !==
+                    String(person.id)
+            );
+
+
+        renderPeopleManager();
+
+        updatePeopleSelects();
+
+        render();
+
+
+        showToast(
+            '🗑️ تم حذف الشخص من Firebase'
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            '❌ فشل حذف الشخص',
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+/* =========================================================
+   EDIT TEMPLATE
+========================================================= */
+
+window.editTemplate =
+function(id) {
+
+    const template =
+        taskTemplates.find(
+            item =>
+                String(
+                    item.id
+                ) ===
+                String(id)
+        );
+
+
+    if (!template) {
+
+        showToast(
+            '❌ لم يتم العثور على المهمة',
+            true
+        );
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        'taskModalTitle'
+    ).innerHTML =
+        '✏️ تعديل المهمة';
+
+
+    document.getElementById(
+        'taskId'
+    ).value =
+        template.id;
+
+
+    document.getElementById(
+        'taskName'
+    ).value =
+        template.task_name ||
+        '';
+
+
+    document.getElementById(
+        'taskDescription'
+    ).value =
+        template.description ||
+        '';
+
+
+    document.getElementById(
+        'taskRecurrence'
+    ).value =
+        template.recurrence ||
+        'once';
+
+
+    document.getElementById(
+        'taskStartDate'
+    ).value =
+        template.start_date ||
+        selectedDate;
+
+
+    document.getElementById(
+        'taskEndDate'
+    ).value =
+        template.end_date ||
+        '';
+
+
+    renderPeopleSelector(
+        normalizePersonIds(
+            template
+        )
+    );
+
+
+    document.getElementById(
+        'taskModal'
+    ).style.display =
+        'flex';
+
+
+    document.body.classList.add(
+        'modal-open'
+    );
+
+};
+
+
+/* =========================================================
+   MODAL CLOSE
+========================================================= */
+
+window.closeModal =
+function(id) {
+
+    const modal =
+        document.getElementById(
+            id
+        );
+
+
+    if (!modal)
+        return;
+
+
+    modal.style.display =
+        'none';
+
+
+    /*
+       Only remove body lock if
+       no modal is currently open.
+    */
+
+    const openedModal =
+        document.querySelector(
+            '.modal[style*="display: flex"]'
+        );
+
+
+    if (!openedModal) {
+
+        document.body.classList.remove(
+            'modal-open'
+        );
+
+    }
+
+};
+
+
+/* =========================================================
+   DATE NAVIGATION
+========================================================= */
+
+window.changeDate =
+async function(date) {
+
+    if (!date)
+        return;
+
+
+    selectedDate =
+        date;
+
+
+    setLoading(true);
+
+
+    try {
+
+        await generateRecordsForDate(
+            selectedDate
+        );
+
+
+        render();
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            '❌ فشل تحميل مهام التاريخ',
+            true
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
+
+};
+
+
+window.goToday =
+async function() {
+
+    await changeDate(
+        getToday()
+    );
+
+};
+
+
+window.goYesterday =
+async function() {
+
+    const d =
+        new Date();
+
+
+    d.setDate(
+        d.getDate() - 1
+    );
+
+
+    const date =
+        d.toISOString()
+            .split('T')[0];
+
+
+    await changeDate(
+        date
+    );
+
+};
+
+
+/* =========================================================
+   RENDER ASSIGNEES
+========================================================= */
+
+function renderAssignees(record) {
+
+    const personIds =
+        normalizePersonIds(
+            record
+        );
+
+
+    const completedIds =
+        normalizeCompletedPeopleIds(
+            record
+        );
+
+
+    if (personIds.length === 0) {
+
+        return `
+
+            <div class="assignees-box">
+
+                <div class="assignees-title">
+                    👥 الأشخاص
+                </div>
+
+                <div style="
+                    color:#a0aec0;
+                    font-size:.75rem;
+                ">
+
+                    لم يتم تحديد أشخاص
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    return `
+
+        <div class="assignees-box">
+
+            <div class="assignees-title">
+
+                👥 تنفيذ الأشخاص:
+
+                <span style="
+                    color:#3182ce;
+                ">
+
+                    ${completedIds.length}
+                    /
+                    ${personIds.length}
+
+                </span>
+
+            </div>
+
+
+            <div class="assignee-list">
+
+                ${
+                    personIds
+                        .map(
+                            personId => {
+
+                                const completed =
+                                    completedIds.includes(
+                                        String(personId)
+                                    );
+
+
+                                return `
+
+                                    <button
+                                        type="button"
+                                        class="assignee-chip ${
+                                            completed
+                                                ? 'completed'
+                                                : 'pending'
+                                        }"
+                                        onclick="togglePersonTask(
+                                            '${escapeHtml(record.id)}',
+                                            '${escapeHtml(personId)}'
+                                        )">
+
+                                        <span class="assignee-check">
+
+                                            ${
+                                                completed
+                                                    ? '✓'
+                                                    : '○'
+                                            }
+
+                                        </span>
+
+                                        <span>
+
+                                            ${escapeHtml(
+                                                getPersonName(
+                                                    personId
+                                                )
+                                            )}
+
+                                        </span>
+
+                                    </button>
+
+                                `;
+
+                            }
+                        )
+                        .join('')
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render() {
+
+    const content =
+        document.getElementById(
+            'content'
+        );
+
+
+    if (!content)
+        return;
+
+
+    const records =
+        getRecordsForDate(
+            selectedDate
+        );
+
+
+    const total =
+        records.length;
+
+
+    const completed =
+        records.filter(
+            record =>
+                isRecordFullyCompleted(
+                    record
+                )
+        ).length;
+
+
+    const pending =
+        total -
+        completed;
+
+
+    const today =
+        getToday();
+
+
+    const overdue =
+        selectedDate < today
+            ? pending
+            : 0;
+
+
+    const activePeople =
+        people.filter(
+            person =>
+                person.active !== false
+        );
+
+
+    /*
+       Person statistics
+    */
+
+    const peopleStats =
+        activePeople.map(
+            person => {
+
+                let totalAssigned =
+                    0;
+
+                let completedTasks =
+                    0;
+
+
+                records.forEach(
+                    record => {
+
+                        const personIds =
+                            normalizePersonIds(
+                                record
+                            );
+
+
+                        if (
+                            personIds.includes(
+                                String(
+                                    person.id
+                                )
+                            )
+                        ) {
+
+                            totalAssigned++;
+
+
+                            if (
+                                isPersonCompleted(
+                                    record,
+                                    person.id
+                                )
+                            ) {
+
+                                completedTasks++;
+
+                            }
+
+                        }
+
+                    }
+                );
+
+
+                return {
+
+                    ...person,
+
+                    total:
+                        totalAssigned,
+
+                    done:
+                        completedTasks,
+
+                    percentage:
+                        totalAssigned
+                            ? Math.round(
+                                completedTasks /
+                                totalAssigned *
+                                100
+                            )
+                            : 0
+
+                };
+
+            }
+        );
+
+
+    const completionPercentage =
+        total
+            ? Math.round(
+                completed /
+                total *
+                100
+            )
+            : 0;
+
+
+    content.innerHTML = `
+
+        <!-- HEADER -->
+
+        <div class="page-header">
+
+            <div class="page-title">
+
+                <h1>
+
+                    <i class="fas fa-list-check"></i>
+
+                    Daily Tasks Report
+
+                </h1>
+
+                <p>
+
+                    إدارة ومتابعة المهام اليومية
+                    والأسبوعية والشهرية
+
+                </p>
+
+            </div>
+
+
+            <div class="header-actions">
+
+                <button
+                    class="btn btn-primary"
+                    onclick="openTaskModal()">
+
+                    <i class="fas fa-plus"></i>
+
+                    إضافة مهمة
+
+                </button>
+
+
+                <button
+                    class="btn btn-blue"
+                    onclick="openSelfTaskModal()">
+
+                    <i class="fas fa-user-check"></i>
+
+                    تسجيل مهمة باسمي
+
+                </button>
+
+
+                <button
+                    class="btn btn-orange"
+                    onclick="openPeopleModal()">
+
+                    <i class="fas fa-users"></i>
+
+                    الأشخاص
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- DATE -->
+
+        <div class="control-card">
+
+            <div class="control-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        التاريخ
+                    </label>
+
+                    <input
+                        type="date"
+                        value="${selectedDate}"
+                        onchange="changeDate(this.value)">
+
+                </div>
+
+
+                <button
+                    class="btn btn-blue"
+                    onclick="goToday()">
+
+                    📅 اليوم
+
+                </button>
+
+
+                <button
+                    class="btn btn-gray"
+                    onclick="goYesterday()">
+
+                    ⬅️ أمس
+
+                </button>
+
+
+                <div style="
+                    align-self:center;
+                    color:#1e3a5f;
+                    font-weight:700;
+                ">
+
+                    ${formatDate(
+                        selectedDate
+                    )}
+
+                </div>
+
+
+                <button
+                    class="btn btn-primary"
+                    onclick="render()">
+
+                    🔄 تحديث
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- STATS -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon icon-total">
+
+                    <i class="fas fa-list"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="stat-number">
+                        ${total}
+                    </div>
+
+                    <div class="stat-label">
+                        إجمالي المهام
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon icon-done">
+
+                    <i class="fas fa-check"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="stat-number">
+                        ${completed}
+                    </div>
+
+                    <div class="stat-label">
+                        تم التنفيذ
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon icon-pending">
+
+                    <i class="fas fa-clock"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="stat-number">
+                        ${pending}
+                    </div>
+
+                    <div class="stat-label">
+                        قيد التنفيذ
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon icon-overdue">
+
+                    <i class="fas fa-triangle-exclamation"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="stat-number">
+                        ${overdue}
+                    </div>
+
+                    <div class="stat-label">
+                        غير منفذة
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon icon-people">
+
+                    <i class="fas fa-users"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="stat-number">
+                        ${activePeople.length}
+                    </div>
+
+                    <div class="stat-label">
+                        الأشخاص
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MAIN -->
+
+        <div class="main-grid">
+
+
+            <!-- TASKS -->
+
+            <div class="card">
+
+                <div class="card-title">
+
+                    <h3>
+
+                        <i class="fas fa-tasks"></i>
+
+                        مهام ${formatDate(
+                            selectedDate
+                        )}
+
+                    </h3>
+
+
+                    <span>
+
+                        ${total} مهمة
+
+                    </span>
+
+                </div>
+
+
+                <div class="task-list">
+
+                    ${
+                        records.length === 0
+
+                        ?
+
+                        `
+
+                            <div class="empty-state">
+
+                                <i class="fas fa-clipboard-check"></i>
+
+                                <h3>
+                                    لا توجد مهام لهذا اليوم
+                                </h3>
+
+                                <p>
+                                    يمكنك إضافة مهمة جديدة من الأعلى.
+                                </p>
+
+                            </div>
+
+                        `
+
+                        :
+
+                        records.map(
+                            taskRecord => {
+
+                                const fullyCompleted =
+                                    isRecordFullyCompleted(
+                                        taskRecord
+                                    );
+
+
+                                const personIds =
+                                    normalizePersonIds(
+                                        taskRecord
+                                    );
+
+
+                                const completedIds =
+                                    normalizeCompletedPeopleIds(
+                                        taskRecord
+                                    );
+
+
+                                return `
+
+                                    <div class="task-item ${
+                                        fullyCompleted
+                                            ? 'done'
+                                            : 'pending'
+                                    }">
+
+                                        <div class="task-info">
+
+                                            <div class="task-name">
+
+                                                ${
+                                                    fullyCompleted
+                                                        ? '✅'
+                                                        : '⏳'
+                                                }
+
+                                                ${escapeHtml(
+                                                    taskRecord.task_name
+                                                )}
+
+                                            </div>
+
+
+                                            ${
+                                                taskRecord.description
+
+                                                ?
+
+                                                `
+
+                                                    <div class="task-description">
+
+                                                        📝
+
+                                                        ${escapeHtml(
+                                                            taskRecord.description
+                                                        )}
+
+                                                    </div>
+
+                                                `
+
+                                                :
+
+                                                ''
+                                            }
+
+
+                                            <div class="task-meta">
+
+                                                <span class="badge badge-person">
+
+                                                    👥
+
+                                                    ${personIds.length}
+
+                                                    ${
+                                                        personIds.length === 1
+                                                            ? 'شخص'
+                                                            : 'أشخاص'
+                                                    }
+
+                                                </span>
+
+
+                                                ${getRecurrenceBadge(
+                                                    taskRecord.recurrence
+                                                )}
+
+
+                                                ${
+                                                    fullyCompleted
+
+                                                    ?
+
+                                                    `
+
+                                                        <span class="badge badge-daily">
+
+                                                            <i class="fas fa-check"></i>
+
+                                                            مكتملة
+
+                                                        </span>
+
+                                                    `
+
+                                                    :
+
+                                                    `
+
+                                                        <span class="badge badge-monthly">
+
+                                                            <i class="fas fa-clock"></i>
+
+                                                            ${completedIds.length}
+                                                            /
+                                                            ${personIds.length}
+
+                                                            تم التنفيذ
+
+                                                        </span>
+
+                                                    `
+
+                                                }
+
+                                            </div>
+
+
+                                            ${renderAssignees(
+                                                taskRecord
+                                            )}
+
+
+                                            ${
+                                                taskRecord.completed_at
+
+                                                ?
+
+                                                `
+
+                                                    <div style="
+                                                        margin-top:8px;
+                                                        color:#718096;
+                                                        font-size:.72rem;
+                                                    ">
+
+                                                        🕐 اكتملت المهمة:
+
+                                                        ${new Date(
+                                                            taskRecord.completed_at
+                                                        ).toLocaleTimeString(
+                                                            'ar-EG',
+                                                            {
+                                                                hour:'2-digit',
+                                                                minute:'2-digit'
+                                                            }
+                                                        )}
+
+                                                    </div>
+
+                                                `
+
+                                                :
+
+                                                ''
+
+                                            }
+
+                                        </div>
+
+
+                                        <div class="task-actions">
+
+                                            ${
+                                                !fullyCompleted
+
+                                                ?
+
+                                                `
+
+                                                    <button
+                                                        class="btn-complete"
+                                                        title="تنفيذ المهمة للجميع"
+                                                        onclick="completeTask('${escapeHtml(taskRecord.id)}')">
+
+                                                        <i class="fas fa-check-double"></i>
+
+                                                    </button>
+
+                                                `
+
+                                                :
+
+                                                `
+
+                                                    <button
+                                                        class="btn-uncomplete"
+                                                        title="إعادة المهمة للجميع"
+                                                        onclick="uncompleteTask('${escapeHtml(taskRecord.id)}')">
+
+                                                        <i class="fas fa-rotate-left"></i>
+
+                                                    </button>
+
+                                                `
+                                            }
+
+
+                                            ${
+                                                taskRecord.template_id
+
+                                                ?
+
+                                                `
+
+                                                    <button
+                                                        class="btn-small-edit"
+                                                        title="تعديل"
+                                                        onclick="editTemplate('${escapeHtml(taskRecord.template_id)}')">
+
+                                                        <i class="fas fa-edit"></i>
+
+                                                    </button>
+
+                                                `
+
+                                                :
+
+                                                ''
+
+                                            }
+
+
+                                            <button
+                                                class="btn-small-delete"
+                                                title="حذف"
+                                                onclick="deleteTask('${escapeHtml(taskRecord.id)}')">
+
+                                                <i class="fas fa-trash"></i>
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                `;
+
+                            }
+                        ).join('')
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- SIDE -->
+
+            <div>
+
+
+                <!-- PERFORMANCE -->
+
+                <div class="card">
+
+                    <div class="card-title">
+
+                        <h3>
+
+                            <i class="fas fa-chart-column"></i>
+
+                            أداء الأشخاص
+
+                        </h3>
+
+                    </div>
+
+
+                    ${
+                        peopleStats.length === 0
+
+                        ?
+
+                        `
+
+                            <div class="empty-state">
+
+                                لا يوجد أشخاص
+
+                            </div>
+
+                        `
+
+                        :
+
+                        peopleStats.map(
+                            person => `
+
+                                <div class="performance-row">
+
+                                    <div class="performance-header">
+
+                                        <span class="performance-name">
+
+                                            ${escapeHtml(
+                                                person.name
+                                            )}
+
+                                        </span>
+
+
+                                        <span class="performance-value">
+
+                                            ${person.done}
+                                            /
+                                            ${person.total}
+
+                                            (${person.percentage}%)
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="progress">
+
+                                        <div
+                                            class="progress-bar"
+                                            style="
+                                                width:${person.percentage}%;
+                                            ">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            `
+                        ).join('')
+                    }
+
+                </div>
+
+
+                <!-- SUMMARY -->
+
+                <div
+                    class="card"
+                    style="margin-top:20px;">
+
+                    <div class="card-title">
+
+                        <h3>
+
+                            <i class="fas fa-circle-info"></i>
+
+                            ملخص اليوم
+
+                        </h3>
+
+                    </div>
+
+
+                    <div style="
+                        line-height:2.2;
+                        color:#4a5568;
+                    ">
+
+                        <div>
+
+                            📋 إجمالي المهام:
+
+                            <strong>
+                                ${total}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            ✅ المنفذ بالكامل:
+
+                            <strong>
+                                ${completed}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            ⏳ المتبقي:
+
+                            <strong>
+                                ${pending}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            👥 إجمالي الأشخاص:
+
+                            <strong>
+                                ${activePeople.length}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            📊 نسبة الإنجاز:
+
+                            <strong>
+                                ${completionPercentage}%
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+window.logout =
+async function() {
+
+    try {
+
+        await signOut(
+            auth
+        );
+
+
+        window.location.href =
+            'login.html';
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+};
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+onAuthStateChanged(
+    auth,
+    async user => {
+
+        if (!user) {
+
+            window.location.href =
+                'login.html';
+
+            return;
+
+        }
+
+
+        currentUser =
+            user;
+
+
+        try {
+
+            await DB.init();
+
+
+            let userData =
+                null;
+
+
+            try {
+
+                userData =
+                    await DB.get(
+                        'users',
+                        user.uid
+                    );
+
+            } catch (error) {
+
+                console.error(
+                    'فشل قراءة بيانات المستخدم:',
+                    error
+                );
+
+            }
+
+
+            if (
+                !userData ||
+                (
+                    userData.role !== 'admin' &&
+                    userData.role !== 'Admin'
+                )
+            ) {
+
+                alert(
+                    '❌ غير مصرح لك بدخول هذه الصفحة'
+                );
+
+
+                window.location.href =
+                    'index.html';
+
+
+                return;
+
+            }
+
+
+            /* =================================================
+               BUILD PAGE
+            ================================================= */
+
+            document.getElementById(
+                'app'
+            ).innerHTML = `
+
+
+                <!-- NAVBAR -->
+
+                <div class="navbar">
+
+                    <div class="logo">
+
+                        <h2>
+
+                            🎓
+
+                            <span>
+                                نظام
+                            </span>
+
+                            الإدارة -
+
+                            <span style="
+                                color:#3182ce;
+                            ">
+
+                                Daily Tasks Report
+
+                            </span>
+
+                        </h2>
+
+                    </div>
+
+
+                    <div class="nav-links">
+
+                        <a
+                            href="index.html"
+                            class="home">
+
+                            <i class="fas fa-home"></i>
+
+                            الرئيسية
+
+                        </a>
+
+
+                        <button
+                            onclick="logout()"
+                            class="logout">
+
+                            <i class="fas fa-sign-out-alt"></i>
+
+                            تسجيل خروج
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONTENT -->
+
+                <div class="container">
+
+                    <div id="content"></div>
+
+                </div>
+
+
+                <!-- =================================================
+                     TASK MODAL
+                ================================================= -->
+
+                <div
+                    id="taskModal"
+                    class="modal">
+
+                    <div class="modal-content">
+
+                        <h3
+                            id="taskModalTitle"
+                            class="modal-title">
+
+                            ➕ إضافة مهمة جديدة
+
+                        </h3>
+
+
+                        <input
+                            type="hidden"
+                            id="taskId">
+
+
+                        <div class="form-grid">
+
+
+                            <!-- NAME -->
+
+                            <div
+                                class="form-group full">
+
+                                <label>
+                                    اسم المهمة *
+                                </label>
+
+                                <input
+                                    id="taskName"
+                                    type="text"
+                                    placeholder="مثال: مراجعة تقارير التدريب">
+
+                            </div>
+
+
+                            <!-- DESCRIPTION -->
+
+                            <div
+                                class="form-group full">
+
+                                <label>
+                                    وصف المهمة
+                                </label>
+
+                                <textarea
+                                    id="taskDescription"
+                                    rows="3"
+                                    placeholder="تفاصيل المهمة..."></textarea>
+
+                            </div>
+
+
+                            <!-- PEOPLE -->
+
+                            <div
+                                class="form-group full">
+
+                                <label>
+
+                                    الأشخاص المسؤولون *
+
+                                </label>
+
+
+                                <input
+                                    id="peopleSearch"
+                                    class="people-search"
+                                    type="text"
+                                    placeholder="🔍 ابحث عن شخص..."
+                                    oninput="filterPeople()">
+
+
+                                <div
+                                    id="peopleSelector"
+                                    class="people-selector">
+
+                                </div>
+
+
+                                <div
+                                    id="selectedPeopleCount"
+                                    class="selected-count">
+
+                                    تم اختيار 0 شخص
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- RECURRENCE -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    تكرار المهمة
+                                </label>
+
+                                <select
+                                    id="taskRecurrence">
+
+                                    <option value="once">
+                                        مرة واحدة
+                                    </option>
+
+                                    <option value="daily">
+                                        يومية
+                                    </option>
+
+                                    <option value="weekly">
+                                        أسبوعية
+                                    </option>
+
+                                    <option value="monthly">
+                                        شهرية
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- START -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    تاريخ البداية *
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="taskStartDate">
+
+                            </div>
+
+
+                            <!-- END -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    تاريخ النهاية
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="taskEndDate">
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="modal-buttons">
+
+                            <button
+                                class="btn btn-primary"
+                                onclick="saveTask()">
+
+                                <i class="fas fa-save"></i>
+
+                                حفظ المهمة
+
+                            </button>
+
+
+                            <button
+                                class="btn btn-gray"
+                                onclick="closeModal('taskModal')">
+
+                                إلغاء
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SELF TASK
+                ================================================= -->
+
+                <div
+                    id="selfTaskModal"
+                    class="modal">
+
+                    <div class="modal-content">
+
+                        <h3 class="modal-title">
+
+                            👤 تسجيل مهمة باسمي
+
+                        </h3>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                اختر اسمك *
+                            </label>
+
+                            <select
+                                id="selfPerson">
+
+                                <option value="">
+                                    -- اختر اسمك --
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div
+                            class="form-group"
+                            style="margin-top:12px;">
+
+                            <label>
+                                المهمة *
+                            </label>
+
+                            <input
+                                id="selfTaskName"
+                                placeholder="اكتب المهمة التي قمت بها">
+
+                        </div>
+
+
+                        <div
+                            class="form-group"
+                            style="margin-top:12px;">
+
+                            <label>
+                                التفاصيل
+                            </label>
+
+                            <textarea
+                                id="selfTaskDescription"
+                                rows="3"></textarea>
+
+                        </div>
+
+
+                        <div class="modal-buttons">
+
+                            <button
+                                class="btn btn-primary"
+                                onclick="saveSelfTask()">
+
+                                <i class="fas fa-check"></i>
+
+                                تسجيل المهمة
+
+                            </button>
+
+
+                            <button
+                                class="btn btn-gray"
+                                onclick="closeModal('selfTaskModal')">
+
+                                إلغاء
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     PEOPLE MODAL
+                ================================================= -->
+
+                <div
+                    id="peopleModal"
+                    class="modal">
+
+                    <div class="modal-content">
+
+                        <h3 class="modal-title">
+
+                            👥 إدارة الأشخاص
+
+                        </h3>
+
+
+                        <div style="
+                            display:flex;
+                            gap:8px;
+                            margin-bottom:15px;
+                        ">
+
+                            <input
+                                id="newPersonName"
+                                placeholder="اسم الشخص الجديد">
+
+
+                            <button
+                                class="btn btn-primary"
+                                onclick="addPerson()">
+
+                                <i class="fas fa-plus"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="peopleManager">
+
+                        </div>
+
+
+                        <div class="modal-buttons">
+
+                            <button
+                                class="btn btn-gray"
+                                onclick="closeModal('peopleModal')">
+
+                                إغلاق
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            /*
+               Set initial date
+            */
+
+            document.getElementById(
+                'taskStartDate'
+            ).value =
+                selectedDate;
+
+
+            /*
+               Load Firebase data
+            */
+
+            await loadData();
+
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            document.getElementById(
+                'app'
+            ).innerHTML = `
+
+                <div style="
+                    text-align:center;
+                    padding:100px 20px;
+                ">
+
+                    <h2 style="
+                        color:#e53e3e;
+                    ">
+
+                        ❌ حدث خطأ في تحميل البيانات
+
+                    </h2>
+
+
+                    <p style="
+                        margin-top:15px;
+                        color:#718096;
+                    ">
+
+                        ${escapeHtml(
+                            error.message
+                        )}
+
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CLOSE MODAL WHEN CLICK OUTSIDE
+========================================================= */
+
+document.addEventListener(
+    'click',
+    event => {
+
+        if (
+            event.target.classList
+                .contains('modal')
+        ) {
+
+            event.target.style.display =
+                'none';
+
+            document.body.classList.remove(
+                'modal-open'
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   ESCAPE KEY
+========================================================= */
+
+document.addEventListener(
+    'keydown',
+    event => {
+
+        if (
+            event.key === 'Escape'
+        ) {
+
+            document
+                .querySelectorAll(
+                    '.modal'
+                )
+                .forEach(
+                    modal => {
+
+                        modal.style.display =
+                            'none';
+
+                    }
+                );
+
+
+            document.body.classList.remove(
+                'modal-open'
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+
+</html>
