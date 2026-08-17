@@ -4,15 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    
+
     <title>Daily Tasks Report - نظام إدارة المهام</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         /* ============================================================
            RESET & BASE
@@ -53,9 +52,6 @@
             overflow: hidden;
         }
 
-        /* ============================================================
-           SCROLLBAR
-        ============================================================ */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -74,7 +70,7 @@
         .navbar {
             background: var(--white);
             padding: 12px 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -158,7 +154,6 @@
             background: var(--primary-gradient);
             color: white;
         }
-
         .btn-home:hover {
             box-shadow: 0 4px 15px rgba(1, 51, 118, 0.3);
         }
@@ -167,7 +162,6 @@
             background: var(--success);
             color: white;
         }
-
         .btn-refresh-nav:hover {
             box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
         }
@@ -176,7 +170,6 @@
             background: var(--danger);
             color: white;
         }
-
         .btn-logout:hover {
             box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
         }
@@ -207,18 +200,15 @@
             font-weight: 800;
             color: var(--dark);
         }
-
         .section-header .title-area h2 i {
             color: var(--primary);
             margin-left: 10px;
         }
-
         .section-header .title-area p {
             color: var(--gray);
             font-size: 0.9rem;
             margin-top: 2px;
         }
-
         .section-header .actions {
             display: flex;
             gap: 10px;
@@ -241,7 +231,6 @@
             font-size: 0.85rem;
             white-space: nowrap;
         }
-
         .btn:hover {
             transform: translateY(-2px);
         }
@@ -250,7 +239,6 @@
             background: var(--primary-gradient);
             color: white;
         }
-
         .btn-primary:hover {
             box-shadow: 0 4px 20px rgba(1, 51, 118, 0.35);
         }
@@ -259,7 +247,6 @@
             background: #EEF2F7;
             color: var(--primary);
         }
-
         .btn-secondary:hover {
             background: #E0E6ED;
         }
@@ -268,7 +255,6 @@
             background: var(--success);
             color: white;
         }
-
         .btn-success:hover {
             box-shadow: 0 4px 20px rgba(0, 184, 148, 0.35);
         }
@@ -277,7 +263,6 @@
             background: var(--danger);
             color: white;
         }
-
         .btn-danger:hover {
             box-shadow: 0 4px 20px rgba(225, 112, 85, 0.35);
         }
@@ -286,7 +271,6 @@
             background: var(--warning);
             color: var(--dark);
         }
-
         .btn-warning:hover {
             box-shadow: 0 4px 20px rgba(253, 203, 110, 0.35);
         }
@@ -295,17 +279,6 @@
             padding: 6px 12px;
             font-size: 0.75rem;
             border-radius: 8px;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--light-gray);
-            color: var(--gray);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--primary);
-            color: var(--primary);
         }
 
         /* ============================================================
@@ -329,7 +302,6 @@
             gap: 15px;
             border: 1px solid rgba(1, 51, 118, 0.06);
         }
-
         .stat-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-hover);
@@ -373,29 +345,10 @@
             color: var(--dark);
             line-height: 1.1;
         }
-
         .stat-card .stat-info .stat-label {
             color: var(--gray);
             font-size: 0.78rem;
             font-weight: 500;
-        }
-
-        .stat-card .stat-info .stat-badge {
-            font-size: 0.65rem;
-            font-weight: 700;
-            display: inline-block;
-            padding: 1px 10px;
-            border-radius: 20px;
-        }
-
-        .stat-badge.up {
-            background: #E8F8F5;
-            color: var(--success);
-        }
-
-        .stat-badge.down {
-            background: #FDEDEC;
-            color: var(--danger);
         }
 
         /* ============================================================
@@ -435,7 +388,6 @@
             min-width: 160px;
             color: var(--dark);
         }
-
         .filter-section select:focus {
             border-color: var(--primary);
             background: white;
@@ -452,7 +404,6 @@
             border-radius: 8px;
             transition: var(--transition);
         }
-
         .filter-section .filter-clear:hover {
             background: #FDEDEC;
         }
@@ -489,7 +440,6 @@
             flex: 1;
             min-width: 120px;
         }
-
         .date-control .date-display .date-label {
             font-size: 0.6rem;
             font-weight: 700;
@@ -497,7 +447,6 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .date-control .date-display .date-value {
             font-size: 1.05rem;
             font-weight: 800;
@@ -521,7 +470,6 @@
             background: #FAFAFA;
             font-family: inherit;
         }
-
         .date-control .date-input input[type="date"]:focus {
             border-color: var(--primary);
             background: white;
@@ -556,18 +504,12 @@
             align-items: center;
             gap: 8px;
         }
-
         .task-section-toggle .toggle-title .count-badge {
             background: #EEF2F7;
             color: var(--primary);
             padding: 2px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
-        }
-
-        .task-section-toggle .toggle-title .count-badge.filtered {
-            background: var(--primary);
-            color: white;
         }
 
         .task-list-header {
@@ -595,19 +537,21 @@
             transition: var(--transition);
             align-items: center;
         }
-
         .task-item:hover {
             background: #F5F6FA;
             border-color: var(--primary-light);
         }
-
         .task-item.done {
             border-right: 4px solid var(--success);
             background: #F6FFF9;
         }
-
         .task-item.pending {
             border-right: 4px solid var(--warning);
+        }
+        .task-item.on-vacation-day {
+            border-right: 4px solid var(--danger);
+            background: #FFF5F5;
+            opacity: 0.7;
         }
 
         .task-item .task-name {
@@ -617,12 +561,10 @@
             align-items: flex-start;
             gap: 8px;
         }
-
         .task-item .task-name .status-icon {
             font-size: 0.9rem;
             margin-top: 2px;
         }
-
         .task-item .task-desc {
             font-size: 0.75rem;
             color: var(--gray);
@@ -648,42 +590,38 @@
             cursor: pointer;
             transition: var(--transition);
         }
-
         .task-item .task-people .person-tag:hover {
             background: var(--primary);
             color: white;
         }
-
         .task-item .task-people .person-tag.done {
             background: #E8F8F5;
             color: var(--success);
         }
-
         .task-item .task-people .person-tag.done:hover {
             background: var(--success);
             color: white;
         }
-
         .task-item .task-people .person-tag.on-vacation {
             background: #FDEDEC;
             color: var(--danger);
             opacity: 0.6;
             cursor: not-allowed;
         }
-
         .task-item .task-people .person-tag.on-vacation:hover {
             background: #FDEDEC;
             color: var(--danger);
         }
-
+        .task-item .task-people .person-tag.was-on-vacation {
+            background: #FFF5F5;
+            color: var(--danger);
+            border: 1px dashed var(--danger);
+            cursor: default;
+        }
         .task-item .task-people .person-tag.filtered {
             background: var(--primary);
             color: white;
             border: 2px solid var(--primary-light);
-        }
-
-        .task-item .task-people .person-tag .tag-icon {
-            font-size: 0.6rem;
         }
 
         .task-item .task-meta {
@@ -693,7 +631,6 @@
             flex-direction: column;
             gap: 2px;
         }
-
         .task-item .task-meta .badge {
             display: inline-block;
             padding: 2px 10px;
@@ -719,11 +656,6 @@
             color: var(--gray);
         }
 
-        .task-item .task-status-text {
-            font-weight: 700;
-            font-size: 0.8rem;
-        }
-
         .task-item .task-actions {
             display: flex;
             gap: 4px;
@@ -742,7 +674,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .task-item .task-actions button:hover {
             transform: scale(1.1);
         }
@@ -751,22 +682,18 @@
             background: var(--success);
             color: white;
         }
-
         .btn-uncomplete {
             background: var(--gray);
             color: white;
         }
-
         .btn-edit {
             background: var(--warning);
             color: var(--dark);
         }
-
         .btn-delete {
             background: var(--danger);
             color: white;
         }
-
         .btn-delete:disabled {
             opacity: 0.4;
             cursor: not-allowed;
@@ -792,7 +719,6 @@
             transition: var(--transition);
             margin-bottom: 12px;
         }
-
         .completed-tasks-wrapper .completed-header:hover {
             background: #EEF2F7;
         }
@@ -804,7 +730,6 @@
             align-items: center;
             gap: 8px;
         }
-
         .completed-tasks-wrapper .completed-count {
             background: var(--success);
             color: white;
@@ -812,31 +737,21 @@
             border-radius: 20px;
             font-size: 0.75rem;
         }
-
-        .completed-tasks-wrapper .completed-count.filtered {
-            background: var(--primary);
-        }
-
         .completed-tasks-wrapper .completed-header .toggle-icon {
             transition: var(--transition);
         }
-
         .completed-tasks-wrapper .completed-header .toggle-icon.open {
             transform: rotate(180deg);
         }
-
         .completed-tasks-wrapper .completed-list {
             display: none;
         }
-
         .completed-tasks-wrapper .completed-list.open {
             display: block;
         }
-
         .completed-tasks-wrapper .task-item {
             opacity: 0.7;
         }
-
         .completed-tasks-wrapper .task-item:hover {
             opacity: 1;
         }
@@ -859,7 +774,6 @@
             border: 1px solid rgba(1, 51, 118, 0.06);
             transition: var(--transition);
         }
-
         .card:hover {
             box-shadow: var(--shadow-hover);
         }
@@ -872,18 +786,15 @@
             padding-bottom: 12px;
             border-bottom: 2px solid #EEF2F7;
         }
-
         .card .card-header h3 {
             font-size: 1rem;
             font-weight: 700;
             color: var(--dark);
         }
-
         .card .card-header h3 i {
             color: var(--primary);
             margin-left: 8px;
         }
-
         .card .card-header .badge-count {
             background: #EEF2F7;
             color: var(--primary);
@@ -896,7 +807,6 @@
         .performance-row {
             margin-bottom: 12px;
         }
-
         .performance-row:last-child {
             margin-bottom: 0;
         }
@@ -907,7 +817,6 @@
             align-items: center;
             margin-bottom: 4px;
         }
-
         .performance-row .perf-name {
             font-weight: 600;
             font-size: 0.85rem;
@@ -915,7 +824,6 @@
             align-items: center;
             gap: 8px;
         }
-
         .performance-row .perf-name .avatar {
             width: 28px;
             height: 28px;
@@ -928,13 +836,11 @@
             font-size: 0.65rem;
             font-weight: 700;
         }
-
         .performance-row .perf-value {
             font-weight: 700;
             color: var(--primary);
             font-size: 0.8rem;
         }
-
         .performance-row .progress-track {
             width: 100%;
             height: 6px;
@@ -942,7 +848,6 @@
             border-radius: 10px;
             overflow: hidden;
         }
-
         .performance-row .progress-track .progress-fill {
             height: 100%;
             background: var(--primary-gradient);
@@ -957,7 +862,6 @@
             display: grid;
             gap: 8px;
         }
-
         .summary-item {
             display: flex;
             justify-content: space-between;
@@ -966,17 +870,14 @@
             border-radius: 10px;
             font-size: 0.85rem;
         }
-
         .summary-item .label {
             font-weight: 600;
             color: var(--gray);
         }
-
         .summary-item .value {
             font-weight: 800;
             color: var(--dark);
         }
-
         .summary-item .value.primary {
             color: var(--primary);
         }
@@ -989,12 +890,10 @@
         .summary-item .value.danger {
             color: var(--danger);
         }
-
         .summary-item.highlight {
             background: #EEF2F7;
             border: 1px solid var(--primary-light);
         }
-
         .summary-item.highlight .value {
             color: var(--primary);
         }
@@ -1007,19 +906,16 @@
             padding: 40px 20px;
             color: var(--gray);
         }
-
         .empty-state i {
             font-size: 3rem;
             color: var(--light-gray);
             margin-bottom: 12px;
         }
-
         .empty-state h3 {
             font-size: 1.1rem;
             color: var(--dark);
             margin-bottom: 6px;
         }
-
         .empty-state p {
             font-size: 0.85rem;
         }
@@ -1074,7 +970,6 @@
             align-items: center;
             gap: 8px;
         }
-
         .modal-title i {
             color: var(--primary);
         }
@@ -1082,7 +977,6 @@
         .form-group {
             margin-bottom: 14px;
         }
-
         .form-group label {
             display: block;
             font-weight: 700;
@@ -1104,7 +998,6 @@
             font-family: inherit;
             color: var(--dark);
         }
-
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
@@ -1112,7 +1005,6 @@
             background: white;
             outline: none;
         }
-
         .form-group textarea {
             resize: vertical;
             min-height: 70px;
@@ -1142,24 +1034,13 @@
             cursor: pointer;
             transition: var(--transition);
         }
-
         .form-group .people-selector .person-option:hover {
             background: #EEF2F7;
         }
-
         .form-group .people-selector .person-option input[type="checkbox"] {
             width: 16px;
             height: 16px;
             accent-color: var(--primary);
-        }
-
-        .form-group .people-selector .person-option .vacation-badge {
-            font-size: 0.55rem;
-            color: var(--danger);
-            background: #FDEDEC;
-            padding: 0 6px;
-            border-radius: 10px;
-            margin-right: auto;
         }
 
         .form-group .selected-count {
@@ -1176,7 +1057,6 @@
             padding-top: 16px;
             border-top: 2px solid #EEF2F7;
         }
-
         .modal-buttons button {
             flex: 1;
         }
@@ -1200,11 +1080,9 @@
             text-align: center;
             animation: toastIn .3s ease;
         }
-
         .toast.success {
             background: var(--success);
         }
-
         .toast.error {
             background: var(--danger);
         }
@@ -1395,7 +1273,7 @@
             const keysToRemove = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (key && (key.includes('daily_task') || key.includes('firestore'))) {
+                if (key && (key.includes('daily_task') || key.includes('firestore') || key.includes('db_cache'))) {
                     keysToRemove.push(key);
                 }
             }
@@ -1420,7 +1298,7 @@
         let selectedFilterPerson = '';
 
         // ============================================================
-        // HELPERS
+        // HELPERS - تعريف الدوال قبل استخدامها
         // ============================================================
         function getToday() {
             const d = new Date();
@@ -1473,9 +1351,24 @@
             return name.charAt(0).toUpperCase();
         }
 
+        // 🔥 التحقق من أن الشخص كان في إجازة في تاريخ محدد
+        function wasPersonOnVacationOnDate(personId, date) {
+            const person = people.find(p => String(p.id) === String(personId));
+            if (!person || !person.vacationHistory) return false;
+
+            // التحقق من سجل الإجازات
+            for (const vacation of person.vacationHistory) {
+                if (date >= vacation.startDate && date <= vacation.endDate) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 🔥 التحقق من أن الشخص في إجازة حالياً
         function isPersonOnVacation(personId) {
             const person = people.find(p => String(p.id) === String(personId));
-            return person ? person.onVacation === true : false;
+            return person ? person.isOnVacation === true : false;
         }
 
         function getRecurrenceName(type) {
@@ -1483,6 +1376,7 @@
             return names[type] || type;
         }
 
+        // 🔥 تعريف الدالة قبل استخدامها
         function getRecurrenceBadge(type) {
             const classes = { daily: 'badge-daily', weekly: 'badge-weekly', monthly: 'badge-monthly', once: 'badge-once' };
             return `<span class="badge ${classes[type] || 'badge-once'}">${getRecurrenceName(type)}</span>`;
@@ -1508,29 +1402,43 @@
             return normalizeCompletedPeopleIds(record).includes(String(personId));
         }
 
+        // 🔥 حساب الأشخاص النشطين في المهمة (مع مراعاة الإجازات التاريخية)
         function getActivePeopleForTask(record) {
             const assigned = normalizePersonIds(record);
-            return assigned.filter(id => !isPersonOnVacation(id));
+            const taskDate = record.task_date;
+
+            // استبعاد الأشخاص الذين كانوا في إجازة في هذا التاريخ
+            return assigned.filter(id => !wasPersonOnVacationOnDate(id, taskDate));
         }
 
+        // 🔥 حساب ما إذا كانت المهمة مكتملة بالكامل
         function isRecordFullyCompleted(record) {
             const activePeople = getActivePeopleForTask(record);
             const completed = normalizeCompletedPeopleIds(record);
+
+            // إذا لم يكن هناك أشخاص نشطين، المهمة تعتبر مكتملة
             if (activePeople.length === 0) return true;
+
+            // جميع الأشخاص النشطين يجب أن يكونوا مكتملين
             return activePeople.every(id => completed.includes(String(id)));
         }
 
         function getTaskCompletionStatus(record) {
             const assigned = normalizePersonIds(record);
             const completed = normalizeCompletedPeopleIds(record);
-            const active = assigned.filter(id => !isPersonOnVacation(id));
-            const onVacation = assigned.filter(id => isPersonOnVacation(id));
+            const taskDate = record.task_date;
+
+            // الأشخاص الذين كانوا في إجازة في هذا التاريخ
+            const wasOnVacation = assigned.filter(id => wasPersonOnVacationOnDate(id, taskDate));
+
+            // الأشخاص النشطين (غير الموجودين في إجازة في هذا التاريخ)
+            const active = assigned.filter(id => !wasPersonOnVacationOnDate(id, taskDate));
 
             return {
                 total: assigned.length,
                 active: active.length,
                 completed: completed.filter(id => active.includes(id)).length,
-                onVacation: onVacation.length,
+                wasOnVacation: wasOnVacation.length,
                 isComplete: isRecordFullyCompleted(record)
             };
         }
@@ -1562,7 +1470,7 @@
                     <label class="person-option" style="${onVacation ? 'opacity:0.5;' : ''}">
                         <input type="checkbox" class="person-checkbox" value="${escapeHtml(person.id)}" ${checked ? 'checked' : ''} ${onVacation ? 'disabled' : ''}>
                         <span>${escapeHtml(person.name)}</span>
-                        ${onVacation ? '<span class="vacation-badge">📅 في إجازة</span>' : ''}
+                        ${onVacation ? '<span style="font-size:0.55rem;color:var(--danger);background:#FDEDEC;padding:0 6px;border-radius:10px;margin-right:auto;">📅 في إجازة</span>' : ''}
                     </label>
                 `;
             }).join('');
@@ -1606,7 +1514,7 @@
         }
 
         // ============================================================
-        // TOGGLE VACATION
+        // TOGGLE VACATION - مع حفظ التاريخ
         // ============================================================
         window.toggleVacation = async function(personId) {
             if (!isAdmin) {
@@ -1620,13 +1528,33 @@
                 return;
             }
 
+            // فتح مودال لتحديد تواريخ الإجازة
+            const startDate = prompt('📅 أدخل تاريخ بداية الإجازة (YYYY-MM-DD):', getToday());
+            if (!startDate) return;
+
+            const endDate = prompt('📅 أدخل تاريخ نهاية الإجازة (YYYY-MM-DD):', getToday());
+            if (!endDate) return;
+
+            if (startDate > endDate) {
+                showToast('❌ تاريخ البداية يجب أن يكون قبل تاريخ النهاية', 'error');
+                return;
+            }
+
             setLoading(true);
 
             try {
-                const newVacationStatus = !person.onVacation;
+                // إنشاء سجل الإجازة
+                const vacationRecord = {
+                    startDate: startDate,
+                    endDate: endDate,
+                    createdAt: new Date().toISOString()
+                };
+
+                // تحديث بيانات الشخص
                 const updatedPerson = {
                     ...person,
-                    onVacation: newVacationStatus,
+                    isOnVacation: true,
+                    vacationHistory: [...(person.vacationHistory || []), vacationRecord],
                     updated_at: new Date().toISOString()
                 };
 
@@ -1637,9 +1565,7 @@
                     people[index] = updatedPerson;
                 }
 
-                showToast(newVacationStatus ? 
-                    `📅 تم تسجيل إجازة ${person.name}` : 
-                    `✅ تم إلغاء إجازة ${person.name}`, 'success');
+                showToast(`📅 تم تسجيل إجازة ${person.name} من ${startDate} إلى ${endDate}`, 'success');
 
                 render();
                 renderPeopleManager();
@@ -1648,6 +1574,59 @@
             } catch (error) {
                 console.error(error);
                 showToast('❌ فشل حفظ حالة الإجازة', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // ============================================================
+        // إلغاء الإجازة الحالية
+        // ============================================================
+        window.cancelVacation = async function(personId) {
+            if (!isAdmin) {
+                showToast('❌ فقط الأدمن يمكنه تغيير حالة الإجازة', 'error');
+                return;
+            }
+
+            const person = people.find(p => String(p.id) === String(personId));
+            if (!person) {
+                showToast('❌ لم يتم العثور على الشخص', 'error');
+                return;
+            }
+
+            if (!person.isOnVacation) {
+                showToast('ℹ️ هذا الشخص ليس في إجازة حالياً', 'info');
+                return;
+            }
+
+            const confirmation = confirm(`هل تريد إنهاء إجازة "${person.name}"؟\n\nسيتم الاحتفاظ بسجل الإجازات السابقة.`);
+            if (!confirmation) return;
+
+            setLoading(true);
+
+            try {
+                const updatedPerson = {
+                    ...person,
+                    isOnVacation: false,
+                    updated_at: new Date().toISOString()
+                };
+
+                await DB.update('daily_task_people', updatedPerson);
+
+                const index = people.findIndex(p => String(p.id) === String(personId));
+                if (index !== -1) {
+                    people[index] = updatedPerson;
+                }
+
+                showToast(`✅ تم إنهاء إجازة ${person.name} (تم الاحتفاظ بسجل الإجازات)`, 'success');
+
+                render();
+                renderPeopleManager();
+                updatePeopleSelects();
+
+            } catch (error) {
+                console.error(error);
+                showToast('❌ فشل إنهاء الإجازة', 'error');
             } finally {
                 setLoading(false);
             }
@@ -1731,7 +1710,8 @@
                         id: generateId('person'),
                         name,
                         active: true,
-                        onVacation: false,
+                        isOnVacation: false,
+                        vacationHistory: [],
                         created_at: new Date().toISOString()
                     };
                     await DB.insert('daily_task_people', person);
@@ -1782,6 +1762,8 @@
 
             for (const template of dueTemplates) {
                 const recordId = `daily_${template.id}_${date}`;
+
+                // التحقق من وجود السجل بالفعل
                 if (taskRecords.some(r => String(r.id) === String(recordId))) continue;
 
                 let existingRecord = null;
@@ -1802,13 +1784,14 @@
                     continue;
                 }
 
+                // 🔥 إنشاء سجل جديد مع نسخ بيانات المهمة لحظة الإنشاء
                 const personIds = normalizePersonIds(template);
                 const newRecord = {
                     id: recordId,
                     template_id: template.id,
                     task_name: template.task_name,
                     description: template.description || '',
-                    person_ids: personIds,
+                    person_ids: [...personIds], // نسخ القيم لحظة الإنشاء
                     person_id: personIds.length ? personIds[0] : null,
                     task_date: date,
                     recurrence: template.recurrence,
@@ -1816,7 +1799,9 @@
                     completed_people_ids: [],
                     completed_at: null,
                     completed_by: null,
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    // 🔥 حفظ نسخة من الشخصيات في وقت الإنشاء
+                    snapshot_person_ids: [...personIds]
                 };
 
                 await DB.insert('daily_task_records', newRecord);
@@ -1888,10 +1873,11 @@
             if (!startDate) return showToast('❌ اختر تاريخ بداية المهمة', 'error');
             if (personIds.length === 0) return showToast('❌ اختر شخصًا واحدًا على الأقل', 'error');
 
+            // التحقق من الأشخاص في إجازة
             const vacationPeople = personIds.filter(id => isPersonOnVacation(id));
             if (vacationPeople.length > 0) {
                 const names = vacationPeople.map(id => getPersonName(id)).join(', ');
-                return showToast(`❌ لا يمكن إسناد مهمة لأشخاص في إجازة: ${names}`, 'error');
+                return showToast(`❌ لا يمكن إسناد مهمة لأشخاص في إجازة حالياً: ${names}`, 'error');
             }
 
             setLoading(true);
@@ -1900,6 +1886,7 @@
                 const now = new Date().toISOString();
 
                 if (!id) {
+                    // 🔥 إضافة قالب جديد
                     const template = {
                         id: generateId('template'),
                         task_name: taskName,
@@ -1919,6 +1906,7 @@
                     await generateRecordsForDate(selectedDate);
                     showToast('✅ تم إضافة المهمة', 'success');
                 } else {
+                    // 🔥 تعديل قالب - لا نعدل السجلات السابقة
                     const oldTemplate = taskTemplates.find(t => String(t.id) === String(id));
                     if (!oldTemplate) return showToast('❌ لم يتم العثور على المهمة', 'error');
 
@@ -1939,38 +1927,10 @@
                     const ti = taskTemplates.findIndex(t => String(t.id) === String(id));
                     if (ti !== -1) taskTemplates[ti] = updatedTemplate;
 
-                    const relatedRecords = taskRecords.filter(r => String(r.template_id) === String(id));
-                    for (const existingRecord of relatedRecords) {
-                        const oldCompleted = normalizeCompletedPeopleIds(existingRecord);
-                        const validCompleted = oldCompleted.filter(pid => personIds.includes(String(pid)));
-
-                        const updatedRecord = {
-                            ...existingRecord,
-                            task_name: taskName,
-                            description: description,
-                            person_ids: personIds,
-                            person_id: personIds[0] || null,
-                            recurrence: recurrence,
-                            completed_people_ids: validCompleted,
-                            status: isRecordFullyCompleted({ ...existingRecord, person_ids: personIds,
-                                completed_people_ids: validCompleted }) ?
-                                'completed' : 'pending',
-                            updated_at: now
-                        };
-
-                        if (updatedRecord.status === 'completed') {
-                            updatedRecord.completed_at = existingRecord.completed_at || now;
-                        } else {
-                            updatedRecord.completed_at = null;
-                        }
-
-                        await DB.update('daily_task_records', updatedRecord);
-                        const ri = taskRecords.findIndex(r => String(r.id) === String(existingRecord.id));
-                        if (ri !== -1) taskRecords[ri] = updatedRecord;
-                    }
-
+                    // 🔥 نعدل فقط السجلات التي لم يتم إنشاؤها بعد (المستقبلية)
+                    // أما السجلات السابقة فتبقى كما هي (مع نسخة الشخصيات القديمة)
                     await generateRecordsForDate(selectedDate);
-                    showToast('✅ تم تعديل المهمة', 'success');
+                    showToast('✅ تم تعديل المهمة (التغييرات تسري على الأيام القادمة فقط)', 'success');
                 }
 
                 closeModal('taskModal');
@@ -1988,13 +1948,16 @@
         // TASK ACTIONS
         // ============================================================
         window.togglePersonTask = async function(recordId, personId) {
-            if (isPersonOnVacation(personId)) {
-                showToast('❌ هذا الشخص في إجازة', 'error');
-                return;
-            }
-
             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
             if (!taskRecord) return;
+
+            const taskDate = taskRecord.task_date;
+
+            // 🔥 التحقق من أن الشخص لم يكن في إجازة في هذا التاريخ
+            if (wasPersonOnVacationOnDate(personId, taskDate)) {
+                showToast('❌ هذا الشخص كان في إجازة في هذا التاريخ، لا يمكن تغيير حالته', 'error');
+                return;
+            }
 
             const assignedIds = normalizePersonIds(taskRecord);
             if (!assignedIds.includes(String(personId))) {
@@ -2042,7 +2005,7 @@
             if (!taskRecord) return;
 
             const activePeople = getActivePeopleForTask(taskRecord);
-            if (activePeople.length === 0) return showToast('❌ لا يوجد أشخاص نشطين', 'error');
+            if (activePeople.length === 0) return showToast('❌ لا يوجد أشخاص نشطين في هذه المهمة', 'error');
 
             const now = new Date().toISOString();
             const updatedRecord = {
@@ -2162,8 +2125,9 @@
                 return showToast('❌ اختر اسمك واكتب المهمة', 'error');
             }
 
-            if (isPersonOnVacation(personId)) {
-                return showToast('❌ لا يمكن تسجيل مهمة وأنت في إجازة', 'error');
+            // 🔥 التحقق من أن الشخص لم يكن في إجازة في هذا التاريخ
+            if (wasPersonOnVacationOnDate(personId, selectedDate)) {
+                return showToast(`❌ لا يمكن تسجيل مهمة في يوم كنت فيه في إجازة (${formatDate(selectedDate)})`, 'error');
             }
 
             const now = new Date().toISOString();
@@ -2181,7 +2145,8 @@
                 completed_at: now,
                 completed_by: currentUser?.uid || null,
                 created_at: now,
-                self_registered: true
+                self_registered: true,
+                snapshot_person_ids: [String(personId)]
             };
 
             setLoading(true);
@@ -2225,20 +2190,36 @@
 
             container.innerHTML = people.map(person => {
                 const onVacation = isPersonOnVacation(person.id);
+                const vacationCount = person.vacationHistory ? person.vacationHistory.length : 0;
+                const lastVacation = person.vacationHistory && person.vacationHistory.length > 0 ?
+                    person.vacationHistory[person.vacationHistory.length - 1] : null;
+
+                let vacationInfo = '';
+                if (lastVacation) {
+                    vacationInfo = `📅 آخر إجازة: ${lastVacation.startDate} → ${lastVacation.endDate}`;
+                }
+
                 return `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--light-gray);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--light-gray);flex-wrap:wrap;gap:8px;">
                         <div>
                             <div style="font-weight:700;">${escapeHtml(person.name)}</div>
                             <div style="font-size:0.7rem;color:var(--gray);">
                                 ${person.active !== false ? 'نشط' : 'غير نشط'}
-                                ${onVacation ? ' 📅 في إجازة' : ''}
+                                ${onVacation ? ' 📅 في إجازة حالياً' : ''}
+                                ${vacationCount > 0 ? ` 📋 ${vacationCount} إجازة` : ''}
+                                ${lastVacation ? `<br><span style="font-size:0.6rem;color:var(--gray);">${vacationInfo}</span>` : ''}
                             </div>
                         </div>
                         <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                            <button class="btn ${onVacation ? 'btn-secondary' : 'btn-warning'} btn-sm" onclick="toggleVacation('${escapeHtml(person.id)}')">
-                                <i class="fas ${onVacation ? 'fa-undo' : 'fa-plane'}"></i>
-                                ${onVacation ? 'إلغاء الإجازة' : 'إجازة'}
-                            </button>
+                            ${!onVacation ? `
+                                <button class="btn btn-warning btn-sm" onclick="toggleVacation('${escapeHtml(person.id)}')">
+                                    <i class="fas fa-plane"></i> إجازة
+                                </button>
+                            ` : `
+                                <button class="btn btn-secondary btn-sm" onclick="cancelVacation('${escapeHtml(person.id)}')">
+                                    <i class="fas fa-undo"></i> إنهاء الإجازة
+                                </button>
+                            `}
                             <button class="btn btn-warning btn-sm" onclick="editPerson('${escapeHtml(person.id)}')">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -2268,7 +2249,8 @@
                 id: generateId('person'),
                 name,
                 active: true,
-                onVacation: false,
+                isOnVacation: false,
+                vacationHistory: [],
                 created_at: new Date().toISOString()
             };
 
@@ -2333,7 +2315,7 @@
             const person = people.find(p => String(p.id) === String(id));
             if (!person) return;
 
-            const confirmation = confirm(`هل تريد حذف "${person.name}"؟`);
+            const confirmation = confirm(`هل تريد حذف "${person.name}"؟\n\nسيتم الاحتفاظ بسجلات المهام القديمة.`);
             if (!confirmation) return;
 
             setLoading(true);
@@ -2426,6 +2408,7 @@
         function renderAssigneesForTask(record, filterPersonId = '') {
             const personIds = normalizePersonIds(record);
             const completedIds = normalizeCompletedPeopleIds(record);
+            const taskDate = record.task_date;
 
             if (personIds.length === 0) {
                 return `<span style="color:var(--gray);font-size:0.7rem;">لا يوجد</span>`;
@@ -2433,7 +2416,8 @@
 
             return personIds.map(personId => {
                 const completed = completedIds.includes(String(personId));
-                const onVacation = isPersonOnVacation(personId);
+                const wasOnVacation = wasPersonOnVacationOnDate(personId, taskDate);
+                const isCurrentlyOnVacation = isPersonOnVacation(personId);
                 const name = getPersonName(personId);
                 const isFiltered = filterPersonId && String(personId) === String(filterPersonId);
 
@@ -2441,9 +2425,13 @@
                 let className = 'person-tag';
                 let onClickAction = `togglePersonTask('${escapeHtml(record.id)}', '${escapeHtml(personId)}')`;
 
-                if (onVacation) {
+                if (wasOnVacation) {
+                    className += ' was-on-vacation';
+                    statusText = '📅 إجازة';
+                    onClickAction = ''; // لا يمكن النقر
+                } else if (isCurrentlyOnVacation) {
                     className += ' on-vacation';
-                    statusText = '📅';
+                    statusText = '📅 إجازة حالياً';
                     onClickAction = '';
                 } else if (completed) {
                     className += ' done';
@@ -2456,12 +2444,18 @@
                     className += ' filtered';
                 }
 
+                const title = wasOnVacation ? 'كان في إجازة في هذا التاريخ' :
+                    isCurrentlyOnVacation ? 'في إجازة حالياً - لا يمكن التغيير' :
+                    completed ? '✅ تم - اضغط للإلغاء' :
+                    '⏳ لم يتم - اضغط للتنفيذ';
+
                 return `
                     <span class="${className}" 
                           ${onClickAction ? `onclick="${onClickAction}"` : ''}
-                          title="${onVacation ? 'في إجازة' : completed ? '✅ تم - اضغط للإلغاء' : '⏳ لم يتم - اضغط للتنفيذ'}">
+                          title="${title}">
                         ${statusText} ${escapeHtml(name)}
                         ${isFiltered ? ' 🎯' : ''}
+                        ${wasOnVacation ? ' (إجازة)' : ''}
                     </span>
                 `;
             }).join('');
@@ -2487,13 +2481,15 @@
             const vacationPeople = people.filter(p => isPersonOnVacation(p.id));
             const filterPersonName = selectedFilterPerson ? getPersonName(selectedFilterPerson) : '';
 
+            // إحصائيات الأشخاص
             const peopleStats = activePeople.map(person => {
                 let totalAssigned = 0;
                 let completedTasks = 0;
 
                 filteredRecords.forEach(record => {
                     const personIds = normalizePersonIds(record);
-                    if (personIds.includes(String(person.id)) && !isPersonOnVacation(person.id)) {
+                    if (personIds.includes(String(person.id)) && !wasPersonOnVacationOnDate(person.id, record
+                            .task_date)) {
                         totalAssigned++;
                         if (isPersonCompleted(record, person.id)) {
                             completedTasks++;
@@ -2511,7 +2507,7 @@
 
             const completionPercentage = total ? Math.round(completed / total * 100) : 0;
 
-            // Filter options
+            // خيارات الفلتر
             const filterOptions = people
                 .filter(p => p.active !== false)
                 .map(p => `
@@ -2557,7 +2553,7 @@
                         <div class="stat-info">
                             <div class="stat-number">${completed}</div>
                             <div class="stat-label">مكتملة</div>
-                            <span class="stat-badge up">${completionPercentage}%</span>
+                            <span style="font-size:0.65rem;font-weight:700;color:var(--success);">${completionPercentage}%</span>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -2572,7 +2568,7 @@
                         <div class="stat-info">
                             <div class="stat-number">${overdue}</div>
                             <div class="stat-label">غير منفذة</div>
-                            ${overdue > 0 ? `<span class="stat-badge down">متأخرة</span>` : ''}
+                            ${overdue > 0 ? `<span style="font-size:0.65rem;font-weight:700;color:var(--danger);">متأخرة</span>` : ''}
                         </div>
                     </div>
                     <div class="stat-card">
@@ -2633,7 +2629,7 @@
                                 <span class="value warning">${pending}</span>
                             </div>
                             <div class="summary-item highlight">
-                                <span class="label">📋 عدد المهام</span>
+                                <span class="label">📋 عدد القوالب</span>
                                 <span class="value primary">${taskTemplates.length}</span>
                             </div>
                             ${isFiltered ? `
@@ -2644,7 +2640,7 @@
                             ` : ''}
                             ${vacationPeople.length > 0 ? `
                                 <div class="summary-item" style="background:#FDEDEC;border:1px solid var(--danger);">
-                                    <span class="label">📅 في إجازة</span>
+                                    <span class="label">📅 في إجازة حالياً</span>
                                     <span class="value danger">${vacationPeople.length} شخص</span>
                                 </div>
                             ` : ''}
@@ -2692,10 +2688,10 @@
                         <div class="toggle-title">
                             <i class="fas fa-clock" style="color:var(--warning);"></i>
                             المهام قيد التنفيذ
-                            <span class="count-badge ${isFiltered ? 'filtered' : ''}">${pending}</span>
+                            <span class="count-badge">${pending}</span>
                         </div>
                         <span style="font-size:0.7rem;color:var(--gray);">
-                            <i class="fas fa-info-circle"></i> الأشخاص في إجازة لا يحتسبون
+                            <i class="fas fa-info-circle"></i> الأشخاص الذين كانوا في إجازة لا يحتسبون
                         </span>
                     </div>
 
@@ -2718,13 +2714,13 @@
                             const status = getTaskCompletionStatus(taskRecord);
 
                             return `
-                                <div class="task-item pending">
+                                <div class="task-item pending ${status.wasOnVacation > 0 ? 'on-vacation-day' : ''}">
                                     <div class="task-name">
                                         <span class="status-icon">⏳</span>
                                         <div>
                                             ${escapeHtml(taskRecord.task_name)}
                                             ${taskRecord.description ? `<div class="task-desc">📝 ${escapeHtml(taskRecord.description)}</div>` : ''}
-                                            ${status.onVacation > 0 ? `<div class="task-desc" style="color:var(--danger);">📅 ${status.onVacation} في إجازة</div>` : ''}
+                                            ${status.wasOnVacation > 0 ? `<div class="task-desc" style="color:var(--danger);">📅 ${status.wasOnVacation} شخص كان في إجازة في هذا اليوم</div>` : ''}
                                             ${isFiltered ? `<div class="task-desc" style="color:var(--primary);">🎯 ${filterPersonName}</div>` : ''}
                                         </div>
                                     </div>
@@ -2735,14 +2731,14 @@
                                         ${getRecurrenceBadge(taskRecord.recurrence)}
                                     </div>
                                     <div class="task-meta">
-                                        <span class="task-status-text" style="color:${status.active > 0 ? 'var(--primary)' : 'var(--gray)'};">
+                                        <span style="font-weight:700;font-size:0.75rem;">
                                             ${status.active > 0 ? `✅ ${status.completed}/${status.active} نشط` : '👤 لا يوجد نشط'}
-                                            ${status.onVacation > 0 ? ` 📅 ${status.onVacation}` : ''}
+                                            ${status.wasOnVacation > 0 ? ` 📅 ${status.wasOnVacation} إجازة` : ''}
                                         </span>
                                     </div>
                                     <div class="task-actions">
                                         ${!fullyCompleted && status.active > 0 ? `
-                                            <button class="btn-complete" title="تنفيذ للجميع" onclick="completeTask('${escapeHtml(taskRecord.id)}')">
+                                            <button class="btn-complete" title="تنفيذ للجميع (النشطين فقط)" onclick="completeTask('${escapeHtml(taskRecord.id)}')">
                                                 <i class="fas fa-check-double"></i>
                                             </button>
                                         ` : ``}
@@ -2773,7 +2769,7 @@
                         <div class="completed-title">
                             <i class="fas fa-check-circle" style="color:var(--success);"></i>
                             المهام المكتملة
-                            <span class="completed-count ${isFiltered ? 'filtered' : ''}">${completedRecords.length}</span>
+                            <span class="completed-count">${completedRecords.length}</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:0.7rem;color:var(--gray);">
@@ -2949,7 +2945,7 @@
                                 <div id="peopleSelector" class="people-selector"></div>
                                 <div id="selectedPeopleCount" class="selected-count">تم اختيار 0 شخص</div>
                                 <div style="font-size:0.7rem;color:var(--gray);margin-top:4px;">
-                                    <i class="fas fa-info-circle"></i> الأشخاص في إجازة غير متاحين
+                                    <i class="fas fa-info-circle"></i> الأشخاص في إجازة حالياً غير متاحين
                                 </div>
                             </div>
                             <div class="form-row">
@@ -3018,7 +3014,8 @@
                             </div>
                             <div style="margin-bottom:12px;padding:8px 12px;background:#F5F6FA;border-radius:10px;font-size:0.75rem;color:var(--gray);">
                                 <i class="fas fa-info-circle"></i> 
-                                زر <strong>"إجازة"</strong> لتحديد شخص في إجازة
+                                <strong>"إجازة"</strong> لتحديد إجازة مع تواريخ<br>
+                                <strong>"إنهاء الإجازة"</strong> لإنهاء الإجازة الحالية (يتم الاحتفاظ بالسجل)
                             </div>
                             <div id="peopleManager"></div>
                             <div class="modal-buttons">
