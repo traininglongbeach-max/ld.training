@@ -171,8 +171,7 @@
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let currentQuarter = -1;
-        let currentType = "all";
-        
+        let currentType = "offjob";        
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const quarterNames = ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
         const quarterMonths = [[0,1,2], [3,4,5], [6,7,8], [9,10,11]];
@@ -372,7 +371,7 @@
         }
 
         // ===== Department Stats =====
-        function calculateDepartmentStats() {
+function calculateDepartmentStats() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
             
@@ -400,7 +399,10 @@
                 
                 return {
                     type: 'single',
-                    data: Array.from(deptMap.keys()).map(d => ({
+                    data: Array.from(deptMap.keys())
+                        // السطر التالي لاستبعاد قسم A&G من الشارت
+                        .filter(d => d !== 'A&G' && d !== 'A & G')
+                        .map(d => ({
                         department: d,
                         uniqueEmployees: deptMap.get(d).employees.size,
                         sessions: deptMap.get(d).sessions.size,
@@ -436,13 +438,16 @@
             });
             
             const allDepts = new Set([...deptMapOff.keys(), ...deptMapOn.keys()]);
-            const offData = Array.from(allDepts).map(d => ({
+            // السطر التالي لاستبعاد قسم A&G من الشارت المدمج
+            const filteredDepts = Array.from(allDepts).filter(d => d !== 'A&G' && d !== 'A & G');
+
+            const offData = filteredDepts.map(d => ({
                 department: d,
                 uniqueEmployees: deptMapOff.get(d)?.employees.size || 0,
                 sessions: deptMapOff.get(d)?.sessions.size || 0,
                 hours: parseFloat((deptMapOff.get(d)?.hours || 0).toFixed(1))
             }));
-            const onData = Array.from(allDepts).map(d => ({
+            const onData = filteredDepts.map(d => ({
                 department: d,
                 uniqueEmployees: deptMapOn.get(d)?.employees.size || 0,
                 sessions: deptMapOn.get(d)?.sessions.size || 0,
@@ -497,7 +502,7 @@
         }
 
         // ===== Top Employees =====
-        function calculateTopEmployees() {
+function calculateTopEmployees() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
             const sessionCodes = new Set(filteredSessions.map(s => s.session_code?.toString().trim()));
@@ -530,7 +535,13 @@
                 return { id: empId, name: emp?.fullName || 'Unknown', department: emp?.department || '-', position: emp?.position || '-', hours: parseFloat(empMap.get(empId).hours.toFixed(1)) };
             });
             
-            result = result.filter(e => excludeSpecialEmployees([e.id]).length > 0 && e.hours > 0);
+            result = result.filter(e => 
+                // السطرين التاليين لمنع ظهور موظفي A&G في قائمة أفضل الموظفين
+                e.department !== 'A&G' && 
+                e.department !== 'A & G' &&
+                excludeSpecialEmployees([e.id]).length > 0 && 
+                e.hours > 0
+            );
             
             return {
                 topByHours: [...result].sort((a, b) => b.hours - a.hours).slice(0, 3)
@@ -698,7 +709,7 @@
             }
         }
 
-        function getBaseChartOptions() {
+function getBaseChartOptions() {
             const s = getChartSettings();
             return {
                 responsive: true,
@@ -739,8 +750,7 @@
                             font: { size: s.axisFont, family: "'Tajawal', sans-serif", weight: 'bold' },
                             maxRotation: s.rotation,
                             minRotation: s.rotation,
-                            autoSkip: true,
-                            maxTicksLimit: window.innerWidth <= 576 ? 8 : 15
+                            autoSkip: false // التعديل هنا لإجبار الشارت على إظهار كل الأسماء
                         },
                         grid: { display: false }
                     }
@@ -777,7 +787,7 @@
         }
 
         // ===== دالة لإعادة تحديث جميع الشارتات عند تغيير حجم الشاشة (Live Resize) =====
-        function resizeCharts() {
+function resizeCharts() {
             applyChartSettingsToDOM();
             const s = getChartSettings();
 
@@ -789,7 +799,7 @@
                         chart.options.scales.x.ticks.font.size = s.axisFont;
                         chart.options.scales.x.ticks.maxRotation = s.rotation;
                         chart.options.scales.x.ticks.minRotation = s.rotation;
-                        chart.options.scales.x.ticks.maxTicksLimit = window.innerWidth <= 576 ? 8 : 15;
+                        chart.options.scales.x.ticks.autoSkip = false; // تأكيد إظهار كل الأسماء هنا أيضاً
                     }
                     if (chart.options.scales.y.ticks) {
                         chart.options.scales.y.ticks.font.size = s.axisFont;
@@ -807,7 +817,7 @@
                         dataset.borderRadius = s.borderRadius;
                     });
 
-                    chart.update('none'); // تحديث فوري وبدون أنيميشن لمنع التقطيع
+                    chart.update('none'); 
                 }
             });
         }
