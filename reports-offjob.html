@@ -282,8 +282,7 @@
                 return true;
             });
         }
-
-        function calculateDepartmentStats(filteredSessions) {
+function calculateDepartmentStats(filteredSessions) {
             const deptStats = new Map();
             filteredSessions.forEach(session => {
                 const attendees = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
@@ -304,7 +303,10 @@
                 });
             });
             
-            return Array.from(deptStats.keys()).map(dept => ({
+            return Array.from(deptStats.keys())
+                // السطر التالي يمنع قسم A&G من الظهور في كروت الأقسام والرسومات البيانية
+                .filter(dept => dept !== 'A&G' && dept !== 'A & G') 
+                .map(dept => ({
                 department: dept, sessions: deptStats.get(dept).sessions, uniqueEmployees: deptStats.get(dept).uniqueEmployees.size, hours: parseFloat(deptStats.get(dept).hours.toFixed(1))
             })).sort((a, b) => b.hours !== a.hours ? b.hours - a.hours : b.uniqueEmployees - a.uniqueEmployees);
         }
@@ -362,7 +364,7 @@
             };
         }
 
-        function getEmployeesDetails(filteredSessions) {
+function getEmployeesDetails(filteredSessions) {
             const employeesMap = new Map();
             filteredSessions.forEach(session => {
                 const attendees = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
@@ -383,7 +385,10 @@
                     emp.totalCourses.add(course?.course_name);
                 });
             });
-            return Array.from(employeesMap.values()).map(emp => ({ ...emp, totalCourses: emp.totalCourses.size, totalHours: parseFloat(emp.totalHours.toFixed(1)), sessions: emp.sessions.sort((a,b) => parseDateSafely(b.session_date) - parseDateSafely(a.session_date)) })).sort((a, b) => b.totalHours - a.totalHours);
+            return Array.from(employeesMap.values())
+                // السطر التالي يمنع موظفي A&G من الظهور في قائمة الموظفين التفصيلية
+                .filter(emp => emp.department !== 'A&G' && emp.department !== 'A & G')
+                .map(emp => ({ ...emp, totalCourses: emp.totalCourses.size, totalHours: parseFloat(emp.totalHours.toFixed(1)), sessions: emp.sessions.sort((a,b) => parseDateSafely(b.session_date) - parseDateSafely(a.session_date)) })).sort((a, b) => b.totalHours - a.totalHours);
         }
 
         function initCharts(deptStats, filteredSessions) {
@@ -682,7 +687,7 @@
             XLSX.writeFile(wb, `Off Job Report - ${currentYear}.xlsx`);
         }
 
-        function exportParticipatingDepartments() {
+function exportParticipatingDepartments() {
             const filteredSessions = filterByMonthAndQuarter(filterByTrainingType(trainingData.sessions), 'session_date');
             const deptData = new Map();
 
@@ -699,7 +704,10 @@
                 });
             });
 
-            const reportData = Array.from(deptData.keys()).map(dept => ({
+            const reportData = Array.from(deptData.keys())
+                // السطر التالي لمنع تصدير A&G في الإكسيل
+                .filter(dept => dept !== 'A&G' && dept !== 'A & G')
+                .map(dept => ({
                 department: dept, employees: deptData.get(dept).employees.size, hours: parseFloat(deptData.get(dept).hours.toFixed(1))
             })).sort((a, b) => b.hours !== a.hours ? b.hours - a.hours : b.employees - a.employees);
 
