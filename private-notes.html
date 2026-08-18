@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مفكرتي الخاصة - غير مصرح بالدخول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- السكريبتات بنظام Modules للاتصال بالفيربيز -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; overflow-x: hidden; }
+
+        .navbar {
+            background: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo h2 { color: #1e3a5f; font-size: clamp(1.2rem, 3vw, 1.8rem); }
+        .logo span { color: #e53e3e; } /* لون أحمر لتمييز الخصوصية */
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button {
+            text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500;
+            cursor: pointer; border: none; font-size: 0.9rem; transition: 0.3s;
+        }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #1e3a5f; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
+
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; display: none; }
+        .page-header { margin-bottom: 2rem; border-right: 5px solid #e53e3e; padding-right: 15px; }
+        .page-header h1 { color: #1e3a5f; font-size: 2rem; }
+        .page-header p { color: #718096; font-size: 1rem; margin-top: 0.5rem; }
+
+        /* نموذج إضافة الملاحظات */
+        .add-note-card {
+            background: white; border-radius: 1.5rem; padding: 2rem; margin-bottom: 3rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+        }
+        .add-note-card h3 { color: #1e3a5f; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: bold; color: #4a5568; margin-bottom: 0.5rem; }
+        .form-control {
+            width: 100%; padding: 0.8rem 1rem; border: 2px solid #e2e8f0; border-radius: 1rem;
+            font-size: 1rem; outline: none; transition: 0.3s; font-family: 'Tajawal', sans-serif;
+        }
+        .form-control:focus { border-color: #e53e3e; box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1); }
+        textarea.form-control { resize: vertical; min-height: 120px; }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #e53e3e, #c53030); color: white; border: none;
+            padding: 0.8rem 2rem; border-radius: 2rem; font-size: 1.1rem; font-weight: bold;
+            cursor: pointer; transition: 0.3s; width: 100%; max-width: 250px;
+        }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(229, 62, 62, 0.3); }
+
+        /* شبكة عرض الملاحظات */
+        .notes-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
+        }
+        .note-card {
+            background: #fffdf0; /* لون أصفر خفيف يميل لورق الملاحظات */
+            border-radius: 1rem; padding: 1.5rem; position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-right: 5px solid #f6ad55;
+            transition: 0.3s; display: flex; flex-direction: column;
+        }
+        .note-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .note-date { font-size: 0.75rem; color: #a0aec0; margin-bottom: 0.5rem; }
+        .note-title { font-size: 1.2rem; font-weight: bold; color: #2d3748; margin-bottom: 0.8rem; }
+        .note-content { font-size: 0.95rem; color: #4a5568; line-height: 1.6; white-space: pre-wrap; flex-grow: 1; word-wrap: break-word; }
+        .note-content a { color: #3182ce; text-decoration: none; font-weight: bold; }
+        .note-content a:hover { text-decoration: underline; }
+        
+        .btn-delete {
+            background: #fed7d7; color: #c53030; border: none; padding: 0.4rem 1rem;
+            border-radius: 1rem; cursor: pointer; font-size: 0.8rem; font-weight: bold;
+            margin-top: 1.5rem; transition: 0.3s; align-self: flex-start;
+        }
+        .btn-delete:hover { background: #e53e3e; color: white; }
+
+        /* رسائل الخطأ والتحميل */
+        #accessDenied { text-align: center; padding: 150px 20px; font-size: 1.5rem; color: #e53e3e; font-weight: bold; display: none; }
+        #loadingScreen { text-align: center; padding: 150px 20px; font-size: 1.5rem; color: #1e3a5f; font-weight: bold; }
+        .toast-msg { position: fixed; bottom: 2rem; right: 2rem; background: #2b7a4b; color: white; padding: 0.8rem 1.5rem; border-radius: 2rem; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .btn-submit { width: 100%; max-width: 100%; }
+            .notes-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="loadingScreen">⏳ جاري التحقق من الصلاحيات...</div>
+    
+    <div id="accessDenied">
+        ⛔ غير مصرح لك بالدخول إلى هذه الصفحة.<br>
+        <span style="font-size: 1rem; color: #718096; display: block; margin-top: 10px;">سيتم تحويلك للصفحة الرئيسية...</span>
+    </div>
+
+    <div id="app" class="container">
+        <div class="navbar">
+            <div class="logo"><h2>🔒 مساحة <span>إدارية خاصة</span></h2></div>
+            <div class="nav-links">
+                <a href="index.html" class="home">🏠 العودة للنظام</a>
+                <button onclick="logout()" class="logout">🚪 تسجيل خروج</button>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>📝 مفكرتي الخاصة</h1>
+            <p>مساحة آمنة لحفظ الروابط، الملاحظات السريعة، والبيانات الهامة (لا يمكن لأحد رؤيتها غيرك).</p>
+        </div>
+
+        <!-- فورم إضافة ملاحظة جديدة -->
+        <div class="add-note-card">
+            <h3>➕ إضافة ملاحظة / رابط جديد</h3>
+            <div class="form-group">
+                <label>عنوان الملاحظة:</label>
+                <input type="text" id="noteTitle" class="form-control" placeholder="مثال: روابط هامة للكورسات، أو بيانات الدخول...">
+            </div>
+            <div class="form-group">
+                <label>التفاصيل أو الروابط:</label>
+                <textarea id="noteContent" class="form-control" placeholder="اكتب ملاحظاتك هنا... يمكنك لصق أي روابط وسيتم تفعيلها تلقائياً"></textarea>
+            </div>
+            <button class="btn-submit" onclick="saveNote()" id="saveBtn">💾 حفظ الملاحظة</button>
+        </div>
+
+        <!-- مكان عرض الملاحظات -->
+        <h3 style="color:#1e3a5f; margin-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">📂 السجلات المحفوظة</h3>
+        <div id="notesContainer" class="notes-grid">
+            <!-- سيتم إضافة الملاحظات هنا بواسطة الجافاسكريبت -->
+        </div>
+        
+    </div>
+
+    <!-- استدعاء أدوات الفيربيز المطلوبة مباشرة -->
+    <script type="module">
+        import { auth } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+        // ========================================================
+        // 🔴 هام جداً: ضع الإيميل الخاص بك أنت فقط هنا 🔴
+        // ========================================================
+const MY_PRIVATE_UID = "Td73OQ65hPXSQXF00p7E8d94Kca2";
+
+        const db = getFirestore();
+        const notesCollectionRef = collection(db, 'private_admin_notes');
+        let currentNotes = [];
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // تحويل النص العادي الذي يحتوي على روابط (http/https) إلى روابط قابلة للضغط
+        function linkify(text) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return '<a href="' + url + '" target="_blank">' + url + '</a>';
+            });
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag]));
+        }
+
+        // جلب الملاحظات من قاعدة البيانات
+        async function fetchNotes() {
+            try {
+                const q = query(notesCollectionRef, orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                currentNotes = [];
+                querySnapshot.forEach((doc) => {
+                    currentNotes.push({ id: doc.id, ...doc.data() });
+                });
+                renderNotes();
+            } catch (error) {
+                console.error("Error fetching notes: ", error);
+            }
+        }
+
+        // رسم الملاحظات على الشاشة
+        function renderNotes() {
+            const container = document.getElementById('notesContainer');
+            if (currentNotes.length === 0) {
+                container.innerHTML = '<p style="color:#a0aec0; grid-column: 1 / -1; text-align:center; padding: 2rem;">📭 لا توجد ملاحظات محفوظة حالياً.</p>';
+                return;
+            }
+
+            container.innerHTML = currentNotes.map(note => {
+                let dateStr = '';
+                if (note.createdAt && note.createdAt.toDate) {
+                    const d = note.createdAt.toDate();
+                    dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} - ${d.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}`;
+                }
+
+                // حماية النص من أكواد الـ HTML الضارة ثم تفعيل الروابط
+                const safeTitle = escapeHTML(note.title || 'بدون عنوان');
+                const safeContent = linkify(escapeHTML(note.content || ''));
+
+                return `
+                    <div class="note-card" id="note-${note.id}">
+                        <div class="note-date">🕒 ${dateStr}</div>
+                        <div class="note-title">${safeTitle}</div>
+                        <div class="note-content">${safeContent}</div>
+                        <button class="btn-delete" onclick="deleteNote('${note.id}')">🗑️ حذف</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // حفظ ملاحظة جديدة
+        window.saveNote = async () => {
+            const titleInput = document.getElementById('noteTitle');
+            const contentInput = document.getElementById('noteContent');
+            const btn = document.getElementById('saveBtn');
+
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+
+            if (!title || !content) {
+                alert('⚠️ يرجى كتابة عنوان وتفاصيل الملاحظة');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ جاري الحفظ...';
+
+            try {
+                await addDoc(notesCollectionRef, {
+                    title: title,
+                    content: content,
+                    createdAt: serverTimestamp()
+                });
+                
+                titleInput.value = '';
+                contentInput.value = '';
+                showToast('✅ تم حفظ الملاحظة بنجاح');
+                await fetchNotes(); // تحديث العرض
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert('حدث خطأ أثناء الحفظ');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '💾 حفظ الملاحظة';
+            }
+        };
+
+        // حذف ملاحظة
+        window.deleteNote = async (noteId) => {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذه الملاحظة نهائياً؟')) return;
+            
+            try {
+                await deleteDoc(doc(db, 'private_admin_notes', noteId));
+                document.getElementById(`note-${noteId}`).style.opacity = '0.5';
+                showToast('🗑️ تم الحذف');
+                await fetchNotes(); // تحديث العرض
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+                alert('حدث خطأ أثناء الحذف');
+            }
+        };
+
+        window.logout = async () => {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        };
+
+// ================= حارس الحماية (Auth Guard) =================
+        onAuthStateChanged(auth, async (user) => {
+            document.getElementById('loadingScreen').style.display = 'none';
+            
+            if (user) {
+                // التحقق من أن الـ UID المسجل يطابق الـ UID الخاص بك
+                if (user.uid === MY_PRIVATE_UID) {
+                    // مصرح له بالدخول
+                    document.getElementById('app').style.display = 'block';
+                    fetchNotes();
+                } else {
+                    // غير مصرح له، يتم طرده
+                    document.getElementById('accessDenied').style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = 'index.html'; // تحويله للرئيسية بعد 3 ثواني
+                    }, 3000);
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
