@@ -57,12 +57,10 @@
         .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; transition: font-size 0.3s ease; }
         
         /* ----------------------------------------------------------------- */
-        /* أكواد الـ CSS الجديدة والمستقرة لحجم الشارت ومنعه من الاختفاء */
-        .chart-wrapper { position: relative; width: 100%; display: block; }
-        .chart-wrapper canvas { width: 100% !important; height: 100% !important; }
-        @media (max-width: 576px) { .chart-wrapper { height: 500px !important; } }
-        @media (min-width: 577px) and (max-width: 768px) { .chart-wrapper { height: 450px !important; } }
-        @media (min-width: 769px) { .chart-wrapper { height: 400px !important; } }
+        /* الحل الجذري النهائي لظهور الشارت على الموبايل بدون اختفاء */
+        .chart-wrapper { position: relative; width: 100%; height: 400px; display: block; }
+        @media (max-width: 768px) { .chart-wrapper { height: 450px; } }
+        @media (max-width: 576px) { .chart-wrapper { height: 500px; } }
         /* ----------------------------------------------------------------- */
 
         .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
@@ -164,7 +162,6 @@
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        // مصفوفة لتخزين مراجع الشارتات لإعادة التحديث عند تغيير حجم الشاشة
         let chartInstances = [];
 
         let offJobData = { courses: [], sessions: [], enrollments: [] };
@@ -219,7 +216,6 @@
             return new Date(val);
         }
 
-        // ===== تحميل البيانات (مرة واحدة فقط) =====
         async function loadAllData(forceRefresh = false) {
             if (isDataLoaded && !forceRefresh) {
                 console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
@@ -272,7 +268,6 @@
                 }
                 
                 isDataLoaded = true;
-                console.log(`✅ تم الجلب: ${allEmployees.length} موظف | OffJob: ${offJobData.enrollments.length} | OnJob: ${onJobData.enrollments.length}`);
                 
                 if (forceRefresh) {
                     const notice = document.getElementById('refreshNotice');
@@ -311,10 +306,8 @@
                 const d = parseExcelDate(item[dateField]);
                 if (!d || isNaN(d.getTime())) return false;
                 if (d.getFullYear() !== currentYear) return false;
-                
                 if (currentMonth !== -1 && d.getMonth() !== currentMonth) return false;
                 if (currentQuarter !== -1 && !quarterMonths[currentQuarter].includes(d.getMonth())) return false;
-                
                 return true;
             });
         }
@@ -377,7 +370,6 @@
             });
         }
 
-        // ===== Department Stats =====
         function calculateDepartmentStats() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
@@ -407,7 +399,6 @@
                 return {
                     type: 'single',
                     data: Array.from(deptMap.keys())
-                        // السطر التالي لاستبعاد قسم A&G من الشارت
                         .filter(d => d !== 'A&G' && d !== 'A & G')
                         .map(d => ({
                         department: d,
@@ -445,7 +436,6 @@
             });
             
             const allDepts = new Set([...deptMapOff.keys(), ...deptMapOn.keys()]);
-            // السطر التالي لاستبعاد قسم A&G من الشارت المدمج
             const filteredDepts = Array.from(allDepts).filter(d => d !== 'A&G' && d !== 'A & G');
 
             const offData = filteredDepts.map(d => ({
@@ -468,7 +458,6 @@
             };
         }
 
-        // ===== Monthly Stats =====
         function calculateMonthlyStats() {
             const data = getActiveDataWithTypes();
             const monthlyStats = new Map();
@@ -508,7 +497,6 @@
             }));
         }
 
-        // ===== Top Employees =====
         function calculateTopEmployees() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
@@ -543,7 +531,6 @@
             });
             
             result = result.filter(e => 
-                // السطرين التاليين لمنع ظهور موظفي A&G في قائمة أفضل الموظفين
                 e.department !== 'A&G' && 
                 e.department !== 'A & G' &&
                 excludeSpecialEmployees([e.id]).length > 0 && 
@@ -555,7 +542,6 @@
             };
         }
 
-        // ===== Quarterly Stats =====
         function calculateQuarterlyStats() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
@@ -595,7 +581,6 @@
             });
         }
 
-        // ===== Semi-Annual Stats =====
         function calculateSemiAnnualStats() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
@@ -704,13 +689,11 @@
         function getChartSettings() {
             const w = window.innerWidth;
             if (w <= 576) {
-                // شاشات الموبايل: الدوران 90 درجة لعدم التداخل وتصغير الخطوط
-                return { titleFont: 1.2, axisFont: 10, dataFont: 9, legendFont: 11, barThickness: 12, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 90, displayDataLabels: false };
+                // شاشات الموبايل: إظهار الأرقام (true)، دوران 60 درجة، وتصغير حجم الخطوط
+                return { titleFont: 1.1, axisFont: 10, dataFont: 9, legendFont: 11, barThickness: 12, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 60, displayDataLabels: true };
             } else if (w <= 768) {
-                // التابلت: الدوران 45 درجة
                 return { titleFont: 1.3, axisFont: 11, dataFont: 11, legendFont: 12, barThickness: 16, borderRadius: 6, padding: { top: 25, bottom: 10, left: 10, right: 10 }, rotation: 45, displayDataLabels: true };
             } else {
-                // اللابتوب والشاشات الكبيرة
                 return { titleFont: 1.5, axisFont: 13, dataFont: 13, legendFont: 14, barThickness: 30, borderRadius: 8, padding: { top: 30, bottom: 15, left: 15, right: 15 }, rotation: 0, displayDataLabels: true };
             }
         }
@@ -733,7 +716,7 @@
                         }
                     },
                     datalabels: {
-                        display: s.displayDataLabels,
+                        display: s.displayDataLabels, // يقرأ (True) من الإعدادات لإظهار الأرقام
                         color: '#000',
                         backgroundColor: 'rgba(255,255,255,0.85)',
                         borderRadius: s.borderRadius,
@@ -756,7 +739,7 @@
                             font: { size: s.axisFont, family: "'Tajawal', sans-serif", weight: 'bold' },
                             maxRotation: s.rotation,
                             minRotation: s.rotation,
-                            autoSkip: false // التعديل هنا لإجبار الشارت على إظهار كل الأسماء
+                            autoSkip: false // إجبار الشارت على إظهار كل الأسماء
                         },
                         grid: { display: false }
                     }
@@ -775,13 +758,11 @@
 
         function applyChartSettingsToDOM() {
             const s = getChartSettings();
-            // قمنا بإلغاء تعديل الجافاسكريبت للارتفاع، وتركناه للـ CSS ليكون مستقرًا على الموبايل
             document.querySelectorAll('.chart-card h3').forEach(el => {
                 el.style.fontSize = s.titleFont + 'rem';
             });
         }
 
-        // ===== دالة مساعدة لإنشاء شارت =====
         function createChart(ctx, config) {
             if (!ctx) return null;
             const chart = new Chart(ctx, config);
@@ -789,7 +770,6 @@
             return chart;
         }
 
-        // ===== دالة لإعادة تحديث جميع الشارتات عند تغيير حجم الشاشة (Live Resize) =====
         function resizeCharts() {
             applyChartSettingsToDOM();
             const s = getChartSettings();
@@ -802,7 +782,7 @@
                         chart.options.scales.x.ticks.font.size = s.axisFont;
                         chart.options.scales.x.ticks.maxRotation = s.rotation;
                         chart.options.scales.x.ticks.minRotation = s.rotation;
-                        chart.options.scales.x.ticks.autoSkip = false; // تأكيد إظهار كل الأسماء هنا أيضاً
+                        chart.options.scales.x.ticks.autoSkip = false;
                     }
                     if (chart.options.scales.y.ticks) {
                         chart.options.scales.y.ticks.font.size = s.axisFont;
@@ -825,7 +805,6 @@
             });
         }
 
-        // ===== Chart functions =====
         function initCharts(deptStats) {
             Chart.register(ChartDataLabels);
             const isSplit = deptStats.type === 'split';
@@ -959,7 +938,6 @@
             }
         }
 
-        // ===== دالة تحديث البيانات من Firestore =====
         async function refreshData() {
             if (isRefreshing) return;
             isRefreshing = true;
@@ -975,7 +953,6 @@
             }
         }
 
-        // ===== Filter functions =====
         function changeYear() { currentYear = parseInt(document.getElementById('yearSelect').value); loadPage(); }
         function changeMonth() { 
             currentMonth = parseInt(document.getElementById('monthSelect').value);
@@ -989,9 +966,7 @@
         }
         function changeType() { currentType = document.getElementById('typeSelect').value; loadPage(); }
 
-        // ===== الصفحة الرئيسية =====
         async function loadPage() {
-            // مسح مراجع الشارتات السابقة
             chartInstances.forEach(c => c.destroy());
             chartInstances = [];
             
@@ -1092,7 +1067,6 @@
         window.showDiagnostic = showDiagnostic; window.logout = logout;
         window.refreshData = refreshData;
 
-        // ===== إعادة تحديث الشارتات عند تغيير حجم الشاشة (مع debounce) =====
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
@@ -1101,7 +1075,6 @@
             }, 250);
         });
 
-        // ===== 🔒 Auth Guard & App Start =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
