@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل التدريبات  (Off Job) - نظام إدارة التعليم والتطوير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- السكريبتات بنظام Modules للاتصال بالفيربيز -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; }
+
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .logo h2 { color: #1e3a5f; }
+        .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
+
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { color: #1e3a5f; font-size: 2rem; }
+
+        .filter-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .filter-group { display: flex; align-items: center; gap: 0.8rem; }
+        .filter-group label { font-weight: bold; color: #1e3a5f; font-size: 0.9rem; }
+        .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.9rem; background: white; cursor: pointer; color: #1e3a5f; outline: none; transition: 0.3s; }
+        .filter-select:focus { border-color: #2b7a4b; }
+        .month-select { min-width: 120px; }
+        .filter-info { font-weight: bold; color: #2b7a4b; font-size: 0.9rem; }
+        .clear-filter-btn { background: #edf2f7; border: none; padding: 0.4rem 1rem; border-radius: 2rem; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: #4a5568; transition: 0.2s; }
+        .clear-filter-btn:hover { background: #e2e8f0; transform: translateY(-1px); }
+
+        .search-card { background: white; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .search-card h3 { color: #1e3a5f; margin-bottom: 1rem; }
+        .search-box { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .search-box input { padding: 1rem; width: 250px; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 1rem; text-align: center; outline: none; transition: 0.3s; }
+        .search-box input:focus { border-color: #2b7a4b; }
+        .search-box button { padding: 1rem 2rem; background: #2b7a4b; color: white; border: none; border-radius: 2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .search-box button:hover { background: #1e5a38; transform: translateY(-2px); }
+
+        .employee-info-card { background: linear-gradient(135deg, #1e3a5f, #2b7a4b); color: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .employee-info-card h2 { margin-bottom: 1rem; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .info-item { font-size: 0.95rem; }
+        .info-label { font-weight: bold; opacity: 0.8; }
+        .info-value { font-size: 1rem; margin-top: 0.2rem; font-weight: bold; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: 1.5rem; padding: 1.2rem; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #1e3a5f; }
+        .stat-label { color: #718096; font-size: 0.8rem; margin-top: 0.3rem; }
+
+        .table-container { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .table-container h3 { color: #1e3a5f; margin-bottom: 1rem; border-right: 4px solid #2b7a4b; padding-right: 1rem; font-size: 1.2rem; }
+        .table-wrapper { overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; }
+        .training-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 850px; }
+        .training-table th { background: #1e3a5f; color: white; padding: 12px 10px; text-align: center; font-weight: 500; white-space: nowrap; }
+        .training-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        .training-table tr:hover { background: #f7fafc; }
+        
+        .error-msg { background: #fed7d7; color: #c53030; padding: 1rem; border-radius: 1rem; text-align: center; font-weight: bold; margin-bottom: 1rem; }
+        .empty-msg { text-align: center; padding: 3rem; color: #a0aec0; background: #f7fafc; border-radius: 1rem; font-size: 1.1rem; }
+        
+        .toast-msg { position: fixed; bottom: 2rem; right: 2rem; background: #2b7a4b; color: white; padding: 0.8rem 1.5rem; border-radius: 2rem; z-index: 1000; animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .toast-msg.error { background: #e53e3e; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
+
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .filter-card { flex-direction: column; text-align: center; }
+            .training-table th, .training-table td { padding: 8px 6px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- شاشة التحميل الأولية -->
+    <div id="loadingScreen" style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
+        ⏳ جاري جلب السجلات التدريبية من السيرفر...
+    </div>
+
+    <!-- المحتوى الفعلي (مخفي حتى الانتهاء من التحميل) -->
+    <div id="app" style="display: none;"></div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ========== بيانات التدريب (سيتم تحميلها مرة واحدة فقط للـ Off Job) ==========
+        let offJobData = { courses: [], sessions: [], enrollments: [] };
+        let employees = [];
+        
+        // مؤشر لمعرفة إذا تم تحميل البيانات الأساسية أم لا
+        let isDataLoaded = false;
+        
+        let currentEmployee = null;
+        let currentTrainings = [];
+        let selectedYear = "all";
+        let selectedMonth = "all";
+
+        const monthNames = {
+            "01": "يناير", "02": "فبراير", "03": "مارس", "04": "أبريل",
+            "05": "مايو", "06": "يونيو", "07": "يوليو", "08": "أغسطس",
+            "09": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر"
+        };
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg' + (isError ? ' error' : '');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ===== المعالج الذكي للتواريخ =====
+        function parseDateSafely(dateValue) {
+            if (!dateValue) return new Date(NaN);
+            if (typeof dateValue === 'number') return new Date((dateValue - 25569) * 86400000);
+            return new Date(dateValue);
+        }
+
+        function formatDate(dateValue) {
+            if (!dateValue || dateValue === '-') return '-';
+            const d = parseDateSafely(dateValue);
+            if (isNaN(d.getTime())) return dateValue.toString();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        // ===== تحميل البيانات من Firebase (مرة واحدة فقط للـ Off Job) =====
+        async function loadAllDataFromServer() {
+            if (isDataLoaded) {
+                console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
+                return;
+            }
+            
+            try {
+                console.log('🔥 تحميل البيانات من Firestore (المرة الأولى والأخيرة)');
+                
+                const [
+                    employeesData,
+                    offJobCourses, offJobSessions, offJobEnrollments
+                ] = await Promise.all([
+                    DB.getAll('employees'),
+                    DB.getAll('offjob_courses'),
+                    DB.getAll('offjob_sessions'),
+                    DB.getAll('offjob_enrollments')
+                ]);
+                
+                employees = employeesData || [];
+                offJobData.courses = offJobCourses || [];
+                offJobData.sessions = offJobSessions || [];
+                offJobData.enrollments = offJobEnrollments || [];
+                
+                isDataLoaded = true;
+                
+                console.log(`✅ تم الجلب: ${employees.length} موظف | Off Job: ${offJobData.enrollments.length} تسجيل`);
+            } catch (error) {
+                console.error("❌ خطأ في تحميل البيانات من السيرفر:", error);
+                showToast("❌ حدث خطأ في الاتصال بقاعدة البيانات", true);
+                throw error;
+            }
+        }
+
+        // ===== حساب الساعات =====
+        function calculateHoursFromTime(startTime, endTime) {
+            if (!startTime || !endTime) return 0;
+            const startParts = startTime.toString().split(':');
+            const endParts = endTime.toString().split(':');
+            let startHour = parseInt(startParts[0]);
+            let startMinute = parseInt(startParts[1]) || 0;
+            let endHour = parseInt(endParts[0]);
+            let endMinute = parseInt(endParts[1]) || 0;
+            let diffHours = endHour - startHour;
+            let diffMinutes = endMinute - startMinute;
+            if (diffHours < 0) diffHours = 24 + diffHours;
+            return parseFloat((diffHours + (diffMinutes / 60)).toFixed(2));
+        }
+
+        function getSessionHoursFromSession(session) {
+            if (session.start_time == null || session.end_time == null) return 0;
+            const start = session.start_time;
+            const end = session.end_time;
+            if (typeof start === "number" && typeof end === "number") {
+                let hours = (end - start) * 24;
+                if (hours < 0) hours += 24;
+                return Number(hours.toFixed(2));
+            }
+            return calculateHoursFromTime(start.toString(), end.toString());
+        }
+
+        function getYearFromDate(dateValue) {
+            const d = parseDateSafely(dateValue);
+            return isNaN(d.getTime()) ? null : d.getFullYear();
+        }
+
+        function getMonthFromDate(dateValue) {
+            const d = parseDateSafely(dateValue);
+            return isNaN(d.getTime()) ? null : String(d.getMonth() + 1).padStart(2, '0');
+        }
+
+        // ===== فلاتر الواجهة =====
+        window.changeYear = () => { selectedYear = document.getElementById('yearSelect').value; if (currentEmployee) refreshResults(); };
+        window.changeMonth = () => { selectedMonth = document.getElementById('monthSelect').value; if (currentEmployee) refreshResults(); };
+        
+        window.clearAllFilters = () => {
+            selectedYear = "all"; selectedMonth = "all";
+            if (currentEmployee) {
+                setTimeout(() => {
+                    document.getElementById('yearSelect').value = "all";
+                    document.getElementById('monthSelect').value = "all";
+                    refreshResults();
+                }, 10);
+            } else {
+                buildUI(false);
+            }
+        };
+
+        window.searchEmployee = () => {
+            const empId = document.getElementById('employeeId').value.trim();
+            if (!empId) return showToast('❌ الرجاء إدخال كود الموظف', true);
+            
+            currentEmployee = employees.find(e => String(e.id) === empId);
+            if (!currentEmployee) {
+                currentTrainings = [];
+                buildUI(true);
+                return;
+            }
+            refreshResults();
+        };
+
+        function refreshResults() {
+            const allTrainingsList = [];
+            
+            const courses = offJobData.courses || [];
+            const sessions = offJobData.sessions || [];
+            const enrollments = offJobData.enrollments || [];
+            
+            const sessionsMap = {};
+            sessions.forEach(session => {
+                const course = courses.find(c => c.course_code == session.course_code);
+                sessionsMap[session.session_code] = { session, course };
+            });
+            
+            const empEnrollments = enrollments.filter(e => 
+                String(e.employee_id) === String(currentEmployee.id) && 
+                (e.enrollment_status === 'Completed' || e.enrollment_status === 'مكتمل' || e.enrollment_status === 'حضر' || e.enrollment_status === 'pass') &&
+                sessionsMap[e.session_code]
+            );
+            
+            empEnrollments.forEach(enrollment => {
+                const sessionInfo = sessionsMap[enrollment.session_code];
+                if (sessionInfo && sessionInfo.session) {
+                    const sessionDate = sessionInfo.session.session_date || sessionInfo.session.date || sessionInfo.session.start_date;
+                    const hours = getSessionHoursFromSession(sessionInfo.session);
+                    allTrainingsList.push({
+                        session_date: formatDate(sessionDate),
+                        course_name: sessionInfo.course ? sessionInfo.course.course_name : 'غير محدد',
+                        category: sessionInfo.course ? (sessionInfo.course.category || '-') : '-',
+                        trainer: sessionInfo.session.trainer_name || '-',
+                        hours: hours.toFixed(1),
+                        score: enrollment.score || 'N/A'
+                    });
+                }
+            });
+
+            let filteredList = allTrainingsList;
+            
+            if (selectedYear !== 'all') {
+                const yearNum = parseInt(selectedYear);
+                filteredList = filteredList.filter(t => getYearFromDate(t.session_date) === yearNum);
+            }
+            
+            if (selectedMonth !== 'all') {
+                filteredList = filteredList.filter(t => getMonthFromDate(t.session_date) === selectedMonth);
+            }
+            
+            filteredList.sort((a, b) => new Date(b.session_date) - new Date(a.session_date));
+            
+            const totalCoursesSet = new Set();
+            let totalHours = 0;
+            const scores = [];
+            
+            filteredList.forEach(t => {
+                totalCoursesSet.add(t.course_name);
+                totalHours += parseFloat(t.hours);
+                if (t.score !== 'N/A' && !isNaN(parseFloat(t.score))) {
+                    scores.push(parseFloat(t.score));
+                }
+            });
+            
+            currentTrainings = {
+                trainings: filteredList,
+                totalCourses: totalCoursesSet.size,
+                totalSessions: filteredList.length,
+                totalHours: totalHours.toFixed(1),
+                avgScore: scores.length > 0 ? (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1) : 'لا يوجد'
+            };
+            
+            buildUI(true);
+        }
+
+        // ================= بناء الواجهة =================
+        function buildUI(hasResult) {
+            const yearText = selectedYear === 'all' ? 'كل السنوات' : selectedYear;
+            const monthText = selectedMonth === 'all' ? 'كل الأشهر' : monthNames[selectedMonth];
+            
+            const currentFullYear = new Date().getFullYear();
+            let yearOptionsHTML = `<option value="all" ${selectedYear === 'all' ? 'selected' : ''}>📅 كل السنوات</option>`;
+            for (let y = currentFullYear; y >= 2024; y--) {
+                yearOptionsHTML += `<option value="${y}" ${selectedYear == y ? 'selected' : ''}>${y}</option>`;
+            }
+            
+            let monthOptionsHTML = `<option value="all" ${selectedMonth === 'all' ? 'selected' : ''}>🗓️ كل الأشهر</option>`;
+            for (let m = 1; m <= 12; m++) {
+                const monthNum = String(m).padStart(2, '0');
+                monthOptionsHTML += `<option value="${monthNum}" ${selectedMonth === monthNum ? 'selected' : ''}>${monthNames[monthNum]}</option>`;
+            }
+            
+            document.getElementById('app').innerHTML = `
+                <div class="navbar">
+                    <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
+                    <div class="nav-links">
+                        <a href="index.html" class="home">🏠 الرئيسية</a>
+                        <button onclick="window.logout()" class="logout">🚪 تسجيل خروج</button>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="page-header">
+                        <h1>📋 سجل التدريبات الخارجية للموظف (Off Job)</h1>
+                        <p style="color:#718096; margin-top:0.5rem;">يعرض السجل المكتمل للموظف في التدريبات الخارجية فقط</p>
+                    </div>
+
+                    <div class="filter-card">
+                        <div class="filter-group">
+                            <label>📅 السنة:</label>
+                            <select id="yearSelect" class="filter-select" onchange="window.changeYear()">${yearOptionsHTML}</select>
+                        </div>
+                        <div class="filter-group">
+                            <label>📆 الشهر:</label>
+                            <select id="monthSelect" class="filter-select month-select" onchange="window.changeMonth()">${monthOptionsHTML}</select>
+                        </div>
+                        <div class="filter-group">
+                            <button class="clear-filter-btn" onclick="window.clearAllFilters()">🧹 مسح الفلاتر</button>
+                        </div>
+                        <div class="filter-group">
+                            <span class="filter-info">📊 Off Job | ${yearText} | ${monthText}</span>
+                        </div>
+                    </div>
+
+                    <div class="search-card">
+                        <h3>🔍 أدخل كود الموظف</h3>
+                        <div class="search-box">
+                            <input type="number" id="employeeId" placeholder="مثال: 10188" value="${currentEmployee ? currentEmployee.id : ''}" onkeyup="if(event.key==='Enter') window.searchEmployee()">
+                            <button onclick="window.searchEmployee()">عرض السجل التدريبي</button>
+                        </div>
+                    </div>
+
+                    ${hasResult && currentEmployee === null ? `<div class="error-msg">❌ لا يوجد موظف بهذا الكود في قاعدة البيانات</div>` : ''}
+
+                    ${currentEmployee ? `
+                        <div class="employee-info-card">
+                            <h2>👤 بيانات الموظف</h2>
+                            <div class="info-grid">
+                                <div class="info-item"><div class="info-label">🆔 كود الموظف</div><div class="info-value">${currentEmployee.id}</div></div>
+                                <div class="info-item"><div class="info-label">👨‍💼 الاسم</div><div class="info-value">${currentEmployee.fullName}</div></div>
+                                <div class="info-item"><div class="info-label">🏢 القسم</div><div class="info-value">${currentEmployee.department || '-'}</div></div>
+                                <div class="info-item"><div class="info-label">💼 الوظيفة</div><div class="info-value">${currentEmployee.position || '-'}</div></div>
+                                <div class="info-item"><div class="info-label">⭐ المستوى</div><div class="info-value">${currentEmployee.level || '-'}</div></div>
+                                <div class="info-item"><div class="info-label">📅 تاريخ التعيين</div><div class="info-value">${formatDate(currentEmployee.hireDate) || '-'}</div></div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card"><div class="stat-value">${currentTrainings.totalCourses}</div><div class="stat-label">📚 عدد الكورسات</div></div>
+                            <div class="stat-card"><div class="stat-value">${currentTrainings.totalSessions}</div><div class="stat-label">🎯 عدد الجلسات</div></div>
+                            <div class="stat-card"><div class="stat-value">${currentTrainings.totalHours}</div><div class="stat-label">⏰ إجمالي الساعات</div></div>
+                            <div class="stat-card"><div class="stat-value">${currentTrainings.avgScore}</div><div class="stat-label">📊 متوسط الدرجة</div></div>
+                        </div>
+
+                        <div class="table-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                                <h3 style="margin:0;">📚 سجل التدريبات المكتملة (Off Job - ${yearText} - ${monthText})</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button onclick="window.printTable()" style="background:#4299e1; color:white; border:none; border-radius:2rem; padding:0.5rem 1.2rem; cursor:pointer; font-weight:bold;">🖨️ طباعة السجل</button>
+                                    <button onclick="window.exportToExcel()" style="background:#48bb78; color:white; border:none; border-radius:2rem; padding:0.5rem 1.2rem; cursor:pointer; font-weight:bold;">📎 تصدير Excel</button>
+                                </div>
+                            </div>
+                            
+                        ${currentTrainings.trainings.length > 0 ? `
+                            <div class="table-wrapper">
+                                <table class="training-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th><th>📅 التاريخ</th>
+                                            <th>📖 اسم الكورس</th><th>🏷️ التصنيف</th>
+                                            <th>👨‍🏫 المدرب</th><th>⏱️ الساعات</th><th>📝 الدرجة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${currentTrainings.trainings.map((t, idx) => {
+                                            const scoreValue = t.score === 'N/A' ? 0 : parseInt(t.score);
+                                            let scoreClass, scoreText;
+                                            if (scoreValue >= 85) { scoreClass = '#c6f6d5'; scoreText = 'ممتاز'; }
+                                            else if (scoreValue >= 70) { scoreClass = '#feebc8'; scoreText = 'جيد جداً'; }
+                                            else if (scoreValue >= 50) { scoreClass = '#fed7d7'; scoreText = 'مقبول'; }
+                                            else { scoreClass = '#e2e8f0'; scoreText = 'لم يكتمل'; }
+                                            
+                                            return `
+                                                <tr>
+                                                    <td>${idx+1}</td>
+                                                    <td style="direction:ltr; font-weight:bold;">${t.session_date}</td>
+                                                    <td style="text-align:right; font-weight:700; color:#1e3a5f;">${t.course_name}</td>
+                                                    <td><span style="background:#bee3f8; color:#2c5282; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem;">${t.category}</span></td>
+                                                    <td>${t.trainer}</td>
+                                                    <td><span style="background:#e2e8f0; color:#4a5568; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold;">${t.hours} س</span></td>
+                                                    <td><span style="background:${scoreClass}; padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.75rem; font-weight:bold; color:#1a202c;">${t.score} (${scoreText})</span></td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="margin-top:1rem; text-align:left; font-size:0.8rem; color:#718096; font-weight:bold;">
+                                ✅ إجمالي الجلسات: ${currentTrainings.trainings.length}
+                            </div>
+                        ` : `<div class="empty-msg"><span style="font-size:3rem; display:block; margin-bottom:10px;">📭</span>لا توجد تدريبات خارجية (Off Job) مكتملة لهذا الموظف في <strong>${yearText} - ${monthText}</strong></div>`}
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
+            `;
+        }
+
+        // ================= الإجراءات =================
+        window.logout = async () => {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        };
+
+        window.printTable = () => {
+            const tableContent = document.querySelector('.table-wrapper');
+            if (!tableContent) return alert('لا يوجد جدول للطباعة');
+            const clone = tableContent.cloneNode(true);
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html dir="rtl">
+                <head>
+                    <title>سجل تدريب: ${currentEmployee ? currentEmployee.fullName : 'الموظف'}</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+                    <style>
+                        body{font-family:'Tajawal',sans-serif; padding:2rem;}
+                        h2{color:#1e3a5f; text-align:center;}
+                        table{width:100%; border-collapse:collapse; margin-top:20px;}
+                        th,td{border:1px solid #ccc; padding:10px; text-align:center;}
+                        th{background:#1e3a5f; color:white;}
+                    </style>
+                </head>
+                <body>
+                    <h2>سجل التدريبات الخارجية (Off Job): ${currentEmployee ? currentEmployee.fullName : ''} (${currentEmployee ? currentEmployee.id : ''})</h2>
+                    ${clone.outerHTML}
+                </body>
+                </html>
+            `);
+            win.document.close();
+            setTimeout(() => win.print(), 500);
+        };
+
+        window.exportToExcel = () => {
+            const table = document.querySelector('.training-table');
+            if (!table) return alert('لا يوجد بيانات للتصدير');
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table, { raw: true });
+            XLSX.utils.book_append_sheet(wb, ws, 'سجل_التدريبات_الخارجية');
+            XLSX.writeFile(wb, `سجل_تدريب_خارجي_${currentEmployee ? currentEmployee.id : 'موظف'}_${new Date().toISOString().slice(0,10)}.xlsx`);
+            showToast('✅ تم استخراج الملف بنجاح');
+        };
+
+        // ================= بدء التشغيل والمصادقة =================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // تحميل البيانات مرة واحدة فقط للـ Off Job
+                await loadAllDataFromServer();
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                buildUI(false);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
