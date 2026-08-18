@@ -346,7 +346,7 @@
             
             const currentFullYear = new Date().getFullYear();
             let yearOptionsHTML = `<option value="all" ${selectedYear === 'all' ? 'selected' : ''}>📅 كل السنوات</option>`;
-            for (let y = currentFullYear; y >= 2024; y--) {
+            for (let y = currentFullYear; y >= 2025; y--) {
                 yearOptionsHTML += `<option value="${y}" ${selectedYear == y ? 'selected' : ''}>${y}</option>`;
             }
             
@@ -367,7 +367,7 @@
 
                 <div class="container">
                     <div class="page-header">
-                        <h1>📋 سجل التدريبات الخارجية للموظف (Off Job)</h1>
+                        <h1>📋 سجل التدريبات للموظف (Off Job)</h1>
                         <p style="color:#718096; margin-top:0.5rem;">يعرض السجل المكتمل للموظف في التدريبات الخارجية فقط</p>
                     </div>
 
