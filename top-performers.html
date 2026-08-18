@@ -55,8 +55,16 @@
         .charts-container { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem; }
         .chart-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
         .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; transition: font-size 0.3s ease; }
-        .chart-wrapper { position: relative; width: 100%; transition: height 0.3s ease, min-height 0.3s ease; }
-        .chart-wrapper canvas { width: 100%; max-height: 100%; }
+        
+        /* ----------------------------------------------------------------- */
+        /* أكواد الـ CSS الجديدة والمستقرة لحجم الشارت ومنعه من الاختفاء */
+        .chart-wrapper { position: relative; width: 100%; display: block; }
+        .chart-wrapper canvas { width: 100% !important; height: 100% !important; }
+        @media (max-width: 576px) { .chart-wrapper { height: 500px !important; } }
+        @media (min-width: 577px) and (max-width: 768px) { .chart-wrapper { height: 450px !important; } }
+        @media (min-width: 769px) { .chart-wrapper { height: 400px !important; } }
+        /* ----------------------------------------------------------------- */
+
         .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
 
         .top-employees { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(300px, 40vw, 630px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
@@ -370,7 +378,7 @@
         }
 
         // ===== Department Stats =====
-function calculateDepartmentStats() {
+        function calculateDepartmentStats() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
             
@@ -501,7 +509,7 @@ function calculateDepartmentStats() {
         }
 
         // ===== Top Employees =====
-function calculateTopEmployees() {
+        function calculateTopEmployees() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
             const sessionCodes = new Set(filteredSessions.map(s => s.session_code?.toString().trim()));
@@ -693,24 +701,21 @@ function calculateTopEmployees() {
         }
 
         // ================= الإعدادات الذكية للشارت (Smart Settings) =================
-function getChartSettings() {
+        function getChartSettings() {
             const w = window.innerWidth;
-            // قمنا بزيادة الارتفاع (height) إلى 500 في الموبايل لإعطاء مساحة للنصوص
-            // وجعلنا زاوية الدوران (rotation) 90 درجة لتظهر بشكل رأسي ولا تتداخل
-            if (w <= 375) {
-                return { height: 500, titleFont: 1.1, axisFont: 9, dataFont: 9, legendFont: 10, barThickness: 12, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 90, displayDataLabels: false };
-            } else if (w <= 576) {
-                return { height: 500, titleFont: 1.2, axisFont: 10, dataFont: 10, legendFont: 11, barThickness: 14, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 90, displayDataLabels: false };
+            if (w <= 576) {
+                // شاشات الموبايل: الدوران 90 درجة لعدم التداخل وتصغير الخطوط
+                return { titleFont: 1.2, axisFont: 10, dataFont: 9, legendFont: 11, barThickness: 12, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 90, displayDataLabels: false };
             } else if (w <= 768) {
-                return { height: 450, titleFont: 1.3, axisFont: 11, dataFont: 11, legendFont: 12, barThickness: 18, borderRadius: 6, padding: { top: 25, bottom: 10, left: 10, right: 10 }, rotation: 45, displayDataLabels: true };
-            } else if (w <= 1024) {
-                return { height: 400, titleFont: 1.4, axisFont: 12, dataFont: 12, legendFont: 13, barThickness: 25, borderRadius: 8, padding: { top: 30, bottom: 15, left: 15, right: 15 }, rotation: 0, displayDataLabels: true };
+                // التابلت: الدوران 45 درجة
+                return { titleFont: 1.3, axisFont: 11, dataFont: 11, legendFont: 12, barThickness: 16, borderRadius: 6, padding: { top: 25, bottom: 10, left: 10, right: 10 }, rotation: 45, displayDataLabels: true };
             } else {
-                return { height: 400, titleFont: 1.5, axisFont: 13, dataFont: 13, legendFont: 14, barThickness: 30, borderRadius: 8, padding: { top: 35, bottom: 15, left: 15, right: 15 }, rotation: 0, displayDataLabels: true };
+                // اللابتوب والشاشات الكبيرة
+                return { titleFont: 1.5, axisFont: 13, dataFont: 13, legendFont: 14, barThickness: 30, borderRadius: 8, padding: { top: 30, bottom: 15, left: 15, right: 15 }, rotation: 0, displayDataLabels: true };
             }
         }
 
-function getBaseChartOptions() {
+        function getBaseChartOptions() {
             const s = getChartSettings();
             return {
                 responsive: true,
@@ -770,10 +775,7 @@ function getBaseChartOptions() {
 
         function applyChartSettingsToDOM() {
             const s = getChartSettings();
-            document.querySelectorAll('.chart-wrapper').forEach(el => {
-                el.style.height = s.height + 'px';
-                el.style.minHeight = s.height + 'px';
-            });
+            // قمنا بإلغاء تعديل الجافاسكريبت للارتفاع، وتركناه للـ CSS ليكون مستقرًا على الموبايل
             document.querySelectorAll('.chart-card h3').forEach(el => {
                 el.style.fontSize = s.titleFont + 'rem';
             });
@@ -788,7 +790,7 @@ function getBaseChartOptions() {
         }
 
         // ===== دالة لإعادة تحديث جميع الشارتات عند تغيير حجم الشاشة (Live Resize) =====
-function resizeCharts() {
+        function resizeCharts() {
             applyChartSettingsToDOM();
             const s = getChartSettings();
 
