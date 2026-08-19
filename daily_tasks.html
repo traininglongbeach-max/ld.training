@@ -286,7 +286,7 @@
         ============================================================ */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 15px;
             margin-bottom: 30px;
         }
@@ -337,6 +337,10 @@
         .stat-card .stat-icon.blue {
             background: #EBF5FB;
             color: #3498DB;
+        }
+        .stat-card .stat-icon.gray {
+            background: #F0F4F8;
+            color: var(--gray);
         }
 
         .stat-card .stat-info .stat-number {
@@ -484,6 +488,7 @@
             padding: 20px;
             box-shadow: var(--shadow);
             border: 1px solid rgba(1, 51, 118, 0.06);
+            margin-bottom: 20px;
         }
 
         .task-section-toggle {
@@ -548,6 +553,15 @@
         .task-item.pending {
             border-right: 4px solid var(--warning);
         }
+        .task-item.cancelled {
+            border-right: 4px solid var(--gray);
+            background: #F0F4F8;
+            opacity: 0.8;
+        }
+        .task-item.cancelled .task-name div {
+            text-decoration: line-through;
+            color: var(--gray);
+        }
         .task-item.on-vacation-day {
             border-right: 4px solid var(--danger);
             background: #FFF5F5;
@@ -569,6 +583,7 @@
             font-size: 0.75rem;
             color: var(--gray);
             margin-top: 2px;
+            text-decoration: none !important; /* Ensure description is not crossed out if cancelled */
         }
 
         .task-item .task-people {
@@ -686,6 +701,14 @@
             background: var(--gray);
             color: white;
         }
+        .btn-cancel-task {
+            background: var(--light-gray);
+            color: var(--dark);
+        }
+        .btn-cancel-task:hover {
+             background: var(--gray);
+             color: white;
+        }
         .btn-edit {
             background: var(--warning);
             color: var(--dark);
@@ -700,15 +723,15 @@
         }
 
         /* ============================================================
-           COMPLETED TASKS
+           COMPLETED & CANCELLED TASKS (Wrappers)
         ============================================================ */
-        .completed-tasks-wrapper {
+        .collapsible-wrapper {
             margin-top: 20px;
             border-top: 2px dashed var(--light-gray);
             padding-top: 18px;
         }
 
-        .completed-tasks-wrapper .completed-header {
+        .collapsible-wrapper .collapsible-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -719,40 +742,43 @@
             transition: var(--transition);
             margin-bottom: 12px;
         }
-        .completed-tasks-wrapper .completed-header:hover {
+        .collapsible-wrapper .collapsible-header:hover {
             background: #EEF2F7;
         }
 
-        .completed-tasks-wrapper .completed-title {
+        .collapsible-wrapper .collapsible-title {
             font-weight: 700;
             font-size: 0.95rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .completed-tasks-wrapper .completed-count {
-            background: var(--success);
+        .collapsible-wrapper .collapsible-count {
+            background: var(--gray);
             color: white;
             padding: 2px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
         }
-        .completed-tasks-wrapper .completed-header .toggle-icon {
+        .collapsible-wrapper .collapsible-count.success {
+             background: var(--success);
+        }
+        .collapsible-wrapper .collapsible-header .toggle-icon {
             transition: var(--transition);
         }
-        .completed-tasks-wrapper .completed-header .toggle-icon.open {
+        .collapsible-wrapper .collapsible-header .toggle-icon.open {
             transform: rotate(180deg);
         }
-        .completed-tasks-wrapper .completed-list {
+        .collapsible-wrapper .collapsible-list {
             display: none;
         }
-        .completed-tasks-wrapper .completed-list.open {
+        .collapsible-wrapper .collapsible-list.open {
             display: block;
         }
-        .completed-tasks-wrapper .task-item {
+        .collapsible-wrapper .task-item {
             opacity: 0.7;
         }
-        .completed-tasks-wrapper .task-item:hover {
+        .collapsible-wrapper .task-item:hover {
             opacity: 1;
         }
 
@@ -889,6 +915,9 @@
         }
         .summary-item .value.danger {
             color: var(--danger);
+        }
+        .summary-item .value.gray {
+            color: var(--gray);
         }
         .summary-item.highlight {
             background: #EEF2F7;
@@ -1295,6 +1324,7 @@
         let currentUser = null;
         let isAdmin = false;
         let showCompleted = false;
+        let showCancelled = false;
         let selectedFilterPerson = '';
 
         // ============================================================
@@ -1413,6 +1443,8 @@
 
         // 🔥 حساب ما إذا كانت المهمة مكتملة بالكامل
         function isRecordFullyCompleted(record) {
+            if (record.status === 'cancelled') return false; // المهام الملغاة لا تعتبر مكتملة هنا
+
             const activePeople = getActivePeopleForTask(record);
             const completed = normalizeCompletedPeopleIds(record);
 
@@ -1694,12 +1726,18 @@
             taskRecords = taskRecords.map(record => {
                 const personIds = normalizePersonIds(record);
                 const completedIds = normalizeCompletedPeopleIds(record);
+                
+                let currentStatus = record.status;
+                // Only re-calculate status if it's not already cancelled
+                if (currentStatus !== 'cancelled') {
+                    currentStatus = isRecordFullyCompleted({ ...record, person_ids: personIds, completed_people_ids: completedIds }) ? 'completed' : 'pending';
+                }
+
                 return {
                     ...record,
                     person_ids: personIds,
                     completed_people_ids: completedIds,
-                    status: isRecordFullyCompleted({ ...record, person_ids: personIds, completed_people_ids: completedIds }) ?
-                        'completed' : 'pending'
+                    status: currentStatus
                 };
             });
 
@@ -1735,12 +1773,17 @@
                 taskRecords = taskRecords.map(r => {
                     const pIds = normalizePersonIds(r);
                     const cIds = normalizeCompletedPeopleIds(r);
+                    
+                    let currentStatus = r.status;
+                    if (currentStatus !== 'cancelled') {
+                        currentStatus = isRecordFullyCompleted({ ...r, person_ids: pIds, completed_people_ids: cIds }) ? 'completed' : 'pending';
+                    }
+
                     return {
                         ...r,
                         person_ids: pIds,
                         completed_people_ids: cIds,
-                        status: isRecordFullyCompleted({ ...r, person_ids: pIds, completed_people_ids: cIds }) ?
-                            'completed' : 'pending'
+                        status: currentStatus
                     };
                 });
 
@@ -1779,7 +1822,10 @@
                         person_ids: normalizePersonIds(existingRecord),
                         completed_people_ids: normalizeCompletedPeopleIds(existingRecord)
                     };
-                    normalized.status = isRecordFullyCompleted(normalized) ? 'completed' : 'pending';
+                    
+                    if (normalized.status !== 'cancelled') {
+                         normalized.status = isRecordFullyCompleted(normalized) ? 'completed' : 'pending';
+                    }
                     taskRecords.push(normalized);
                     continue;
                 }
@@ -1951,6 +1997,11 @@
             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
             if (!taskRecord) return;
 
+            if (taskRecord.status === 'cancelled') {
+                 showToast('❌ المهمة ملغاة، قم بإعادتها أولاً للتعديل', 'error');
+                 return;
+            }
+
             const taskDate = taskRecord.task_date;
 
             // 🔥 التحقق من أن الشخص لم يكن في إجازة في هذا التاريخ
@@ -2004,6 +2055,11 @@
             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
             if (!taskRecord) return;
 
+            if (taskRecord.status === 'cancelled') {
+                 showToast('❌ المهمة ملغاة، قم بإعادتها أولاً', 'error');
+                 return;
+            }
+
             const activePeople = getActivePeopleForTask(taskRecord);
             if (activePeople.length === 0) return showToast('❌ لا يوجد أشخاص نشطين في هذه المهمة', 'error');
 
@@ -2051,7 +2107,7 @@
                 await DB.update('daily_task_records', updatedRecord);
                 const index = taskRecords.findIndex(r => String(r.id) === String(recordId));
                 if (index !== -1) taskRecords[index] = updatedRecord;
-                showToast('↩️ تم إعادة المهمة', 'success');
+                showToast('↩️ تم إعادة المهمة إلى قيد التنفيذ', 'success');
                 render();
             } catch (error) {
                 showToast('❌ فشل تحديث المهمة', 'error');
@@ -2059,6 +2115,35 @@
                 setLoading(false);
             }
         };
+
+        // دالة إلغاء المهمة
+        window.cancelTask = async function(recordId) {
+             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
+             if (!taskRecord) return;
+
+             const confirmation = confirm('⚠️ هل تريد بالتأكيد إلغاء/تأجيل هذه المهمة لهذا اليوم؟');
+             if (!confirmation) return;
+
+             const updatedRecord = {
+                 ...taskRecord,
+                 status: 'cancelled',
+                 updated_at: new Date().toISOString()
+             };
+
+             setLoading(true);
+
+             try {
+                 await DB.update('daily_task_records', updatedRecord);
+                 const index = taskRecords.findIndex(r => String(r.id) === String(recordId));
+                 if (index !== -1) taskRecords[index] = updatedRecord;
+                 showToast('🚫 تم إلغاء المهمة بنجاح', 'success');
+                 render();
+             } catch (error) {
+                 showToast('❌ فشل إلغاء المهمة', 'error');
+             } finally {
+                 setLoading(false);
+             }
+         };
 
         window.deleteTask = async function(recordId) {
             if (!isAdmin) {
@@ -2069,7 +2154,7 @@
             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
             if (!taskRecord) return;
 
-            const confirmation = confirm('⚠️ هل أنت متأكد من حذف هذه المهمة؟');
+            const confirmation = confirm('⚠️ هل أنت متأكد من حذف هذه المهمة؟\nملحوظة: إذا أردت عدم تنفيذها اليوم فقط، استخدم زر "إلغاء المهمة" بدلاً من الحذف.');
             if (!confirmation) return;
 
             const templateId = taskRecord.template_id;
@@ -2374,6 +2459,11 @@
             render();
         };
 
+        window.toggleCancelledTasks = function() {
+            showCancelled = !showCancelled;
+            render();
+        }
+
         // ============================================================
         // DATE NAVIGATION
         // ============================================================
@@ -2423,7 +2513,12 @@
 
                 let statusText = '';
                 let className = 'person-tag';
-                let onClickAction = `togglePersonTask('${escapeHtml(record.id)}', '${escapeHtml(personId)}')`;
+                let onClickAction = '';
+
+                // إذا المهمة ملغاة لا يمكن تغيير حالة الشخص
+                if(record.status !== 'cancelled') {
+                     onClickAction = `togglePersonTask('${escapeHtml(record.id)}', '${escapeHtml(personId)}')`;
+                }
 
                 if (wasOnVacation) {
                     className += ' was-on-vacation';
@@ -2436,6 +2531,8 @@
                 } else if (completed) {
                     className += ' done';
                     statusText = '✅';
+                } else if (record.status === 'cancelled') {
+                    statusText = '🚫';
                 } else {
                     statusText = '⏳';
                 }
@@ -2444,10 +2541,16 @@
                     className += ' filtered';
                 }
 
-                const title = wasOnVacation ? 'كان في إجازة في هذا التاريخ' :
+                let title = '';
+                if(record.status === 'cancelled'){
+                     title = 'المهمة ملغاة';
+                } else {
+                     title = wasOnVacation ? 'كان في إجازة في هذا التاريخ' :
                     isCurrentlyOnVacation ? 'في إجازة حالياً - لا يمكن التغيير' :
                     completed ? '✅ تم - اضغط للإلغاء' :
                     '⏳ لم يتم - اضغط للتنفيذ';
+                }
+
 
                 return `
                     <span class="${className}" 
@@ -2469,24 +2572,32 @@
             const filteredRecords = filterRecordsByPerson(records, selectedFilterPerson);
             const isFiltered = !!selectedFilterPerson;
 
-            const pendingRecords = filteredRecords.filter(r => !isRecordFullyCompleted(r));
-            const completedRecords = filteredRecords.filter(r => isRecordFullyCompleted(r));
+            const pendingRecords = filteredRecords.filter(r => r.status === 'pending');
+            const completedRecords = filteredRecords.filter(r => r.status === 'completed');
+            const cancelledRecords = filteredRecords.filter(r => r.status === 'cancelled');
 
-            const total = filteredRecords.length;
+            // Total valid tasks for stats (excluding cancelled)
+            const totalValid = pendingRecords.length + completedRecords.length;
             const completed = completedRecords.length;
             const pending = pendingRecords.length;
+            const cancelled = cancelledRecords.length;
+            const total = filteredRecords.length; // Total including cancelled
+
             const today = getToday();
             const overdue = selectedDate < today ? pending : 0;
             const activePeople = people.filter(p => p.active !== false);
             const vacationPeople = people.filter(p => isPersonOnVacation(p.id));
             const filterPersonName = selectedFilterPerson ? getPersonName(selectedFilterPerson) : '';
 
-            // إحصائيات الأشخاص
+            // إحصائيات الأشخاص (استثناء المهام الملغاة)
             const peopleStats = activePeople.map(person => {
                 let totalAssigned = 0;
                 let completedTasks = 0;
 
                 filteredRecords.forEach(record => {
+                    // لا نحسب المهام الملغاة في أداء الأشخاص
+                    if (record.status === 'cancelled') return;
+
                     const personIds = normalizePersonIds(record);
                     if (personIds.includes(String(person.id)) && !wasPersonOnVacationOnDate(person.id, record
                             .task_date)) {
@@ -2505,7 +2616,7 @@
                 };
             }).filter(p => p.total > 0);
 
-            const completionPercentage = total ? Math.round(completed / total * 100) : 0;
+            const completionPercentage = totalValid ? Math.round(completed / totalValid * 100) : 0;
 
             // خيارات الفلتر
             const filterOptions = people
@@ -2517,10 +2628,7 @@
             content.innerHTML = `
                 <!-- SECTION HEADER -->
                 <div class="section-header">
-                    <div class="title-area">
-                        <h2><i class="fas fa-list-check"></i> إدارة المهام</h2>
-                        <p>عرض وإدارة جميع المهام لهذا اليوم</p>
-                    </div>
+
                     <div class="actions">
                         ${isAdmin ? `
                             <button class="btn btn-primary" onclick="openTaskModal()">
@@ -2543,7 +2651,7 @@
                     <div class="stat-card">
                         <div class="stat-icon purple"><i class="fas fa-tasks"></i></div>
                         <div class="stat-info">
-                            <div class="stat-number">${total}</div>
+                            <div class="stat-number">${totalValid}</div>
                             <div class="stat-label">إجمالي المهام</div>
                             ${isFiltered ? `<div style="font-size:0.6rem;color:var(--primary);">🎯 ${filterPersonName}</div>` : ''}
                         </div>
@@ -2561,6 +2669,13 @@
                         <div class="stat-info">
                             <div class="stat-number">${pending}</div>
                             <div class="stat-label">قيد التنفيذ</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon gray"><i class="fas fa-ban"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-number">${cancelled}</div>
+                            <div class="stat-label">ملغاة/مؤجلة</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -2628,8 +2743,12 @@
                                 <span class="label">⏳ المهام المتبقية</span>
                                 <span class="value warning">${pending}</span>
                             </div>
+                            <div class="summary-item">
+                                <span class="label">🚫 المهام الملغاة</span>
+                                <span class="value gray">${cancelled}</span>
+                            </div>
                             <div class="summary-item highlight">
-                                <span class="label">📋 عدد القوالب</span>
+                                <span class="label">📋 عدد المهام</span>
                                 <span class="value primary">${taskTemplates.length}</span>
                             </div>
                             ${isFiltered ? `
@@ -2658,7 +2777,7 @@
                         <input type="date" value="${selectedDate}" onchange="changeDate(this.value)">
                         <button class="btn btn-primary btn-sm" onclick="goToday()">📅 اليوم</button>
                         <button class="btn btn-secondary btn-sm" onclick="goYesterday()">⬅️ أمس</button>
-                        <button class="btn btn-secondary btn-sm" onclick="render()"><i class="fas fa-sync"></i> إعادة تحميل</button>
+                        <button class="btn btn-secondary btn-sm" onclick="refreshData()"><i class="fas fa-sync"></i> تحديث</button>
                     </div>
                 </div>
 
@@ -2698,8 +2817,8 @@
                     ${pendingRecords.length === 0 ? `
                         <div class="empty-state">
                             <i class="fas fa-check-circle" style="color:var(--success);"></i>
-                            <h3>🎉 جميع المهام مكتملة!</h3>
-                            <p>${isFiltered ? `لا توجد مهام قيد التنفيذ لـ ${filterPersonName}` : 'لا توجد مهام قيد التنفيذ'}</p>
+                            <h3>🎉 لا توجد مهام معلقة!</h3>
+                            <p>${isFiltered ? `لا توجد مهام قيد التنفيذ لـ ${filterPersonName}` : 'لقد تم إنجاز جميع المهام لهذا اليوم'}</p>
                         </div>
                     ` : `
                         <div class="task-list-header">
@@ -2742,6 +2861,9 @@
                                                 <i class="fas fa-check-double"></i>
                                             </button>
                                         ` : ``}
+                                        <button class="btn-cancel-task" title="إلغاء / تأجيل المهمة" onclick="cancelTask('${escapeHtml(taskRecord.id)}')">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
                                         ${isAdmin && taskRecord.template_id ? `
                                             <button class="btn-edit" title="تعديل" onclick="editTemplate('${escapeHtml(taskRecord.template_id)}')">
                                                 <i class="fas fa-edit"></i>
@@ -2764,12 +2886,12 @@
                 </div>
 
                 <!-- COMPLETED TASKS -->
-                <div class="completed-tasks-wrapper">
-                    <div class="completed-header" onclick="toggleCompletedTasks()">
-                        <div class="completed-title">
+                <div class="collapsible-wrapper">
+                    <div class="collapsible-header" onclick="toggleCompletedTasks()">
+                        <div class="collapsible-title">
                             <i class="fas fa-check-circle" style="color:var(--success);"></i>
                             المهام المكتملة
-                            <span class="completed-count">${completedRecords.length}</span>
+                            <span class="collapsible-count success">${completedRecords.length}</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:0.7rem;color:var(--gray);">
@@ -2779,7 +2901,7 @@
                         </div>
                     </div>
 
-                    <div class="completed-list ${showCompleted ? 'open' : ''}">
+                    <div class="collapsible-list ${showCompleted ? 'open' : ''}">
                         ${completedRecords.length === 0 ? `
                             <div class="empty-state" style="padding:20px;">
                                 <p style="color:var(--gray);font-size:0.85rem;">${isFiltered ? `لا توجد مهام مكتملة لـ ${filterPersonName}` : 'لا توجد مهام مكتملة'}</p>
@@ -2832,6 +2954,66 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             `}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        `}
+                    </div>
+                </div>
+
+                <!-- CANCELLED TASKS -->
+                <div class="collapsible-wrapper">
+                    <div class="collapsible-header" onclick="toggleCancelledTasks()">
+                        <div class="collapsible-title">
+                            <i class="fas fa-ban" style="color:var(--gray);"></i>
+                            المهام الملغاة / المؤجلة
+                            <span class="collapsible-count">${cancelledRecords.length}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:0.7rem;color:var(--gray);">
+                                ${showCancelled ? '🔽 إخفاء' : '▶️ إظهار'}
+                            </span>
+                            <i class="fas fa-chevron-down toggle-icon ${showCancelled ? 'open' : ''}"></i>
+                        </div>
+                    </div>
+
+                    <div class="collapsible-list ${showCancelled ? 'open' : ''}">
+                        ${cancelledRecords.length === 0 ? `
+                            <div class="empty-state" style="padding:20px;">
+                                <p style="color:var(--gray);font-size:0.85rem;">لا توجد مهام ملغاة</p>
+                            </div>
+                        ` : `
+                            <div class="task-list-header">
+                                <span>المهمة</span>
+                                <span>الأشخاص المسندون</span>
+                                <span>التكرار</span>
+                                <span>الحالة</span>
+                                <span>الإجراءات</span>
+                            </div>
+                            ${cancelledRecords.map(taskRecord => {
+                                return `
+                                    <div class="task-item cancelled">
+                                        <div class="task-name">
+                                            <span class="status-icon">🚫</span>
+                                            <div>
+                                                ${escapeHtml(taskRecord.task_name)}
+                                                ${taskRecord.description ? `<div class="task-desc">📝 ${escapeHtml(taskRecord.description)}</div>` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="task-people">
+                                            ${renderAssigneesForTask(taskRecord, selectedFilterPerson)}
+                                        </div>
+                                        <div class="task-meta">
+                                            ${getRecurrenceBadge(taskRecord.recurrence)}
+                                        </div>
+                                        <div class="task-meta">
+                                            <span style="font-size:0.65rem;color:var(--gray);">ملغاة لهذا اليوم</span>
+                                        </div>
+                                        <div class="task-actions">
+                                            <button class="btn-uncomplete" title="إعادة المهمة لقيد التنفيذ" onclick="uncompleteTask('${escapeHtml(taskRecord.id)}')">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 `;
@@ -2896,7 +3078,7 @@
                         <div class="logo">
                             <div class="logo-icon"><i class="fas fa-tasks"></i></div>
                             <div>
-                                <h1>نظام المهام</h1>
+                                <h1>إدارة المهام</h1>
                                 <span>Daily Tasks Report</span>
                             </div>
                         </div>
@@ -2907,11 +3089,6 @@
                             <button class="btn-nav btn-refresh-nav" onclick="refreshData()">
                                 <i class="fas fa-sync"></i> تحديث
                             </button>
-                            <div class="user-badge">
-                                <i class="fas fa-user-circle"></i>
-                                <span>${escapeHtml(userData?.name || 'مستخدم')}</span>
-                                ${isAdmin ? '<span style="background:var(--primary);color:white;padding:2px 8px;border-radius:20px;font-size:0.6rem;">أدمن</span>' : ''}
-                            </div>
                             <button class="btn-nav btn-logout" onclick="logout()">
                                 <i class="fas fa-sign-out-alt"></i> خروج
                             </button>
