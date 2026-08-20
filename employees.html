@@ -107,9 +107,65 @@
         .search-box input { flex: 1; padding: 0.8rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: 0.9rem; outline: none; }
         .search-box input:focus { border-color: #2b7a4b; }
         .search-box button { padding: 0.8rem 1.5rem; background: #2b7a4b; color: white; border: none; border-radius: 2rem; cursor: pointer; }
-        .filter-group { display: flex; align-items: center; gap: 0.5rem; }
+        .filter-group { display: flex; align-items: center; gap: 0.5rem; position: relative; }
         .filter-group label { font-weight: bold; color: #1e3a5f; font-size: 0.85rem; }
         .filter-group select { padding: 0.7rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; background: white; cursor: pointer; font-size: 0.9rem; min-width: 140px; }
+
+        /* ================= Multi-Select Dropdown Styles ================= */
+        .custom-multiselect {
+            position: relative;
+            min-width: 170px;
+        }
+        .multiselect-btn {
+            padding: 0.7rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 2rem;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            user-select: none;
+            transition: 0.3s;
+            color: #1e3a5f;
+        }
+        .multiselect-btn:hover { border-color: #2b7a4b; }
+        .multiselect-btn .arrow { font-size: 0.7rem; color: #718096; }
+        .multiselect-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            min-width: 230px;
+            max-width: 320px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 500;
+            padding: 0.6rem;
+        }
+        .multiselect-dropdown.open { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .multiselect-actions { padding-bottom: 0.4rem; margin-bottom: 0.4rem; border-bottom: 1px solid #e2e8f0; }
+        .multiselect-option {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 0.6rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #2d3748;
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .multiselect-option:hover { background: #f0f4f8; }
+        .multiselect-option input[type="checkbox"] { accent-color: #2b7a4b; width: 16px; height: 16px; cursor: pointer; }
+        .multiselect-options-list { display: flex; flex-direction: column; gap: 0.2rem; max-height: 200px; overflow-y: auto; }
 
         .table-container { background: white; border-radius: 1.5rem; padding: 1.5rem; overflow-x: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; min-width: 1100px; }
@@ -164,7 +220,8 @@
             .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
             .search-box { max-width: 100%; flex-direction: row; }
             .filter-group { flex-direction: column; align-items: stretch; }
-            .filter-group select { width: 100%; min-width: 100%; }
+            .filter-group select, .custom-multiselect { width: 100%; min-width: 100%; }
+            .multiselect-dropdown { width: 100%; right: 0; left: 0; max-width: 100%; }
         }
         @media (max-width: 768px) {
             .navbar { flex-direction: column; justify-content: center; text-align: center; padding: 1rem; }
@@ -233,15 +290,29 @@
             </div>
             <div class="filter-group">
                 <label>📂 القسم:</label>
-                <select id="deptFilter" onchange="updateFilters()">
+                <select id="deptFilter" onchange="onDeptChange()">
                     <option value="all">كل الأقسام</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>💼 الوظيفة:</label>
-                <select id="positionFilter" onchange="updateFilters()">
-                    <option value="all">كل الوظائف</option>
-                </select>
+                <div class="custom-multiselect" id="positionMultiselect">
+                    <div class="multiselect-btn" id="positionDropdownBtn" onclick="togglePositionDropdown(event)">
+                        <span id="positionSelectText">كل الوظائف</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="multiselect-dropdown" id="positionDropdownContent" onclick="event.stopPropagation()">
+                        <div class="multiselect-actions">
+                            <label class="multiselect-option">
+                                <input type="checkbox" id="selectAllPositions" onchange="toggleSelectAllPositions(this.checked)">
+                                <span><strong>تحديد الكل</strong></span>
+                            </label>
+                        </div>
+                        <div class="multiselect-options-list" id="positionOptionsContainer">
+                            <!-- يتم توليد الوظائف ديناميكياً هنا -->
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="filter-group">
                 <label>📊 المستوى:</label>
@@ -317,7 +388,6 @@
                 <option value="Left">❌ مستقيل (Left)</option>
             </select>
             
-            <!-- إضافة اختيار الصورة للرفع لكلاوديناري -->
             <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">📷 صورة الموظف (اختياري):</label>
             <input type="file" id="empPhotoInput" accept="image/*" style="margin-top: 5px;">
             <div style="text-align: center;"><img id="empPhotoPreview" style="display:none; max-width: 100px; max-height: 100px; border-radius: 10px; margin-top: 5px;"></div>
@@ -353,7 +423,6 @@
                 <option value="Left">❌ مستقيل (Left)</option>
             </select>
             
-            <!-- إضافة تعديل الصورة للرفع لكلاوديناري -->
             <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">📷 تحديث صورة الموظف:</label>
             <input type="file" id="editPhotoInput" accept="image/*" style="margin-top: 5px;">
             <div style="text-align: center;"><img id="editPhotoPreview" style="display:none; max-width: 100px; max-height: 100px; border-radius: 10px; margin-top: 5px;"></div>
@@ -375,7 +444,7 @@
         let birthdaysMap = {}; 
         let searchTerm = "";
         let filterDept = "all";
-        let filterPosition = "all";
+        let selectedPositions = []; // مصفوفة لتخزين الوظائف المختارة
         let filterLevel = "all";
         let filterStatus = "all";
         let currentEditId = null;
@@ -525,19 +594,26 @@
 
         function getUniqueDepartments() {
             const depts = new Set();
-            employees.forEach(emp => { if (emp.department) depts.add(emp.department); });
+            employees.forEach(emp => { if (emp.department && emp.department.trim() !== '') depts.add(emp.department.trim()); });
             return Array.from(depts).sort();
         }
 
-        function getUniquePositions() {
+        // جلب الوظائف التابعة للقسم المختار فقط
+        function getUniquePositions(dept = 'all') {
             const positions = new Set();
-            employees.forEach(emp => { if (emp.position) positions.add(emp.position); });
+            employees.forEach(emp => {
+                if (emp.position && emp.position.trim() !== '') {
+                    if (dept === 'all' || emp.department === dept) {
+                        positions.add(emp.position.trim());
+                    }
+                }
+            });
             return Array.from(positions).sort();
         }
 
         function getUniqueLevels() {
             const levels = new Set();
-            employees.forEach(emp => { if (emp.level) levels.add(emp.level); });
+            employees.forEach(emp => { if (emp.level && emp.level.trim() !== '') levels.add(emp.level.trim()); });
             return Array.from(levels).sort();
         }
 
@@ -545,14 +621,127 @@
             let filtered = [...employees];
             
             if (searchTerm && searchTerm !== "") {
-                filtered = filtered.filter(emp => emp.id.toString().includes(searchTerm) || emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()));
+                filtered = filtered.filter(emp => emp.id.toString().includes(searchTerm) || (emp.fullName && emp.fullName.toLowerCase().includes(searchTerm.toLowerCase())));
             }
-            if (filterDept !== 'all') filtered = filtered.filter(emp => emp.department === filterDept);
-            if (filterPosition !== 'all') filtered = filtered.filter(emp => emp.position === filterPosition);
-            if (filterLevel !== 'all') filtered = filtered.filter(emp => emp.level === filterLevel);
-            if (filterStatus !== 'all') filtered = filtered.filter(emp => (emp.status || 'Active') === filterStatus);
+            if (filterDept !== 'all') {
+                filtered = filtered.filter(emp => emp.department === filterDept);
+            }
+            // الفلترة بالوظائف المختارة
+            if (selectedPositions.length > 0) {
+                filtered = filtered.filter(emp => selectedPositions.includes(emp.position));
+            }
+            if (filterLevel !== 'all') {
+                filtered = filtered.filter(emp => emp.level === filterLevel);
+            }
+            if (filterStatus !== 'all') {
+                filtered = filtered.filter(emp => (emp.status || 'Active') === filterStatus);
+            }
             
             return filtered.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+        }
+
+        // ========== إدارة قائمة الوظائف المنسدلة متعددة الخيارات ==========
+        function togglePositionDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('positionDropdownContent');
+            if (dropdown) dropdown.classList.toggle('open');
+        }
+
+        function updatePositionBtnText(availablePositions = null) {
+            const btnText = document.getElementById('positionSelectText');
+            if (!btnText) return;
+            const available = availablePositions || getUniquePositions(filterDept);
+            
+            if (selectedPositions.length === 0 || selectedPositions.length === available.length) {
+                btnText.textContent = 'كل الوظائف';
+            } else if (selectedPositions.length === 1) {
+                btnText.textContent = selectedPositions[0];
+            } else {
+                btnText.textContent = `تم تحديد (${selectedPositions.length})`;
+            }
+        }
+
+        function renderPositionOptions(forceRebuild = false) {
+            const container = document.getElementById('positionOptionsContainer');
+            const selectAllCb = document.getElementById('selectAllPositions');
+            if (!container) return;
+
+            const availablePositions = getUniquePositions(filterDept);
+            selectedPositions = selectedPositions.filter(pos => availablePositions.includes(pos));
+
+            const currentOptions = Array.from(container.querySelectorAll('input[type="checkbox"]')).map(cb => cb.value);
+            const isSameList = currentOptions.length === availablePositions.length && 
+                               availablePositions.every((pos, i) => pos === currentOptions[i]);
+
+            if (!isSameList || forceRebuild) {
+                if (availablePositions.length === 0) {
+                    container.innerHTML = '<div style="padding: 0.5rem; text-align: center; color: #a0aec0; font-size: 0.8rem;">لا توجد وظائف متاحة لهذا القسم</div>';
+                } else {
+                    container.innerHTML = availablePositions.map(pos => {
+                        const isChecked = selectedPositions.includes(pos);
+                        return `
+                            <label class="multiselect-option">
+                                <input type="checkbox" value="${pos}" ${isChecked ? 'checked' : ''} onchange="onPositionOptionChange(this)">
+                                <span>${pos}</span>
+                            </label>
+                        `;
+                    }).join('');
+                }
+            } else {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = selectedPositions.includes(cb.value);
+                });
+            }
+
+            if (selectAllCb) {
+                selectAllCb.checked = (selectedPositions.length === availablePositions.length && availablePositions.length > 0);
+            }
+
+            updatePositionBtnText(availablePositions);
+        }
+
+        function onPositionOptionChange(checkbox) {
+            const val = checkbox.value;
+            if (checkbox.checked) {
+                if (!selectedPositions.includes(val)) selectedPositions.push(val);
+            } else {
+                selectedPositions = selectedPositions.filter(p => p !== val);
+            }
+
+            const availablePositions = getUniquePositions(filterDept);
+            const selectAllCb = document.getElementById('selectAllPositions');
+            if (selectAllCb) {
+                selectAllCb.checked = (selectedPositions.length === availablePositions.length && availablePositions.length > 0);
+            }
+
+            updatePositionBtnText(availablePositions);
+            updateUI();
+        }
+
+        function toggleSelectAllPositions(isChecked) {
+            const availablePositions = getUniquePositions(filterDept);
+            if (isChecked) {
+                selectedPositions = [...availablePositions];
+            } else {
+                selectedPositions = [];
+            }
+
+            const checkboxes = document.querySelectorAll('#positionOptionsContainer input[type="checkbox"]');
+            checkboxes.forEach(cb => { cb.checked = isChecked; });
+
+            updatePositionBtnText(availablePositions);
+            updateUI();
+        }
+
+        // عند تغيير القسم المختار
+        async function onDeptChange() {
+            const newDept = document.getElementById('deptFilter').value;
+            if (newDept !== filterDept) {
+                filterDept = newDept;
+                selectedPositions = []; // إعادة تعيين اختيار الوظائف للقسم الجديد
+                renderPositionOptions(true);
+            }
+            await updateUI();
         }
 
         async function updateUI() {
@@ -561,7 +750,6 @@
             
             const filtered = filterEmployees();
             const departments = getUniqueDepartments();
-            const positions = getUniquePositions();
             const levels = getUniqueLevels();
             
             const totalEmployees = employees.length;
@@ -579,7 +767,7 @@
                             <span style="background:rgba(255,255,255,0.2); padding:0.2rem 0.8rem; border-radius:1rem;">❌ مستقيل: ${leftCount}</span>
                         </div>
                     </div>
-                    ${searchTerm || filterDept !== 'all' || filterPosition !== 'all' || filterLevel !== 'all' || filterStatus !== 'all' ? `<div style="background:rgba(255,255,255,0.2); padding:0.5rem 1rem; border-radius:2rem;">🔍 عدد النتائج: ${filteredCount}</div>` : ''}
+                    ${searchTerm || filterDept !== 'all' || selectedPositions.length > 0 || filterLevel !== 'all' || filterStatus !== 'all' ? `<div style="background:rgba(255,255,255,0.2); padding:0.5rem 1rem; border-radius:2rem;">🔍 عدد النتائج: ${filteredCount}</div>` : ''}
                 </div>
             `;
             
@@ -590,9 +778,8 @@
             const deptFilter = document.getElementById('deptFilter');
             if (deptFilter) deptFilter.innerHTML = '<option value="all">كل الأقسام</option>' + departments.map(dept => `<option value="${dept}" ${filterDept === dept ? 'selected' : ''}>${dept}</option>`).join('');
             
-            const positionFilter = document.getElementById('positionFilter');
-            if (positionFilter) positionFilter.innerHTML = '<option value="all">كل الوظائف</option>' + positions.map(pos => `<option value="${pos}" ${filterPosition === pos ? 'selected' : ''}>${pos}</option>`).join('');
-            
+            renderPositionOptions();
+
             const levelFilter = document.getElementById('levelFilter');
             if (levelFilter) levelFilter.innerHTML = '<option value="all">كل المستويات</option>' + levels.map(lvl => `<option value="${lvl}" ${filterLevel === lvl ? 'selected' : ''}>${lvl}</option>`).join('');
             
@@ -603,7 +790,6 @@
             if (tableBody) {
                 tableBody.innerHTML = filtered.map(emp => {
                     const empIdStr = emp.id.toString().trim();
-                    
                     let birthInfoHTML = '-';
                     const bData = birthdaysMap[empIdStr];
                     
@@ -654,8 +840,6 @@
         }
 
         async function updateFilters() {
-            filterDept = document.getElementById('deptFilter').value;
-            filterPosition = document.getElementById('positionFilter').value;
             filterLevel = document.getElementById('levelFilter').value;
             filterStatus = document.getElementById('statusFilter').value;
             await updateUI();
@@ -671,12 +855,18 @@
         }
 
         function clearSearch() {
-            searchTerm = ""; filterDept = "all"; filterPosition = "all"; filterLevel = "all"; filterStatus = "all";
+            searchTerm = ""; 
+            filterDept = "all"; 
+            selectedPositions = []; 
+            filterLevel = "all"; 
+            filterStatus = "all";
+            
             document.getElementById('deptFilter').value = "all";
-            document.getElementById('positionFilter').value = "all";
             document.getElementById('levelFilter').value = "all";
             document.getElementById('statusFilter').value = "all";
             document.getElementById('searchInput').value = "";
+            
+            renderPositionOptions(true);
             updateUI();
         }
 
@@ -1033,6 +1223,19 @@
             }
         }
 
+        // إغلاق القائمة المنسدلة للوظائف عند النقر في أي مكان آخر
+        document.addEventListener('click', function(e) {
+            const multiselect = document.getElementById('positionMultiselect');
+            const dropdown = document.getElementById('positionDropdownContent');
+            if (dropdown && multiselect && !multiselect.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        window.onDeptChange = onDeptChange;
+        window.togglePositionDropdown = togglePositionDropdown;
+        window.onPositionOptionChange = onPositionOptionChange;
+        window.toggleSelectAllPositions = toggleSelectAllPositions;
         window.updateFilters = updateFilters;
         window.addEmployee = addEmployee;
         window.openEditModal = openEditModal;
@@ -1052,6 +1255,8 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closePhotoModal(); closeModal('addModal'); closeModal('editModal');
+                const dropdown = document.getElementById('positionDropdownContent');
+                if (dropdown) dropdown.classList.remove('open');
             }
         });
 
