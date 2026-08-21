@@ -11,7 +11,6 @@
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
     
-    <!-- السكريبتات بنظام Modules للاتصال بالفيربيز -->
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
     
@@ -24,16 +23,43 @@
         .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s; }
         .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
-        .nav-links .home { background: #2b7a4b; color: white; } .nav-links .logout { background: #e53e3e; color: white; }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .refresh { background: #4299e1; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
 
         .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
 
         .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         .page-header h1 { color: #1e3a5f; font-size: 2rem; } .page-header h1 span { color: #2b7a4b; }
         .page-header p { color: #718096; }
-        .last-update { font-size: 0.8rem; color: #718096; background: white; padding: 0.5rem 1.2rem; border-radius: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        /* Quick Filter Bar */
+        /* شاشة التحميل */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .loading-overlay.show { display: flex; }
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e2e8f0;
+            border-top: 6px solid #2b7a4b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        .loading-text { font-size: 1.2rem; color: #1e3a5f; font-weight: 500; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .quick-filter-bar { background: white; border-radius: 1.5rem; padding: 1rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         .quick-filter-bar .filter-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .quick-filter-bar .filter-btn { padding: 0.5rem 1.2rem; border: 2px solid #e2e8f0; background: white; border-radius: 2rem; cursor: pointer; font-weight: 500; font-size: 0.85rem; transition: 0.3s; color: #4a5568; }
@@ -52,7 +78,6 @@
         .quick-filter-bar .search-box input:focus { border-color: #2b7a4b; }
         .quick-filter-bar .search-box button { padding: 0.5rem 1rem; background: #4299e1; color: white; border: none; border-radius: 2rem; cursor: pointer; font-weight: 500; }
 
-        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }
         .stat-card { background: white; border-radius: 1rem; padding: 1rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #2b7a4b; }
         .stat-card .stat-value { font-size: 1.8rem; font-weight: 800; color: #1e3a5f; }
@@ -63,18 +88,15 @@
         .stat-card.pending-card { border-left-color: #ed8936; } .stat-card.pending-card .stat-value { color: #ed8936; }
         .stat-card.postponed-card { border-left-color: #4299e1; } .stat-card.postponed-card .stat-value { color: #4299e1; }
 
-        /* Progress Bar */
         .progress-section { background: white; border-radius: 1.5rem; padding: 1.2rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .progress-section .progress-header { display: flex; justify-content: space-between; font-weight: 600; color: #1e3a5f; margin-bottom: 0.3rem; }
         .progress-bar-bg { background: #e2e8f0; height: 12px; border-radius: 20px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background: #2b7a4b; width: 0%; border-radius: 20px; transition: width 0.3s; }
 
-        /* Sections */
         .section-title { font-size: 1.3rem; font-weight: 700; color: #1e3a5f; margin: 2rem 0 1.2rem 0; padding-left: 1rem; border-left: 5px solid #2b7a4b; display: flex; align-items: center; gap: 0.8rem; }
         .section-title .badge-count { background: #2b7a4b; color: white; font-size: 0.8rem; padding: 0.15rem 0.8rem; border-radius: 2rem; }
         .section-title .badge-count.today-badge { background: #f59e0b; }
 
-        /* Training Cards */
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.2rem; }
         .training-card { background: white; border-radius: 1.2rem; padding: 1.2rem 1.5rem; box-shadow: 0 3px 15px rgba(0,0,0,0.06); transition: 0.3s; border-left: 5px solid #2b7a4b; position: relative; }
         .training-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
@@ -114,7 +136,6 @@
         .no-data .icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
         .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
 
-        /* Day group styling */
         .day-group { margin-bottom: 2rem; }
         .day-group .day-header { font-size: 1.1rem; font-weight: 700; color: #1e3a5f; background: white; padding: 0.5rem 1.2rem; border-radius: 1rem; margin-bottom: 1rem; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid #2b7a4b; }
         .day-group .day-header .day-count { background: #2b7a4b; color: white; font-size: 0.7rem; padding: 0.1rem 0.7rem; border-radius: 1rem; margin-left: 0.5rem; }
@@ -133,55 +154,110 @@
     </style>
 </head>
 <body>
-    
     <!-- شاشة التحميل -->
-    <div id="loadingScreen" style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
-        ⏳ Fetching training schedule from server...
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text">⏳ جاري تحميل الجدول التدريبي...</div>
     </div>
 
-    <!-- المحتوى الرئيسي مخفي حتى التوثيق -->
     <div id="mainContent" style="display: none;"></div>
 
     <script type="module">
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+        const firestoreDb = getFirestore(getApp());
 
         // ========== Variables ==========
-        let allSessions = [];
+        // ⭐ Memory Cache - يتم تخزين جميع البيانات هنا بعد التحميل الأول
+        let cachedSessions = [];
+        let isDataLoaded = false;
+        let isLoading = false;
+        let lastLoadSource = "memory";
+        
         let filteredSessions = [];
-        let currentFilter = 'today'; // التعديل: الافتراضي هو عرض كل جلسات الشهر المختار
+        let currentFilter = 'today';
         let searchTerm = "";
         
-        // التعديل: توليد الشهر الحالي تلقائياً ليكون القيمة الافتراضية للفلتر
         const todayObj = new Date();
         const currentYear = todayObj.getFullYear();
         const currentMonth = String(todayObj.getMonth() + 1).padStart(2, '0');
-        let selectedMonth = `${currentYear}-${currentMonth}`; // YYYY-MM
+        let selectedMonth = `${currentYear}-${currentMonth}`;
         
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // ========== Load data from IndexedDB (Firebase Synced) ==========
-        async function loadDataFromDB() {
+        function showLoading(show = true, text = '⏳ جاري تحميل الجدول التدريبي...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                if (show) {
+                    overlay.querySelector('.loading-text').textContent = text;
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
+            }
+        }
+
+        // ========== Load data from Firestore (Once) ==========
+        async function loadDataFromFirestore(forceRefresh = false) {
+            // إذا كانت البيانات محملة بالفعل وليس Refresh، استخدم الكاش
+            if (isDataLoaded && !forceRefresh) {
+                console.log(`📖 استخدام البيانات المخزنة في Memory Cache (${cachedSessions.length} جلسة)`);
+                lastLoadSource = "cache";
+                return;
+            }
+
+            // منع التحميل المتكرر
+            if (isLoading) {
+                console.log('⏳ جاري التحميل بالفعل...');
+                return;
+            }
+
+            isLoading = true;
+            showLoading(true, '⏳ جاري تحميل الجدول التدريبي من السيرفر...');
+            
             try {
-                await DB.init();
-                const data = await DB.getAll('training_schedule');
-                allSessions = data.map(item => ({
-                    id: item.id,
-                    date: item.date || '-',
-                    topic: item.topic || '-',
-                    time: item.time || '-',
-                    requiredCategory: item.required_category || '-',
-                    importedAt: item.imported_at || null,
-                    status: item.status || 'scheduled',
-                    statusUpdatedAt: item.statusUpdatedAt || null
-                }));
-                const lastUpdate = localStorage.getItem('schedule_last_update');
-                return { count: allSessions.length, lastUpdate };
+                console.log('🔥 جلب بيانات الجدول التدريبي من Firestore...');
+                
+                const colRef = collection(firestoreDb, 'training_schedule');
+                const snap = await getDocs(colRef);
+                
+                const sessions = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    sessions.push({
+                        id: docSnap.id,
+                        date: data.date || '-',
+                        topic: data.topic || '-',
+                        time: data.time || '-',
+                        requiredCategory: data.required_category || '-',
+                        importedAt: data.imported_at || null,
+                        status: data.status || 'scheduled',
+                        statusUpdatedAt: data.statusUpdatedAt || null
+                    });
+                });
+                
+                // ⭐ تخزين البيانات في Memory Cache
+                cachedSessions = sessions;
+                isDataLoaded = true;
+                lastLoadSource = "firebase";
+                
+                console.log(`✅ تم جلب ${cachedSessions.length} جلسة تدريبية من Firestore وتخزينها في الكاش`);
+                
             } catch (error) {
-                console.error('❌ Failed to load data:', error);
-                allSessions = [];
-                return { count: 0, lastUpdate: null };
+                console.error('❌ Failed to load data from Firestore:', error);
+                cachedSessions = [];
+                isDataLoaded = false;
+            } finally {
+                showLoading(false);
+                isLoading = false;
             }
         }
 
@@ -235,17 +311,19 @@
             return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
 
-        // ========== Apply Filters ==========
+        // ========== Apply Filters (من البيانات المخزنة في الكاش) ==========
         function applyFilters() {
-            // 1. فلتر الشهر يؤثر على الإحصائيات وعلى كل القوائم
-            let baseSessions = [...allSessions];
+            // ⭐ التصفية من الكاش (cachedSessions) وليس من Firestore
+            let baseSessions = [...cachedSessions];
+            
+            // فلتر الشهر
             if (selectedMonth) {
                 baseSessions = baseSessions.filter(s => s.date && String(s.date).startsWith(selectedMonth));
             }
 
             let filtered = [...baseSessions];
 
-            // 2. فلاتر التبويبات (اليوم، الغد، الأسبوع، ...)
+            // فلتر التبويب
             if (currentFilter === 'today') {
                 filtered = filtered.filter(s => getDateDiff(s.date) === 0);
             } else if (currentFilter === 'tomorrow') {
@@ -265,7 +343,7 @@
                 filtered = filtered.filter(s => s.status === 'postponed');
             }
 
-            // 3. فلتر البحث النصي
+            // فلتر البحث
             if (searchTerm.trim()) {
                 const term = searchTerm.trim().toLowerCase();
                 filtered = filtered.filter(s =>
@@ -285,59 +363,87 @@
             });
 
             filteredSessions = filtered;
-            return baseSessions; // تُرجع البيانات بعد فلتر الشهر لحساب الإحصائيات
+            return baseSessions;
         }
 
-        // ========== Status Update Functions ==========
+        // ========== Status Update Functions (Direct Firestore Update) ==========
         async function updateSessionStatus(id, newStatus) {
+            showLoading(true, '⏳ جاري تحديث حالة الجلسة...');
+            
             try {
-                // Get directly from database
-                const record = await DB.get("training_schedule", id); // ID could be string or number
-                if (!record) {
-                    alert("Session not found in the database.");
+                const colRef = collection(firestoreDb, 'training_schedule');
+                const snap = await getDocs(colRef);
+                
+                let docRef = null;
+                let docData = null;
+                
+                snap.forEach(docSnap => {
+                    if (docSnap.id === id) {
+                        docRef = docSnap.ref;
+                        docData = docSnap.data();
+                    }
+                });
+                
+                if (!docRef || !docData) {
+                    alert("Session not found in Firestore.");
+                    showLoading(false);
                     return false;
                 }
 
-                record.status = newStatus;
-                record.statusUpdatedAt = new Date().toISOString();
+                docData.status = newStatus;
+                docData.statusUpdatedAt = new Date().toISOString();
 
-                await DB.update("training_schedule", record);
+                await docRef.set(docData);
+                
+                // ⭐ تحديث الكاش المحلي بعد التحديث
+                const index = cachedSessions.findIndex(s => s.id === id);
+                if (index !== -1) {
+                    cachedSessions[index].status = newStatus;
+                    cachedSessions[index].statusUpdatedAt = docData.statusUpdatedAt;
+                }
+                
+                console.log(`✅ تم تحديث حالة الجلسة ${id} إلى ${newStatus} (الكاش محدث)`);
+                showLoading(false);
                 return true;
+                
             } catch (e) {
                 console.error('Update failed', e);
                 alert('Failed to update session status. Please try again.');
+                showLoading(false);
                 return false;
             }
         }
 
         window.markAsCompleted = async (id) => {
-            if (await updateSessionStatus(id, 'completed')) await refreshPage();
+            if (await updateSessionStatus(id, 'completed')) await refreshPage(false);
         };
 
         window.cancelSession = async (id) => {
             if (!confirm('Are you sure you want to cancel this session?')) return;
-            if (await updateSessionStatus(id, 'cancelled')) await refreshPage();
+            if (await updateSessionStatus(id, 'cancelled')) await refreshPage(false);
         };
 
         window.postponeSession = async (id) => {
             if (!confirm('Are you sure you want to postpone this session?')) return;
-            if (await updateSessionStatus(id, 'postponed')) await refreshPage();
+            if (await updateSessionStatus(id, 'postponed')) await refreshPage(false);
         };
 
         window.restoreSession = async (id) => {
-            if (await updateSessionStatus(id, 'scheduled')) await refreshPage();
+            if (await updateSessionStatus(id, 'scheduled')) await refreshPage(false);
         };
 
-        async function refreshPage() {
-            await loadDataFromDB();
+        // ========== Refresh Page ==========
+        async function refreshPage(forceRefresh = true) {
+            if (forceRefresh) {
+                // ⭐ إجبار التحميل من Firestore
+                await loadDataFromFirestore(true);
+            }
             renderPage();
         }
 
-        // ========== Render Page ==========
-        async function renderPage() {
-            const { count, lastUpdate } = await loadDataFromDB();
-            
-            // تطبيق الفلاتر والحصول على البيانات الأساسية للشهر المحدد
+        // ========== Render Page (من الكاش) ==========
+        function renderPage() {
+            // ⭐ تطبيق الفلاتر على الكاش (بدون جلب من Firestore)
             const baseSessions = applyFilters();
 
             const total = baseSessions.length;
@@ -448,12 +554,6 @@
                 `;
             }
 
-            let lastUpdateText = 'Not updated yet';
-            if (lastUpdate) {
-                const d = new Date(lastUpdate);
-                lastUpdateText = `Last update: ${d.toLocaleDateString('en-US')} ${d.toLocaleTimeString('en-US')}`;
-            }
-
             const filterMap = {
                 'today': '🔴 Today', 'tomorrow': '📅 Tomorrow', 'week': '📆 This Week',
                 'all': '📋 All', 'completed': '✅ Completed', 'pending': '⏳ Pending',
@@ -465,8 +565,13 @@
 
             const progressWidth = completionRate;
 
+            // رسالة الحالة
+            const sourceBadge = lastLoadSource === 'firebase' 
+                ? `<span class="cache-badge firebase"></span>`
+                : `<span class="cache-badge cache"></span>`;
+
             let contentHtml = '';
-            if (allSessions.length === 0) {
+            if (cachedSessions.length === 0) {
                 contentHtml = `<div class="no-data"><span class="icon">📭</span>No training schedule data available<br><span style="font-size:0.8rem; color:#a0aec0;">Please import the monthly schedule from the Admin Dashboard</span></div>`;
             } else if (filteredSessions.length === 0) {
                 contentHtml = `<div class="no-data"><span class="icon">🔍</span>No sessions match your search or filters</div>`;
@@ -497,6 +602,7 @@
                     <div class="logo"><h2>🎓 <span>L&D</span> Management System</h2></div>
                     <div class="nav-links">
                         <a href="index.html" class="home">🏠 Home</a>
+                        <button onclick="refreshPage(true)" class="refresh">🔄 Refresh</button>
                         <button onclick="window.logout()" class="logout">🚪 Logout</button>
                     </div>
                 </div>
@@ -507,7 +613,9 @@
                             <h1>📅 <span>Monthly</span> Training Schedule</h1>
                             <p>View all scheduled training sessions organized by date</p>
                         </div>
-                        <div class="last-update">🔄 ${lastUpdateText}</div>
+                        <div>
+                            ${sourceBadge}
+                        </div>
                     </div>
 
                     <div class="quick-filter-bar">
@@ -547,19 +655,35 @@
                 </div>
                 <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
             `;
+            
+            document.getElementById('mainContent').style.display = 'block';
         }
 
         // ========== Controllers Setup ==========
-        window.setFilter = (filter) => { currentFilter = filter; renderPage(); };
-        window.doSearch = () => { searchTerm = document.getElementById('searchInput').value; renderPage(); };
-        window.clearSearch = () => { searchTerm = ''; document.getElementById('searchInput').value = ''; renderPage(); };
-        
-        // Month Filter Controllers
-        window.handleMonthChange = () => { 
-            selectedMonth = document.getElementById('monthInput').value; 
-            currentFilter = 'all'; // التعديل: التبديل إلى 'all' تلقائياً عند تغيير الشهر
+        window.setFilter = (filter) => { 
+            currentFilter = filter; 
+            // ⭐ تطبيق الفلتر على الكاش (بدون جلب جديد)
             renderPage(); 
         };
+        
+        window.doSearch = () => { 
+            searchTerm = document.getElementById('searchInput').value; 
+            renderPage(); 
+        };
+        
+        window.clearSearch = () => { 
+            searchTerm = ''; 
+            document.getElementById('searchInput').value = ''; 
+            renderPage(); 
+        };
+        
+        window.handleMonthChange = () => { 
+            selectedMonth = document.getElementById('monthInput').value; 
+            currentFilter = 'all';
+            // ⭐ تغيير الشهر يتم تطبيقه على الكاش (بدون جلب جديد)
+            renderPage(); 
+        };
+        
         window.clearMonth = () => { 
             selectedMonth = ""; 
             renderPage(); 
@@ -570,9 +694,9 @@
         // ===== Init Auth =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                await refreshPage();
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
+                // ⭐ التحميل الأول من Firestore
+                await loadDataFromFirestore(false);
+                renderPage();
             } else {
                 window.location.href = 'login.html';
             }
