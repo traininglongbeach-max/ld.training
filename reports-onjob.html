@@ -13,7 +13,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
-    <!-- السكريبتات بنظام Modules -->
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
     
@@ -27,6 +26,7 @@
         .nav-links a, .nav-links button { text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem; font-weight: 500; cursor: pointer; border: none; font-size: clamp(0.8rem, 1.5vw, 0.9rem); transition: 0.3s; }
         .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .refresh { background: #4299e1; color: white; }
         .nav-links .diagnose { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         .nav-links .logout { background: #e53e3e; color: white; }
 
@@ -47,9 +47,7 @@
             z-index: 9999;
             flex-direction: column;
         }
-        .loading-overlay.show {
-            display: flex;
-        }
+        .loading-overlay.show { display: flex; }
         .loader {
             width: 60px;
             height: 60px;
@@ -59,15 +57,8 @@
             animation: spin 1s linear infinite;
             margin-bottom: 1rem;
         }
-        .loading-text {
-            font-size: 1.2rem;
-            color: #1e3a5f;
-            font-weight: 500;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .loading-text { font-size: 1.2rem; color: #1e3a5f; font-weight: 500; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* حالة عدم وجود بيانات */
         .no-data-message {
@@ -78,15 +69,8 @@
             border: 2px dashed #cbd5e1;
             margin: 1rem 0;
         }
-        .no-data-message h3 {
-            color: #475569;
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-        }
-        .no-data-message p {
-            color: #94a3b8;
-            font-size: 1rem;
-        }
+        .no-data-message h3 { color: #475569; font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .no-data-message p { color: #94a3b8; font-size: 1rem; }
 
         .diagnostic-box { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; direction: rtl; }
         .diagnostic-box.show { display: block; }
@@ -144,19 +128,9 @@
 
         .footer { text-align: center; padding: 2rem; color: #718096; font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
 
-        /* ================= Responsive Media Queries ================= */
-        @media (max-width: 1600px) {
-            .container { max-width: 95%; }
-        }
-
-        @media (max-width: 1400px) {
-            .container { max-width: 1140px; }
-        }
-
-        @media (max-width: 1200px) {
-            .container { max-width: 960px; }
-        }
-
+        @media (max-width: 1600px) { .container { max-width: 95%; } }
+        @media (max-width: 1400px) { .container { max-width: 1140px; } }
+        @media (max-width: 1200px) { .container { max-width: 960px; } }
         @media (max-width: 992px) {
             .container { max-width: 720px; }
             .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
@@ -164,52 +138,37 @@
             .month-select, .dept-select, .year-select, .quarter-select { width: 100%; min-width: 100%; max-width: 100%; }
             .charts-row { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 768px) {
             .navbar { flex-direction: column; text-align: center; padding: 1rem; }
             .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
             .nav-links a, .nav-links button { width: 100%; text-align: center; }
             .container { max-width: 100%; padding: 0 1rem; }
-            
             .page-header h1 { font-size: 1.6rem; }
-            
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            
             .export-btn, .export-btn-dept { width: 100%; }
-            
             th, td { padding: 0.6rem; font-size: 0.8rem; }
-            
             .diagnostic-box .stats-row { grid-template-columns: 1fr; }
-            
             .dept-stats-grid { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 576px) {
             .stats-grid { grid-template-columns: 1fr; }
-            
             .stat-card, .chart-card, .data-table-card, .diagnostic-box { padding: 1.2rem; border-radius: 1rem; }
             .stat-value { font-size: 1.6rem; }
-            
             canvas { max-height: 250px; }
-            
             .data-table-card h3 { font-size: 1.1rem; }
             .badge-sessions, .badge-attendees, .badge-hours { padding: 0.2rem 0.5rem; font-size: 0.75rem; }
-            
             table { min-width: 500px; }
         }
-
         @media (max-width: 425px) {
             .nav-links a, .nav-links button { width: 100%; text-align: center; }
             .btn-details { padding: 0.4rem 1rem; width: 100%; }
             table { min-width: 400px; }
         }
-
         @media (max-width: 375px) {
             .page-header h1 { font-size: 1.4rem; }
             .export-btn, .export-btn-dept { font-size: 1rem; padding: 0.7rem 1rem; }
             table { min-width: 350px; }
         }
-
         @media (max-width: 320px) {
             .navbar .logo h2 { font-size: 1.2rem; }
             table { min-width: 300px; }
@@ -220,7 +179,7 @@
     <!-- شاشة التحميل -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loader"></div>
-        <div class="loading-text">⏳ جاري تحميل البيانات من السيرفر...</div>
+        <div class="loading-text">⏳ جاري تحميل بيانات On Job...</div>
     </div>
 
     <div id="app">
@@ -249,8 +208,9 @@
         const quarterMap = { 'Q1': [0,1,2], 'Q2': [3,4,5], 'Q3': [6,7,8], 'Q4': [9,10,11] };
         const START_YEAR = 2025;
         const END_YEAR = 2028;
+        const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 ساعة
 
-        function showLoading(show = true, text = '⏳ جاري تحميل البيانات من السيرفر...') {
+        function showLoading(show = true, text = '⏳ جاري تحميل بيانات On Job...') {
             const overlay = document.getElementById('loadingOverlay');
             if (overlay) {
                 if (show) {
@@ -275,73 +235,195 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // ================= جلب البيانات حسب الفلتر =================
-        async function loadDataByFilters() {
-            showLoading(true, '⏳ جاري تحميل بيانات On Job...');
-            
+        // ===== تخزين واسترجاع بيانات الشهر من LocalStorage =====
+        function getMonthCacheKey(year, month) {
+            return `onjob_month_${year}_${month}`;
+        }
+
+        function loadMonthFromCache(year, month) {
             try {
-                // جلب الموظفين والكورسات مرة واحدة فقط
+                const key = getMonthCacheKey(year, month);
+                const cached = localStorage.getItem(key);
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    if (Date.now() - data.timestamp < CACHE_TTL) {
+                        console.log(`📦 قراءة شهر ${month+1}/${year} من التخزين المحلي`);
+                        return data.sessions;
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function saveMonthToCache(year, month, sessions) {
+            try {
+                const key = getMonthCacheKey(year, month);
+                localStorage.setItem(key, JSON.stringify({
+                    sessions: sessions,
+                    timestamp: Date.now()
+                }));
+                console.log(`💾 حفظ شهر ${month+1}/${year} في التخزين المحلي (${sessions.length} جلسة)`);
+            } catch (e) {}
+        }
+
+        function clearMonthCache(year, month) {
+            try {
+                const key = getMonthCacheKey(year, month);
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        function clearAllCache() {
+            try {
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('onjob_month_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                console.log('🗑️ تم مسح جميع الكاشات');
+            } catch (e) {}
+        }
+
+        // ===== تحميل البيانات الأساسية (مرة واحدة) =====
+        async function loadBaseData() {
+            if (employees.length > 0 && trainingData.courses.length > 0) {
+                return;
+            }
+
+            try {
                 if (employees.length === 0) {
                     const savedEmployees = await DB.getAll('employees') || [];
                     employees = savedEmployees;
                     employeeDeptMap.clear();
                     employees.forEach(emp => {
-                        if (emp.id && emp.department) employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
-                        else if (emp.id) employeeDeptMap.set(emp.id.toString(), 'Under Review');
+                        if (emp.id && emp.department) {
+                            employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
+                        } else if (emp.id) {
+                            employeeDeptMap.set(emp.id.toString(), 'Under Review');
+                        }
                     });
+                    console.log(`👥 تم تحميل ${employees.length} موظف`);
                 }
                 
                 if (trainingData.courses.length === 0) {
                     const courses = await DB.getAll('onjob_courses') || [];
                     trainingData.courses = courses;
+                    console.log(`📚 تم تحميل ${trainingData.courses.length} كورس`);
                 }
+            } catch (error) {
+                console.error('❌ Failed to load base data:', error);
+            }
+        }
 
-                // جلب الجلسات حسب السنة والشهر
-                let sessionsQuery = await DB.getAll('onjob_sessions') || [];
-                
-                // فلترة الجلسات حسب السنة
-                sessionsQuery = sessionsQuery.filter(session => {
-                    const date = parseDateSafely(session.session_date);
-                    if (isNaN(date.getTime())) return false;
-                    return date.getFullYear() === currentYear;
-                });
+        // ===== تحميل البيانات حسب الفلتر مع التخزين المؤقت =====
+        async function loadDataByFilters() {
+            showLoading(true, '⏳ جاري تحميل بيانات On Job...');
+            
+            try {
+                // تحميل البيانات الأساسية
+                await loadBaseData();
 
-                // فلترة حسب الشهر أو الربع
+                // تحديد ما إذا كان سيتم استخدام الكاش
+                let useCache = false;
+                let filteredSessions = [];
+
+                // إذا كان شهر محدد، حاول قراءة من الكاش
                 if (selectedMonth !== 'all') {
                     const monthNum = parseInt(selectedMonth);
-                    sessionsQuery = sessionsQuery.filter(session => {
+                    const cachedSessions = loadMonthFromCache(currentYear, monthNum);
+                    if (cachedSessions) {
+                        filteredSessions = cachedSessions;
+                        useCache = true;
+                        lastLoadSource = "cache";
+                        console.log(`✅ تم تحميل شهر ${monthNum+1}/${currentYear} من التخزين المحلي (${filteredSessions.length} جلسة)`);
+                    }
+                }
+
+                // إذا لم نجد في الكاش أو كان الكل، نجلب من Firestore
+                if (!useCache) {
+                    let allSessions = await DB.getAll('onjob_sessions') || [];
+                    
+                    filteredSessions = allSessions.filter(session => {
                         const date = parseDateSafely(session.session_date);
                         if (isNaN(date.getTime())) return false;
-                        return date.getMonth() === monthNum;
+                        
+                        if (date.getFullYear() !== currentYear) return false;
+                        
+                        if (selectedMonth !== 'all') {
+                            const monthNum = parseInt(selectedMonth);
+                            if (date.getMonth() !== monthNum) return false;
+                        }
+                        
+                        if (selectedQuarter !== 'all' && quarterMap[selectedQuarter]) {
+                            const months = quarterMap[selectedQuarter];
+                            if (!months.includes(date.getMonth())) return false;
+                        }
+                        
+                        return true;
                     });
-                } else if (selectedQuarter !== 'all' && quarterMap[selectedQuarter]) {
-                    const months = quarterMap[selectedQuarter];
-                    sessionsQuery = sessionsQuery.filter(session => {
-                        const date = parseDateSafely(session.session_date);
-                        if (isNaN(date.getTime())) return false;
-                        return months.includes(date.getMonth());
-                    });
+
+                    lastLoadSource = "firebase";
+                    console.log(`🔥 تم تحميل ${filteredSessions.length} جلسة من Firestore`);
+
+                    // حفظ في الكاش إذا كان شهر محدد
+                    if (selectedMonth !== 'all' && filteredSessions.length > 0) {
+                        const monthNum = parseInt(selectedMonth);
+                        saveMonthToCache(currentYear, monthNum, filteredSessions);
+                    }
                 }
 
                 // جلب التسجيلات للجلسات المفلترة فقط
-                if (sessionsQuery.length > 0) {
-                    const sessionCodes = new Set(sessionsQuery.map(s => s.session_code));
+                if (filteredSessions.length > 0) {
+                    const sessionCodes = new Set(filteredSessions.map(s => s.session_code));
                     const allEnrollments = await DB.getAll('onjob_enrollments') || [];
                     trainingData.enrollments = allEnrollments.filter(e => sessionCodes.has(e.session_code));
+                    console.log(`📊 ${trainingData.enrollments.length} تسجيل للجلسات المحددة`);
                 } else {
                     trainingData.enrollments = [];
+                    console.log(`ℹ️ لا توجد جلسات للفترة المحددة: ${currentYear}/${selectedMonth}/${selectedQuarter}`);
                 }
 
-                trainingData.sessions = sessionsQuery;
-                lastLoadSource = "firebase";
+                trainingData.sessions = filteredSessions;
                 
-                console.log(`✅ On Job: ${sessionsQuery.length} جلسة | ${trainingData.enrollments.length} تسجيل`);
             } catch (error) {
-                console.error('❌ Failed to fetch data:', error);
+                console.error('❌ Failed to fetch On Job data:', error);
             } finally {
                 showLoading(false);
             }
         }
+
+        // ===== وظيفة زر تحديث البيانات (Refresh Data) =====
+        window.refreshData = async function() {
+            const btn = document.getElementById('refreshBtn');
+            if (btn) {
+                btn.innerHTML = "⏳ Refreshing...";
+                btn.style.pointerEvents = "none";
+            }
+
+            try {
+                // مسح الكاش
+                clearAllCache();
+                
+                // إعادة تحميل البيانات
+                employees = [];
+                trainingData = { courses: [], sessions: [], enrollments: [] };
+                employeeDeptMap.clear();
+                
+                await loadDataByFilters();
+                buildUI();
+                
+                alert("✅ تم تحديث البيانات بنجاح من Firebase!");
+            } catch (error) {
+                console.error("Error refreshing data:", error);
+                alert("❌ حدث خطأ أثناء تحديث البيانات. تحقق من الاتصال.");
+            } finally {
+                if (btn) {
+                    btn.innerHTML = "🔄 Refresh Data";
+                    btn.style.pointerEvents = "auto";
+                }
+            }
+        };
 
         // ================= دوال التحليل والحسابات =================
         function calculateHoursFromTime(startTime, endTime) {
@@ -407,7 +489,9 @@
                 });
             });
             
-            return Array.from(deptStats.keys()).map(dept => ({
+            return Array.from(deptStats.keys())
+                .filter(dept => dept !== 'A&G' && dept !== 'A & G')
+                .map(dept => ({
                 department: dept, sessions: deptStats.get(dept).sessions, uniqueEmployees: deptStats.get(dept).uniqueEmployees.size, hours: parseFloat(deptStats.get(dept).hours.toFixed(1))
             })).sort((a, b) => b.hours !== a.hours ? b.hours - a.hours : b.uniqueEmployees - a.uniqueEmployees);
         }
@@ -483,7 +567,9 @@
                     emp.totalCourses.add(course?.course_name);
                 });
             });
-            return Array.from(employeesMap.values()).map(emp => ({ ...emp, totalCourses: emp.totalCourses.size, totalHours: parseFloat(emp.totalHours.toFixed(1)), sessions: emp.sessions.sort((a,b) => parseDateSafely(b.session_date) - parseDateSafely(a.session_date)) })).sort((a, b) => b.totalHours - a.totalHours);
+            return Array.from(employeesMap.values())
+                .filter(emp => emp.department !== 'A&G' && emp.department !== 'A & G')
+                .map(emp => ({ ...emp, totalCourses: emp.totalCourses.size, totalHours: parseFloat(emp.totalHours.toFixed(1)), sessions: emp.sessions.sort((a,b) => parseDateSafely(b.session_date) - parseDateSafely(a.session_date)) })).sort((a, b) => b.totalHours - a.totalHours);
         }
 
         // ================= دالة التحقق من وجود بيانات =================
@@ -531,7 +617,7 @@
             if(deptHoursChartInstance) deptHoursChartInstance.destroy();
 
             const ctx1 = document.getElementById('deptEmployeesChart')?.getContext('2d');
-            if (ctx1) {
+            if (ctx1 && employeesSorted.length > 0) {
                 deptEmployeesChartInstance = new Chart(ctx1, {
                     type: 'bar',
                     data: { labels: employeesSorted.map(d => d.department), datasets: [{ label: 'Employees', data: employeesSorted.map(d => d.uniqueEmployees), backgroundColor: '#078fff', borderRadius: 10 }] },
@@ -540,7 +626,7 @@
             }
             
             const ctx2 = document.getElementById('deptHoursChart')?.getContext('2d');
-            if (ctx2) {
+            if (ctx2 && hoursSorted.length > 0) {
                 deptHoursChartInstance = new Chart(ctx2, {
                     type: 'bar',
                     data: { labels: hoursSorted.map(d => d.department), datasets: [{ label: 'Hours', data: hoursSorted.map(d => d.hours), backgroundColor: '#158040', borderRadius: 10 }] },
@@ -640,9 +726,14 @@
             const quarterText = selectedQuarter !== 'all' ? selectedQuarter : 'All Quarters';
 
             // رسالة الحالة
-            const sourceBadge = lastLoadSource === 'firebase' 
-                ? `<span class="cache-badge firebase">🔥 تم جلب On Job من السيرفر</span>`
-                : `<span class="cache-badge cache">⚡ تم التحميل الفوري</span>`;
+            let sourceBadge = '';
+            if (lastLoadSource === 'firebase') {
+                sourceBadge = `<span class="cache-badge firebase">🔥 تم جلب On Job من السيرفر </span>`;
+            } else if (lastLoadSource === 'cache') {
+                sourceBadge = `<span class="cache-badge cache">⚡ تم التحميل من التخزين المحلي </span>`;
+            } else {
+                sourceBadge = `<span class="cache-badge cache">⚡ تم التحميل الفوري </span>`;
+            }
 
             // محتوى الإحصائيات والرسوم البيانية
             const contentHTML = hasData ? `
@@ -684,6 +775,7 @@
                     <div class="logo"><h2>🎓 Learning & Development <span>Management System</span></h2></div>
                     <div class="nav-links">
                         <a href="index.html" class="home">🏠 Home</a>
+                        <button id="refreshBtn" class="refresh">🔄 Refresh Data</button>
                         <button onclick="showDiagnostic()" class="diagnose">🔍 Diagnose Errors</button>
                         <button id="logoutBtn" class="logout">🚪 Logout</button>
                     </div>
@@ -748,17 +840,32 @@
                 setTimeout(() => initCharts(deptStats, filteredSessions), 100);
             }
 
+            // إضافة مستمعي الأحداث
+            document.getElementById('refreshBtn').addEventListener('click', window.refreshData);
+            
             document.getElementById('yearSelect').addEventListener('change', async (e) => { 
                 currentYear = parseInt(e.target.value); 
                 await loadDataByFilters();
                 buildUI(); 
             });
+            
             document.getElementById('monthSelect').addEventListener('change', async (e) => { 
+                // عند تغيير الشهر، إعادة تعيين الربع إلى All
+                if (e.target.value !== 'all') {
+                    document.getElementById('quarterSelect').value = 'all';
+                    selectedQuarter = 'all';
+                }
                 selectedMonth = e.target.value; 
                 await loadDataByFilters();
                 buildUI(); 
             });
+            
             document.getElementById('quarterSelect').addEventListener('change', async (e) => { 
+                // عند تغيير الربع، إعادة تعيين الشهر إلى All
+                if (e.target.value !== 'all') {
+                    document.getElementById('monthSelect').value = 'all';
+                    selectedMonth = 'all';
+                }
                 selectedQuarter = e.target.value; 
                 await loadDataByFilters();
                 buildUI(); 
@@ -864,7 +971,9 @@
                 });
             });
 
-            const reportData = Array.from(deptData.keys()).map(dept => ({
+            const reportData = Array.from(deptData.keys())
+                .filter(dept => dept !== 'A&G' && dept !== 'A & G')
+                .map(dept => ({
                 department: dept, employees: deptData.get(dept).employees.size, hours: parseFloat(deptData.get(dept).hours.toFixed(1))
             })).sort((a, b) => b.hours !== a.hours ? b.hours - a.hours : b.employees - a.employees);
 
