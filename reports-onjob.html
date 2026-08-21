@@ -33,6 +33,61 @@
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 clamp(1rem, 3vw, 1.5rem); }
         .page-header { margin-bottom: 2rem; } .page-header h1 { color: #1e3a5f; font-size: clamp(1.5rem, 4vw, 2rem); } .page-header p { color: #718096; font-size: clamp(0.9rem, 1.5vw, 1rem); }
 
+        /* شاشة التحميل */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .loading-overlay.show {
+            display: flex;
+        }
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e2e8f0;
+            border-top: 6px solid #2b7a4b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        .loading-text {
+            font-size: 1.2rem;
+            color: #1e3a5f;
+            font-weight: 500;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* حالة عدم وجود بيانات */
+        .no-data-message {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            border: 2px dashed #cbd5e1;
+            margin: 1rem 0;
+        }
+        .no-data-message h3 {
+            color: #475569;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .no-data-message p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
         .diagnostic-box { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); margin-bottom: 2rem; border: 2px solid #f59e0b; box-shadow: 0 5px 20px rgba(245, 158, 11, 0.15); display: none; direction: rtl; }
         .diagnostic-box.show { display: block; }
         .diagnostic-box h3 { color: #d97706; margin-bottom: 1rem; font-size: clamp(1.1rem, 2vw, 1.3rem); }
@@ -48,6 +103,10 @@
         .filter-group label { font-weight: bold; color: #1e3a5f; font-size: clamp(0.85rem, 1.2vw, 0.95rem); }
         .month-select, .dept-select, .year-select, .quarter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: clamp(0.85rem, 1.2vw, 1rem); background: white; cursor: pointer; min-width: 120px; outline: none; transition: 0.3s; flex: 1 1 auto; max-width: 200px; }
         .month-select:focus, .dept-select:focus, .year-select:focus, .quarter-select:focus { border-color: #2b7a4b; box-shadow: 0 0 0 3px rgba(43,122,75,0.1); }
+
+        .cache-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.75rem; font-weight: bold; background: #e6fffa; color: #234e52; border: 1px solid #b2f5ea; }
+        .cache-badge.firebase { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+        .cache-badge.cache { background: #e6fffa; color: #234e52; border-color: #b2f5ea; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(140px, 15vw, 180px), 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .stat-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 1.5vw, 1.5rem); text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
@@ -158,6 +217,12 @@
     </style>
 </head>
 <body>
+    <!-- شاشة التحميل -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text">⏳ جاري تحميل البيانات من السيرفر...</div>
+    </div>
+
     <div id="app">
         <div style="text-align:center; padding:100px 20px; font-size:1.5rem; color:#1e3a5f;">
             ⏳ Fetching On Job records from server...
@@ -171,17 +236,31 @@
         // ================= المتغيرات وحالة النظام =================
         let trainingData = { courses: [], sessions: [], enrollments: [] };
         let employees = [];
-        let isDataLoaded = false;
         let selectedMonth = new Date().getMonth().toString(); 
         let selectedQuarter = 'all';    
         let currentYear = new Date().getFullYear();
         let employeeDeptMap = new Map();
+        let lastLoadSource = "memory";
         
         let deptEmployeesChartInstance = null;
         let deptHoursChartInstance = null;
 
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const quarterMap = { 'Q1': [0,1,2], 'Q2': [3,4,5], 'Q3': [6,7,8], 'Q4': [9,10,11] };
+        const START_YEAR = 2025;
+        const END_YEAR = 2028;
+
+        function showLoading(show = true, text = '⏳ جاري تحميل البيانات من السيرفر...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                if (show) {
+                    overlay.querySelector('.loading-text').textContent = text;
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
+            }
+        }
 
         function parseDateSafely(dateValue) {
             if (!dateValue) return new Date(NaN);
@@ -196,38 +275,71 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // ================= جلب البيانات (مرة واحدة فقط) =================
-        async function loadAllDataFromServer() {
-            if (isDataLoaded) {
-                console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
-                return;
-            }
+        // ================= جلب البيانات حسب الفلتر =================
+        async function loadDataByFilters() {
+            showLoading(true, '⏳ جاري تحميل بيانات On Job...');
             
             try {
-                console.log('🔥 تحميل البيانات من Firestore (المرة الأولى والأخيرة)');
+                // جلب الموظفين والكورسات مرة واحدة فقط
+                if (employees.length === 0) {
+                    const savedEmployees = await DB.getAll('employees') || [];
+                    employees = savedEmployees;
+                    employeeDeptMap.clear();
+                    employees.forEach(emp => {
+                        if (emp.id && emp.department) employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
+                        else if (emp.id) employeeDeptMap.set(emp.id.toString(), 'Under Review');
+                    });
+                }
                 
-                const [savedEmployees, courses, sessions, enrollments] = await Promise.all([
-                    DB.getAll('employees'),
-                    DB.getAll('onjob_courses'),
-                    DB.getAll('onjob_sessions'),
-                    DB.getAll('onjob_enrollments')
-                ]);
+                if (trainingData.courses.length === 0) {
+                    const courses = await DB.getAll('onjob_courses') || [];
+                    trainingData.courses = courses;
+                }
+
+                // جلب الجلسات حسب السنة والشهر
+                let sessionsQuery = await DB.getAll('onjob_sessions') || [];
                 
-                employees = savedEmployees || [];
-                trainingData.courses = courses || [];
-                trainingData.sessions = sessions || [];
-                trainingData.enrollments = enrollments || [];
-                
-                employeeDeptMap.clear();
-                employees.forEach(emp => {
-                    if (emp.id && emp.department) employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
-                    else if (emp.id) employeeDeptMap.set(emp.id.toString(), 'Under Review');
+                // فلترة الجلسات حسب السنة
+                sessionsQuery = sessionsQuery.filter(session => {
+                    const date = parseDateSafely(session.session_date);
+                    if (isNaN(date.getTime())) return false;
+                    return date.getFullYear() === currentYear;
                 });
+
+                // فلترة حسب الشهر أو الربع
+                if (selectedMonth !== 'all') {
+                    const monthNum = parseInt(selectedMonth);
+                    sessionsQuery = sessionsQuery.filter(session => {
+                        const date = parseDateSafely(session.session_date);
+                        if (isNaN(date.getTime())) return false;
+                        return date.getMonth() === monthNum;
+                    });
+                } else if (selectedQuarter !== 'all' && quarterMap[selectedQuarter]) {
+                    const months = quarterMap[selectedQuarter];
+                    sessionsQuery = sessionsQuery.filter(session => {
+                        const date = parseDateSafely(session.session_date);
+                        if (isNaN(date.getTime())) return false;
+                        return months.includes(date.getMonth());
+                    });
+                }
+
+                // جلب التسجيلات للجلسات المفلترة فقط
+                if (sessionsQuery.length > 0) {
+                    const sessionCodes = new Set(sessionsQuery.map(s => s.session_code));
+                    const allEnrollments = await DB.getAll('onjob_enrollments') || [];
+                    trainingData.enrollments = allEnrollments.filter(e => sessionCodes.has(e.session_code));
+                } else {
+                    trainingData.enrollments = [];
+                }
+
+                trainingData.sessions = sessionsQuery;
+                lastLoadSource = "firebase";
                 
-                isDataLoaded = true;
-                console.log(`✅ تم الجلب: ${employees.length} موظف | ${trainingData.enrollments.length} تسجيل`);
+                console.log(`✅ On Job: ${sessionsQuery.length} جلسة | ${trainingData.enrollments.length} تسجيل`);
             } catch (error) {
-                console.error('❌ Failed to fetch data from Firestore:', error);
+                console.error('❌ Failed to fetch data:', error);
+            } finally {
+                showLoading(false);
             }
         }
 
@@ -374,6 +486,27 @@
             return Array.from(employeesMap.values()).map(emp => ({ ...emp, totalCourses: emp.totalCourses.size, totalHours: parseFloat(emp.totalHours.toFixed(1)), sessions: emp.sessions.sort((a,b) => parseDateSafely(b.session_date) - parseDateSafely(a.session_date)) })).sort((a, b) => b.totalHours - a.totalHours);
         }
 
+        // ================= دالة التحقق من وجود بيانات =================
+        function hasDataForCurrentSelection() {
+            const filteredSessions = filterByMonthAndQuarter(filterByTrainingType(trainingData.sessions), 'session_date');
+            return filteredSessions.length > 0;
+        }
+
+        // ================= دالة عرض "لا توجد بيانات" =================
+        function renderNoDataMessage() {
+            const monthText = selectedMonth !== 'all' ? monthNames[parseInt(selectedMonth)] : 'All Months';
+            const quarterText = selectedQuarter !== 'all' ? selectedQuarter : 'All Quarters';
+            return `
+                <div class="no-data-message">
+                    <h3>📭 لا توجد بيانات لعرضها</h3>
+                    <p>لم يتم العثور على جلسات تدريبية On-Job للفترة المحددة</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #94a3b8;">
+                        ${monthText} | ${quarterText} | ${currentYear}
+                    </p>
+                </div>
+            `;
+        }
+
         // ================= دالة عرض الإحصائيات =================
         function renderStats(stats) {
             return `<div class="stats-grid">
@@ -495,15 +628,56 @@
         // ================= بناء الـ HTML =================
         function buildUI() {
             let filteredSessions = filterByMonthAndQuarter(filterByTrainingType(trainingData.sessions), 'session_date');
+            const hasData = filteredSessions.length > 0;
             
-            const stats = calculateStats(filteredSessions);
-            const deptStats = calculateDepartmentStats(filteredSessions);
-            const coursesStats = calculateCoursesStats(filteredSessions);
-            const employeesDetails = getEmployeesDetails(filteredSessions);
+            const stats = hasData ? calculateStats(filteredSessions) : { totalCoursesAll: 0, totalCoursesExecuted: 0, totalSessions: 0, uniqueEmployees: 0, totalHours: 0, hoursPerEmployee: 0, completionRate: 0 };
+            const deptStats = hasData ? calculateDepartmentStats(filteredSessions) : [];
+            const coursesStats = hasData ? calculateCoursesStats(filteredSessions) : [];
+            const employeesDetails = hasData ? getEmployeesDetails(filteredSessions) : [];
             window.currentEmployeesDetails = employeesDetails; 
 
             const monthText = selectedMonth !== 'all' ? monthNames[parseInt(selectedMonth)] : 'All Months';
             const quarterText = selectedQuarter !== 'all' ? selectedQuarter : 'All Quarters';
+
+            // رسالة الحالة
+            const sourceBadge = lastLoadSource === 'firebase' 
+                ? `<span class="cache-badge firebase">🔥 تم جلب On Job من السيرفر</span>`
+                : `<span class="cache-badge cache">⚡ تم التحميل الفوري</span>`;
+
+            // محتوى الإحصائيات والرسوم البيانية
+            const contentHTML = hasData ? `
+                ${renderStats(stats)}
+                
+                <div class="data-table-card">
+                    <h3>🏆 Top Participating Departments in On Job</h3>
+                    ${deptStats.length === 0 ? '<div style="text-align:center; padding:2rem;">No data available</div>' : 
+                    `<div class="dept-stats-grid">${deptStats.map((dept, index) => `<div class="dept-card"><div class="dept-rank">#${index+1}</div><div class="dept-info"><div class="dept-name">🏢 ${dept.department}</div><div class="dept-stats">📚 ${dept.sessions} Session(s) | 👥 ${dept.uniqueEmployees} Employee(s) | ⏰ ${dept.hours} Hour(s)</div></div></div>`).join('')}</div>`}
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-card"><h3>📊 Participating Employees by Department</h3><div style="height:350px"><canvas id="deptEmployeesChart"></canvas></div></div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-card"><h3>⏰ Total Training Hours by Department</h3><div style="height:350px"><canvas id="deptHoursChart"></canvas></div></div>
+                </div>
+
+                <div class="data-table-card">
+                    <h3>👥 Employees Participating in On Job (${monthText} - ${quarterText} ${currentYear})</h3>
+                    <div class="filter-group" style="margin-bottom:1rem;"><label>🏢 Department:</label><select id="employeeDeptFilter" class="dept-select"><option value="all">All Departments</option>${[...new Set(employeesDetails.map(emp => emp.department))].sort().map(d => `<option value="${d}">${d}</option>`).join('')}</select></div>
+                    <div id="employeesTableContainer"></div>
+                </div>
+
+                <div class="data-table-card">
+                    <h3>📚 Executed On Job Trainings (${monthText} - ${quarterText} ${currentYear})</h3>
+                    ${coursesStats.length === 0 ? '<div style="text-align:center; padding:2rem;">📭 No Executed On Job Trainings</div>' : 
+                    `<div class="table-wrapper"><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#1e3a5f; color:white;"><th style="padding:12px;">#</th><th style="padding:12px;">Course Name</th><th style="padding:12px;">Sessions Count</th><th style="padding:12px;">Attendees Count (Unique)</th><th style="padding:12px;">Total Hours</th></tr></thead><tbody>${coursesStats.map((c, i) => `<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:12px; font-weight:bold;">${i+1}</td><td style="padding:12px; font-weight:500;">${c.courseName}</td><td style="padding:12px;"><span class="badge-sessions">${c.sessions}</span></td><td style="padding:12px;"><span class="badge-attendees">${c.uniqueAttendees}</span></td><td style="padding:12px;"><span class="badge-hours">${c.hours}</span></td></tr>`).join('')}</tbody></table></div>`}
+                    
+                    <div style="text-align:center; margin-top:1.5rem; display:flex; justify-content:center; flex-wrap:wrap; gap:1rem;">
+                        <button class="export-btn" id="btnExportMonthly">📤 Export Monthly Report</button>
+                        <button class="export-btn-dept" id="btnExportDepts">📥 Export Participating Departments</button>
+                    </div>
+                </div>
+            ` : renderNoDataMessage();
 
             let html = `
                 <div class="navbar">
@@ -515,7 +689,13 @@
                     </div>
                 </div>
                 <div class="container">
-                    <div class="page-header"><h1>📊 On Job Training Reports</h1><p>Comprehensive analysis for internal trainings - unique attendees count</p></div>
+                    <div class="page-header">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <h1>📊 On Job Training Reports</h1>
+                            ${sourceBadge}
+                        </div>
+                        <p>Comprehensive analysis for internal trainings - unique attendees count</p>
+                    </div>
                     
                     <div class="diagnostic-box" id="diagnosticBox">
                         <h3>🔍 أداة تشخيص الأخطاء (Diagnostic Tool - On Job)</h3>
@@ -533,7 +713,7 @@
                         <div class="filter-group">
                             <label>📅 Year:</label>
                             <select id="yearSelect" class="year-select">
-                                ${[2024, 2025, 2026, 2027, 2028].map(y => `<option value="${y}" ${currentYear === y ? 'selected' : ''}>${y}</option>`).join('')}
+                                ${Array.from({length: END_YEAR - START_YEAR + 1}, (_, i) => START_YEAR + i).map(y => `<option value="${y}" ${currentYear === y ? 'selected' : ''}>${y}</option>`).join('')}
                             </select>
                         </div>
                         <div class="filter-group">
@@ -556,59 +736,55 @@
                         <div class="filter-group"><span style="color:#1e3a5f; font-weight:700;">📊 ${monthText} - ${quarterText} ${currentYear}</span></div>
                     </div>
 
-                    ${renderStats(stats)}
-                    
-                    <div class="data-table-card">
-                        <h3>🏆 Top Participating Departments in On Job</h3>
-                        ${deptStats.length === 0 ? '<div style="text-align:center; padding:2rem;">No data available</div>' : 
-                        `<div class="dept-stats-grid">${deptStats.map((dept, index) => `<div class="dept-card"><div class="dept-rank">#${index+1}</div><div class="dept-info"><div class="dept-name">🏢 ${dept.department}</div><div class="dept-stats">📚 ${dept.sessions} Session(s) | 👥 ${dept.uniqueEmployees} Employee(s) | ⏰ ${dept.hours} Hour(s)</div></div></div>`).join('')}</div>`}
-                    </div>
-
-                    <div class="charts-row">
-                        <div class="chart-card"><h3>📊 Participating Employees by Department</h3><div style="height:350px"><canvas id="deptEmployeesChart"></canvas></div></div>
-                    </div>
-                    <div class="charts-row">
-                        <div class="chart-card"><h3>⏰ Total Training Hours by Department</h3><div style="height:350px"><canvas id="deptHoursChart"></canvas></div></div>
-                    </div>
-
-                    <div class="data-table-card">
-                        <h3>👥 Employees Participating in On Job (${monthText} - ${quarterText} ${currentYear})</h3>
-                        <div class="filter-group" style="margin-bottom:1rem;"><label>🏢 Department:</label><select id="employeeDeptFilter" class="dept-select"><option value="all">All Departments</option>${[...new Set(employeesDetails.map(emp => emp.department))].sort().map(d => `<option value="${d}">${d}</option>`).join('')}</select></div>
-                        <div id="employeesTableContainer"></div>
-                    </div>
-
-                    <div class="data-table-card">
-                        <h3>📚 Executed On Job Trainings (${monthText} - ${quarterText} ${currentYear})</h3>
-                        ${coursesStats.length === 0 ? '<div style="text-align:center; padding:2rem;">📭 No Executed On Job Trainings</div>' : 
-                        `<div class="table-wrapper"><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#1e3a5f; color:white;"><th style="padding:12px;">#</th><th style="padding:12px;">Course Name</th><th style="padding:12px;">Sessions Count</th><th style="padding:12px;">Attendees Count (Unique)</th><th style="padding:12px;">Total Hours</th></tr></thead><tbody>${coursesStats.map((c, i) => `<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:12px; font-weight:bold;">${i+1}</td><td style="padding:12px; font-weight:500;">${c.courseName}</td><td style="padding:12px;"><span class="badge-sessions">${c.sessions}</span></td><td style="padding:12px;"><span class="badge-attendees">${c.uniqueAttendees}</span></td><td style="padding:12px;"><span class="badge-hours">${c.hours}</span></td></tr>`).join('')}</tbody></table></div>`}
-                        
-                        <div style="text-align:center; margin-top:1.5rem; display:flex; justify-content:center; flex-wrap:wrap; gap:1rem;">
-                            <button class="export-btn" id="btnExportMonthly">📤 Export Monthly Report</button>
-                            <button class="export-btn-dept" id="btnExportDepts">📥 Export Participating Departments</button>
-                        </div>
-                    </div>
+                    ${contentHTML}
                 </div>
                 <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
             `;
 
             document.getElementById('app').innerHTML = html;
-            window.renderEmployeesTable('all');
-            setTimeout(() => initCharts(deptStats, filteredSessions), 100);
+            
+            if (hasData) {
+                window.renderEmployeesTable('all');
+                setTimeout(() => initCharts(deptStats, filteredSessions), 100);
+            }
 
-            document.getElementById('yearSelect').addEventListener('change', (e) => { currentYear = parseInt(e.target.value); buildUI(); });
-            document.getElementById('monthSelect').addEventListener('change', (e) => { selectedMonth = e.target.value; buildUI(); });
-            document.getElementById('quarterSelect').addEventListener('change', (e) => { selectedQuarter = e.target.value; buildUI(); });
-            document.getElementById('employeeDeptFilter').addEventListener('change', (e) => { window.renderEmployeesTable(e.target.value); });
+            document.getElementById('yearSelect').addEventListener('change', async (e) => { 
+                currentYear = parseInt(e.target.value); 
+                await loadDataByFilters();
+                buildUI(); 
+            });
+            document.getElementById('monthSelect').addEventListener('change', async (e) => { 
+                selectedMonth = e.target.value; 
+                await loadDataByFilters();
+                buildUI(); 
+            });
+            document.getElementById('quarterSelect').addEventListener('change', async (e) => { 
+                selectedQuarter = e.target.value; 
+                await loadDataByFilters();
+                buildUI(); 
+            });
+            
+            const deptFilter = document.getElementById('employeeDeptFilter');
+            if (deptFilter) {
+                deptFilter.addEventListener('change', (e) => { window.renderEmployeesTable(e.target.value); });
+            }
+            
             document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(auth); window.location.href = 'login.html'; });
-            document.getElementById('btnExportMonthly').addEventListener('click', exportMonthlyReport);
-            document.getElementById('btnExportDepts').addEventListener('click', exportParticipatingDepartments);
+            
+            const exportBtn = document.getElementById('btnExportMonthly');
+            if (exportBtn) exportBtn.addEventListener('click', exportMonthlyReport);
+            
+            const exportDeptBtn = document.getElementById('btnExportDepts');
+            if (exportDeptBtn) exportDeptBtn.addEventListener('click', exportParticipatingDepartments);
         }
 
         window.renderEmployeesTable = (selectedDept) => {
-            const employeesDetails = window.currentEmployeesDetails;
+            const employeesDetails = window.currentEmployeesDetails || [];
             let filteredEmployees = selectedDept === 'all' ? employeesDetails : employeesDetails.filter(emp => emp.department === selectedDept);
             
             const container = document.getElementById('employeesTableContainer');
+            if (!container) return;
+            
             if (filteredEmployees.length === 0) {
                 container.innerHTML = '<div style="text-align:center; padding:2rem;">📭 No participating employees</div>';
                 return;
@@ -624,7 +800,7 @@
         };
 
         window.showEmployeeDetails = (employeeId) => {
-            const emp = window.currentEmployeesDetails.find(e => String(e.id) === String(employeeId));
+            const emp = window.currentEmployeesDetails?.find(e => String(e.id) === String(employeeId));
             if (!emp) return;
             const modal = document.createElement('div');
             modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:1000; backdrop-filter:blur(3px);`;
@@ -706,7 +882,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 selectedMonth = new Date().getMonth().toString();
-                await loadAllDataFromServer();
+                await loadDataByFilters();
                 buildUI();
             } else {
                 window.location.href = 'login.html';
