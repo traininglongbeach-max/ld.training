@@ -4,9 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -135,6 +132,30 @@
             font-weight: 600;
             color: var(--primary);
             font-size: 0.85rem;
+        }
+
+        /* كاش بادج */
+        .cache-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: #e6fffa;
+            color: #234e52;
+            border: 1px solid #b2f5ea;
+        }
+        .cache-badge.firebase {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
+        }
+        .cache-badge.cache {
+            background: #e6fffa;
+            color: #234e52;
+            border-color: #b2f5ea;
         }
 
         .btn-nav {
@@ -588,7 +609,16 @@
             font-size: 0.75rem;
             color: var(--gray);
             margin-top: 2px;
-            text-decoration: none !important; /* Ensure description is not crossed out if cancelled */
+            text-decoration: none !important;
+        }
+        .task-item .task-note {
+            font-size: 0.7rem;
+            color: var(--primary);
+            margin-top: 2px;
+            background: #EBF5FB;
+            padding: 2px 8px;
+            border-radius: 8px;
+            display: inline-block;
         }
 
         .task-item .task-people {
@@ -1120,6 +1150,9 @@
         .toast.error {
             background: var(--danger);
         }
+        .toast.info {
+            background: #3498DB;
+        }
 
         @keyframes toastIn {
             from {
@@ -1170,6 +1203,41 @@
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        /* ============================================================
+           NOTE STYLING
+        ============================================================ */
+        .task-note-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+            background: #FAFAFA;
+        }
+        .task-note-input:focus {
+            border-color: var(--primary);
+            background: white;
+        }
+        .task-note-display {
+            font-size: 0.7rem;
+            color: var(--primary);
+            background: #EBF5FB;
+            padding: 2px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: default;
+        }
+        .task-note-display i {
+            margin-left: 4px;
         }
 
         /* ============================================================
@@ -1299,9 +1367,17 @@
             onAuthStateChanged,
             signOut
         } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            getDocs
+        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+        const firestoreDb = getFirestore(getApp());
 
         // ============================================================
-        // تعطيل الكاش في هذه الصفحة
+        // تعطيل الكاش غير الضروري
         // ============================================================
         try {
             const keysToRemove = [];
@@ -1331,6 +1407,11 @@
         let showCompleted = false;
         let showCancelled = false;
         let selectedFilterPerson = '';
+        let isDataLoaded = false;
+        let isLoading = false;
+        let lastLoadSource = "memory";
+        let cacheTimestamp = null;
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 دقائق
 
         // ============================================================
         // HELPERS - تعريف الدوال قبل استخدامها
@@ -1367,7 +1448,7 @@
             toast.className = `toast ${type}`;
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast?.remove(), 3000);
+            setTimeout(() => toast?.remove(), 3500);
         }
 
         function setLoading(show) {
@@ -1386,12 +1467,10 @@
             return name.charAt(0).toUpperCase();
         }
 
-        // 🔥 التحقق من أن الشخص كان في إجازة في تاريخ محدد
         function wasPersonOnVacationOnDate(personId, date) {
             const person = people.find(p => String(p.id) === String(personId));
             if (!person || !person.vacationHistory) return false;
 
-            // التحقق من سجل الإجازات
             for (const vacation of person.vacationHistory) {
                 if (date >= vacation.startDate && date <= vacation.endDate) {
                     return true;
@@ -1400,7 +1479,6 @@
             return false;
         }
 
-        // 🔥 التحقق من أن الشخص في إجازة حالياً
         function isPersonOnVacation(personId) {
             const person = people.find(p => String(p.id) === String(personId));
             return person ? person.isOnVacation === true : false;
@@ -1411,7 +1489,6 @@
             return names[type] || type;
         }
 
-        // 🔥 تعريف الدالة قبل استخدامها
         function getRecurrenceBadge(type) {
             const classes = { daily: 'badge-daily', weekly: 'badge-weekly', monthly: 'badge-monthly', once: 'badge-once' };
             return `<span class="badge ${classes[type] || 'badge-once'}">${getRecurrenceName(type)}</span>`;
@@ -1437,26 +1514,17 @@
             return normalizeCompletedPeopleIds(record).includes(String(personId));
         }
 
-        // 🔥 حساب الأشخاص النشطين في المهمة (مع مراعاة الإجازات التاريخية)
         function getActivePeopleForTask(record) {
             const assigned = normalizePersonIds(record);
             const taskDate = record.task_date;
-
-            // استبعاد الأشخاص الذين كانوا في إجازة في هذا التاريخ
             return assigned.filter(id => !wasPersonOnVacationOnDate(id, taskDate));
         }
 
-        // 🔥 حساب ما إذا كانت المهمة مكتملة بالكامل
         function isRecordFullyCompleted(record) {
-            if (record.status === 'cancelled') return false; // المهام الملغاة لا تعتبر مكتملة هنا
-
+            if (record.status === 'cancelled') return false;
             const activePeople = getActivePeopleForTask(record);
             const completed = normalizeCompletedPeopleIds(record);
-
-            // إذا لم يكن هناك أشخاص نشطين، المهمة تعتبر مكتملة
             if (activePeople.length === 0) return true;
-
-            // جميع الأشخاص النشطين يجب أن يكونوا مكتملين
             return activePeople.every(id => completed.includes(String(id)));
         }
 
@@ -1465,10 +1533,7 @@
             const completed = normalizeCompletedPeopleIds(record);
             const taskDate = record.task_date;
 
-            // الأشخاص الذين كانوا في إجازة في هذا التاريخ
             const wasOnVacation = assigned.filter(id => wasPersonOnVacationOnDate(id, taskDate));
-
-            // الأشخاص النشطين (غير الموجودين في إجازة في هذا التاريخ)
             const active = assigned.filter(id => !wasPersonOnVacationOnDate(id, taskDate));
 
             return {
@@ -1551,7 +1616,7 @@
         }
 
         // ============================================================
-        // TOGGLE VACATION - مع حفظ التاريخ
+        // VACATION MANAGEMENT
         // ============================================================
         window.toggleVacation = async function(personId) {
             if (!isAdmin) {
@@ -1565,7 +1630,6 @@
                 return;
             }
 
-            // فتح مودال لتحديد تواريخ الإجازة
             const startDate = prompt('📅 أدخل تاريخ بداية الإجازة (YYYY-MM-DD):', getToday());
             if (!startDate) return;
 
@@ -1580,14 +1644,12 @@
             setLoading(true);
 
             try {
-                // إنشاء سجل الإجازة
                 const vacationRecord = {
                     startDate: startDate,
                     endDate: endDate,
                     createdAt: new Date().toISOString()
                 };
 
-                // تحديث بيانات الشخص
                 const updatedPerson = {
                     ...person,
                     isOnVacation: true,
@@ -1603,7 +1665,6 @@
                 }
 
                 showToast(`📅 تم تسجيل إجازة ${person.name} من ${startDate} إلى ${endDate}`, 'success');
-
                 render();
                 renderPeopleManager();
                 updatePeopleSelects();
@@ -1616,9 +1677,6 @@
             }
         };
 
-        // ============================================================
-        // إلغاء الإجازة الحالية
-        // ============================================================
         window.cancelVacation = async function(personId) {
             if (!isAdmin) {
                 showToast('❌ فقط الأدمن يمكنه تغيير حالة الإجازة', 'error');
@@ -1656,7 +1714,6 @@
                 }
 
                 showToast(`✅ تم إنهاء إجازة ${person.name} (تم الاحتفاظ بسجل الإجازات)`, 'success');
-
                 render();
                 renderPeopleManager();
                 updatePeopleSelects();
@@ -1690,118 +1747,113 @@
         }
 
         // ============================================================
-        // LOAD DATA
+        // LOAD DATA - محسّن مع كاش ذكي
         // ============================================================
-        async function loadData() {
-            await DB.init();
+        async function loadAllData(forceRefresh = false) {
+            if (isLoading) {
+                console.log('⏳ جاري التحميل بالفعل...');
+                return;
+            }
+
+            // إذا كانت البيانات محملة وليس Refresh، استخدم الكاش
+            if (isDataLoaded && !forceRefresh && cacheTimestamp) {
+                const elapsed = Date.now() - cacheTimestamp;
+                if (elapsed < CACHE_DURATION) {
+                    console.log(`📖 استخدام البيانات المخزنة في Memory Cache (${elapsed/1000}s)`);
+                    lastLoadSource = "cache";
+                    return;
+                }
+            }
+
+            if (forceRefresh) {
+                console.log('🔥 إجبار التحميل من Firestore');
+            }
+
+            isLoading = true;
+            setLoading(true);
 
             try {
-                const peopleResult = await DB.getAll('daily_task_people', { cache: false });
-                const templatesResult = await DB.getAll('daily_task_templates', { cache: false });
-                const recordsResult = await DB.getAll('daily_task_records', { cache: false });
+                console.log('🔥 جلب البيانات من Firestore...');
+
+                const [peopleResult, templatesResult, recordsResult] = await Promise.all([
+                    DB.getAll('daily_task_people', { cache: false }),
+                    DB.getAll('daily_task_templates', { cache: false }),
+                    DB.getAll('daily_task_records', { cache: false })
+                ]);
 
                 people = peopleResult || [];
                 taskTemplates = templatesResult || [];
                 taskRecords = recordsResult || [];
 
-                console.log('✅ تم تحميل البيانات:', {
-                    people: people.length,
-                    templates: taskTemplates.length,
-                    records: taskRecords.length
-                });
+                // معالجة القوالب
+                taskTemplates = taskTemplates.map(template => ({
+                    ...template,
+                    person_ids: normalizePersonIds(template)
+                }));
 
-            } catch (error) {
-                console.error('❌ فشل تحميل البيانات:', error);
-                try {
-                    people = await DB.getAll('daily_task_people') || [];
-                    taskTemplates = await DB.getAll('daily_task_templates') || [];
-                    taskRecords = await DB.getAll('daily_task_records') || [];
-                } catch (error2) {
-                    people = [];
-                    taskTemplates = [];
-                    taskRecords = [];
-                }
-            }
+                // معالجة السجلات
+                taskRecords = taskRecords.map(record => {
+                    const personIds = normalizePersonIds(record);
+                    const completedIds = normalizeCompletedPeopleIds(record);
 
-            taskTemplates = taskTemplates.map(template => ({
-                ...template,
-                person_ids: normalizePersonIds(template)
-            }));
-
-            taskRecords = taskRecords.map(record => {
-                const personIds = normalizePersonIds(record);
-                const completedIds = normalizeCompletedPeopleIds(record);
-                
-                let currentStatus = record.status;
-                // Only re-calculate status if it's not already cancelled
-                if (currentStatus !== 'cancelled') {
-                    currentStatus = isRecordFullyCompleted({ ...record, person_ids: personIds, completed_people_ids: completedIds }) ? 'completed' : 'pending';
-                }
-
-                return {
-                    ...record,
-                    person_ids: personIds,
-                    completed_people_ids: completedIds,
-                    status: currentStatus
-                };
-            });
-
-            if (people.length === 0) {
-                const defaultPeople = ['مينا', 'يوانا', 'دينا', 'محمد'];
-                for (const name of defaultPeople) {
-                    const person = {
-                        id: generateId('person'),
-                        name,
-                        active: true,
-                        isOnVacation: false,
-                        vacationHistory: [],
-                        created_at: new Date().toISOString()
-                    };
-                    await DB.insert('daily_task_people', person);
-                    people.push(person);
-                }
-            }
-
-            await generateRecordsForDate(selectedDate);
-            render();
-            updatePeopleSelects();
-        }
-
-        window.refreshData = async function() {
-            setLoading(true);
-            try {
-                people = await DB.getAll('daily_task_people', { cache: false }) || [];
-                taskTemplates = await DB.getAll('daily_task_templates', { cache: false }) || [];
-                taskRecords = await DB.getAll('daily_task_records', { cache: false }) || [];
-
-                taskTemplates = taskTemplates.map(t => ({ ...t, person_ids: normalizePersonIds(t) }));
-                taskRecords = taskRecords.map(r => {
-                    const pIds = normalizePersonIds(r);
-                    const cIds = normalizeCompletedPeopleIds(r);
-                    
-                    let currentStatus = r.status;
+                    let currentStatus = record.status;
                     if (currentStatus !== 'cancelled') {
-                        currentStatus = isRecordFullyCompleted({ ...r, person_ids: pIds, completed_people_ids: cIds }) ? 'completed' : 'pending';
+                        currentStatus = isRecordFullyCompleted({ ...record, person_ids: personIds,
+                                completed_people_ids: completedIds }) ? 'completed' : 'pending';
                     }
 
                     return {
-                        ...r,
-                        person_ids: pIds,
-                        completed_people_ids: cIds,
+                        ...record,
+                        person_ids: personIds,
+                        completed_people_ids: completedIds,
                         status: currentStatus
                     };
                 });
 
-                await generateRecordsForDate(selectedDate);
-                render();
-                updatePeopleSelects();
-                showToast('✅ تم تحديث البيانات من Firebase', 'success');
+                // إنشاء المستخدمين الافتراضيين إذا لم يوجد
+                if (people.length === 0) {
+                    const defaultPeople = ['مينا', 'يوانا', 'دينا', 'محمد'];
+                    for (const name of defaultPeople) {
+                        const person = {
+                            id: generateId('person'),
+                            name,
+                            active: true,
+                            isOnVacation: false,
+                            vacationHistory: [],
+                            created_at: new Date().toISOString()
+                        };
+                        await DB.insert('daily_task_people', person);
+                        people.push(person);
+                    }
+                }
+
+                isDataLoaded = true;
+                lastLoadSource = "firebase";
+                cacheTimestamp = Date.now();
+
+                console.log(`✅ تم تحميل: ${people.length} شخص، ${taskTemplates.length} قالب، ${taskRecords.length} سجل`);
+
             } catch (error) {
-                showToast('❌ فشل تحديث البيانات', 'error');
+                console.error('❌ فشل تحميل البيانات:', error);
+                // محاولة قراءة من الكاش الاحتياطي
+                try {
+                    const backupPeople = await DB.getAll('daily_task_people') || [];
+                    const backupTemplates = await DB.getAll('daily_task_templates') || [];
+                    const backupRecords = await DB.getAll('daily_task_records') || [];
+                    if (backupPeople.length > 0) {
+                        people = backupPeople;
+                        taskTemplates = backupTemplates;
+                        taskRecords = backupRecords;
+                        console.log('📖 تم استعادة البيانات من الكاش الاحتياطي');
+                    }
+                } catch (e) {
+                    console.error('❌ فشل استعادة الكاش الاحتياطي:', e);
+                }
             } finally {
                 setLoading(false);
+                isLoading = false;
             }
-        };
+        }
 
         async function generateRecordsForDate(date) {
             const dueTemplates = taskTemplates.filter(t =>
@@ -1811,7 +1863,6 @@
             for (const template of dueTemplates) {
                 const recordId = `daily_${template.id}_${date}`;
 
-                // التحقق من وجود السجل بالفعل
                 if (taskRecords.some(r => String(r.id) === String(recordId))) continue;
 
                 let existingRecord = null;
@@ -1827,22 +1878,20 @@
                         person_ids: normalizePersonIds(existingRecord),
                         completed_people_ids: normalizeCompletedPeopleIds(existingRecord)
                     };
-                    
                     if (normalized.status !== 'cancelled') {
-                         normalized.status = isRecordFullyCompleted(normalized) ? 'completed' : 'pending';
+                        normalized.status = isRecordFullyCompleted(normalized) ? 'completed' : 'pending';
                     }
                     taskRecords.push(normalized);
                     continue;
                 }
 
-                // 🔥 إنشاء سجل جديد مع نسخ بيانات المهمة لحظة الإنشاء
                 const personIds = normalizePersonIds(template);
                 const newRecord = {
                     id: recordId,
                     template_id: template.id,
                     task_name: template.task_name,
                     description: template.description || '',
-                    person_ids: [...personIds], // نسخ القيم لحظة الإنشاء
+                    person_ids: [...personIds],
                     person_id: personIds.length ? personIds[0] : null,
                     task_date: date,
                     recurrence: template.recurrence,
@@ -1851,8 +1900,8 @@
                     completed_at: null,
                     completed_by: null,
                     created_at: new Date().toISOString(),
-                    // 🔥 حفظ نسخة من الشخصيات في وقت الإنشاء
-                    snapshot_person_ids: [...personIds]
+                    snapshot_person_ids: [...personIds],
+                    note: '' // إضافة حقل الملاحظة
                 };
 
                 await DB.insert('daily_task_records', newRecord);
@@ -1924,7 +1973,6 @@
             if (!startDate) return showToast('❌ اختر تاريخ بداية المهمة', 'error');
             if (personIds.length === 0) return showToast('❌ اختر شخصًا واحدًا على الأقل', 'error');
 
-            // التحقق من الأشخاص في إجازة
             const vacationPeople = personIds.filter(id => isPersonOnVacation(id));
             if (vacationPeople.length > 0) {
                 const names = vacationPeople.map(id => getPersonName(id)).join(', ');
@@ -1937,7 +1985,6 @@
                 const now = new Date().toISOString();
 
                 if (!id) {
-                    // 🔥 إضافة قالب جديد
                     const template = {
                         id: generateId('template'),
                         task_name: taskName,
@@ -1957,7 +2004,6 @@
                     await generateRecordsForDate(selectedDate);
                     showToast('✅ تم إضافة المهمة', 'success');
                 } else {
-                    // 🔥 تعديل قالب - لا نعدل السجلات السابقة
                     const oldTemplate = taskTemplates.find(t => String(t.id) === String(id));
                     if (!oldTemplate) return showToast('❌ لم يتم العثور على المهمة', 'error');
 
@@ -1978,8 +2024,6 @@
                     const ti = taskTemplates.findIndex(t => String(t.id) === String(id));
                     if (ti !== -1) taskTemplates[ti] = updatedTemplate;
 
-                    // 🔥 نعدل فقط السجلات التي لم يتم إنشاؤها بعد (المستقبلية)
-                    // أما السجلات السابقة فتبقى كما هي (مع نسخة الشخصيات القديمة)
                     await generateRecordsForDate(selectedDate);
                     showToast('✅ تم تعديل المهمة (التغييرات تسري على الأيام القادمة فقط)', 'success');
                 }
@@ -1996,20 +2040,19 @@
         };
 
         // ============================================================
-        // TASK ACTIONS
+        // TASK ACTIONS مع ملاحظة
         // ============================================================
         window.togglePersonTask = async function(recordId, personId) {
             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
             if (!taskRecord) return;
 
             if (taskRecord.status === 'cancelled') {
-                 showToast('❌ المهمة ملغاة، قم بإعادتها أولاً للتعديل', 'error');
-                 return;
+                showToast('❌ المهمة ملغاة، قم بإعادتها أولاً للتعديل', 'error');
+                return;
             }
 
             const taskDate = taskRecord.task_date;
 
-            // 🔥 التحقق من أن الشخص لم يكن في إجازة في هذا التاريخ
             if (wasPersonOnVacationOnDate(personId, taskDate)) {
                 showToast('❌ هذا الشخص كان في إجازة في هذا التاريخ، لا يمكن تغيير حالته', 'error');
                 return;
@@ -2026,7 +2069,14 @@
             if (completedIds.includes(normalizedPersonId)) {
                 completedIds = completedIds.filter(id => String(id) !== normalizedPersonId);
             } else {
+                // 🔥 عند إتمام المهمة، نطلب ملاحظة
+                const note = prompt('📝 أدخل ملاحظة عن إنجاز هذه المهمة (اختياري):', '');
                 completedIds.push(normalizedPersonId);
+                
+                // حفظ الملاحظة في السجل
+                if (note !== null && note.trim() !== '') {
+                    taskRecord.note = note.trim();
+                }
             }
 
             const fullyCompleted = isRecordFullyCompleted({ ...taskRecord, completed_people_ids: completedIds });
@@ -2049,6 +2099,9 @@
                 const index = taskRecords.findIndex(r => String(r.id) === String(recordId));
                 if (index !== -1) taskRecords[index] = updatedRecord;
                 render();
+                if (fullyCompleted) {
+                    showToast('✅ تم إكمال المهمة' + (taskRecord.note ? ` 📝 ${taskRecord.note}` : ''), 'success');
+                }
             } catch (error) {
                 showToast('❌ فشل حفظ حالة التنفيذ', 'error');
             } finally {
@@ -2061,13 +2114,16 @@
             if (!taskRecord) return;
 
             if (taskRecord.status === 'cancelled') {
-                 showToast('❌ المهمة ملغاة، قم بإعادتها أولاً', 'error');
-                 return;
+                showToast('❌ المهمة ملغاة، قم بإعادتها أولاً', 'error');
+                return;
             }
 
             const activePeople = getActivePeopleForTask(taskRecord);
             if (activePeople.length === 0) return showToast('❌ لا يوجد أشخاص نشطين في هذه المهمة', 'error');
 
+            // 🔥 طلب ملاحظة عند إتمام المهمة للجميع
+            const note = prompt('📝 أدخل ملاحظة عن إنجاز هذه المهمة (اختياري):', taskRecord.note || '');
+            
             const now = new Date().toISOString();
             const updatedRecord = {
                 ...taskRecord,
@@ -2078,13 +2134,17 @@
                 updated_at: now
             };
 
+            if (note !== null && note.trim() !== '') {
+                updatedRecord.note = note.trim();
+            }
+
             setLoading(true);
 
             try {
                 await DB.update('daily_task_records', updatedRecord);
                 const index = taskRecords.findIndex(r => String(r.id) === String(recordId));
                 if (index !== -1) taskRecords[index] = updatedRecord;
-                showToast('✅ تم تنفيذ المهمة للجميع', 'success');
+                showToast('✅ تم تنفيذ المهمة للجميع' + (updatedRecord.note ? ` 📝 ${updatedRecord.note}` : ''), 'success');
                 render();
             } catch (error) {
                 showToast('❌ فشل حفظ المهمة', 'error');
@@ -2121,34 +2181,33 @@
             }
         };
 
-        // دالة إلغاء المهمة
         window.cancelTask = async function(recordId) {
-             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
-             if (!taskRecord) return;
+            const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
+            if (!taskRecord) return;
 
-             const confirmation = confirm('⚠️ هل تريد بالتأكيد إلغاء/تأجيل هذه المهمة لهذا اليوم؟');
-             if (!confirmation) return;
+            const confirmation = confirm('⚠️ هل تريد بالتأكيد إلغاء/تأجيل هذه المهمة لهذا اليوم؟');
+            if (!confirmation) return;
 
-             const updatedRecord = {
-                 ...taskRecord,
-                 status: 'cancelled',
-                 updated_at: new Date().toISOString()
-             };
+            const updatedRecord = {
+                ...taskRecord,
+                status: 'cancelled',
+                updated_at: new Date().toISOString()
+            };
 
-             setLoading(true);
+            setLoading(true);
 
-             try {
-                 await DB.update('daily_task_records', updatedRecord);
-                 const index = taskRecords.findIndex(r => String(r.id) === String(recordId));
-                 if (index !== -1) taskRecords[index] = updatedRecord;
-                 showToast('🚫 تم إلغاء المهمة بنجاح', 'success');
-                 render();
-             } catch (error) {
-                 showToast('❌ فشل إلغاء المهمة', 'error');
-             } finally {
-                 setLoading(false);
-             }
-         };
+            try {
+                await DB.update('daily_task_records', updatedRecord);
+                const index = taskRecords.findIndex(r => String(r.id) === String(recordId));
+                if (index !== -1) taskRecords[index] = updatedRecord;
+                showToast('🚫 تم إلغاء المهمة بنجاح', 'success');
+                render();
+            } catch (error) {
+                showToast('❌ فشل إلغاء المهمة', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
 
         window.deleteTask = async function(recordId) {
             if (!isAdmin) {
@@ -2215,10 +2274,12 @@
                 return showToast('❌ اختر اسمك واكتب المهمة', 'error');
             }
 
-            // 🔥 التحقق من أن الشخص لم يكن في إجازة في هذا التاريخ
             if (wasPersonOnVacationOnDate(personId, selectedDate)) {
                 return showToast(`❌ لا يمكن تسجيل مهمة في يوم كنت فيه في إجازة (${formatDate(selectedDate)})`, 'error');
             }
+
+            // 🔥 طلب ملاحظة عند تسجيل المهمة
+            const note = prompt('📝 أدخل ملاحظة عن هذه المهمة (اختياري):', '');
 
             const now = new Date().toISOString();
             const selfRecord = {
@@ -2236,7 +2297,8 @@
                 completed_by: currentUser?.uid || null,
                 created_at: now,
                 self_registered: true,
-                snapshot_person_ids: [String(personId)]
+                snapshot_person_ids: [String(personId)],
+                note: (note !== null && note.trim() !== '') ? note.trim() : ''
             };
 
             setLoading(true);
@@ -2247,7 +2309,7 @@
                 closeModal('selfTaskModal');
                 document.getElementById('selfTaskName').value = '';
                 document.getElementById('selfTaskDescription').value = '';
-                showToast('✅ تم تسجيل المهمة', 'success');
+                showToast('✅ تم تسجيل المهمة' + (selfRecord.note ? ` 📝 ${selfRecord.note}` : ''), 'success');
                 render();
             } catch (error) {
                 showToast('❌ فشل حفظ المهمة', 'error');
@@ -2467,7 +2529,7 @@
         window.toggleCancelledTasks = function() {
             showCancelled = !showCancelled;
             render();
-        }
+        };
 
         // ============================================================
         // DATE NAVIGATION
@@ -2498,7 +2560,25 @@
         };
 
         // ============================================================
-        // RENDER
+        // REFRESH DATA
+        // ============================================================
+        window.refreshData = async function() {
+            setLoading(true);
+            try {
+                await loadAllData(true);
+                await generateRecordsForDate(selectedDate);
+                render();
+                updatePeopleSelects();
+                showToast('✅ تم تحديث البيانات من Firebase', 'success');
+            } catch (error) {
+                showToast('❌ فشل تحديث البيانات', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // ============================================================
+        // RENDER ASSIGNEES
         // ============================================================
         function renderAssigneesForTask(record, filterPersonId = '') {
             const personIds = normalizePersonIds(record);
@@ -2520,15 +2600,14 @@
                 let className = 'person-tag';
                 let onClickAction = '';
 
-                // إذا المهمة ملغاة لا يمكن تغيير حالة الشخص
-                if(record.status !== 'cancelled') {
-                     onClickAction = `togglePersonTask('${escapeHtml(record.id)}', '${escapeHtml(personId)}')`;
+                if (record.status !== 'cancelled') {
+                    onClickAction = `togglePersonTask('${escapeHtml(record.id)}', '${escapeHtml(personId)}')`;
                 }
 
                 if (wasOnVacation) {
                     className += ' was-on-vacation';
                     statusText = '📅 إجازة';
-                    onClickAction = ''; // لا يمكن النقر
+                    onClickAction = '';
                 } else if (isCurrentlyOnVacation) {
                     className += ' on-vacation';
                     statusText = '📅 إجازة حالياً';
@@ -2547,15 +2626,14 @@
                 }
 
                 let title = '';
-                if(record.status === 'cancelled'){
-                     title = 'المهمة ملغاة';
+                if (record.status === 'cancelled') {
+                    title = 'المهمة ملغاة';
                 } else {
-                     title = wasOnVacation ? 'كان في إجازة في هذا التاريخ' :
-                    isCurrentlyOnVacation ? 'في إجازة حالياً - لا يمكن التغيير' :
-                    completed ? '✅ تم - اضغط للإلغاء' :
-                    '⏳ لم يتم - اضغط للتنفيذ';
+                    title = wasOnVacation ? 'كان في إجازة في هذا التاريخ' :
+                        isCurrentlyOnVacation ? 'في إجازة حالياً - لا يمكن التغيير' :
+                        completed ? '✅ تم - اضغط للإلغاء' :
+                        '⏳ لم يتم - اضغط للتنفيذ';
                 }
-
 
                 return `
                     <span class="${className}" 
@@ -2569,6 +2647,9 @@
             }).join('');
         }
 
+        // ============================================================
+        // RENDER
+        // ============================================================
         window.render = function() {
             const content = document.getElementById('content');
             if (!content) return;
@@ -2581,12 +2662,11 @@
             const completedRecords = filteredRecords.filter(r => r.status === 'completed');
             const cancelledRecords = filteredRecords.filter(r => r.status === 'cancelled');
 
-            // Total valid tasks for stats (excluding cancelled)
             const totalValid = pendingRecords.length + completedRecords.length;
             const completed = completedRecords.length;
             const pending = pendingRecords.length;
             const cancelled = cancelledRecords.length;
-            const total = filteredRecords.length; // Total including cancelled
+            const total = filteredRecords.length;
 
             const today = getToday();
             const overdue = selectedDate < today ? pending : 0;
@@ -2594,13 +2674,11 @@
             const vacationPeople = people.filter(p => isPersonOnVacation(p.id));
             const filterPersonName = selectedFilterPerson ? getPersonName(selectedFilterPerson) : '';
 
-            // إحصائيات الأشخاص (استثناء المهام الملغاة)
             const peopleStats = activePeople.map(person => {
                 let totalAssigned = 0;
                 let completedTasks = 0;
 
                 filteredRecords.forEach(record => {
-                    // لا نحسب المهام الملغاة في أداء الأشخاص
                     if (record.status === 'cancelled') return;
 
                     const personIds = normalizePersonIds(record);
@@ -2623,17 +2701,24 @@
 
             const completionPercentage = totalValid ? Math.round(completed / totalValid * 100) : 0;
 
-            // خيارات الفلتر
             const filterOptions = people
                 .filter(p => p.active !== false)
                 .map(p => `
                     <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} ${isPersonOnVacation(p.id) ? '(إجازة)' : ''}</option>
                 `).join('');
 
+            // رسالة الكاش
+            const sourceBadge = lastLoadSource === 'firebase'
+                ? `<span class="cache-badge firebase">🔥 من Firestore</span>`
+                : `<span class="cache-badge cache">⚡ من الذاكرة المؤقتة</span>`;
+
             content.innerHTML = `
                 <!-- SECTION HEADER -->
                 <div class="section-header">
-
+                    <div class="title-area">
+                        <h2><i class="fas fa-clipboard-list"></i> تقرير المهام اليومية</h2>
+                        <p>${formatDate(selectedDate)} ${sourceBadge}</p>
+                    </div>
                     <div class="actions">
                         ${isAdmin ? `
                             <button class="btn btn-primary" onclick="openTaskModal()">
@@ -2844,6 +2929,7 @@
                                         <div>
                                             ${escapeHtml(taskRecord.task_name)}
                                             ${taskRecord.description ? `<div class="task-desc">📝 ${escapeHtml(taskRecord.description)}</div>` : ''}
+                                            ${taskRecord.note ? `<div class="task-note"><i class="fas fa-pencil-alt"></i> ${escapeHtml(taskRecord.note)}</div>` : ''}
                                             ${status.wasOnVacation > 0 ? `<div class="task-desc" style="color:var(--danger);">📅 ${status.wasOnVacation} شخص كان في إجازة في هذا اليوم</div>` : ''}
                                             ${isFiltered ? `<div class="task-desc" style="color:var(--primary);">🎯 ${filterPersonName}</div>` : ''}
                                         </div>
@@ -2927,6 +3013,7 @@
                                             <div>
                                                 ${escapeHtml(taskRecord.task_name)}
                                                 ${taskRecord.description ? `<div class="task-desc">📝 ${escapeHtml(taskRecord.description)}</div>` : ''}
+                                                ${taskRecord.note ? `<div class="task-note"><i class="fas fa-pencil-alt"></i> ${escapeHtml(taskRecord.note)}</div>` : ''}
                                                 ${isFiltered ? `<div class="task-desc" style="color:var(--primary);">🎯 ${filterPersonName}</div>` : ''}
                                             </div>
                                         </div>
@@ -3211,7 +3298,10 @@
                 const startDateInput = document.getElementById('taskStartDate');
                 if (startDateInput) startDateInput.value = selectedDate;
 
-                await loadData();
+                await loadAllData(false);
+                await generateRecordsForDate(selectedDate);
+                render();
+                updatePeopleSelects();
 
             } catch (error) {
                 console.error(error);
