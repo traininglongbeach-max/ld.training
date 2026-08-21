@@ -8,7 +8,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -57,16 +56,36 @@
         .filter-select { padding: 0.5rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; font-size: clamp(0.85rem, 1.2vw, 1rem); background: white; cursor: pointer; min-width: 120px; outline: none; transition: 0.3s; flex: 1 1 auto; max-width: 200px; }
         .filter-select:focus { border-color: #2b7a4b; box-shadow: 0 0 0 3px rgba(43,122,75,0.1); }
 
+        .cache-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.75rem; font-weight: bold; background: #e6fffa; color: #234e52; border: 1px solid #b2f5ea; }
+        .cache-badge.loading { background: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; }
+        .cache-badge.firebase { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+        .cache-badge.cache { background: #e6fffa; color: #234e52; border-color: #b2f5ea; }
+
+        /* حالة عدم وجود بيانات */
+        .no-data-message {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            border: 2px dashed #cbd5e1;
+        }
+        .no-data-message h3 {
+            color: #475569;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .no-data-message p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
         .charts-container { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem; }
         .chart-card { background: white; border-radius: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-top: 20px; }
         .chart-card h3 { color: #1e3a5f; margin-bottom: 1rem; border-left: 4px solid #2b7a4b; padding-left: 1rem; font-weight: 700; transition: font-size 0.3s ease; }
         
-        /* ----------------------------------------------------------------- */
-        /* الحل الجذري النهائي لظهور الشارت على الموبايل بدون اختفاء */
         .chart-wrapper { position: relative; width: 100%; height: 400px; display: block; }
         @media (max-width: 768px) { .chart-wrapper { height: 450px; } }
         @media (max-width: 576px) { .chart-wrapper { height: 500px; } }
-        /* ----------------------------------------------------------------- */
 
         .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 450px), 1fr)); gap: 2rem; margin-bottom: 2rem; }
 
@@ -103,24 +122,49 @@
         .top-value.hours { color: #10b981; }
         .top-label { font-size: clamp(0.65rem, 0.8vw, 0.7rem); color: #718096; }
 
-        .refresh-notice {
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 0.8rem 1.5rem;
-            border-radius: 1rem;
-            text-align: center;
-            margin-bottom: 1rem;
-            font-weight: 500;
+        .toast-msg { position: fixed; bottom: 2rem; right: 2rem; background: #2b7a4b; color: white; padding: 0.8rem 1.5rem; border-radius: 2rem; z-index: 3000; animation: slideIn 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .toast-msg.error { background: #e53e3e; }
+        .toast-msg.info { background: #3b82f6; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* شاشة التحميل */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
             display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
         }
-        .refresh-notice.show { display: block; }
+        .loading-overlay.show {
+            display: flex;
+        }
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e2e8f0;
+            border-top: 6px solid #2b7a4b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        .loading-text {
+            font-size: 1.2rem;
+            color: #1e3a5f;
+            font-weight: 500;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
 
-        /* ================= Responsive Media Queries ================= */
-        @media (max-width: 1600px) { .container { max-width: 95%; } }
-        @media (max-width: 1400px) { .container { max-width: 1140px; } }
-        @media (max-width: 1200px) { .container { max-width: 960px; } }
         @media (max-width: 992px) {
             .container { max-width: 720px; }
             .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
@@ -144,46 +188,77 @@
             .charts-row { gap: 1rem; }
             .charts-container { gap: 1rem; }
         }
-        @media (max-width: 425px) {
-            .nav-links a, .nav-links button { width: 100%; text-align: center; }
-            .top-item { flex-wrap: wrap; justify-content: center; text-align: center; }
-            .top-stats { text-align: center; width: 100%; }
-            .top-meta { justify-content: center; }
-        }
-        @media (max-width: 320px) {
-            .navbar .logo h2 { font-size: 1.2rem; }
-            .top-rank { width: 35px; height: 35px; font-size: 0.9rem; }
-        }
     </style>
 </head>
 <body>
+    <!-- شاشة التحميل -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text">⏳ جاري تحميل البيانات من السيرفر...</div>
+    </div>
+
     <div id="app">
         <div style="text-align:center; padding:100px 20px; font-size:1.5rem; color:#1e3a5f;">
-            جاري تحميل البيانات من السيرفر وتحليل الأداء... ⏳
+            جاري تحميل البيانات ... ⏳
         </div>
     </div>
 
     <script type="module">
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            query, 
+            where, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+        const firestoreDb = getFirestore(getApp());
 
         let chartInstances = [];
 
-        let offJobData = { courses: [], sessions: [], enrollments: [] };
-        let onJobData = { courses: [], sessions: [], enrollments: [] };
+        // ⭐ تغيير: بيانات منفصلة لكل نوع تدريب
+        let trainingData = {
+            offjob: {
+                courses: [],
+                sessions: [],
+                enrollments: []
+            },
+            onjob: {
+                courses: [],
+                sessions: [],
+                enrollments: []
+            }
+        };
+
         let allEmployees = [];
         let activeEmployees = [];
-        let availableYears = [new Date().getFullYear()];
-        let isDataLoaded = false;
+        let availableYears = [];
         let isRefreshing = false;
+        let lastLoadSource = "memory";
 
+        // الفلاتر
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let currentQuarter = -1;
-        let currentType = "offjob";        
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let currentType = "offjob"; // offjob, onjob, all
+        
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
         const quarterNames = ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
-        const quarterMonths = [[0,1,2], [3,4,5], [6,7,8], [9,10,11]];
+        const quarterMonths = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [9, 10, 11]
+        ];
+
+        const START_YEAR = 2025;
+        const END_YEAR = 2028;
 
         const EXCLUDED_COURSES = ['new hire induction', 'تعريف الموظفين الجدد', 'الهاسب'];
         function isExcludedCourse(courseName) {
@@ -191,7 +266,93 @@
             return EXCLUDED_COURSES.some(ex => courseName.toString().toLowerCase().includes(ex.toLowerCase()));
         }
 
+        // ================= نظام التخزين المحلي عبر IndexedDB =================
+        const IDB_CONFIG = {
+            name: 'LDMS_Performance_IndexedDB_Final_V2',
+            version: 2,
+            store: 'perf_cache'
+        };
+        const CACHE_TTL = 72 * 60 * 60 * 1000;
+
+        const memoryCache = {
+            employees: null,
+            courses: null,
+            // ⭐ تغيير: تخزين منفصل لكل نوع تدريب
+            months: {
+                offjob: new Map(),
+                onjob: new Map()
+            }
+        };
+
+        function openCacheDB() {
+            return new Promise((resolve) => {
+                if (!window.indexedDB) { resolve(null); return; }
+                const request = window.indexedDB.open(IDB_CONFIG.name, IDB_CONFIG.version);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_CONFIG.store)) {
+                        db.createObjectStore(IDB_CONFIG.store, { keyPath: 'key' });
+                    }
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function getFromIDB(key) {
+            try {
+                const db = await openCacheDB();
+                if (!db) return null;
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_CONFIG.store, 'readonly');
+                    const store = tx.objectStore(IDB_CONFIG.store);
+                    const req = store.get(key);
+                    req.onsuccess = () => {
+                        const res = req.result;
+                        if (!res) { resolve(null); return; }
+                        if (res.timestamp && (Date.now() - res.timestamp > CACHE_TTL)) {
+                            resolve(null);
+                        } else {
+                            resolve(res.data);
+                        }
+                    };
+                    req.onerror = () => resolve(null);
+                });
+            } catch(e) {
+                return null;
+            }
+        }
+
+        async function saveToIDB(key, data) {
+            try {
+                const db = await openCacheDB();
+                if (!db) return;
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_CONFIG.store, 'readwrite');
+                    const store = tx.objectStore(IDB_CONFIG.store);
+                    store.put({ key: key, data: data, timestamp: Date.now() });
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => resolve(false);
+                });
+            } catch(e) {}
+        }
+
+        async function clearAllIDB() {
+            try {
+                const db = await openCacheDB();
+                if (db) {
+                    const tx = db.transaction(IDB_CONFIG.store, 'readwrite');
+                    tx.objectStore(IDB_CONFIG.store).clear();
+                }
+            } catch(e) {}
+            memoryCache.employees = null;
+            memoryCache.courses = null;
+            memoryCache.months.offjob.clear();
+            memoryCache.months.onjob.clear();
+        }
+
         function normalizeItem(obj) {
+            if (!obj) return {};
             const normalized = { ...obj };
             const lowerKeys = {};
             for (let k in obj) {
@@ -201,7 +362,7 @@
             }
             normalized.course_code = normalized.course_code || lowerKeys['coursecode'];
             normalized.course_name = normalized.course_name || lowerKeys['coursename'];
-            normalized.session_code = normalized.session_code || lowerKeys['sessioncode'];
+            normalized.session_code = normalized.session_code || lowerKeys['sessioncode'] || lowerKeys['sessionid'] || lowerKeys['code'];
             normalized.session_date = normalized.session_date || lowerKeys['sessiondate'] || lowerKeys['date'];
             normalized.start_time = normalized.start_time || lowerKeys['starttime'];
             normalized.end_time = normalized.end_time || lowerKeys['endtime'];
@@ -221,81 +382,311 @@
             return new Date(val);
         }
 
-        async function loadAllData(forceRefresh = false) {
-            if (isDataLoaded && !forceRefresh) {
-                console.log('📖 استخدام البيانات المحملة مسبقاً (Memory Cache)');
-                return;
-            }
-            
-            try {
-                console.log('🔥 تحميل البيانات من Firestore' + (forceRefresh ? ' (تحديث إجباري)' : ' (المرة الأولى)'));
-                
-                if (forceRefresh) {
-                    const notice = document.getElementById('refreshNotice');
-                    if (notice) {
-                        notice.textContent = '🔄 جاري تحديث البيانات من السيرفر...';
-                        notice.classList.add('show');
-                    }
+        // ================= تحميل الموظفين والكورسات =================
+        async function loadEmployeesAndCourses(forceRefresh = false) {
+            if (!forceRefresh && memoryCache.employees) {
+                allEmployees = memoryCache.employees;
+            } else {
+                const cachedEmp = !forceRefresh ? await getFromIDB('employees') : null;
+                if (cachedEmp && cachedEmp.length > 0) {
+                    allEmployees = cachedEmp;
+                    memoryCache.employees = cachedEmp;
+                } else {
+                    allEmployees = await DB.getAll('employees') || [];
+                    await saveToIDB('employees', allEmployees);
+                    memoryCache.employees = allEmployees;
                 }
-                
-                const [employeesData, offCourses, offSessions, offEnrollments, onCourses, onSessions, onEnrollments] = await Promise.all([
-                    DB.getAll('employees'),
-                    DB.getAll('offjob_courses'),
-                    DB.getAll('offjob_sessions'),
-                    DB.getAll('offjob_enrollments'),
-                    DB.getAll('onjob_courses'),
-                    DB.getAll('onjob_sessions'),
-                    DB.getAll('onjob_enrollments')
-                ]);
-                
-                allEmployees = employeesData || [];
-                activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
-                
-                offJobData.courses = (offCourses || []).map(normalizeItem);
-                offJobData.sessions = (offSessions || []).map(normalizeItem);
-                offJobData.enrollments = (offEnrollments || []).map(normalizeItem);
-                
-                onJobData.courses = (onCourses || []).map(normalizeItem);
-                onJobData.sessions = (onSessions || []).map(normalizeItem);
-                onJobData.enrollments = (onEnrollments || []).map(normalizeItem);
+            }
+            activeEmployees = allEmployees.filter(emp => emp.status !== 'Left');
 
-                const yearsSet = new Set();
-                [...offJobData.sessions, ...onJobData.sessions].forEach(s => {
-                    const d = parseExcelDate(s.session_date);
-                    if (d && !isNaN(d.getTime())) yearsSet.add(d.getFullYear());
+            // ⭐ تغيير: تحميل الكورسات لكل نوع بشكل منفصل
+            if (!forceRefresh && memoryCache.courses) {
+                trainingData.offjob.courses = memoryCache.courses.offCourses || [];
+                trainingData.onjob.courses = memoryCache.courses.onCourses || [];
+            } else {
+                const cachedCourses = !forceRefresh ? await getFromIDB('courses') : null;
+                if (cachedCourses) {
+                    trainingData.offjob.courses = cachedCourses.offCourses || [];
+                    trainingData.onjob.courses = cachedCourses.onCourses || [];
+                    memoryCache.courses = cachedCourses;
+                } else {
+                    const [offC, onC] = await Promise.all([
+                        DB.getAll('offjob_courses'),
+                        DB.getAll('onjob_courses')
+                    ]);
+                    const offNorm = (offC || []).map(normalizeItem);
+                    const onNorm = (onC || []).map(normalizeItem);
+                    trainingData.offjob.courses = offNorm;
+                    trainingData.onjob.courses = onNorm;
+                    const cData = { offCourses: offNorm, onCourses: onNorm };
+                    await saveToIDB('courses', cData);
+                    memoryCache.courses = cData;
+                }
+            }
+        }
+
+        // ================= استعلام الجلسات لشهر محدد =================
+        async function fetchSessionsDirectFromFirestore(collectionName, year, month) {
+            try {
+                const colRef = collection(firestoreDb, collectionName);
+                const snap = await getDocs(colRef);
+
+                console.log(`📦 [${collectionName}] Total Documents: ${snap.size}`);
+
+                const results = [];
+
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+
+                    const rawDate = data.session_date;
+
+                    let sessionDate = null;
+
+                    if (typeof rawDate === 'number') {
+                        sessionDate = new Date(
+                            Date.UTC(1899, 11, 30) + rawDate * 86400000
+                        );
+                    }
+                    else if (rawDate && typeof rawDate.toDate === 'function') {
+                        sessionDate = rawDate.toDate();
+                    }
+                    else if (rawDate instanceof Date) {
+                        sessionDate = rawDate;
+                    }
+                    else if (typeof rawDate === 'string') {
+                        const parsed = new Date(rawDate);
+                        if (!isNaN(parsed.getTime())) {
+                            sessionDate = parsed;
+                        }
+                    }
+
+                    if (!sessionDate || isNaN(sessionDate.getTime())) {
+                        console.warn(
+                            `⚠️ [${collectionName}] Invalid session_date:`,
+                            rawDate,
+                            data
+                        );
+                        return;
+                    }
+
+                    const sessionYear = sessionDate.getUTCFullYear();
+                    const sessionMonth = sessionDate.getUTCMonth();
+
+                    if (
+                        sessionYear === year &&
+                        sessionMonth === month
+                    ) {
+                        results.push({
+                            id: docSnap.id,
+                            ...data,
+                            session_date_parsed: sessionDate
+                        });
+                    }
                 });
 
-                if (yearsSet.size > 0) {
-                    availableYears = Array.from(yearsSet).sort((a,b) => b - a);
-                    if (!availableYears.includes(currentYear)) {
-                        currentYear = availableYears[0];
-                    }
-                }
-                
-                isDataLoaded = true;
-                
-                if (forceRefresh) {
-                    const notice = document.getElementById('refreshNotice');
-                    if (notice) {
-                        notice.textContent = '✅ تم تحديث البيانات بنجاح!';
-                        setTimeout(() => {
-                            notice.classList.remove('show');
-                        }, 3000);
-                    }
-                }
+                console.log(
+                    `✅ [${collectionName}] Loaded ${results.length} sessions for ${month + 1}/${year}`
+                );
+
+                return results.map(normalizeItem);
+
             } catch (error) {
-                console.error('❌ Failed to fetch data from Firestore:', error);
-                if (forceRefresh) {
-                    const notice = document.getElementById('refreshNotice');
-                    if (notice) {
-                        notice.textContent = '❌ فشل تحديث البيانات. يرجى المحاولة مرة أخرى.';
-                        notice.classList.add('show');
-                        setTimeout(() => {
-                            notice.classList.remove('show');
-                        }, 4000);
-                    }
+                console.error(
+                    `❌ [${collectionName}] Failed to load sessions:`,
+                    error
+                );
+
+                return [];
+            }
+        }
+
+        // ================= استعلام التسجيلات الخاصة بجلسات الشهر فقط =================
+        async function fetchEnrollmentsDirectFromFirestore(collectionName, sessions, year, month) {
+            if (!sessions || sessions.length === 0) return [];
+
+            const colRef = collection(firestoreDb, collectionName);
+            const results = [];
+
+            const codesSet = new Set();
+            sessions.forEach(s => {
+                const code = s.session_code;
+                if (code !== undefined && code !== null && code !== '') {
+                    codesSet.add(code.toString().trim());
+                    const num = Number(code);
+                    if (!isNaN(num)) codesSet.add(num);
                 }
-                throw error;
+            });
+            const allCodes = Array.from(codesSet);
+            if (allCodes.length === 0) return [];
+
+            console.log(`🔍 [Firestore Query] جلب تسجيلات ${collectionName} لـ ${sessions.length} جلسة...`);
+
+            const fieldVariations = [
+                'session_code', 'Session_Code', 'Session Code', 
+                'sessionCode', 'SessionCode', 'session_id', 
+                'Session_ID', 'Session ID', 'code', 'Code'
+            ];
+
+            let workingField = null;
+            const testSample = allCodes.slice(0, 10);
+
+            for (const field of fieldVariations) {
+                try {
+                    const testQ = query(colRef, where(field, 'in', testSample));
+                    const testSnap = await getDocs(testQ);
+                    if (!testSnap.empty) {
+                        workingField = field;
+                        console.log(`🎯 [${collectionName}] الحقل المستخدم للربط في فايربيز: "${workingField}"`);
+                        testSnap.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+                        break;
+                    }
+                } catch (e) {}
+            }
+
+            if (workingField) {
+                const remainingCodes = allCodes.slice(10);
+                const chunkSize = 30;
+                const promises = [];
+
+                for (let i = 0; i < remainingCodes.length; i += chunkSize) {
+                    const chunk = remainingCodes.slice(i, i + chunkSize);
+                    const q = query(colRef, where(workingField, 'in', chunk));
+                    promises.push(getDocs(q));
+                }
+
+                if (promises.length > 0) {
+                    const snaps = await Promise.all(promises);
+                    snaps.forEach(snap => {
+                        snap.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+                    });
+                }
+
+                const uniqueMap = new Map();
+                results.forEach(r => uniqueMap.set(r.id, r));
+                const finalResults = Array.from(uniqueMap.values()).map(normalizeItem);
+                console.log(`✅ [${collectionName}] تم قراءة ${finalResults.length} تسجيل بنجاح!`);
+                return finalResults;
+            }
+
+            const mNum = month + 1;
+            const mPad = String(mNum).padStart(2, '0');
+            const lastDay = new Date(year, mNum, 0).getDate();
+            const startStr = `${year}-${mPad}-01`;
+            const endStr = `${year}-${mPad}-${String(lastDay).padStart(2, '0')}`;
+
+            for (const dateField of ['session_date', 'date', 'Date', 'Session_Date', 'Session Date']) {
+                try {
+                    const dateQ = query(colRef, where(dateField, '>=', startStr), where(dateField, '<=', endStr));
+                    const dateSnap = await getDocs(dateQ);
+                    if (!dateSnap.empty) {
+                        dateSnap.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+                        const finalRes = results.map(normalizeItem);
+                        console.log(`✅ [${collectionName}] تم قراءة ${finalRes.length} تسجيل بحقل التاريخ!`);
+                        return finalRes;
+                    }
+                } catch(e) {}
+            }
+
+            console.warn(`⚠️ [${collectionName}] لم يتم العثور على تسجيلات مطابقة.`);
+            return [];
+        }
+
+        // ⭐ تغيير: جلب شهر واحد لنوع تدريب محدد
+        async function fetchSingleMonthForType(type, year, month) {
+            const isOffjob = type === 'offjob';
+            const sessionCollection = isOffjob ? 'offjob_sessions' : 'onjob_sessions';
+            const enrollmentCollection = isOffjob ? 'offjob_enrollments' : 'onjob_enrollments';
+
+            const sessions = await fetchSessionsDirectFromFirestore(sessionCollection, year, month);
+            const enrollments = await fetchEnrollmentsDirectFromFirestore(enrollmentCollection, sessions, year, month);
+
+            const monthData = {
+                sessions: sessions,
+                enrollments: enrollments
+            };
+
+            const key = `${type}_${year}_${month}`;
+            await saveToIDB(`month_${key}`, monthData);
+            memoryCache.months[type].set(`${year}_${month}`, monthData);
+
+            return monthData;
+        }
+
+        // ⭐ تغيير: تحميل شهر واحد مع دعم النوع
+        async function ensureMonthLoadedForType(type, year, month, forceRefresh = false) {
+            const key = `${year}_${month}`;
+            
+            if (!forceRefresh && memoryCache.months[type].has(key)) {
+                lastLoadSource = "memory";
+                return memoryCache.months[type].get(key);
+            }
+
+            if (!forceRefresh) {
+                const cachedMonth = await getFromIDB(`month_${type}_${key}`);
+                if (cachedMonth) {
+                    memoryCache.months[type].set(key, cachedMonth);
+                    lastLoadSource = "cache";
+                    return cachedMonth;
+                }
+            }
+
+            lastLoadSource = "firebase";
+            return await fetchSingleMonthForType(type, year, month);
+        }
+
+        // ⭐ تغيير: مزامنة البيانات بناءً على النوع المطلوب
+        function syncTrainingDataForType(type) {
+            const data = trainingData[type];
+            data.sessions = [];
+            data.enrollments = [];
+
+            memoryCache.months[type].forEach((mObj) => {
+                data.sessions.push(...(mObj.sessions || []));
+                data.enrollments.push(...(mObj.enrollments || []));
+            });
+        }
+
+        // ⭐ تغيير: تحميل البيانات للنوع المطلوب فقط
+        async function loadDataForCurrentSelection(forceRefresh = false) {
+            showLoading(true, '⏳ جاري تحميل البيانات من السيرفر...');
+            
+            try {
+                await loadEmployeesAndCourses(forceRefresh);
+
+                // تحديد الأنواع المطلوبة
+                const typesToLoad = currentType === 'all' ? ['offjob', 'onjob'] : [currentType];
+
+                for (const type of typesToLoad) {
+                    if (currentMonth !== -1) {
+                        await ensureMonthLoadedForType(type, currentYear, currentMonth, forceRefresh);
+                    } else if (currentQuarter !== -1) {
+                        const qMonths = quarterMonths[currentQuarter];
+                        for (let m of qMonths) {
+                            await ensureMonthLoadedForType(type, currentYear, m, forceRefresh);
+                        }
+                    } else {
+                        for (let m = 0; m < 12; m++) {
+                            await ensureMonthLoadedForType(type, currentYear, m, forceRefresh);
+                        }
+                    }
+                    
+                    // مزامنة البيانات لهذا النوع
+                    syncTrainingDataForType(type);
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(show = true, text = '⏳ جاري تحميل البيانات من السيرفر...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                if (show) {
+                    overlay.querySelector('.loading-text').textContent = text;
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
             }
         }
 
@@ -306,6 +697,7 @@
             return searchIn.find(e => e.id?.toString().trim() === idStr) || null;
         }
 
+        // ⭐ تغيير: فلترة حسب التاريخ مع دعم النوع
         function filterByDate(items, dateField) {
             return items.filter(item => {
                 const d = parseExcelDate(item[dateField]);
@@ -317,21 +709,32 @@
             });
         }
 
+        // ⭐ تغيير: الحصول على البيانات النشطة حسب النوع المحدد
         function getActiveDataWithTypes() {
             let result = { courses: [], sessions: [], enrollments: [] };
             
             if (currentType === 'offjob') {
-                result.courses = offJobData.courses.map(c => ({ ...c, trainingType: 'offjob' }));
-                result.sessions = offJobData.sessions.map(s => ({ ...s, trainingType: 'offjob' }));
-                result.enrollments = offJobData.enrollments.map(e => ({ ...e, trainingType: 'offjob' }));
+                result.courses = trainingData.offjob.courses.map(c => ({ ...c, trainingType: 'offjob' }));
+                result.sessions = trainingData.offjob.sessions.map(s => ({ ...s, trainingType: 'offjob' }));
+                result.enrollments = trainingData.offjob.enrollments.map(e => ({ ...e, trainingType: 'offjob' }));
             } else if (currentType === 'onjob') {
-                result.courses = onJobData.courses.map(c => ({ ...c, trainingType: 'onjob' }));
-                result.sessions = onJobData.sessions.map(s => ({ ...s, trainingType: 'onjob' }));
-                result.enrollments = onJobData.enrollments.map(e => ({ ...e, trainingType: 'onjob' }));
+                result.courses = trainingData.onjob.courses.map(c => ({ ...c, trainingType: 'onjob' }));
+                result.sessions = trainingData.onjob.sessions.map(s => ({ ...s, trainingType: 'onjob' }));
+                result.enrollments = trainingData.onjob.enrollments.map(e => ({ ...e, trainingType: 'onjob' }));
             } else {
-                result.courses = [...offJobData.courses.map(c => ({ ...c, trainingType: 'offjob' })), ...onJobData.courses.map(c => ({ ...c, trainingType: 'onjob' }))];
-                result.sessions = [...offJobData.sessions.map(s => ({ ...s, trainingType: 'offjob' })), ...onJobData.sessions.map(s => ({ ...s, trainingType: 'onjob' }))];
-                result.enrollments = [...offJobData.enrollments.map(e => ({ ...e, trainingType: 'offjob' })), ...onJobData.enrollments.map(e => ({ ...e, trainingType: 'onjob' }))];
+                // All types
+                result.courses = [
+                    ...trainingData.offjob.courses.map(c => ({ ...c, trainingType: 'offjob' })),
+                    ...trainingData.onjob.courses.map(c => ({ ...c, trainingType: 'onjob' }))
+                ];
+                result.sessions = [
+                    ...trainingData.offjob.sessions.map(s => ({ ...s, trainingType: 'offjob' })),
+                    ...trainingData.onjob.sessions.map(s => ({ ...s, trainingType: 'onjob' }))
+                ];
+                result.enrollments = [
+                    ...trainingData.offjob.enrollments.map(e => ({ ...e, trainingType: 'offjob' })),
+                    ...trainingData.onjob.enrollments.map(e => ({ ...e, trainingType: 'onjob' }))
+                ];
             }
             return result;
         }
@@ -352,10 +755,10 @@
             if (!startTime || !endTime) return 0;
             const startParts = startTime.toString().split(':');
             const endParts = endTime.toString().split(':');
-            let startHour = parseInt(startParts[0]);
-            let startMinute = parseInt(startParts[1]) || 0;
-            let endHour = parseInt(endParts[0]);
-            let endMinute = parseInt(endParts[1]) || 0;
+            let startHour = parseInt(startParts[0], 10);
+            let startMinute = parseInt(startParts[1], 10) || 0;
+            let endHour = parseInt(endParts[0], 10);
+            let endMinute = parseInt(endParts[1], 10) || 0;
             let diffHours = endHour - startHour;
             let diffMinutes = endMinute - startMinute;
             if (diffHours < 0) diffHours = 24 + diffHours;
@@ -375,10 +778,20 @@
             });
         }
 
+        // ⭐ تغيير: التحقق من وجود بيانات
+        function hasDataForCurrentSelection() {
+            const data = getActiveDataWithTypes();
+            return data.sessions.length > 0 || data.enrollments.length > 0 || data.courses.length > 0;
+        }
+
         function calculateDepartmentStats() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
             
+            if (filteredSessions.length === 0) {
+                return { type: 'empty', data: [] };
+            }
+
             if (currentType !== 'all') {
                 const deptMap = new Map();
                 filteredSessions.forEach(session => {
@@ -552,8 +965,10 @@
             const filteredSessions = filterByDate(data.sessions, 'session_date');
             
             const quarters = [
-                { name: 'Q1 (Jan-Mar)', months: [0,1,2] }, { name: 'Q2 (Apr-Jun)', months: [3,4,5] },
-                { name: 'Q3 (Jul-Sep)', months: [6,7,8] }, { name: 'Q4 (Oct-Dec)', months: [9,10,11] }
+                { name: 'Q1 (Jan-Mar)', months: [0, 1, 2] },
+                { name: 'Q2 (Apr-Jun)', months: [3, 4, 5] },
+                { name: 'Q3 (Jul-Sep)', months: [6, 7, 8] },
+                { name: 'Q4 (Oct-Dec)', months: [9, 10, 11] }
             ];
             
             return quarters.map(q => {
@@ -589,7 +1004,10 @@
         function calculateSemiAnnualStats() {
             const data = getActiveDataWithTypes();
             const filteredSessions = filterByDate(data.sessions, 'session_date');
-            const halves = [ { name: 'H1 (Jan-Jun)', months: [0,1,2,3,4,5] }, { name: 'H2 (Jul-Dec)', months: [6,7,8,9,10,11] } ];
+            const halves = [
+                { name: 'H1 (Jan-Jun)', months: [0, 1, 2, 3, 4, 5] },
+                { name: 'H2 (Jul-Dec)', months: [6, 7, 8, 9, 10, 11] }
+            ];
             
             return halves.map(h => {
                 const offJob = { employees: new Set(), sessions: 0, hours: 0 };
@@ -622,7 +1040,7 @@
         }
 
         function runDiagnostic() {
-            const allEnrollments = [...offJobData.enrollments, ...onJobData.enrollments];
+            const allEnrollments = [...trainingData.offjob.enrollments, ...trainingData.onjob.enrollments];
             const trainingIds = [...new Set(allEnrollments.map(e => e.employee_id?.toString().trim()))].filter(Boolean);
             const leftIds = trainingIds.filter(id => { const emp = findEmployee(id, false); return emp && emp.status === 'Left'; });
             const notFoundIds = trainingIds.filter(id => !findEmployee(id, false));
@@ -678,7 +1096,7 @@
             const getRankClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze';
             const emoji = ['🥇', '🥈', '🥉'];
             const renderList = (items) => {
-                if (items.length === 0) return '<div style="text-align:center; padding:2rem;">No top performers found</div>';
+                if (items.length === 0) return '<div style="text-align:center; padding:2rem; color:#718096;">No top performers found for this period</div>';
                 return items.map((emp, i) => `
                     <div class="top-item color-${i}">
                         <div class="top-rank ${getRankClass(i)}">${emoji[i]}</div>
@@ -690,11 +1108,10 @@
             return `<div class="top-employees"><div class="top-card"><h3>🏆 Top Active Employees - By Hours</h3><div class="top-list">${renderList(topByHours)}</div></div></div>`;
         }
 
-        // ================= الإعدادات الذكية للشارت (Smart Settings) =================
+        // ================= إعدادات الشارت =================
         function getChartSettings() {
             const w = window.innerWidth;
             if (w <= 576) {
-                // شاشات الموبايل: إظهار الأرقام (true)، دوران 60 درجة، وتصغير حجم الخطوط
                 return { titleFont: 1.1, axisFont: 10, dataFont: 9, legendFont: 11, barThickness: 12, borderRadius: 4, padding: { top: 20, bottom: 5, left: 0, right: 0 }, rotation: 60, displayDataLabels: true };
             } else if (w <= 768) {
                 return { titleFont: 1.3, axisFont: 11, dataFont: 11, legendFont: 12, barThickness: 16, borderRadius: 6, padding: { top: 25, bottom: 10, left: 10, right: 10 }, rotation: 45, displayDataLabels: true };
@@ -721,7 +1138,7 @@
                         }
                     },
                     datalabels: {
-                        display: s.displayDataLabels, // يقرأ (True) من الإعدادات لإظهار الأرقام
+                        display: s.displayDataLabels,
                         color: '#000',
                         backgroundColor: 'rgba(255,255,255,0.85)',
                         borderRadius: s.borderRadius,
@@ -744,7 +1161,7 @@
                             font: { size: s.axisFont, family: "'Tajawal', sans-serif", weight: 'bold' },
                             maxRotation: s.rotation,
                             minRotation: s.rotation,
-                            autoSkip: false // إجبار الشارت على إظهار كل الأسماء
+                            autoSkip: false
                         },
                         grid: { display: false }
                     }
@@ -782,7 +1199,6 @@
             chartInstances.forEach(chart => {
                 if (chart && chart.options) {
                     chart.options.layout.padding = s.padding;
-                    
                     if (chart.options.scales.x.ticks) {
                         chart.options.scales.x.ticks.font.size = s.axisFont;
                         chart.options.scales.x.ticks.maxRotation = s.rotation;
@@ -804,13 +1220,32 @@
                         dataset.barThickness = s.barThickness;
                         dataset.borderRadius = s.borderRadius;
                     });
-
                     chart.update('none'); 
                 }
             });
         }
 
+        // ⭐ تغيير: عرض رسالة "لا توجد بيانات"
+        function renderNoDataMessage() {
+            return `
+                <div class="no-data-message">
+                    <h3>📭 لا توجد بيانات لعرضها</h3>
+                    <p>لم يتم العثور على جلسات تدريبية ${currentType === 'offjob' ? 'Off-Job' : currentType === 'onjob' ? 'On-Job' : ''} للفترة المحددة</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #94a3b8;">
+                        ${currentMonth !== -1 ? `📅 الشهر: ${monthNames[currentMonth]}` : ''}
+                        ${currentQuarter !== -1 ? `📊 الربع: ${quarterNames[currentQuarter]}` : ''}
+                        ${currentYear ? `🗓️ السنة: ${currentYear}` : ''}
+                    </p>
+                </div>
+            `;
+        }
+
         function initCharts(deptStats) {
+            // التحقق من وجود بيانات
+            if (deptStats.type === 'empty' || (deptStats.data && deptStats.data.length === 0)) {
+                return;
+            }
+
             Chart.register(ChartDataLabels);
             const isSplit = deptStats.type === 'split';
             const s = getChartSettings();
@@ -828,7 +1263,7 @@
                         });
                     }
                 });
-            } else {
+            } else if (deptStats.type === 'split') {
                 const offData = deptStats.offJob; const onData = deptStats.onJob;
                 const allDepts = [...new Set([...offData.map(d => d.department), ...onData.map(d => d.department)])].sort((a, b) => { const aTotal = (offData.find(d => d.department === a)?.uniqueEmployees || 0) + (onData.find(d => d.department === a)?.uniqueEmployees || 0); const bTotal = (offData.find(d => d.department === b)?.uniqueEmployees || 0) + (onData.find(d => d.department === b)?.uniqueEmployees || 0); return bTotal - aTotal; });
                 
@@ -848,6 +1283,10 @@
         }
 
         function initMonthlyCharts(monthlyStats) {
+            // التحقق من وجود بيانات
+            const hasData = monthlyStats.some(m => m.offJob.uniqueEmployees > 0 || m.onJob.uniqueEmployees > 0);
+            if (!hasData) return;
+
             Chart.register(ChartDataLabels);
             const s = getChartSettings();
             const isSplit = currentType === 'all';
@@ -880,6 +1319,9 @@
         }
 
         function initQuarterlyCharts(quarterlyStats) {
+            const hasData = quarterlyStats.some(q => q.offJob.uniqueEmployees > 0 || q.onJob.uniqueEmployees > 0);
+            if (!hasData) return;
+
             Chart.register(ChartDataLabels);
             const s = getChartSettings();
             const isSplit = currentType === 'all';
@@ -912,6 +1354,9 @@
         }
 
         function initSemiAnnualCharts(semiAnnualStats) {
+            const hasData = semiAnnualStats.some(h => h.offJob.uniqueEmployees > 0 || h.onJob.uniqueEmployees > 0);
+            if (!hasData) return;
+
             Chart.register(ChartDataLabels);
             const s = getChartSettings();
             const isSplit = currentType === 'all';
@@ -943,52 +1388,139 @@
             }
         }
 
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            if (isError) toast.classList.add('error');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // ================= تحديث وإعادة تحميل البيانات =================
         async function refreshData() {
             if (isRefreshing) return;
             isRefreshing = true;
             
+            showToast('🔄 جاري تحديث بيانات الشهر الحالي من السيرفر...', false);
+            
             try {
-                isDataLoaded = false;
-                await loadAllData(true);
+                await clearAllIDB();
+                await loadDataForCurrentSelection(true);
                 await loadPage();
+                showToast('✅ تم تحديث بيانات الشهر بنجاح');
             } catch (error) {
                 console.error('❌ فشل تحديث البيانات:', error);
+                showToast('❌ فشل تحديث البيانات من السيرفر', true);
             } finally {
                 isRefreshing = false;
             }
         }
 
-        function changeYear() { currentYear = parseInt(document.getElementById('yearSelect').value); loadPage(); }
-        function changeMonth() { 
-            currentMonth = parseInt(document.getElementById('monthSelect').value);
-            if (currentMonth !== -1) { document.getElementById('quarterSelect').value = '-1'; currentQuarter = -1; }
-            loadPage(); 
+        async function changeYear() { 
+            currentYear = parseInt(document.getElementById('yearSelect').value, 10); 
+            await loadDataForCurrentSelection(false);
+            await loadPage(); 
         }
-        function changeQuarter() {
-            currentQuarter = parseInt(document.getElementById('quarterSelect').value);
-            if (currentQuarter !== -1) { document.getElementById('monthSelect').value = '-1'; currentMonth = -1; }
-            loadPage();
-        }
-        function changeType() { currentType = document.getElementById('typeSelect').value; loadPage(); }
 
+        async function changeMonth() { 
+            currentMonth = parseInt(document.getElementById('monthSelect').value, 10);
+            if (currentMonth !== -1) { 
+                document.getElementById('quarterSelect').value = '-1'; 
+                currentQuarter = -1; 
+            }
+            await loadDataForCurrentSelection(false);
+            await loadPage(); 
+        }
+
+        async function changeQuarter() {
+            currentQuarter = parseInt(document.getElementById('quarterSelect').value, 10);
+            if (currentQuarter !== -1) { 
+                document.getElementById('monthSelect').value = '-1'; 
+                currentMonth = -1; 
+            }
+            await loadDataForCurrentSelection(false);
+            await loadPage();
+        }
+
+        async function changeType() { 
+            currentType = document.getElementById('typeSelect').value; 
+            // ⭐ تغيير: تحميل البيانات للنوع الجديد فقط
+            await loadDataForCurrentSelection(false);
+            await loadPage(); 
+        }
+
+        // ================= بناء واجهة الصفحة والشارتات =================
         async function loadPage() {
             chartInstances.forEach(c => c.destroy());
             chartInstances = [];
             
-            const deptStats = calculateDepartmentStats();
-            const monthlyStats = calculateMonthlyStats();
-            const quarterlyStats = calculateQuarterlyStats();
-            const semiAnnualStats = calculateSemiAnnualStats();
-            const { topByHours } = calculateTopEmployees();
+            // التحقق من وجود بيانات
+            const hasData = hasDataForCurrentSelection();
+            
+            const deptStats = hasData ? calculateDepartmentStats() : { type: 'empty', data: [] };
+            const monthlyStats = hasData ? calculateMonthlyStats() : [];
+            const quarterlyStats = hasData ? calculateQuarterlyStats() : [];
+            const semiAnnualStats = hasData ? calculateSemiAnnualStats() : [];
+            const { topByHours } = hasData ? calculateTopEmployees() : { topByHours: [] };
             
             const monthName = currentMonth === -1 ? "All Months" : monthNames[currentMonth];
             const quarterName = currentQuarter === -1 ? "All Quarters" : quarterNames[currentQuarter];
             const typeName = currentType === 'offjob' ? 'Off Job' : (currentType === 'onjob' ? 'On Job' : 'All Trainings (Split View)');
             
-            if (availableYears.length === 0) availableYears = [2026];
+            availableYears = [];
+            for (let y = START_YEAR; y <= END_YEAR; y++) {
+                availableYears.push(y);
+            }
+            
             const yearOptions = availableYears.map(y => `<option value="${y}" ${currentYear === y ? 'selected' : ''}>${y}</option>`).join('');
-
             const quarterOptions = [`<option value="-1" ${currentQuarter === -1 ? 'selected' : ''}>All Quarters</option>`].concat(quarterNames.map((q, i) => `<option value="${i}" ${currentQuarter === i ? 'selected' : ''}>${q}</option>`)).join('');
+
+            // رسالة الحالة
+            const typeLabel = currentType === 'offjob' ? 'Off-Job' : currentType === 'onjob' ? 'On-Job' : 'All';
+            let sourceBadge = '';
+            if (lastLoadSource === 'firebase') {
+                sourceBadge = `<span class="cache-badge firebase">🔥 تم جلب "${typeLabel}" من السيرفر</span>`;
+            } else if (lastLoadSource === 'cache') {
+                const totalMonths = memoryCache.months.offjob.size + memoryCache.months.onjob.size;
+                sourceBadge = `<span class="cache-badge cache">⚡ تم التحميل من IndexedDB </span>`;
+            } else {
+                const totalMonths = memoryCache.months.offjob.size + memoryCache.months.onjob.size;
+                sourceBadge = `<span class="cache-badge cache">⚡ تم التحميل الفوري من IndexedDB </span>`;
+            }
+
+            // ⭐ تغيير: عرض رسالة "لا توجد بيانات" إذا لم توجد بيانات
+            const chartsHTML = hasData ? `
+                <div class="charts-container">
+                    <div class="chart-card"><h3>👥 Trainees by Department ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="deptEmployeesChart"></canvas></div></div>
+                    <div class="chart-card"><h3>🎯 Sessions by Department ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="deptSessionsChart"></canvas></div></div>
+                    <div class="chart-card"><h3>⏰ Hours by Department ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="deptHoursChart"></canvas></div></div>
+                </div>
+
+                <div class="section-title">🏅 Best Active Employees (By Training Hours)</div>
+                ${renderTopEmployees(topByHours)}
+
+                <div class="section-title">📅 Monthly Analysis (${currentYear}) ${currentType === 'all' ? '(Split)' : ''}</div>
+                <div class="charts-container">
+                    <div class="chart-card"><h3>👥 Employees per Month ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="monthlyEmployeesChart"></canvas></div></div>
+                    <div class="chart-card"><h3>🎯 Sessions per Month ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="monthlySessionsChart"></canvas></div></div>
+                    <div class="chart-card"><h3>⏰ Hours per Month ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="monthlyHoursChart"></canvas></div></div>
+                </div>
+
+                <div class="section-title">📊 Quarterly Analysis (${currentYear}) ${currentType === 'all' ? '(Split)' : ''}</div>
+                <div class="charts-row">
+                    <div class="chart-card medium"><h3>👥 Employees per Quarter ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="quarterlyEmployeesChart" class="medium-canvas"></canvas></div></div>
+                    <div class="chart-card medium"><h3>🎯 Sessions per Quarter ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="quarterlySessionsChart" class="medium-canvas"></canvas></div></div>
+                    <div class="chart-card medium"><h3>⏰ Hours per Quarter ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="quarterlyHoursChart" class="medium-canvas"></canvas></div></div>
+                </div>
+
+                <div class="section-title">📈 Semi-Annual Analysis (${currentYear}) ${currentType === 'all' ? '(Split)' : ''}</div>
+                <div class="charts-row">
+                    <div class="chart-card medium"><h3>👥 Employees per Half-Year ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="semiAnnualEmployeesChart" class="medium-canvas"></canvas></div></div>
+                    <div class="chart-card medium"><h3>🎯 Sessions per Half-Year ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="semiAnnualSessionsChart" class="medium-canvas"></canvas></div></div>
+                    <div class="chart-card medium"><h3>⏰ Hours per Half-Year ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="semiAnnualHoursChart" class="medium-canvas"></canvas></div></div>
+                </div>
+            ` : renderNoDataMessage();
 
             document.getElementById('app').innerHTML = `
                 <div class="navbar">
@@ -1003,13 +1535,12 @@
 
                 <div class="container">
                     <div class="page-header">
-                        <h1>🏆 Performance Analysis</h1>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <h1>🏆 Performance Analysis</h1>
+                            ${sourceBadge}
+                        </div>
                         <p>Analysis of department and employee participation in training</p>
                     </div>
-
-                    <div class="refresh-notice" id="refreshNotice"></div>
-
-                    ${renderDiagnosticHTML()}
 
                     <div class="filter-bar">
                         <div class="filter-group"><label>📅 Year:</label><select id="yearSelect" class="filter-select" onchange="changeYear()">${yearOptions}</select></div>
@@ -1019,57 +1550,37 @@
                         <div class="filter-group"><span style="color:#1e3a5f; font-weight:700;">📊 ${monthName} | ${quarterName} | ${currentYear} - ${typeName}</span></div>
                     </div>
 
+                    ${renderDiagnosticHTML()}
+
                     <div class="section-title">📊 Department Analysis (All Employees)</div>
-                    <div class="charts-container">
-                        <div class="chart-card"><h3>👥 Trainees by Department ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="deptEmployeesChart"></canvas></div></div>
-                        <div class="chart-card"><h3>🎯 Sessions by Department ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="deptSessionsChart"></canvas></div></div>
-                        <div class="chart-card"><h3>⏰ Hours by Department ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="deptHoursChart"></canvas></div></div>
-                    </div>
+                    ${chartsHTML}
 
-                    <div class="section-title">🏅 Best Active Employees (By Training Hours)</div>
-                    ${renderTopEmployees(topByHours)}
-
-                    <div class="section-title">📅 Monthly Analysis (${currentYear}) ${currentType === 'all' ? '(Split)' : ''}</div>
-                    <div class="charts-container">
-                        <div class="chart-card"><h3>👥 Employees per Month ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="monthlyEmployeesChart"></canvas></div></div>
-                        <div class="chart-card"><h3>🎯 Sessions per Month ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="monthlySessionsChart"></canvas></div></div>
-                        <div class="chart-card"><h3>⏰ Hours per Month ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper"><canvas id="monthlyHoursChart"></canvas></div></div>
-                    </div>
-
-                    <div class="section-title">📊 Quarterly Analysis (${currentYear}) ${currentType === 'all' ? '(Split)' : ''}</div>
-                    <div class="charts-row">
-                        <div class="chart-card medium"><h3>👥 Employees per Quarter ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="quarterlyEmployeesChart" class="medium-canvas"></canvas></div></div>
-                        <div class="chart-card medium"><h3>🎯 Sessions per Quarter ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="quarterlySessionsChart" class="medium-canvas"></canvas></div></div>
-                        <div class="chart-card medium"><h3>⏰ Hours per Quarter ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="quarterlyHoursChart" class="medium-canvas"></canvas></div></div>
-                    </div>
-
-                    <div class="section-title">📈 Semi-Annual Analysis (${currentYear}) ${currentType === 'all' ? '(Split)' : ''}</div>
-                    <div class="charts-row">
-                        <div class="chart-card medium"><h3>👥 Employees per Half-Year ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="semiAnnualEmployeesChart" class="medium-canvas"></canvas></div></div>
-                        <div class="chart-card medium"><h3>🎯 Sessions per Half-Year ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="semiAnnualSessionsChart" class="medium-canvas"></canvas></div></div>
-                        <div class="chart-card medium"><h3>⏰ Hours per Half-Year ${currentType === 'all' ? '(Split)' : ''}</h3><div class="chart-wrapper medium"><canvas id="semiAnnualHoursChart" class="medium-canvas"></canvas></div></div>
-                    </div>
-
-                <div class="footer"><p>© 2026 Learning & Development System</p></div>
+                    <div class="footer"><p>© 2026 Learning & Development System</p></div>
+                </div>
             `;
             
             applyChartSettingsToDOM();
             
-            setTimeout(() => { 
-                initCharts(deptStats); 
-                initMonthlyCharts(monthlyStats); 
-                initQuarterlyCharts(quarterlyStats);
-                initSemiAnnualCharts(semiAnnualStats);
-            }, 100);
+            if (hasData) {
+                setTimeout(() => { 
+                    initCharts(deptStats); 
+                    initMonthlyCharts(monthlyStats); 
+                    initQuarterlyCharts(quarterlyStats); 
+                    initSemiAnnualCharts(semiAnnualStats); 
+                }, 100);
+            }
         }
 
         async function logout() {
             try { await signOut(auth); window.location.href = 'login.html'; } catch(e) { console.error(e); }
         }
 
-        window.changeYear = changeYear; window.changeMonth = changeMonth;
-        window.changeQuarter = changeQuarter; window.changeType = changeType;
-        window.showDiagnostic = showDiagnostic; window.logout = logout;
+        window.changeYear = changeYear; 
+        window.changeMonth = changeMonth;
+        window.changeQuarter = changeQuarter; 
+        window.changeType = changeType;
+        window.showDiagnostic = showDiagnostic; 
+        window.logout = logout;
         window.refreshData = refreshData;
 
         let resizeTimeout;
@@ -1083,11 +1594,12 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    await loadAllData(false);
+                    await loadDataForCurrentSelection(false);
                     await loadPage();
                 } catch (error) {
                     console.error("Error loading page data:", error);
-                    document.getElementById('app').innerHTML = '<div style="text-align:center; padding:50px; font-size:1.2rem;">❌ حدث خطأ أثناء تحميل البيانات من السيرفر. يرجى مراجعة الصلاحيات والاتصال.</div>';
+                    document.getElementById('app').innerHTML = '<div style="text-align:center; padding:50px; font-size:1.2rem; color:#e53e3e;">❌ حدث خطأ أثناء تحميل البيانات من السيرفر. يرجى مراجعة الصلاحيات والاتصال.</div>';
+                    showLoading(false);
                 }
             } else {
                 window.location.href = 'login.html';
