@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Birthdays</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+    <meta name="theme-color" content="#2b7a4b">
+    
+    <!-- استدعاء قاعدة البيانات فقط (بدون نظام الحماية) -->
+    <script type="module" src="database.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: #f0f4f8;
+            min-height: 100vh;
+            padding: 30px 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            flex: 1; /* للسماح للفوتر بالبقاء في الأسفل */
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white;
+            padding: 35px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .header h1 i {
+            margin-right: 15px;
+            color: #ffd700;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 25px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-group {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            border: 1px solid #edf2f7;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #1e3a5f;
+            font-size: 0.95rem;
+        }
+
+        select, input[type="number"] {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            background: white;
+            outline: none;
+            transition: 0.3s;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        select:focus, input:focus {
+            border-color: #2b7a4b;
+        }
+
+        .search-btn {
+            background: #2b7a4b;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(43, 122, 75, 0.2);
+        }
+
+        .search-btn:hover {
+            background: #1e5a38;
+            transform: translateY(-2px);
+        }
+
+        .tomorrow-btn {
+            background: #4299e1;
+            box-shadow: 0 4px 10px rgba(66, 153, 225, 0.2);
+        }
+        .tomorrow-btn:hover {
+            background: #3182ce;
+        }
+
+        .results {
+            padding: 30px;
+        }
+
+        .employees-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .employee-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employee-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-image .no-image {
+            text-align: center;
+            color: #718096;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-image .no-image i {
+            font-size: 60px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .card-image .no-image span {
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .card-info {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employee-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e3a5f;
+            margin-bottom: 15px;
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 2px dashed #f0f4f8;
+        }
+
+        .employee-name i {
+            color: #2b7a4b;
+            margin-right: 5px;
+        }
+
+        .employee-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-size: 0.85rem;
+        }
+
+        .employee-detail i {
+            width: 20px;
+            color: #4299e1;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #1e3a5f;
+            min-width: 70px;
+        }
+
+        .detail-value {
+            color: #718096;
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #a0aec0;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 70px;
+            margin-bottom: 20px;
+            color: #cbd5e0;
+        }
+
+        .empty-state h3 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .stats {
+            background: #ecfdf5;
+            color: #047857;
+            padding: 15px;
+            margin: 0 30px 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border: 2px solid #a7f3d0;
+            box-shadow: 0 4px 6px rgba(4, 120, 87, 0.05);
+        }
+
+        /* تنسيق الفوتر الجديد */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #718096;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .footer .developer-name {
+            color: #2b7a4b;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 992px) {
+            .employees-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 15px 10px; }
+            .employees-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .control-group { width: 100%; justify-content: center; }
+            .card-image { height: 200px; }
+            .header h1 { font-size: 1.8rem; }
+            .stats { margin: 0 15px 20px 15px; font-size: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .employees-grid { grid-template-columns: 1fr; }
+            .card-image { height: 280px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة التحميل المستقلة -->
+    <div id="loadingScreen" style="text-align:center; padding:150px 20px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
+        <i class="fas fa-gift fa-spin" style="font-size: 3rem; color: #2b7a4b; margin-bottom: 15px; display: block;"></i>
+        ⏳ Preparing Birthday Celebrations...
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div id="mainContent" style="display: none; flex-direction: column; min-height: 100vh;">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-birthday-cake"></i> Happy Birthdays!</h1>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label><i class="fas fa-calendar-alt"></i> Month:</label>
+                    <select id="monthSelect">
+                        <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                        <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                        <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                        <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label><i class="fas fa-sun"></i> Day:</label>
+                    <input type="number" id="daySelect" min="1" max="31" value="5">
+                </div>
+
+                <div class="control-group">
+                    <button class="search-btn" onclick="window.searchSpecificDate()">
+                        <i class="fas fa-search"></i> Show Selected Date
+                    </button>
+                </div>
+
+                <div class="control-group">
+                    <button class="search-btn tomorrow-btn" onclick="window.showTomorrowBirthdays()">
+                        <i class="fas fa-calendar-day"></i> Show Tomorrow's Birthdays
+                    </button>
+                </div>
+            </div>
+
+            <div id="stats" class="stats" style="display: none;"></div>
+
+            <div class="results">
+                <div id="employeesGrid" class="employees-grid">
+                    <!-- Data will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- الفوتر -->
+        <div class="footer">
+            <p>Copyright © <span id="currentYear"></span> All Rights Reserved | Developed by <span class="developer-name">Mina Gamal L&D</span></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DB } from './database.js';
+
+        // تعيين السنة الحالية في الفوتر
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        let employees = []; 
+        let activeEmpIds = new Set(); 
+        let fullEmpDataMap = new Map(); 
+        
+        const BDAY_CACHE_KEY = 'PublicBirthdays_DataCache';
+        const COLLECTION_KEY = 'employee_birthdays_final';
+        const CACHE_TTL = 4 * 60 * 60 * 1000; // مدة الكاش 4 ساعات
+
+        (async () => {
+            await loadSavedData();
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'flex';
+            showTodayBirthdays();
+        })();
+
+        async function loadSavedData() {
+            const cachedData = localStorage.getItem(BDAY_CACHE_KEY);
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    if (parsed.timestamp && (Date.now() - parsed.timestamp < CACHE_TTL)) {
+                        employees = parsed.birthdays || [];
+                        activeEmpIds = new Set(parsed.activeIds || []);
+                        if (parsed.fullEmpData) fullEmpDataMap = new Map(parsed.fullEmpData);
+                        console.log("✅ Loaded from local cache.");
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Cache read error:", e);
+                }
+            }
+            await fetchFromServerAndCache();
+        }
+
+        async function fetchFromServerAndCache() {
+            try {
+                await DB.init();
+                const [bdayData, empData] = await Promise.all([
+                    DB.getAll(COLLECTION_KEY),
+                    DB.getAll('employees')
+                ]);
+                
+                employees = bdayData || [];
+                
+                const activeIds = [];
+                const empMapForCache = [];
+                if (empData) {
+                    empData.forEach(e => {
+                        let empCode = String(e.id).trim();
+                        if (e.status !== 'Left') {
+                            activeIds.push(empCode);
+                        }
+                        fullEmpDataMap.set(empCode, e);
+                        empMapForCache.push([empCode, e]);
+                    });
+                }
+                activeEmpIds = new Set(activeIds);
+                
+                localStorage.setItem(BDAY_CACHE_KEY, JSON.stringify({
+                    birthdays: employees,
+                    activeIds: activeIds,
+                    fullEmpData: empMapForCache,
+                    timestamp: Date.now()
+                }));
+                console.log(`✅ Loaded directly from Firebase`);
+            } catch (error) {
+                console.error("❌ Error loading data:", error);
+                document.getElementById('loadingScreen').innerHTML = '<h3 style="color:#e53e3e;">❌ Could not fetch data. Please contact HR or check your connection.</h3>';
+            }
+        }
+
+        function loadEmployeePhoto(imgElement, employeeCode, cloudPhotoUrl) {
+            function showDefaultPlaceholder() {
+                if (imgElement.parentElement) {
+                    imgElement.parentElement.innerHTML = `
+                        <div class="no-image">
+                            <i class="fas fa-user-circle"></i>
+                            <span>${employeeCode}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            function checkCloudinaryDirectly() {
+                const exts = ['webp', 'jpg', 'jpeg', 'png', 'JPG', 'PNG', 'JPEG'];
+                let i = 0;
+                function tryNext() {
+                    if (i >= exts.length) {
+                        showDefaultPlaceholder();
+                        return;
+                    }
+                    const url = `https://res.cloudinary.com/so9u5deh/image/upload/${employeeCode}.${exts[i]}`;
+                    const testImg = new Image();
+                    testImg.onload = function() {
+                        imgElement.src = url;
+                        imgElement.style.display = 'block';
+                    };
+                    testImg.onerror = function() {
+                        i++;
+                        tryNext();
+                    };
+                    testImg.src = url;
+                }
+                tryNext();
+            }
+
+            if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined' && cloudPhotoUrl.trim() !== '') {
+                const cloudImg = new Image();
+                cloudImg.onload = function() {
+                    imgElement.src = cloudPhotoUrl;
+                    imgElement.style.display = 'block';
+                };
+                cloudImg.onerror = function() {
+                    checkCloudinaryDirectly();
+                };
+                cloudImg.src = cloudPhotoUrl;
+            } else {
+                checkCloudinaryDirectly();
+            }
+        }
+
+        window.searchSpecificDate = () => {
+            const month = parseInt(document.getElementById('monthSelect').value);
+            const day = parseInt(document.getElementById('daySelect').value);
+            performSearch(month, day);
+        };
+
+        window.showTomorrowBirthdays = () => {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            
+            const month = tomorrow.getMonth() + 1;
+            const day = tomorrow.getDate();
+            
+            document.getElementById('monthSelect').value = month;
+            document.getElementById('daySelect').value = day;
+            performSearch(month, day);
+        };
+
+        function showTodayBirthdays() {
+            const today = new Date();
+            const month = today.getMonth() + 1;
+            const day = today.getDate();
+            document.getElementById('monthSelect').value = month;
+            document.getElementById('daySelect').value = day;
+            performSearch(month, day);
+        }
+
+        function performSearch(month, day) {
+            const grid = document.getElementById('employeesGrid');
+            const statsDiv = document.getElementById('stats');
+            
+            if (employees.length === 0) {
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-database"></i>
+                            <h3>No Data Found</h3>
+                            <p>Birthday records have not been imported yet.</p>
+                        </div>
+                    `;
+                }
+                if (statsDiv) statsDiv.style.display = 'none';
+                return;
+            }
+            
+            const filtered = employees.filter(emp => {
+                let empCode = String(emp.code || emp.id || '').trim();
+                if (activeEmpIds.size > 0 && !activeEmpIds.has(empCode)) {
+                    return false; 
+                }
+
+                let empMonth = emp.month || emp.Month;
+                let empDay = emp.day || emp.Day;
+
+                if (empMonth !== undefined && empDay !== undefined) {
+                    return parseInt(empMonth) === month && parseInt(empDay) === day;
+                }
+                return false;
+            });
+
+            displayResults(filtered, month, day);
+        }
+
+        function displayResults(employeesList, month, day) {
+            const grid = document.getElementById('employeesGrid');
+            const statsDiv = document.getElementById('stats');
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            if (!grid) return;
+            
+            if (employeesList.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No Birthdays Found</h3>
+                        <p>There are no active employee birthdays on ${monthNames[month-1]} ${day}</p>
+                    </div>`;
+                if (statsDiv) statsDiv.style.display = 'none';
+                return;
+            }
+
+            if (statsDiv) {
+                statsDiv.style.display = 'block';
+                statsDiv.innerHTML = `🎉 Celebrating ${employeesList.length} Colleague(s) on ${monthNames[month-1]} ${day} 🎉`;
+            }
+
+            grid.innerHTML = '';
+            
+            employeesList.forEach(emp => {
+                const empCode = String(emp.code || emp.id).trim();
+                const fullData = fullEmpDataMap.get(empCode) || {};
+                const cloudPhotoUrl = fullData.photoUrl || null;
+
+                const card = document.createElement('div');
+                card.className = 'employee-card';
+                
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'card-image';
+                
+                const img = document.createElement('img');
+                img.alt = empCode;
+                img.style.display = 'none';
+                imageDiv.appendChild(img);
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'card-info';
+                
+                let ageString = '';
+                let empYear = emp.year || emp.Year;
+                if(empYear && !isNaN(parseInt(empYear))) {
+                    const currentYear = new Date().getFullYear();
+                    const age = currentYear - parseInt(empYear);
+                    ageString = ` <span style="color:#718096; font-size:0.95rem; font-weight:bold;">(${age}Y)</span>`;
+                }
+
+                infoDiv.innerHTML = `
+                    <div class="employee-name"><i class="fas fa-gift"></i> ${escapeHtml(emp.name || emp.fullName || emp.Full_Name)}${ageString}</div>
+                    <div class="employee-detail">
+                        <i class="fas fa-building"></i>
+                        <span class="detail-label">Dept:</span>
+                        <span class="detail-value">${escapeHtml(emp.department || emp.Dep || emp.department) || 'Not specified'}</span>
+                    </div>
+                    <div class="employee-detail">
+                        <i class="fas fa-briefcase"></i>
+                        <span class="detail-label">Position:</span>
+                        <span class="detail-value">${escapeHtml(emp.position || emp.Position) || 'Not specified'}</span>
+                    </div>
+                `;
+                
+                card.appendChild(imageDiv);
+                card.appendChild(infoDiv);
+                grid.appendChild(card);
+                
+                loadEmployeePhoto(img, empCode, cloudPhotoUrl);
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
