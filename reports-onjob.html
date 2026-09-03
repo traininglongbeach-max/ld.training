@@ -11,7 +11,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
@@ -34,41 +33,14 @@
         .page-header { margin-bottom: 2rem; } .page-header h1 { color: #1e3a5f; font-size: clamp(1.5rem, 4vw, 2rem); } .page-header p { color: #718096; font-size: clamp(0.9rem, 1.5vw, 1rem); }
 
         /* شاشة التحميل */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            flex-direction: column;
-        }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; }
         .loading-overlay.show { display: flex; }
-        .loader {
-            width: 60px;
-            height: 60px;
-            border: 6px solid #e2e8f0;
-            border-top: 6px solid #2b7a4b;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
+        .loader { width: 60px; height: 60px; border: 6px solid #e2e8f0; border-top: 6px solid #2b7a4b; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
         .loading-text { font-size: 1.2rem; color: #1e3a5f; font-weight: 500; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* حالة عدم وجود بيانات */
-        .no-data-message {
-            text-align: center;
-            padding: 3rem 2rem;
-            background: #f8fafc;
-            border-radius: 1.5rem;
-            border: 2px dashed #cbd5e1;
-            margin: 1rem 0;
-        }
+        .no-data-message { text-align: center; padding: 3rem 2rem; background: #f8fafc; border-radius: 1.5rem; border: 2px dashed #cbd5e1; margin: 1rem 0; }
         .no-data-message h3 { color: #475569; font-size: 1.3rem; margin-bottom: 0.5rem; }
         .no-data-message p { color: #94a3b8; font-size: 1rem; }
 
@@ -159,27 +131,12 @@
             .badge-sessions, .badge-attendees, .badge-hours { padding: 0.2rem 0.5rem; font-size: 0.75rem; }
             table { min-width: 500px; }
         }
-        @media (max-width: 425px) {
-            .nav-links a, .nav-links button { width: 100%; text-align: center; }
-            .btn-details { padding: 0.4rem 1rem; width: 100%; }
-            table { min-width: 400px; }
-        }
-        @media (max-width: 375px) {
-            .page-header h1 { font-size: 1.4rem; }
-            .export-btn, .export-btn-dept { font-size: 1rem; padding: 0.7rem 1rem; }
-            table { min-width: 350px; }
-        }
-        @media (max-width: 320px) {
-            .navbar .logo h2 { font-size: 1.2rem; }
-            table { min-width: 300px; }
-        }
     </style>
 </head>
 <body>
-    <!-- شاشة التحميل -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loader"></div>
-        <div class="loading-text">⏳ جاري تحميل بيانات On Job...</div>
+        <div class="loading-text">⏳ جاري تحميل بيانات On Job المحددة...</div>
     </div>
 
     <div id="app">
@@ -191,6 +148,10 @@
     <script type="module">
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+        const firestoreDb = getFirestore(getApp());
 
         // ================= المتغيرات وحالة النظام =================
         let trainingData = { courses: [], sessions: [], enrollments: [] };
@@ -208,24 +169,115 @@
         const quarterMap = { 'Q1': [0,1,2], 'Q2': [3,4,5], 'Q3': [6,7,8], 'Q4': [9,10,11] };
         const START_YEAR = 2025;
         const END_YEAR = 2028;
-        const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 ساعة
 
-        function showLoading(show = true, text = '⏳ جاري تحميل بيانات On Job...') {
+        // ================= نظام التخزين المحلي (IndexedDB) =================
+        const IDB_CONFIG = { name: 'LDMS_OnJob_Cache', version: 1, store: 'monthly_data' };
+        const CACHE_TTL = 72 * 60 * 60 * 1000;
+
+        function openCacheDB() {
+            return new Promise((resolve) => {
+                if (!window.indexedDB) { resolve(null); return; }
+                const request = window.indexedDB.open(IDB_CONFIG.name, IDB_CONFIG.version);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_CONFIG.store)) {
+                        db.createObjectStore(IDB_CONFIG.store, { keyPath: 'key' });
+                    }
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        async function getFromIDB(key) {
+            try {
+                const db = await openCacheDB();
+                if (!db) return null;
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_CONFIG.store, 'readonly');
+                    const store = tx.objectStore(IDB_CONFIG.store);
+                    const req = store.get(key);
+                    req.onsuccess = () => {
+                        const res = req.result;
+                        if (!res) { resolve(null); return; }
+                        if (res.timestamp && (Date.now() - res.timestamp > CACHE_TTL)) resolve(null);
+                        else resolve(res.data);
+                    };
+                    req.onerror = () => resolve(null);
+                });
+            } catch(e) { return null; }
+        }
+
+        async function saveToIDB(key, data) {
+            try {
+                const db = await openCacheDB();
+                if (!db) return;
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_CONFIG.store, 'readwrite');
+                    const store = tx.objectStore(IDB_CONFIG.store);
+                    store.put({ key: key, data: data, timestamp: Date.now() });
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => resolve(false);
+                });
+            } catch(e) {}
+        }
+
+        async function clearAllIDB() {
+            try {
+                const db = await openCacheDB();
+                if (db) {
+                    const tx = db.transaction(IDB_CONFIG.store, 'readwrite');
+                    tx.objectStore(IDB_CONFIG.store).clear();
+                }
+            } catch(e) {}
+        }
+
+        // ================= دوال مساعدة لحل مشكلة قراءة البيانات =================
+        function normalizeItem(obj) {
+            if (!obj) return {};
+            const normalized = { ...obj };
+            const lowerKeys = {};
+            for (let k in obj) {
+                if (obj.hasOwnProperty(k)) lowerKeys[k.toLowerCase().replace(/[\s_]/g, '')] = obj[k];
+            }
+            normalized.course_code = normalized.course_code || lowerKeys['coursecode'];
+            normalized.course_name = normalized.course_name || lowerKeys['coursename'];
+            normalized.session_code = normalized.session_code || lowerKeys['sessioncode'] || lowerKeys['sessionid'] || lowerKeys['code'];
+            normalized.session_date = normalized.session_date || lowerKeys['sessiondate'] || lowerKeys['date'];
+            normalized.start_time = normalized.start_time || lowerKeys['starttime'];
+            normalized.end_time = normalized.end_time || lowerKeys['endtime'];
+            normalized.employee_id = normalized.employee_id || lowerKeys['employeeid'] || lowerKeys['empid'];
+            normalized.enrollment_status = normalized.enrollment_status || lowerKeys['enrollmentstatus'] || lowerKeys['status'];
+            return normalized;
+        }
+
+        function isMatch(val1, val2) {
+            return val1?.toString().trim() === val2?.toString().trim();
+        }
+
+        function isCompleted(e) {
+            return e.enrollment_status?.toString().toLowerCase().includes('complete');
+        }
+
+        function showLoading(show = true, text = '⏳ جاري تحميل بيانات On Job المحددة...') {
             const overlay = document.getElementById('loadingOverlay');
             if (overlay) {
                 if (show) {
                     overlay.querySelector('.loading-text').textContent = text;
                     overlay.classList.add('show');
-                } else {
-                    overlay.classList.remove('show');
-                }
+                } else overlay.classList.remove('show');
             }
         }
 
-        function parseDateSafely(dateValue) {
-            if (!dateValue) return new Date(NaN);
-            if (typeof dateValue === 'number') return new Date((dateValue - 25569) * 86400000);
-            return new Date(dateValue);
+        function parseDateSafely(val) {
+            if (!val) return new Date(NaN);
+            if (typeof val === 'number') {
+                try {
+                    const d = XLSX.SSF.parse_date_code(val);
+                    return new Date(d.y, d.m - 1, d.d);
+                } catch(e) { return new Date(val); }
+            }
+            return new Date(val);
         }
 
         function formatDisplayDate(dateValue) {
@@ -235,205 +287,192 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // ===== تخزين واسترجاع بيانات الشهر من LocalStorage =====
-        function getMonthCacheKey(year, month) {
-            return `onjob_month_${year}_${month}`;
-        }
+        // ================= استعلام الجلسات والتسجيلات الذكي (Targeted Fetching) =================
+        async function fetchSessionsDirect(year, month) {
+            const colRef = collection(firestoreDb, 'onjob_sessions');
+            const snap = await getDocs(colRef);
+            const results = [];
 
-        function loadMonthFromCache(year, month) {
-            try {
-                const key = getMonthCacheKey(year, month);
-                const cached = localStorage.getItem(key);
-                if (cached) {
-                    const data = JSON.parse(cached);
-                    if (Date.now() - data.timestamp < CACHE_TTL) {
-                        console.log(`📦 قراءة شهر ${month+1}/${year} من التخزين المحلي`);
-                        return data.sessions;
-                    }
+            snap.forEach(docSnap => {
+                const data = normalizeItem({ id: docSnap.id, ...docSnap.data() });
+                const sessionDate = parseDateSafely(data.session_date);
+
+                if (!isNaN(sessionDate.getTime()) && 
+                    sessionDate.getFullYear() === year && 
+                    sessionDate.getMonth() === month) {
+                    results.push(data);
                 }
-            } catch (e) {}
-            return null;
+            });
+            return results;
         }
 
-        function saveMonthToCache(year, month, sessions) {
-            try {
-                const key = getMonthCacheKey(year, month);
-                localStorage.setItem(key, JSON.stringify({
-                    sessions: sessions,
-                    timestamp: Date.now()
-                }));
-                console.log(`💾 حفظ شهر ${month+1}/${year} في التخزين المحلي (${sessions.length} جلسة)`);
-            } catch (e) {}
-        }
+        async function fetchEnrollmentsDirect(sessions) {
+            if (!sessions || sessions.length === 0) return [];
 
-        function clearMonthCache(year, month) {
-            try {
-                const key = getMonthCacheKey(year, month);
-                localStorage.removeItem(key);
-            } catch (e) {}
-        }
+            const colRef = collection(firestoreDb, 'onjob_enrollments');
+            const results = [];
 
-        function clearAllCache() {
-            try {
-                const keys = Object.keys(localStorage);
-                keys.forEach(key => {
-                    if (key.startsWith('onjob_month_')) {
-                        localStorage.removeItem(key);
+            const codesSet = new Set();
+            sessions.forEach(s => {
+                const code = s.session_code;
+                if (code !== undefined && code !== null && code !== '') {
+                    codesSet.add(code.toString().trim());
+                    const num = Number(code);
+                    if (!isNaN(num)) codesSet.add(num);
+                }
+            });
+            const allCodes = Array.from(codesSet);
+            if (allCodes.length === 0) return [];
+
+            const fieldVariations = ['session_code', 'Session_Code', 'Session Code', 'sessionCode', 'SessionCode', 'session_id', 'Session_ID', 'Session ID', 'code', 'Code'];
+            let workingField = null;
+            const testSample = allCodes.slice(0, 10);
+
+            for (const field of fieldVariations) {
+                try {
+                    const testQ = query(colRef, where(field, 'in', testSample));
+                    const testSnap = await getDocs(testQ);
+                    if (!testSnap.empty) {
+                        workingField = field;
+                        testSnap.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+                        break;
                     }
-                });
-                console.log('🗑️ تم مسح جميع الكاشات');
-            } catch (e) {}
-        }
-
-        // ===== تحميل البيانات الأساسية (مرة واحدة) =====
-        async function loadBaseData() {
-            if (employees.length > 0 && trainingData.courses.length > 0) {
-                return;
+                } catch (e) {}
             }
 
+            if (workingField) {
+                const remainingCodes = allCodes.slice(10);
+                const chunkSize = 30;
+                const promises = [];
+
+                for (let i = 0; i < remainingCodes.length; i += chunkSize) {
+                    const chunk = remainingCodes.slice(i, i + chunkSize);
+                    const q = query(colRef, where(workingField, 'in', chunk));
+                    promises.push(getDocs(q));
+                }
+
+                if (promises.length > 0) {
+                    const snaps = await Promise.all(promises);
+                    snaps.forEach(snap => {
+                        snap.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+                    });
+                }
+
+                const uniqueMap = new Map();
+                results.forEach(r => uniqueMap.set(r.id, r));
+                return Array.from(uniqueMap.values()).map(normalizeItem);
+            }
+
+            return [];
+        }
+
+        async function ensureMonthLoaded(year, month, forceRefresh = false) {
+            const key = `onjob_${year}_${month}`;
+            if (!forceRefresh) {
+                const cachedData = await getFromIDB(key);
+                if (cachedData) {
+                    lastLoadSource = "cache";
+                    return cachedData;
+                }
+            }
+
+            lastLoadSource = "firebase";
+            const sessions = await fetchSessionsDirect(year, month);
+            const enrollments = await fetchEnrollmentsDirect(sessions);
+            
+            const monthData = { sessions, enrollments };
+            await saveToIDB(key, monthData);
+            console.log(`✅ تم جلب شهر ${month+1}/${year} من فايربيز (${sessions.length} جلسة، ${enrollments.length} تسجيل)`);
+            return monthData;
+        }
+
+        // ================= تحميل البيانات الأساسية وتجميعها =================
+        async function loadBaseData() {
             try {
                 if (employees.length === 0) {
-                    const savedEmployees = await DB.getAll('employees') || [];
-                    employees = savedEmployees;
+                    const cachedEmp = await getFromIDB('employees');
+                    if (cachedEmp) {
+                        employees = cachedEmp;
+                    } else {
+                        employees = await DB.getAll('employees') || [];
+                        await saveToIDB('employees', employees);
+                    }
                     employeeDeptMap.clear();
                     employees.forEach(emp => {
-                        if (emp.id && emp.department) {
-                            employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
-                        } else if (emp.id) {
-                            employeeDeptMap.set(emp.id.toString(), 'Under Review');
-                        }
+                        if (emp.id && emp.department) employeeDeptMap.set(emp.id.toString(), emp.department.toString().trim());
+                        else if (emp.id) employeeDeptMap.set(emp.id.toString(), 'Under Review');
                     });
-                    console.log(`👥 تم تحميل ${employees.length} موظف`);
                 }
                 
                 if (trainingData.courses.length === 0) {
-                    const courses = await DB.getAll('onjob_courses') || [];
-                    trainingData.courses = courses;
-                    console.log(`📚 تم تحميل ${trainingData.courses.length} كورس`);
+                    const cachedCourses = await getFromIDB('onjob_courses');
+                    if (cachedCourses) {
+                        trainingData.courses = cachedCourses;
+                    } else {
+                        const rawCourses = await DB.getAll('onjob_courses') || [];
+                        trainingData.courses = rawCourses.map(normalizeItem);
+                        await saveToIDB('onjob_courses', trainingData.courses);
+                    }
                 }
-            } catch (error) {
-                console.error('❌ Failed to load base data:', error);
-            }
+            } catch (error) { console.error('❌ Failed to load base data:', error); }
         }
 
-        // ===== تحميل البيانات حسب الفلتر مع التخزين المؤقت =====
-        async function loadDataByFilters() {
-            showLoading(true, '⏳ جاري تحميل بيانات On Job...');
-            
+        async function loadDataByFilters(forceRefresh = false) {
+            showLoading(true, '⏳ جاري جلب وتجهيز البيانات المطلوبة...');
             try {
-                // تحميل البيانات الأساسية
                 await loadBaseData();
 
-                // تحديد ما إذا كان سيتم استخدام الكاش
-                let useCache = false;
-                let filteredSessions = [];
+                trainingData.sessions = [];
+                trainingData.enrollments = [];
+                let monthsToLoad = [];
 
-                // إذا كان شهر محدد، حاول قراءة من الكاش
                 if (selectedMonth !== 'all') {
-                    const monthNum = parseInt(selectedMonth);
-                    const cachedSessions = loadMonthFromCache(currentYear, monthNum);
-                    if (cachedSessions) {
-                        filteredSessions = cachedSessions;
-                        useCache = true;
-                        lastLoadSource = "cache";
-                        console.log(`✅ تم تحميل شهر ${monthNum+1}/${currentYear} من التخزين المحلي (${filteredSessions.length} جلسة)`);
-                    }
-                }
-
-                // إذا لم نجد في الكاش أو كان الكل، نجلب من Firestore
-                if (!useCache) {
-                    let allSessions = await DB.getAll('onjob_sessions') || [];
-                    
-                    filteredSessions = allSessions.filter(session => {
-                        const date = parseDateSafely(session.session_date);
-                        if (isNaN(date.getTime())) return false;
-                        
-                        if (date.getFullYear() !== currentYear) return false;
-                        
-                        if (selectedMonth !== 'all') {
-                            const monthNum = parseInt(selectedMonth);
-                            if (date.getMonth() !== monthNum) return false;
-                        }
-                        
-                        if (selectedQuarter !== 'all' && quarterMap[selectedQuarter]) {
-                            const months = quarterMap[selectedQuarter];
-                            if (!months.includes(date.getMonth())) return false;
-                        }
-                        
-                        return true;
-                    });
-
-                    lastLoadSource = "firebase";
-                    console.log(`🔥 تم تحميل ${filteredSessions.length} جلسة من Firestore`);
-
-                    // حفظ في الكاش إذا كان شهر محدد
-                    if (selectedMonth !== 'all' && filteredSessions.length > 0) {
-                        const monthNum = parseInt(selectedMonth);
-                        saveMonthToCache(currentYear, monthNum, filteredSessions);
-                    }
-                }
-
-                // جلب التسجيلات للجلسات المفلترة فقط
-                if (filteredSessions.length > 0) {
-                    const sessionCodes = new Set(filteredSessions.map(s => s.session_code));
-                    const allEnrollments = await DB.getAll('onjob_enrollments') || [];
-                    trainingData.enrollments = allEnrollments.filter(e => sessionCodes.has(e.session_code));
-                    console.log(`📊 ${trainingData.enrollments.length} تسجيل للجلسات المحددة`);
+                    monthsToLoad.push(parseInt(selectedMonth));
+                } else if (selectedQuarter !== 'all' && quarterMap[selectedQuarter]) {
+                    monthsToLoad.push(...quarterMap[selectedQuarter]);
                 } else {
-                    trainingData.enrollments = [];
-                    console.log(`ℹ️ لا توجد جلسات للفترة المحددة: ${currentYear}/${selectedMonth}/${selectedQuarter}`);
+                    for (let m = 0; m < 12; m++) monthsToLoad.push(m);
                 }
 
-                trainingData.sessions = filteredSessions;
-                
-            } catch (error) {
-                console.error('❌ Failed to fetch On Job data:', error);
-            } finally {
-                showLoading(false);
-            }
+                for (const m of monthsToLoad) {
+                    const monthData = await ensureMonthLoaded(currentYear, m, forceRefresh);
+                    if (monthData) {
+                        trainingData.sessions.push(...(monthData.sessions || []));
+                        trainingData.enrollments.push(...(monthData.enrollments || []));
+                    }
+                }
+            } catch (error) { console.error('❌ Failed to fetch targeted On Job data:', error);
+            } finally { showLoading(false); }
         }
 
-        // ===== وظيفة زر تحديث البيانات (Refresh Data) =====
+        // ================= وظيفة زر تحديث البيانات =================
         window.refreshData = async function() {
             const btn = document.getElementById('refreshBtn');
-            if (btn) {
-                btn.innerHTML = "⏳ Refreshing...";
-                btn.style.pointerEvents = "none";
-            }
-
+            if (btn) { btn.innerHTML = "⏳ Refreshing..."; btn.style.pointerEvents = "none"; }
             try {
-                // مسح الكاش
-                clearAllCache();
-                
-                // إعادة تحميل البيانات
+                await clearAllIDB();
                 employees = [];
                 trainingData = { courses: [], sessions: [], enrollments: [] };
                 employeeDeptMap.clear();
                 
-                await loadDataByFilters();
+                await loadDataByFilters(true);
                 buildUI();
                 
-                alert("✅ تم تحديث البيانات بنجاح من Firebase!");
+                alert("✅ تم تحديث البيانات بنجاح من الخادم!");
             } catch (error) {
-                console.error("Error refreshing data:", error);
-                alert("❌ حدث خطأ أثناء تحديث البيانات. تحقق من الاتصال.");
+                alert("❌ حدث خطأ أثناء تحديث البيانات.");
             } finally {
-                if (btn) {
-                    btn.innerHTML = "🔄 Refresh Data";
-                    btn.style.pointerEvents = "auto";
-                }
+                if (btn) { btn.innerHTML = "🔄 Refresh Data"; btn.style.pointerEvents = "auto"; }
             }
         };
 
         // ================= دوال التحليل والحسابات =================
         function calculateHoursFromTime(startTime, endTime) {
             if (!startTime || !endTime) return 0;
-            const startParts = startTime.toString().split(':');
-            const endParts = endTime.toString().split(':');
+            const startParts = startTime.toString().split(':'); const endParts = endTime.toString().split(':');
             let startHour = parseInt(startParts[0]), startMinute = parseInt(startParts[1]) || 0;
             let endHour = parseInt(endParts[0]), endMinute = parseInt(endParts[1]) || 0;
-            let diffHours = endHour - startHour;
-            let diffMinutes = endMinute - startMinute;
+            let diffHours = endHour - startHour; let diffMinutes = endMinute - startMinute;
             if (diffHours < 0) diffHours = 24 + diffHours;
             return parseFloat((diffHours + (diffMinutes / 60)).toFixed(2));
         }
@@ -447,13 +486,6 @@
             return calculateHoursFromTime(session.start_time, session.end_time);
         }
 
-        function filterByTrainingType(sessions) {
-            return sessions.filter(session => {
-                const course = trainingData.courses.find(c => c.course_code == session.course_code);
-                return course && (course.training_type === 'On Job' || course.training_type === 'on job' || course.training_type === 'On Job Training' || !course.training_type);
-            });
-        }
-
         function filterByMonthAndQuarter(items, dateField) {
             return items.filter(item => {
                 if (!item[dateField]) return false;
@@ -463,7 +495,6 @@
                 const month = itemDate.getMonth();
                 if (selectedQuarter !== 'all' && quarterMap[selectedQuarter] && !quarterMap[selectedQuarter].includes(month)) return false;
                 if (selectedMonth !== 'all' && month !== parseInt(selectedMonth)) return false;
-                
                 return true;
             });
         }
@@ -471,10 +502,11 @@
         function calculateDepartmentStats(filteredSessions) {
             const deptStats = new Map();
             filteredSessions.forEach(session => {
-                const attendees = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
+                const attendees = trainingData.enrollments.filter(e => isMatch(e.session_code, session.session_code) && isCompleted(e));
                 const sessionHours = getSessionHours(session);
+                
                 attendees.forEach(attendee => {
-                    const empId = attendee.employee_id?.toString();
+                    const empId = attendee.employee_id?.toString().trim();
                     let dept = employeeDeptMap.get(empId) || 'Not Specified';
                     
                     if (!deptStats.has(dept)) deptStats.set(dept, { sessions: 0, uniqueEmployees: new Set(), hours: 0, sessionSet: new Set() });
@@ -482,8 +514,8 @@
                     
                     if (empId) stats.uniqueEmployees.add(empId);
                     stats.hours += sessionHours;
-                    if (!stats.sessionSet.has(session.session_code)) {
-                        stats.sessionSet.add(session.session_code);
+                    if (!stats.sessionSet.has(session.session_code?.toString().trim())) {
+                        stats.sessionSet.add(session.session_code?.toString().trim());
                         stats.sessions++;
                     }
                 });
@@ -499,10 +531,10 @@
         function calculateCoursesStats(filteredSessions) {
             const courseStats = new Map();
             filteredSessions.forEach(session => {
-                const course = trainingData.courses.find(c => c.course_code == session.course_code);
+                const course = trainingData.courses.find(c => isMatch(c.course_code, session.course_code));
                 const courseName = course ? course.course_name : 'Not Specified';
                 const sessionHours = getSessionHours(session);
-                const attendees = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
+                const attendees = trainingData.enrollments.filter(e => isMatch(e.session_code, session.session_code) && isCompleted(e));
                 
                 if (!courseStats.has(courseName)) courseStats.set(courseName, { sessions: 0, uniqueEmployees: new Set(), hours: 0 });
                 const stats = courseStats.get(courseName);
@@ -518,9 +550,9 @@
         }
 
         function calculateStats(filteredSessions) {
-            const sessionCodes = new Set(filteredSessions.map(s => s.session_code));
-            const filteredEnrollments = trainingData.enrollments.filter(e => sessionCodes.has(e.session_code));
-            const completedEnrollments = filteredEnrollments.filter(e => e.enrollment_status === 'Completed');
+            const sessionCodes = new Set(filteredSessions.map(s => s.session_code?.toString().trim()));
+            const filteredEnrollments = trainingData.enrollments.filter(e => sessionCodes.has(e.session_code?.toString().trim()));
+            const completedEnrollments = filteredEnrollments.filter(isCompleted);
 
             const uniqueEmployees = new Set();
             filteredEnrollments.forEach(e => { if (e.employee_id) uniqueEmployees.add(e.employee_id); });
@@ -529,9 +561,9 @@
             const executedCourses = new Set();
             filteredSessions.forEach(session => {
                 const sessionHours = getSessionHours(session);
-                const attendanceCount = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed').length;
+                const attendanceCount = trainingData.enrollments.filter(e => isMatch(e.session_code, session.session_code) && isCompleted(e)).length;
                 totalHours += sessionHours * attendanceCount;
-                const course = trainingData.courses.find(c => c.course_code == session.course_code);
+                const course = trainingData.courses.find(c => isMatch(c.course_code, session.course_code));
                 if (attendanceCount > 0 && course) executedCourses.add(course.course_name);
             });
 
@@ -549,8 +581,8 @@
         function getEmployeesDetails(filteredSessions) {
             const employeesMap = new Map();
             filteredSessions.forEach(session => {
-                const attendees = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
-                const course = trainingData.courses.find(c => c.course_code == session.course_code);
+                const attendees = trainingData.enrollments.filter(e => isMatch(e.session_code, session.session_code) && isCompleted(e));
+                const course = trainingData.courses.find(c => isMatch(c.course_code, session.course_code));
                 const sessionHours = getSessionHours(session);
                 
                 attendees.forEach(attendee => {
@@ -572,28 +604,12 @@
                 .map(emp => ({ ...emp, totalCourses: emp.totalCourses.size, totalHours: parseFloat(emp.totalHours.toFixed(1)), sessions: emp.sessions.sort((a,b) => parseDateSafely(b.session_date) - parseDateSafely(a.session_date)) })).sort((a, b) => b.totalHours - a.totalHours);
         }
 
-        // ================= دالة التحقق من وجود بيانات =================
-        function hasDataForCurrentSelection() {
-            const filteredSessions = filterByMonthAndQuarter(filterByTrainingType(trainingData.sessions), 'session_date');
-            return filteredSessions.length > 0;
-        }
-
-        // ================= دالة عرض "لا توجد بيانات" =================
         function renderNoDataMessage() {
             const monthText = selectedMonth !== 'all' ? monthNames[parseInt(selectedMonth)] : 'All Months';
             const quarterText = selectedQuarter !== 'all' ? selectedQuarter : 'All Quarters';
-            return `
-                <div class="no-data-message">
-                    <h3>📭 لا توجد بيانات لعرضها</h3>
-                    <p>لم يتم العثور على جلسات تدريبية On-Job للفترة المحددة</p>
-                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #94a3b8;">
-                        ${monthText} | ${quarterText} | ${currentYear}
-                    </p>
-                </div>
-            `;
+            return `<div class="no-data-message"><h3>📭 لا توجد بيانات لعرضها</h3><p>لم يتم العثور على جلسات تدريبية On-Job للفترة المحددة</p><p style="margin-top: 0.5rem; font-size: 0.9rem; color: #94a3b8;">${monthText} | ${quarterText} | ${currentYear}</p></div>`;
         }
 
-        // ================= دالة عرض الإحصائيات =================
         function renderStats(stats) {
             return `<div class="stats-grid">
                 <div class="stat-card"><div class="stat-value">${stats.totalCoursesAll}</div><div class="stat-label">📚 Total Courses</div></div>
@@ -606,10 +622,8 @@
             </div>`;
         }
 
-        // ================= الرسوم البيانية (Charts) =================
         function initCharts(deptStats, filteredSessions) {
             Chart.register(ChartDataLabels);
-            
             const hoursSorted = [...deptStats].sort((a, b) => b.hours - a.hours);
             const employeesSorted = [...deptStats].sort((a, b) => b.uniqueEmployees - a.uniqueEmployees);
             
@@ -618,65 +632,30 @@
 
             const ctx1 = document.getElementById('deptEmployeesChart')?.getContext('2d');
             if (ctx1 && employeesSorted.length > 0) {
-                deptEmployeesChartInstance = new Chart(ctx1, {
-                    type: 'bar',
-                    data: { labels: employeesSorted.map(d => d.department), datasets: [{ label: 'Employees', data: employeesSorted.map(d => d.uniqueEmployees), backgroundColor: '#078fff', borderRadius: 10 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, color: '#1e3a5f', anchor: 'end', align: 'top', font: { weight: 'bold', size: 14 } } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
-                });
+                deptEmployeesChartInstance = new Chart(ctx1, { type: 'bar', data: { labels: employeesSorted.map(d => d.department), datasets: [{ label: 'Employees', data: employeesSorted.map(d => d.uniqueEmployees), backgroundColor: '#078fff', borderRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, color: '#1e3a5f', anchor: 'end', align: 'top', font: { weight: 'bold', size: 14 } } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
             }
             
             const ctx2 = document.getElementById('deptHoursChart')?.getContext('2d');
             if (ctx2 && hoursSorted.length > 0) {
-                deptHoursChartInstance = new Chart(ctx2, {
-                    type: 'bar',
-                    data: { labels: hoursSorted.map(d => d.department), datasets: [{ label: 'Hours', data: hoursSorted.map(d => d.hours), backgroundColor: '#158040', borderRadius: 10 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, color: '#1e3a5f', anchor: 'end', align: 'top', formatter: v => v.toFixed(1), font: { weight: 'bold', size: 14 } } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
-                });
+                deptHoursChartInstance = new Chart(ctx2, { type: 'bar', data: { labels: hoursSorted.map(d => d.department), datasets: [{ label: 'Hours', data: hoursSorted.map(d => d.hours), backgroundColor: '#158040', borderRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, color: '#1e3a5f', anchor: 'end', align: 'top', formatter: v => v.toFixed(1), font: { weight: 'bold', size: 14 } } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
             }
         }
 
-        // ================= أداة التشخيص (Diagnose Tool) =================
-        function runDiagnostic() {
-            let emptyIdsCount = 0;
-            const trainingIds = [];
-            
-            trainingData.enrollments.filter(e => e.enrollment_status === 'Completed').forEach(e => {
-                const id = e.employee_id?.toString().trim();
-                if (!id) emptyIdsCount++;
-                else trainingIds.push(id);
-            });
-
+        // ================= أداة التشخيص =================
+        window.showDiagnostic = () => {
+            let emptyIdsCount = 0; const trainingIds = [];
+            trainingData.enrollments.filter(isCompleted).forEach(e => { const id = e.employee_id?.toString().trim(); if (!id) emptyIdsCount++; else trainingIds.push(id); });
             const uniqueTrainingIds = [...new Set(trainingIds)];
-            const employeeMap = new Map();
-            employees.forEach(e => { if (e.id) employeeMap.set(e.id.toString().trim(), e); });
-
-            const notFoundIds = [];
-            const noDeptIds = [];
+            const employeeMap = new Map(); employees.forEach(e => { if (e.id) employeeMap.set(e.id.toString().trim(), e); });
+            const notFoundIds = []; const noDeptIds = [];
 
             uniqueTrainingIds.forEach(id => {
-                if (!employeeMap.has(id)) {
-                    notFoundIds.push(id);
-                } else {
-                    const dept = employeeDeptMap.get(id);
-                    if (!dept || dept === 'Under Review' || dept === 'Not Specified') {
-                        noDeptIds.push(id);
-                    }
-                }
+                if (!employeeMap.has(id)) notFoundIds.push(id);
+                else { const dept = employeeDeptMap.get(id); if (!dept || dept === 'Under Review' || dept === 'Not Specified') noDeptIds.push(id); }
             });
 
-            return { 
-                totalEmployees: employees.length, 
-                totalTrainingIds: uniqueTrainingIds.length, 
-                emptyIdsCount,
-                notFoundCount: notFoundIds.length, 
-                notFoundIds,
-                noDeptCount: noDeptIds.length,
-                noDeptIds
-            };
-        }
-
-        window.showDiagnostic = () => {
-            const result = runDiagnostic();
+            const result = { totalEmployees: employees.length, totalTrainingIds: uniqueTrainingIds.length, emptyIdsCount, notFoundCount: notFoundIds.length, notFoundIds, noDeptCount: noDeptIds.length, noDeptIds };
+            
             const box = document.getElementById('diagnosticBox');
             if (box) {
                 box.classList.toggle('show');
@@ -690,9 +669,7 @@
                     if (result.notFoundCount === 0 && result.noDeptCount === 0 && result.emptyIdsCount === 0) {
                         errorHtml = '<div style="color:#065f46; font-weight:bold; font-size:1.1rem; padding:1rem; background:#d1fae5; border-radius:1rem;">✅ لا توجد أخطاء! جميع أكواد التدريب صحيحة ومسجل لها أقسام.</div>';
                     } else {
-                        if (result.emptyIdsCount > 0) {
-                            errorHtml += `<h4 style="color:#e53e3e; margin-bottom:0.8rem; font-size:1.1rem;">⚠️ يوجد عدد (${result.emptyIdsCount}) تسجيلات بدون كود موظف نهائياً!</h4><hr style="margin:1.5rem 0; border-color:#fecaca;">`;
-                        }
+                        if (result.emptyIdsCount > 0) errorHtml += `<h4 style="color:#e53e3e; margin-bottom:0.8rem; font-size:1.1rem;">⚠️ يوجد عدد (${result.emptyIdsCount}) تسجيلات بدون كود موظف نهائياً!</h4><hr style="margin:1.5rem 0; border-color:#fecaca;">`;
                         if (result.notFoundIds.length > 0) {
                             errorHtml += `<h4 style="color:#c53030; margin-bottom:0.8rem; font-size:1.1rem;">❌ موظفين مسجلين بالتدريب ولكن كودهم غير موجود في قاعدة بيانات الموظفين:</h4>`;
                             errorHtml += result.notFoundIds.map(id => `<div style="background:white; padding:0.5rem; border-radius:0.5rem; margin-bottom:0.3rem;">🆔 كود الموظف: <strong>${id}</strong></div>`).join('');
@@ -711,9 +688,9 @@
             }
         };
 
-        // ================= بناء الـ HTML =================
+        // ================= بناء واجهة المستخدم (UI) =================
         function buildUI() {
-            let filteredSessions = filterByMonthAndQuarter(filterByTrainingType(trainingData.sessions), 'session_date');
+            let filteredSessions = filterByMonthAndQuarter(trainingData.sessions, 'session_date');
             const hasData = filteredSessions.length > 0;
             
             const stats = hasData ? calculateStats(filteredSessions) : { totalCoursesAll: 0, totalCoursesExecuted: 0, totalSessions: 0, uniqueEmployees: 0, totalHours: 0, hoursPerEmployee: 0, completionRate: 0 };
@@ -725,17 +702,10 @@
             const monthText = selectedMonth !== 'all' ? monthNames[parseInt(selectedMonth)] : 'All Months';
             const quarterText = selectedQuarter !== 'all' ? selectedQuarter : 'All Quarters';
 
-            // رسالة الحالة
-            let sourceBadge = '';
-            if (lastLoadSource === 'firebase') {
-                sourceBadge = `<span class="cache-badge firebase">🔥 تم جلب On Job من السيرفر </span>`;
-            } else if (lastLoadSource === 'cache') {
-                sourceBadge = `<span class="cache-badge cache">⚡ تم التحميل من التخزين المحلي </span>`;
-            } else {
-                sourceBadge = `<span class="cache-badge cache">⚡ تم التحميل الفوري </span>`;
-            }
+            let sourceBadge = lastLoadSource === 'firebase' 
+                ? `<span class="cache-badge firebase">🔥 جلب محدد من السيرفر</span>`
+                : `<span class="cache-badge cache">⚡ تم التحميل من التخزين المحلي</span>`;
 
-            // محتوى الإحصائيات والرسوم البيانية
             const contentHTML = hasData ? `
                 ${renderStats(stats)}
                 
@@ -772,7 +742,7 @@
 
             let html = `
                 <div class="navbar">
-                    <div class="logo"><h2>🎓 Learning & Development <span>Management System</span></h2></div>
+                    <div class="logo"><h2>🎓 Learning & Development <span>System</span></h2></div>
                     <div class="nav-links">
                         <a href="index.html" class="home">🏠 Home</a>
                         <button id="refreshBtn" class="refresh">🔄 Refresh Data</button>
@@ -786,7 +756,7 @@
                             <h1>📊 On Job Training Reports</h1>
                             ${sourceBadge}
                         </div>
-                        <p>Comprehensive analysis for internal trainings - unique attendees count</p>
+                        <p>Targeted Data Fetching - Load only what you need</p>
                     </div>
                     
                     <div class="diagnostic-box" id="diagnosticBox">
@@ -840,7 +810,6 @@
                 setTimeout(() => initCharts(deptStats, filteredSessions), 100);
             }
 
-            // إضافة مستمعي الأحداث
             document.getElementById('refreshBtn').addEventListener('click', window.refreshData);
             
             document.getElementById('yearSelect').addEventListener('change', async (e) => { 
@@ -850,7 +819,6 @@
             });
             
             document.getElementById('monthSelect').addEventListener('change', async (e) => { 
-                // عند تغيير الشهر، إعادة تعيين الربع إلى All
                 if (e.target.value !== 'all') {
                     document.getElementById('quarterSelect').value = 'all';
                     selectedQuarter = 'all';
@@ -861,7 +829,6 @@
             });
             
             document.getElementById('quarterSelect').addEventListener('change', async (e) => { 
-                // عند تغيير الربع، إعادة تعيين الشهر إلى All
                 if (e.target.value !== 'all') {
                     document.getElementById('monthSelect').value = 'all';
                     selectedMonth = 'all';
@@ -872,9 +839,7 @@
             });
             
             const deptFilter = document.getElementById('employeeDeptFilter');
-            if (deptFilter) {
-                deptFilter.addEventListener('change', (e) => { window.renderEmployeesTable(e.target.value); });
-            }
+            if (deptFilter) { deptFilter.addEventListener('change', (e) => { window.renderEmployeesTable(e.target.value); }); }
             
             document.getElementById('logoutBtn').addEventListener('click', async () => { await signOut(auth); window.location.href = 'login.html'; });
             
@@ -888,7 +853,6 @@
         window.renderEmployeesTable = (selectedDept) => {
             const employeesDetails = window.currentEmployeesDetails || [];
             let filteredEmployees = selectedDept === 'all' ? employeesDetails : employeesDetails.filter(emp => emp.department === selectedDept);
-            
             const container = document.getElementById('employeesTableContainer');
             if (!container) return;
             
@@ -897,13 +861,7 @@
                 return;
             }
             
-            container.innerHTML = `
-                <div class="table-wrapper">
-                    <table style="width:100%; min-width:800px;">
-                        <thead><tr style="background:#1e3a5f; color:white;"><th style="padding:12px;">#</th><th style="padding:12px;">Employee ID</th><th style="padding:12px;">Name</th><th style="padding:12px;">Department</th><th style="padding:12px;">Position</th><th style="padding:12px;">Courses</th><th style="padding:12px;">Sessions</th><th style="padding:12px;">Hours</th><th style="padding:12px;">Details</th></tr></thead>
-                        <tbody>${filteredEmployees.map((emp, index) => `<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:12px;">${index+1}</td><td style="padding:12px;">${emp.id}</td><td style="padding:12px;"><strong>${emp.name}</strong></td><td style="padding:12px;"><span style="background:#e2e8f0; padding:0.2rem 0.6rem; border-radius:1rem;">${emp.department}</span></td><td style="padding:12px;">${emp.position}</td><td style="padding:12px;">${emp.totalCourses}</td><td style="padding:12px;">${emp.sessions.length}</td><td style="padding:12px;"><span style="font-weight:bold; color:#2b7a4b;">${emp.totalHours}</span></td><td style="padding:12px;"><button class="btn-details" onclick="window.showEmployeeDetails('${emp.id}')">📋 View</button></td></tr>`).join('')}</tbody>
-                    </table>
-                </div>`;
+            container.innerHTML = `<div class="table-wrapper"><table style="width:100%; min-width:800px;"><thead><tr style="background:#1e3a5f; color:white;"><th style="padding:12px;">#</th><th style="padding:12px;">Employee ID</th><th style="padding:12px;">Name</th><th style="padding:12px;">Department</th><th style="padding:12px;">Position</th><th style="padding:12px;">Courses</th><th style="padding:12px;">Sessions</th><th style="padding:12px;">Hours</th><th style="padding:12px;">Details</th></tr></thead><tbody>${filteredEmployees.map((emp, index) => `<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:12px;">${index+1}</td><td style="padding:12px;">${emp.id}</td><td style="padding:12px;"><strong>${emp.name}</strong></td><td style="padding:12px;"><span style="background:#e2e8f0; padding:0.2rem 0.6rem; border-radius:1rem;">${emp.department}</span></td><td style="padding:12px;">${emp.position}</td><td style="padding:12px;">${emp.totalCourses}</td><td style="padding:12px;">${emp.sessions.length}</td><td style="padding:12px;"><span style="font-weight:bold; color:#2b7a4b;">${emp.totalHours}</span></td><td style="padding:12px;"><button class="btn-details" onclick="window.showEmployeeDetails('${emp.id}')">📋 View</button></td></tr>`).join('')}</tbody></table></div>`;
         };
 
         window.showEmployeeDetails = (employeeId) => {
@@ -918,7 +876,7 @@
 
         // ================= تصدير إكسيل =================
         function exportMonthlyReport() {
-            const filteredSessions = filterByMonthAndQuarter(filterByTrainingType(trainingData.sessions), 'session_date');
+            const filteredSessions = filterByMonthAndQuarter(trainingData.sessions, 'session_date');
             const monthMap = new Map();
             for (let i = 0; i < 12; i++) monthMap.set(i, { employees: new Set(), sessions: new Set(), hours: 0 });
             
@@ -926,12 +884,11 @@
                 const date = parseDateSafely(session.session_date);
                 if (isNaN(date.getTime())) return;
                 const month = date.getMonth();
-                const attendees = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
-                const course = trainingData.courses.find(c => c.course_code == session.course_code);
+                const attendees = trainingData.enrollments.filter(e => isMatch(e.session_code, session.session_code) && isCompleted(e));
                 const hrs = getSessionHours(session);
                 
                 attendees.forEach(a => { if (a.employee_id) monthMap.get(month).employees.add(a.employee_id.toString()); });
-                if (attendees.length > 0) monthMap.get(month).sessions.add(session.session_code);
+                if (attendees.length > 0) monthMap.get(month).sessions.add(session.session_code?.toString().trim());
                 monthMap.get(month).hours += hrs * attendees.length;
             });
             
@@ -949,21 +906,19 @@
             const dashRows = [['On Job Training Report'], [''], ['Dashboard Summary'], ['Month', 'Employees Trained', 'Completed Sessions', 'Total Hours']];
             dashboardData.forEach(row => dashRows.push([row.month, row.employees, row.sessions, row.hours]));
             dashRows.push(['Total', dashboardData.reduce((s, r) => s + r.employees, 0), dashboardData.reduce((s, r) => s + r.sessions, 0), parseFloat(dashboardData.reduce((s, r) => s + r.hours, 0).toFixed(1))]);
-            
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dashRows), 'Dashboard Summary');
             XLSX.writeFile(wb, `On Job Report - ${currentYear}.xlsx`);
         }
 
         function exportParticipatingDepartments() {
-            const filteredSessions = filterByMonthAndQuarter(filterByTrainingType(trainingData.sessions), 'session_date');
+            const filteredSessions = filterByMonthAndQuarter(trainingData.sessions, 'session_date');
             const deptData = new Map();
 
             filteredSessions.forEach(session => {
-                const attendees = trainingData.enrollments.filter(e => e.session_code == session.session_code && e.enrollment_status === 'Completed');
+                const attendees = trainingData.enrollments.filter(e => isMatch(e.session_code, session.session_code) && isCompleted(e));
                 const hrs = getSessionHours(session);
-                
                 attendees.forEach(attendee => {
-                    const empId = attendee.employee_id?.toString();
+                    const empId = attendee.employee_id?.toString().trim();
                     let dept = employeeDeptMap.get(empId) || 'Not Specified';
                     if (!deptData.has(dept)) deptData.set(dept, { employees: new Set(), hours: 0 });
                     deptData.get(dept).employees.add(empId);
@@ -987,7 +942,6 @@
             XLSX.writeFile(wb, `Participating Departments On Job - ${currentYear}.xlsx`);
         }
 
-        // ================= التهيئة والمصادقة =================
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 selectedMonth = new Date().getMonth().toString();
