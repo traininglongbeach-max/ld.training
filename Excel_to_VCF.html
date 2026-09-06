@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📇 تحويل Excel إلى VCF - جهات الاتصال</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0B3B82">
+    
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        :root {
+            --primary: #0B3B82;
+            --primary-dark: #092c62;
+            --primary-light: #4a7bb5;
+            --primary-gradient: linear-gradient(135deg, #0B3B82, #1a5bb5);
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --danger: #EF4444;
+            --danger-light: #FEE2E2;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --gray: #64748B;
+            --gray-light: #F1F5F9;
+            --dark: #1E293B;
+            --white: #FFFFFF;
+            --shadow: 0 10px 40px rgba(11, 59, 130, 0.12);
+            --shadow-hover: 0 15px 50px rgba(11, 59, 130, 0.2);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background: #F0F4F8;
+            min-height: 100vh;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ============================
+           NAVBAR
+        ============================ */
+        .navbar {
+            background: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo h2 {
+            color: #1e3a5f;
+            font-size: 1.3rem;
+        }
+        .navbar .logo span {
+            color: #2b7a4b;
+        }
+
+        .navbar .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .navbar .nav-links a,
+        .navbar .nav-links button {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+
+        .navbar .nav-links a:hover,
+        .navbar .nav-links button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .navbar .nav-links .home {
+            background: #2b7a4b;
+            color: white;
+        }
+
+        .navbar .nav-links .logout {
+            background: #e53e3e;
+            color: white;
+        }
+
+        /* ============================
+           CONTAINER
+        ============================ */
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* ============================
+           HEADER
+        ============================ */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header .icon {
+            font-size: 3rem;
+            color: var(--primary);
+            background: var(--gray-light);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--dark);
+        }
+
+        .header h1 span {
+            color: var(--primary);
+        }
+
+        .header p {
+            color: var(--gray);
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        /* ============================
+           CARD
+        ============================ */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(11, 59, 130, 0.06);
+            margin-bottom: 25px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        /* ============================
+           UPLOAD AREA
+        ============================ */
+        .upload-area {
+            border: 3px dashed var(--gray-light);
+            border-radius: var(--radius);
+            padding: 50px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #FAFAFA;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: #F8FAFF;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: #EBF5FB;
+            transform: scale(1.02);
+        }
+
+        .upload-area .upload-icon {
+            font-size: 4rem;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .upload-area p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .upload-area .file-types {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .upload-area .file-types span {
+            background: var(--gray-light);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--gray);
+        }
+
+        .upload-area .expected-columns {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: var(--gray);
+            background: var(--gray-light);
+            padding: 8px 16px;
+            border-radius: 10px;
+            display: inline-block;
+            border: 1px solid var(--success);
+        }
+
+        .upload-area .expected-columns strong {
+            color: var(--primary);
+        }
+
+        .upload-area .expected-columns .required {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* ============================
+           ERROR MESSAGE
+        ============================ */
+        .error-message {
+            background: var(--danger-light);
+            border: 2px solid var(--danger);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message .error-icon {
+            font-size: 3rem;
+            color: var(--danger);
+            margin-bottom: 10px;
+        }
+
+        .error-message h3 {
+            color: var(--danger);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .error-message p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .error-message .error-columns {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px auto;
+            display: inline-block;
+            text-align: right;
+            font-size: 0.85rem;
+            border: 1px solid var(--danger-light);
+        }
+
+        .error-message .error-columns .found {
+            color: var(--danger);
+        }
+
+        .error-message .error-columns .required-col {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        /* ============================
+           PREVIEW TABLE
+        ============================ */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .table-wrapper::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: var(--gray-light);
+            border-radius: 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .preview-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .preview-table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .preview-table th:first-child {
+            border-radius: 0 8px 0 0;
+        }
+
+        .preview-table th:last-child {
+            border-radius: 8px 0 0 0;
+        }
+
+        .preview-table td {
+            padding: 10px 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--gray-light);
+            vertical-align: middle;
+        }
+
+        .preview-table tbody tr:hover {
+            background: var(--gray-light);
+        }
+
+        .preview-table .vcf-preview {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+            direction: ltr;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .preview-table .badge-status {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .badge-status.success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-status.error {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* ============================
+           STATS
+        ============================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: var(--white);
+            padding: 18px 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid rgba(11, 59, 130, 0.06);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-item .stat-number {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .stat-item .stat-number.success {
+            color: var(--success);
+        }
+
+        .stat-item .stat-number.danger {
+            color: var(--danger);
+        }
+
+        .stat-item .stat-number.warning {
+            color: var(--warning);
+        }
+
+        /* ============================
+           BUTTONS
+        ============================ */
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 4px 25px rgba(11, 59, 130, 0.35);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover {
+            box-shadow: 0 4px 25px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover {
+            box-shadow: 0 4px 25px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-secondary {
+            background: var(--gray-light);
+            color: var(--dark);
+        }
+        .btn-secondary:hover {
+            background: #E2E8F0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+            min-width: 140px;
+        }
+
+
+        /* ============================
+           EMPTY STATE
+        ============================ */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--light-gray);
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 0.85rem;
+        }
+
+        /* ============================
+           TOAST
+        ============================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 700;
+            z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: calc(100vw - 30px);
+            text-align: center;
+            animation: toastIn .3s ease;
+        }
+
+        .toast.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .toast.error {
+            background: var(--danger);
+            color: white;
+        }
+
+        .toast.info {
+            background: var(--primary);
+            color: white;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        /* ============================
+           LOADING
+        ============================ */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            border: 4px solid var(--gray-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-spinner p {
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        /* ============================
+           RESPONSIVE
+        ============================ */
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+            }
+            .navbar .nav-links {
+                justify-content: center;
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+            .navbar .nav-links a,
+            .navbar .nav-links button {
+                width: 100%;
+                text-align: center;
+            }
+
+            .container {
+                padding: 0 15px;
+                margin: 20px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .upload-area .upload-icon {
+                font-size: 3rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header .icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+
+            .preview-table {
+                font-size: 0.75rem;
+            }
+
+            .preview-table th,
+            .preview-table td {
+                padding: 8px 10px;
+            }
+
+            .btn-group .btn {
+                flex: 1 1 100%;
+            }
+
+            .format-example .example-code {
+                font-size: 0.75rem;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .upload-area h3 {
+                font-size: 1rem;
+            }
+
+            .upload-area .file-types span {
+                font-size: 0.65rem;
+            }
+
+            .upload-area .expected-columns {
+                font-size: 0.7rem;
+            }
+
+            .preview-table {
+                font-size: 0.65rem;
+            }
+
+            .preview-table th,
+            .preview-table td {
+                padding: 6px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================
+         NAVBAR
+    ============================ -->
+    <nav class="navbar">
+        <div class="logo">
+            <h2>🎓 Learning & Development <span>System</span></h2>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="home">🏠 Home</a>
+            <button id="logoutBtn" class="logout">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <!-- ============================
+         MAIN CONTAINER
+    ============================ -->
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="icon">
+                <i class="fas fa-address-book"></i>
+            </div>
+            <h1>📇 تحويل <span>Excel</span> إلى <span>VCF</span></h1>
+            <p>قم برفع ملف Excel لتحويل جهات الاتصال إلى ملف VCF للهواتف</p>
+        </div>
+
+        <!-- UPLOAD CARD -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-cloud-upload-alt"></i>
+                رفع الملف
+            </div>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-file-excel"></i>
+                </div>
+                <h3>اسحب الملف هنا أو اضغط للاختيار</h3>
+                <p>يدعم ملفات Excel (.xlsx, .xls)</p>
+                <div class="file-types">
+                    <span>.xlsx</span>
+                    <span>.xls</span>
+                </div>
+                <div class="expected-columns">
+                    <i class="fas fa-columns"></i>
+                    الأعمدة المطلوبة: <br>
+                    <strong>Employee ID</strong> • <strong>Full Name</strong> • <strong>Dep</strong> • <strong>Phone Numbers</strong>
+                    <br>
+                    <span style="font-size:0.7rem; color:var(--gray);">
+                        <i class="fas fa-info-circle"></i> يجب أن تكون الأعمدة بهذه التسميات بالضبط
+                    </span>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls">
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>⚠️ تنسيق الملف غير صحيح</h3>
+                <p>الملف الذي قمت برفعه لا يحتوي على الأعمدة المطلوبة بالشكل الصحيح.</p>
+                <div class="error-columns" id="errorColumns">
+                    <div><strong>الأعمدة المطلوبة:</strong></div>
+                    <div style="margin-top:5px;">
+                        <span class="required-col">✅ Employee ID</span> • 
+                        <span class="required-col">✅ Full Name</span> • 
+                        <span class="required-col">✅ Dep</span> • 
+                        <span class="required-col">✅ Phone Numbers</span>
+                    </div>
+                    <div style="margin-top:8px; border-top:1px solid #FEE2E2; padding-top:8px;">
+                        <div><strong>الأعمدة الموجودة في ملفك:</strong></div>
+                        <div style="margin-top:5px;" id="foundColumns">
+                            <span class="found">❌ لا يوجد</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="resetUpload()" style="margin-top:15px;">
+                    <i class="fas fa-undo"></i> إعادة المحاولة
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading-spinner" id="loading">
+                <div class="spinner"></div>
+                <p>⏳ جاري معالجة الملف...</p>
+            </div>
+        </div>
+
+        <!-- RESULTS CARD -->
+        <div id="resultsCard" style="display:none;">
+            <!-- Stats -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalContacts">0</div>
+                    <div class="stat-label">📇 إجمالي جهات الاتصال</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number success" id="validContacts">0</div>
+                    <div class="stat-label">✅ صالحة</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number danger" id="invalidContacts">0</div>
+                    <div class="stat-label">⚠️ غير صالحة</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number warning" id="phoneFixed">0</div>
+                    <div class="stat-label">📱 تم إضافة 0</div>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-table"></i>
+                    معاينة البيانات
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="preview-table" id="previewTable">
+                        <thead>
+                            <tr>
+                                <th style="width:50px;">#</th>
+                                <th>القسم</th>
+                                <th>كود الموظف</th>
+                                <th>الاسم</th>
+                                <th>رقم الهاتف</th>
+                                <th style="min-width:200px;">صيغة VCF</th>
+                                <th style="width:80px;">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" id="downloadVcfBtn" disabled>
+                        <i class="fas fa-download"></i> تحميل ملف VCF
+                    </button>
+                    <button class="btn btn-secondary" id="clearBtn">
+                        <i class="fas fa-eraser"></i> مسح الكل
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="text-align:center; margin-top:30px; color:var(--gray); font-size:0.85rem;">
+            <p>© 2026 Learning & Development Management System</p>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" style="display:none;"></div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ============================================================
+        // GLOBALS
+        // ============================================================
+        let contactsData = [];
+        let vcfContent = '';
+        let phoneFixedCount = 0;
+
+        // الأعمدة المطلوبة بالضبط
+        const REQUIRED_COLUMNS = ['Employee ID', 'Full Name', 'Dep', 'Phone Numbers'];
+
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const loading = document.getElementById('loading');
+        const resultsCard = document.getElementById('resultsCard');
+        const previewBody = document.getElementById('previewBody');
+        const totalContacts = document.getElementById('totalContacts');
+        const validContacts = document.getElementById('validContacts');
+        const invalidContacts = document.getElementById('invalidContacts');
+        const phoneFixed = document.getElementById('phoneFixed');
+        const downloadVcfBtn = document.getElementById('downloadVcfBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const foundColumns = document.getElementById('foundColumns');
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+
+        function formatPhoneNumber(phone) {
+            if (!phone) return '';
+            let cleaned = String(phone).replace(/[^0-9]/g, '');
+            
+            if (cleaned.length > 0 && !cleaned.startsWith('0')) {
+                cleaned = '0' + cleaned;
+                phoneFixedCount++;
+            }
+            
+            return cleaned;
+        }
+
+        function generateDisplayName(dep, empId, name) {
+            const deptCode = dep || 'Unknown';
+            const empCode = empId || '000';
+            return `${deptCode} | ${empCode} | ${name}`;
+        }
+
+        function generateVcfEntry(name, dep, empId, phone) {
+            const deptCode = dep || 'Unknown';
+            const empCode = empId || '000';
+            const phoneNum = formatPhoneNumber(phone);
+            
+            const fullName = `${deptCode} | ${empCode} | ${name}`;
+            
+            const vcf = [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                `FN:${fullName}`,
+                `N:${fullName};;;`,
+                `TEL:${phoneNum}`,
+                `ORG:${deptCode}`,
+                `NOTE:Employee ID: ${empCode}`,
+                'END:VCARD'
+            ].join('\n');
+            
+            return vcf;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================================
+        // RESET UPLOAD
+        // ============================================================
+        window.resetUpload = function() {
+            errorMessage.style.display = 'none';
+            resultsCard.style.display = 'none';
+            fileInput.value = '';
+            contactsData = [];
+            vcfContent = '';
+            phoneFixedCount = 0;
+            previewBody.innerHTML = '';
+            totalContacts.textContent = '0';
+            validContacts.textContent = '0';
+            invalidContacts.textContent = '0';
+            phoneFixed.textContent = '0';
+            downloadVcfBtn.disabled = true;
+            loading.style.display = 'none';
+            showToast('🔄 تم إعادة تعيين التحميل', 'info');
+        };
+
+        // ============================================================
+        // VALIDATE COLUMNS
+        // ============================================================
+        function validateColumns(headers) {
+            // البحث عن الأعمدة المطابقة (تجاهل حالة الأحرف والمسافات)
+            const normalizedHeaders = headers.map(h => h.trim());
+            
+            const requiredNormalized = REQUIRED_COLUMNS.map(col => col.trim());
+            
+            const found = [];
+            const missing = [];
+            
+            requiredNormalized.forEach(req => {
+                const foundCol = normalizedHeaders.find(h => h.toLowerCase() === req.toLowerCase());
+                if (foundCol) {
+                    found.push(foundCol);
+                } else {
+                    missing.push(req);
+                }
+            });
+            
+            return {
+                isValid: missing.length === 0,
+                found: found,
+                missing: missing,
+                allHeaders: headers
+            };
+        }
+
+        function showColumnError(headers) {
+            const validation = validateColumns(headers);
+            
+            // عرض الأعمدة الموجودة
+            let foundHtml = '';
+            if (validation.found.length > 0) {
+                foundHtml = validation.found.map(col => 
+                    `<span class="found">✅ ${col}</span>`
+                ).join(' • ');
+            } else {
+                foundHtml = `<span class="found">❌ لا يوجد</span>`;
+            }
+            
+            // عرض الأعمدة المفقودة
+            let missingHtml = '';
+            if (validation.missing.length > 0) {
+                missingHtml = validation.missing.map(col => 
+                    `<span style="color:var(--danger); font-weight:700;">❌ ${col}</span>`
+                ).join(' • ');
+            }
+            
+            foundColumns.innerHTML = `
+                <div style="margin-bottom:5px;">
+                    <strong>✅ الموجودة:</strong> ${foundHtml}
+                </div>
+                <div style="margin-top:5px;">
+                    <strong>❌ المفقودة:</strong> ${missingHtml || '✅ جميع الأعمدة موجودة'}
+                </div>
+                <div style="margin-top:8px; font-size:0.8rem; color:var(--gray); border-top:1px solid #FEE2E2; padding-top:8px;">
+                    <strong>📋 جميع الأعمدة في ملفك:</strong> 
+                    ${headers.map(h => `<span style="background:white; padding:2px 8px; border-radius:4px; margin:2px; display:inline-block; border:1px solid #E2E8F0;">${h}</span>`).join('')}
+                </div>
+            `;
+            
+            errorMessage.style.display = 'block';
+            resultsCard.style.display = 'none';
+            loading.style.display = 'none';
+            
+            showToast('❌ تنسيق الملف غير صحيح - الأعمدة المطلوبة غير موجودة', 'error');
+        }
+
+        // ============================================================
+        // PROCESS EXCEL
+        // ============================================================
+        function processExcelFile(data) {
+            try {
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                if (!jsonData || jsonData.length === 0) {
+                    showToast('❌ لا توجد بيانات في الملف', 'error');
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                // التحقق من الأعمدة
+                const headers = Object.keys(jsonData[0]);
+                console.log('📊 الأعمدة الموجودة:', headers);
+                
+                const validation = validateColumns(headers);
+                
+                if (!validation.isValid) {
+                    showColumnError(headers);
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                // إذا كانت الأعمدة صحيحة، نكمل المعالجة
+                console.log('✅ الأعمدة صحيحة:', validation.found);
+
+                // تحديد الأعمدة المطلوبة
+                let empIdCol = headers.find(h => h.toLowerCase() === 'employee id'.toLowerCase());
+                let nameCol = headers.find(h => h.toLowerCase() === 'full name'.toLowerCase());
+                let depCol = headers.find(h => h.toLowerCase() === 'dep'.toLowerCase());
+                let phoneCol = headers.find(h => h.toLowerCase() === 'phone numbers'.toLowerCase());
+
+                console.log('📌 الأعمدة المختارة:', { empIdCol, nameCol, depCol, phoneCol });
+
+                // بناء قائمة جهات الاتصال
+                contactsData = [];
+                phoneFixedCount = 0;
+                let validCount = 0;
+                let invalidCount = 0;
+
+                jsonData.forEach((row, index) => {
+                    let empId = empIdCol ? String(row[empIdCol] || '').trim() : '';
+                    let name = nameCol ? String(row[nameCol] || '').trim() : '';
+                    let dep = depCol ? String(row[depCol] || '').trim() : '';
+                    let phone = phoneCol ? String(row[phoneCol] || '').trim() : '';
+
+                    name = name.replace(/\s+/g, ' ').trim();
+                    dep = dep.replace(/\s+/g, ' ').trim();
+                    empId = empId.replace(/\s+/g, ' ').trim();
+                    
+                    const formattedPhone = formatPhoneNumber(phone);
+
+                    const isValid = name.length > 0 && formattedPhone.length >= 10;
+
+                    if (isValid) {
+                        validCount++;
+                    } else {
+                        invalidCount++;
+                    }
+
+                    const displayName = generateDisplayName(dep, empId, name);
+
+                    contactsData.push({
+                        empId,
+                        name,
+                        department: dep || 'Unknown',
+                        phone: formattedPhone,
+                        rawPhone: phone,
+                        isValid,
+                        displayName,
+                        vcf: isValid ? generateVcfEntry(name, dep, empId, formattedPhone) : null
+                    });
+                });
+
+                // تحديث الإحصائيات
+                totalContacts.textContent = contactsData.length;
+                validContacts.textContent = validCount;
+                invalidContacts.textContent = invalidCount;
+                phoneFixed.textContent = phoneFixedCount;
+
+                // عرض البيانات في الجدول
+                renderPreview();
+
+                // إنشاء ملف VCF
+                generateVcfFile();
+
+                // عرض النتائج
+                resultsCard.style.display = 'block';
+                errorMessage.style.display = 'none';
+                downloadVcfBtn.disabled = false;
+
+                showToast(`✅ تم تحويل ${validCount} جهة اتصال بنجاح`, 'success');
+
+            } catch (error) {
+                console.error('❌ خطأ في معالجة الملف:', error);
+                showToast('❌ حدث خطأ أثناء معالجة الملف', 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        // RENDER PREVIEW
+        // ============================================================
+        function renderPreview() {
+            if (contactsData.length === 0) {
+                previewBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:30px; color:var(--gray);">
+                            <i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:10px;"></i>
+                            لا توجد بيانات لعرضها
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            previewBody.innerHTML = contactsData.map((contact, index) => `
+                <tr style="${!contact.isValid ? 'opacity:0.5;' : ''}">
+                    <td>${index + 1}</td>
+                    <td>
+                        <span style="background:var(--gray-light);padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;color:var(--primary);">
+                            ${escapeHtml(contact.department)}
+                        </span>
+                    </td>
+                    <td style="font-weight:600;color:var(--dark);">${escapeHtml(contact.empId)}</td>
+                    <td style="font-weight:600;">${escapeHtml(contact.name)}</td>
+                    <td>
+                        <span style="font-family:monospace;font-weight:600;color:var(--success);">
+                            ${contact.phone || '-'}
+                        </span>
+                    </td>
+                    <td class="vcf-preview" style="font-size:0.7rem;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(contact.displayName)}">
+                        ${contact.isValid ? escapeHtml(contact.displayName) : '⚠️ غير صالح'}
+                    </td>
+                    <td>
+                        <span class="badge-status ${contact.isValid ? 'success' : 'error'}">
+                            ${contact.isValid ? '✅ صالح' : '❌ غير صالح'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ============================================================
+        // GENERATE VCF
+        // ============================================================
+        function generateVcfFile() {
+            const validContacts = contactsData.filter(c => c.isValid);
+            
+            if (validContacts.length === 0) {
+                vcfContent = '';
+                showToast('⚠️ لا توجد جهات اتصال صالحة للتصدير', 'error');
+                return;
+            }
+
+            vcfContent = validContacts.map(c => c.vcf).join('\n\n');
+            
+            console.log(`📇 تم إنشاء ملف VCF بـ ${validContacts.length} جهة اتصال`);
+        }
+
+        // ============================================================
+        // DOWNLOAD VCF
+        // ============================================================
+        function downloadVcf() {
+            if (!vcfContent || vcfContent.length === 0) {
+                showToast('⚠️ لا توجد بيانات للتحميل', 'error');
+                return;
+            }
+
+            try {
+                const blob = new Blob([vcfContent], { type: 'text/vcard;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `contacts_${new Date().toISOString().split('T')[0]}.vcf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                const validCount = contactsData.filter(c => c.isValid).length;
+                showToast(`✅ تم تحميل ملف VCF بنجاح (${validCount} جهة اتصال)`, 'success');
+            } catch (error) {
+                console.error('❌ خطأ في التحميل:', error);
+                showToast('❌ حدث خطأ أثناء تحميل الملف', 'error');
+            }
+        }
+
+        // ============================================================
+        // CLEAR
+        // ============================================================
+        function clearAll() {
+            contactsData = [];
+            vcfContent = '';
+            phoneFixedCount = 0;
+            resultsCard.style.display = 'none';
+            errorMessage.style.display = 'none';
+            fileInput.value = '';
+            previewBody.innerHTML = '';
+            totalContacts.textContent = '0';
+            validContacts.textContent = '0';
+            invalidContacts.textContent = '0';
+            phoneFixed.textContent = '0';
+            downloadVcfBtn.disabled = true;
+            showToast('🗑️ تم مسح جميع البيانات', 'info');
+        }
+
+        // ============================================================
+        // FILE HANDLING
+        // ============================================================
+        function handleFile(file) {
+            if (!file) return;
+
+            // إخفاء أي رسائل خطأ سابقة
+            errorMessage.style.display = 'none';
+            resultsCard.style.display = 'none';
+
+            // التحقق من نوع الملف
+            const validTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'text/csv'
+            ];
+            
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (!['xlsx', 'xls', 'csv'].includes(extension) && !validTypes.includes(file.type)) {
+                showToast('❌ الرجاء اختيار ملف Excel صالح (.xlsx, .xls)', 'error');
+                return;
+            }
+
+            loading.style.display = 'block';
+            downloadVcfBtn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    processExcelFile(data);
+                } catch (error) {
+                    console.error('❌ خطأ:', error);
+                    showToast('❌ حدث خطأ أثناء قراءة الملف', 'error');
+                    loading.style.display = 'none';
+                }
+            };
+            reader.onerror = function() {
+                showToast('❌ حدث خطأ أثناء قراءة الملف', 'error');
+                loading.style.display = 'none';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                handleFile(this.files[0]);
+            }
+        });
+
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        uploadArea.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'INPUT') {
+                fileInput.click();
+            }
+        });
+
+        downloadVcfBtn.addEventListener('click', downloadVcf);
+        clearBtn.addEventListener('click', clearAll);
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error(error);
+                showToast('❌ حدث خطأ أثناء تسجيل الخروج', 'error');
+            }
+        });
+
+        // ============================================================
+        // AUTH
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            console.log('👤 مستخدم مسجل دخول:', user.email);
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        console.log('📇 أداة تحويل Excel إلى VCF جاهزة!');
+        console.log('📝 الأعمدة المطلوبة:', REQUIRED_COLUMNS.join(', '));
+        console.log('📝 مثال: Eng | 236 | خضرة حسين عبد القادر أبو زهرة');
+        console.log('📱 سيتم إضافة 0 تلقائياً لأرقام الهواتف');
+    </script>
+
+</body>
+</html>
