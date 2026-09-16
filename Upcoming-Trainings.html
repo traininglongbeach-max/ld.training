@@ -397,29 +397,27 @@
         }
 
         // ========== Status Update Functions (محسّن) ==========
+        // ========== Status Update Function (مُعدّل) ==========
+        // ✅ نرسل الحقول المعدّلة فقط (patch) بدل المستند الكامل
+        // حتى تنجح قاعدة hasOnly(['status', 'statusUpdatedAt'])
         async function updateSessionStatus(id, newStatus) {
             showLoading(true, '⏳ جاري تحديث حالة الجلسة...');
             
             try {
-                // استخدام DB.update من database.js بدلاً من Firestore مباشرة
-                const record = await DB.get('training_schedule', id);
-                
-                if (!record) {
-                    showToast('❌ لم يتم العثور على الجلسة', 'error');
-                    showLoading(false);
-                    return false;
-                }
+                const updatedAt = new Date().toISOString();
 
-                record.status = newStatus;
-                record.statusUpdatedAt = new Date().toISOString();
-
-                await DB.update('training_schedule', record);
+                // ✅ نستخدم updateDoc بدل DB.update لإرسال الحقول المعدّلة فقط
+                const docRef = doc(firestoreDb, 'training_schedule', id);
+                await updateDoc(docRef, {
+                    status: newStatus,
+                    statusUpdatedAt: updatedAt
+                });
                 
                 // ⭐ تحديث الكاش المحلي
                 const index = cachedSessions.findIndex(s => s.id === id);
                 if (index !== -1) {
                     cachedSessions[index].status = newStatus;
-                    cachedSessions[index].statusUpdatedAt = record.statusUpdatedAt;
+                    cachedSessions[index].statusUpdatedAt = updatedAt;
                 }
                 
                 const statusText = {
