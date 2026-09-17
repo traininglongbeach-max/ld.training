@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>📱 مولّد QR Code - نظام إدارة التعليم والتطوير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0B3B82">
+    
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #8b5cf6 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* ============================
+           LOADING SCREEN
+        ============================ */
+        #loadingScreen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+        #loadingScreen .spinner {
+            width: 60px; height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ============================
+           CONTAINER
+        ============================ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        /* ============================
+           HEADER
+        ============================ */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .header .logo-icon {
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .header h1 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .header p { font-size: 1rem; opacity: 0.9; }
+
+        /* ============================
+           NAVBAR
+        ============================ */
+        .navbar-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .btn-nav {
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+        .btn-nav:hover { transform: translateY(-3px); }
+        .btn-home {
+            background: rgba(255,255,255,0.95);
+            color: #667eea;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .btn-offjob {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .btn-notes {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        /* ============================
+           MAIN CARD
+        ============================ */
+        .main-card {
+            background: white;
+            border-radius: 2rem;
+            padding: 40px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #8b5cf6, #ec4899);
+        }
+
+        .card-title {
+            color: #1e293b;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+        }
+        .card-title i { color: #8b5cf6; }
+
+        /* ============================
+           LAYOUT
+        ============================ */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; gap: 30px; }
+        }
+
+        /* ============================
+           FORM CARDS
+        ============================ */
+        .form-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #8b5cf6, #6366f1);
+        }
+        .form-card.blue::before { background: linear-gradient(180deg, #3b82f6, #2563eb); }
+        .form-card.green::before { background: linear-gradient(180deg, #10b981, #059669); }
+
+        .form-card h3 {
+            color: #1e293b;
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+        }
+        .form-card h3 i {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            border-radius: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .form-card.blue h3 i { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .form-card.green h3 i { background: linear-gradient(135deg, #10b981, #059669); }
+
+        /* ============================
+           FORM CONTROLS
+        ============================ */
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        .form-group label i { color: #8b5cf6; }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Tajawal', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        .form-control:focus {
+            border-color: #8b5cf6;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+        textarea.form-control {
+            resize: vertical;
+            min-height: 110px;
+            line-height: 1.6;
+        }
+
+        /* Input with Example Button */
+        .input-with-example { position: relative; }
+        .example-btn {
+            position: absolute;
+            top: 8px; left: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 0.7rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .example-btn:hover { transform: scale(1.05); }
+
+        /* ============================
+           THEME SELECTOR
+        ============================ */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .theme-btn {
+            padding: 12px 6px;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            background: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: #64748b;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-align: center;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .theme-btn .theme-icon { font-size: 1.4rem; line-height: 1; }
+        .theme-btn:hover {
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+            transform: translateY(-2px);
+        }
+        .theme-btn.active {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+        }
+        @media (max-width: 600px) {
+            .theme-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ============================
+           SIZE OPTIONS
+        ============================ */
+        .size-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .size-btn {
+            padding: 12px 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            background: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #64748b;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .size-btn .size-label { font-size: 0.7rem; opacity: 0.7; }
+        .size-btn:hover { border-color: #8b5cf6; color: #8b5cf6; }
+        .size-btn.active {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+        }
+        .size-btn.active .size-label { opacity: 0.9; }
+
+        /* ============================
+           BUTTONS
+        ============================ */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn-action {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 1rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .btn-generate {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.35);
+        }
+        .btn-generate:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(139, 92, 246, 0.45);
+        }
+        .btn-download {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+        .btn-download:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+        .btn-clear {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .btn-clear:hover:not(:disabled) {
+            background: #e2e8f0;
+            color: #475569;
+            transform: translateY(-3px);
+        }
+
+        /* ============================
+           PREVIEW SECTION
+        ============================ */
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 1.5rem;
+            padding: 30px;
+            border: 2px dashed #cbd5e1;
+            min-height: 500px;
+            position: relative;
+        }
+        .preview-section .preview-label {
+            position: absolute;
+            top: 15px; left: 15px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        /* ============================
+           QR CONTAINER & THEMES
+        ============================ */
+        #qrContainer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: all 0.3s ease;
+            max-width: 100%;
+        }
+        #qrcode {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 100%;
+        }
+        #qrcode canvas, #qrcode img {
+            max-width: 100% !important;
+            height: auto !important;
+            display: block;
+        }
+
+        /* Theme: Classic */
+        .theme-classic {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Theme: Rounded */
+        .theme-rounded {
+            background: white;
+            border-radius: 2.5rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .theme-rounded #qrcode canvas,
+        .theme-rounded #qrcode img { border-radius: 1.5rem; }
+
+        /* Theme: Dots */
+        .theme-dots {
+            background: #fef3c7;
+            border-radius: 1rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Theme: Framed */
+        .theme-framed {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            padding: 8px;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(139, 92, 246, 0.4);
+        }
+        .theme-framed #qrcode {
+            background: white;
+            padding: 25px;
+            border-radius: 1.2rem;
+        }
+
+        /* Theme: Gradient */
+        .theme-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 30px;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.4);
+        }
+        .theme-gradient #qrcode {
+            background: white;
+            padding: 20px;
+            border-radius: 1rem;
+        }
+
+        /* Theme: Shadow */
+        .theme-shadow {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25), 0 10px 20px rgba(0,0,0,0.15);
+            padding: 30px;
+        }
+
+        /* Theme: Card */
+        .theme-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            padding: 25px 25px 35px 25px;
+            position: relative;
+        }
+        .theme-card::after {
+            content: 'SCAN ME';
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #8b5cf6;
+        }
+
+        /* Theme: Minimal */
+        .theme-minimal {
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* ============================
+           PLACEHOLDER
+        ============================ */
+        .placeholder {
+            text-align: center;
+            color: #94a3b8;
+            padding: 40px 20px;
+        }
+        .placeholder .icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        .placeholder h3 {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+        .placeholder p { font-size: 0.9rem; color: #94a3b8; }
+
+        /* ============================
+           STATS BAR
+        ============================ */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+        .stat-chip i { color: #8b5cf6; }
+
+        /* ============================
+           TOAST
+        ============================ */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 1.2rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            animation: slideInToast 0.3s ease;
+            max-width: calc(100vw - 60px);
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .toast-msg.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .toast-msg.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        .toast-msg::before {
+            content: '✅';
+            font-size: 1.1rem;
+        }
+        .toast-msg.error::before { content: '❌'; }
+        .toast-msg.info::before { content: 'ℹ️'; }
+        @keyframes slideInToast {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ============================
+           FOOTER
+        ============================ */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* ============================
+           RESPONSIVE
+        ============================ */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .main-card { padding: 25px 20px; border-radius: 1.5rem; }
+            .header .logo-icon { width: 60px; height: 60px; font-size: 2rem; }
+            .size-options { grid-template-columns: repeat(2, 1fr); }
+            .action-buttons { grid-template-columns: 1fr; }
+            .btn-generate { grid-column: 1; }
+            .preview-section { min-height: 400px; padding: 20px; }
+            .toast-msg { right: 15px; left: 15px; bottom: 15px; max-width: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOADING SCREEN -->
+    <div id="loadingScreen">
+        <div class="spinner"></div>
+        ⏳ جاري التحقق من الصلاحيات...
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container" id="app">
+        
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo-icon">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <h1>📱 مولّد QR Code</h1>
+            <p>أنشئ أكواد QR مخصصة بتصاميم احترافية</p>
+        </div>
+
+        <!-- NAVBAR -->
+        <div class="navbar-actions">
+            <a href="index.html" class="btn-nav btn-home">
+                <i class="fas fa-home"></i> الرئيسية
+            </a>
+
+            <button onclick="logout()" class="btn-nav btn-logout">
+                <i class="fas fa-sign-out-alt"></i> تسجيل خروج
+            </button>
+        </div>
+
+        <!-- MAIN CARD -->
+        <div class="main-card">
+            <div class="layout">
+                
+                <!-- ============================
+                     CONTROLS SECTION
+                ============================ -->
+                <div class="controls-section">
+                    <h2 class="card-title">
+                        <i class="fas fa-sliders-h"></i>
+                        إعدادات الـ QR
+                    </h2>
+
+                    <!-- Content Input -->
+                    <div class="form-card">
+                        <h3>
+                            <i class="fas fa-link"></i>
+                            محتوى الكود
+                        </h3>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>
+                                <i class="fas fa-keyboard"></i>
+                                النص أو الرابط
+                            </label>
+                            <div class="input-with-example">
+                                <textarea 
+                                    id="qrText" 
+                                    class="form-control" 
+                                    placeholder="https://example.com&#10;أو&#10;أي نص تريد تحويله إلى QR"
+                                    style="padding-top: 45px;"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Theme Selector -->
+                    <div class="form-card blue">
+                        <h3>
+                            <i class="fas fa-paint-brush"></i>
+                            التصميم
+                        </h3>
+                        <div class="theme-grid">
+                            <button class="theme-btn active" data-theme="classic" onclick="setTheme('classic', this)">
+                                <span class="theme-icon">⬜</span>
+                                <span>كلاسيكي</span>
+                            </button>
+                            <button class="theme-btn" data-theme="rounded" onclick="setTheme('rounded', this)">
+                                <span class="theme-icon">⭕</span>
+                                <span>مستدير</span>
+                            </button>
+                            <button class="theme-btn" data-theme="dots" onclick="setTheme('dots', this)">
+                                <span class="theme-icon">🟨</span>
+                                <span>نقاط</span>
+                            </button>
+                            <button class="theme-btn" data-theme="framed" onclick="setTheme('framed', this)">
+                                <span class="theme-icon">🖼️</span>
+                                <span>إطار</span>
+                            </button>
+                            <button class="theme-btn" data-theme="gradient" onclick="setTheme('gradient', this)">
+                                <span class="theme-icon">🌈</span>
+                                <span>متدرج</span>
+                            </button>
+                            <button class="theme-btn" data-theme="shadow" onclick="setTheme('shadow', this)">
+                                <span class="theme-icon">🌑</span>
+                                <span>ظل</span>
+                            </button>
+                            <button class="theme-btn" data-theme="card" onclick="setTheme('card', this)">
+                                <span class="theme-icon">💳</span>
+                                <span>بطاقة</span>
+                            </button>
+                            <button class="theme-btn" data-theme="minimal" onclick="setTheme('minimal', this)">
+                                <span class="theme-icon">◽</span>
+                                <span>مينيمال</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Size & Error Level -->
+                    <div class="form-card green">
+                        <h3>
+                            <i class="fas fa-cog"></i>
+                            الإعدادات المتقدمة
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-expand-arrows-alt"></i>
+                                الحجم
+                            </label>
+                            <div class="size-options">
+                                <button class="size-btn" data-size="200" onclick="setQrSize(200, this)">
+                                    <span>صغير</span>
+                                    <span class="size-label">200px</span>
+                                </button>
+                                <button class="size-btn active" data-size="350" onclick="setQrSize(350, this)">
+                                    <span>متوسط</span>
+                                    <span class="size-label">350px</span>
+                                </button>
+                                <button class="size-btn" data-size="500" onclick="setQrSize(500, this)">
+                                    <span>كبير</span>
+                                    <span class="size-label">500px</span>
+                                </button>
+                                <button class="size-btn" data-size="700" onclick="setQrSize(700, this)">
+                                    <span>ضخم</span>
+                                    <span class="size-label">700px</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>
+                                <i class="fas fa-shield-alt"></i>
+                                مستوى تصحيح الأخطاء
+                            </label>
+                            <select id="qrErrorLevel" class="form-control">
+                                <option value="L">منخفض (7%) - مساحة أكثر</option>
+                                <option value="M" selected>متوسط (15%) - موصى به</option>
+                                <option value="Q">عالي (25%) - حماية أكبر</option>
+                                <option value="H">مرتفع جداً (30%) - أقصى حماية</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn-action btn-generate" onclick="generateQR()" id="generateBtn">
+                            <i class="fas fa-qrcode"></i>
+                            توليد QR Code
+                        </button>
+                        <button class="btn-action btn-download" onclick="downloadQR()" id="downloadBtn" disabled>
+                            <i class="fas fa-download"></i>
+                            تحميل PNG
+                        </button>
+                        <button class="btn-action btn-clear" onclick="clearQR()" id="clearBtn" disabled>
+                            <i class="fas fa-trash"></i>
+                            مسح
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ============================
+                     PREVIEW SECTION
+                ============================ -->
+                <div class="preview-section">
+                    <div class="preview-label">
+                        <i class="fas fa-eye"></i> معاينة مباشرة
+                    </div>
+                    
+                    <div id="qrContainer" class="theme-classic">
+                        <div id="qrcode"></div>
+                    </div>
+                    
+                    <div class="placeholder" id="placeholder">
+                        <div class="icon">📱</div>
+                        <h3>لا يوجد QR بعد</h3>
+                        <p>أدخل المحتوى واضغط "توليد QR Code"</p>
+                    </div>
+                    
+                    <div class="stats-bar" id="statsBar" style="display: none;">
+                        <div class="stat-chip">
+                            <i class="fas fa-font"></i>
+                            <span id="statLength">0</span> حرف
+                        </div>
+                        <div class="stat-chip">
+                            <i class="fas fa-expand"></i>
+                            <span id="statSize">350</span> px
+                        </div>
+                        <div class="stat-chip">
+                            <i class="fas fa-shield-alt"></i>
+                            <span id="statLevel">M</span>
+                        </div>
+                        <div class="stat-chip">
+                            <i class="fas fa-paint-brush"></i>
+                            <span id="statTheme">كلاسيكي</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>© 2026 نظام إدارة التعليم والتطوير - مولّد QR Code</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ============================================================
+        // GLOBALS
+        // ============================================================
+        let currentQrSize = 350;
+        let currentTheme = 'classic';
+        let currentUser = null;
+        let qrGenerator = null;
+
+        const themeNames = {
+            classic: 'كلاسيكي',
+            rounded: 'مستدير',
+            dots: 'نقاط',
+            framed: 'إطار',
+            gradient: 'متدرج',
+            shadow: 'ظل',
+            card: 'بطاقة',
+            minimal: 'مينيمال'
+        };
+
+        // ============================================================
+        // TOAST
+        // ============================================================
+        function showToast(message, type = 'success') {
+            document.querySelector('.toast-msg')?.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // ============================================================
+        // THEME MANAGEMENT
+        // ============================================================
+        window.setTheme = (theme, btn) => {
+            currentTheme = theme;
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const container = document.getElementById('qrContainer');
+            container.className = `theme-${theme}`;
+            
+            document.getElementById('statTheme').textContent = themeNames[theme];
+            
+            if (document.getElementById('qrcode').innerHTML.trim() !== '') {
+                generateQR();
+            }
+        };
+
+        // ============================================================
+        // SIZE MANAGEMENT
+        // ============================================================
+        window.setQrSize = (size, btn) => {
+            currentQrSize = size;
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+        // GENERATE QR CODE
+        // ============================================================
+        window.generateQR = () => {
+            const text = document.getElementById('qrText').value.trim();
+            const errorLevel = document.getElementById('qrErrorLevel').value;
+
+            if (typeof QRCode === 'undefined') {
+                showToast('❌ مكتبة QR غير محملة. يرجى إعادة تحميل الصفحة', 'error');
+                return;
+            }
+
+            if (!text) {
+                showToast('⚠️ يرجى إدخال نص أو رابط', 'error');
+                document.getElementById('qrText').focus();
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التوليد...';
+
+            try {
+                const qrcodeDiv = document.getElementById('qrcode');
+                qrcodeDiv.innerHTML = '';
+                document.getElementById('placeholder').style.display = 'none';
+
+                qrGenerator = new QRCode(qrcodeDiv, {
+                    text: text,
+                    width: currentQrSize,
+                    height: currentQrSize,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel[errorLevel]
+                });
+
+                setTimeout(() => {
+                    document.getElementById('statLength').textContent = text.length;
+                    document.getElementById('statSize').textContent = currentQrSize;
+                    document.getElementById('statLevel').textContent = errorLevel;
+                    document.getElementById('statTheme').textContent = themeNames[currentTheme];
+                    document.getElementById('statsBar').style.display = 'flex';
+
+                    document.getElementById('downloadBtn').disabled = false;
+                    document.getElementById('clearBtn').disabled = false;
+
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<i class="fas fa-qrcode"></i> توليد QR Code';
+
+                    showToast('✅ تم توليد QR Code بنجاح', 'success');
+                }, 200);
+
+            } catch (error) {
+                console.error('QR Generation Error:', error);
+                showToast('❌ حدث خطأ أثناء توليد QR', 'error');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-qrcode"></i> توليد QR Code';
+                document.getElementById('placeholder').style.display = 'block';
+            }
+        };
+
+        // ============================================================
+        // DOWNLOAD WITH BACKGROUND
+        // ============================================================
+        window.downloadQR = () => {
+            const qrcodeDiv = document.getElementById('qrcode');
+            const canvas = qrcodeDiv.querySelector('canvas');
+            const img = qrcodeDiv.querySelector('img');
+
+            if (!canvas && !img) {
+                showToast('⚠️ لا يوجد QR للتحميل', 'error');
+                return;
+            }
+
+            try {
+                const qrSize = currentQrSize;
+                
+                const paddingMap = {
+                    classic: 20,
+                    rounded: 40,
+                    dots: 25,
+                    framed: 40,
+                    gradient: 40,
+                    shadow: 40,
+                    card: 30,
+                    minimal: 20
+                };
+                const padding = paddingMap[currentTheme] || 20;
+                const bottomExtra = currentTheme === 'card' ? 40 : 0;
+                
+                const totalSize = qrSize + (padding * 2);
+                const totalHeight = qrSize + (padding * 2) + bottomExtra;
+
+                const finalCanvas = document.createElement('canvas');
+                finalCanvas.width = totalSize;
+                finalCanvas.height = totalHeight;
+                const ctx = finalCanvas.getContext('2d');
+
+                drawThemeBackground(ctx, totalSize, totalHeight, padding, qrSize);
+
+                if (canvas) {
+                    ctx.drawImage(canvas, padding, padding, qrSize, qrSize);
+                } else if (img) {
+                    ctx.drawImage(img, padding, padding, qrSize, qrSize);
+                }
+
+                if (currentTheme === 'card') {
+                    ctx.fillStyle = '#8b5cf6';
+                    ctx.font = 'bold 16px Tajawal, Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('SCAN ME', totalSize / 2, totalHeight - 15);
+                }
+
+                const link = document.createElement('a');
+                link.href = finalCanvas.toDataURL('image/png');
+                link.download = `qr-${currentTheme}-${Date.now()}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast('📥 تم تحميل QR مع الخلفية', 'success');
+            } catch (error) {
+                console.error('Download Error:', error);
+                showToast('❌ فشل تحميل QR', 'error');
+            }
+        };
+
+        // ============================================================
+        // DRAW THEME BACKGROUND
+        // ============================================================
+        function drawThemeBackground(ctx, w, h, padding, qrSize) {
+            ctx.clearRect(0, 0, w, h);
+
+            switch (currentTheme) {
+                case 'classic':
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, w, h);
+                    break;
+
+                case 'rounded':
+                    ctx.fillStyle = '#ffffff';
+                    drawRoundedRect(ctx, 0, 0, w, h, 40);
+                    ctx.fill();
+                    break;
+
+                case 'dots':
+                    ctx.fillStyle = '#fef3c7';
+                    ctx.fillRect(0, 0, w, h);
+                    break;
+
+                case 'framed':
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, w, h);
+                    const frameGrad = ctx.createLinearGradient(0, 0, w, h);
+                    frameGrad.addColorStop(0, '#8b5cf6');
+                    frameGrad.addColorStop(1, '#ec4899');
+                    ctx.strokeStyle = frameGrad;
+                    ctx.lineWidth = 12;
+                    drawRoundedRect(ctx, 6, 6, w - 12, h - 12, 25);
+                    ctx.stroke();
+                    break;
+
+                case 'gradient':
+                    const grad = ctx.createLinearGradient(0, 0, w, h);
+                    grad.addColorStop(0, '#667eea');
+                    grad.addColorStop(0.5, '#764ba2');
+                    grad.addColorStop(1, '#8b5cf6');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.fillStyle = '#ffffff';
+                    drawRoundedRect(ctx, padding - 10, padding - 10, qrSize + 20, qrSize + 20, 15);
+                    ctx.fill();
+                    break;
+
+                case 'shadow':
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowOffsetY = 10;
+                    ctx.fillStyle = '#ffffff';
+                    drawRoundedRect(ctx, 0, 0, w, h, 20);
+                    ctx.fill();
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+                    break;
+
+                case 'card':
+                    ctx.fillStyle = '#ffffff';
+                    drawRoundedRect(ctx, 0, 0, w, h, 30);
+                    ctx.fill();
+                    break;
+
+                case 'minimal':
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(1, 1, w - 2, h - 2);
+                    break;
+            }
+        }
+
+        // ============================================================
+        // HELPER: Rounded Rect
+        // ============================================================
+        function drawRoundedRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        // ============================================================
+        // CLEAR
+        // ============================================================
+        window.clearQR = () => {
+            document.getElementById('qrText').value = '';
+            document.getElementById('qrcode').innerHTML = '';
+            document.getElementById('placeholder').style.display = 'block';
+            document.getElementById('statsBar').style.display = 'none';
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+            qrGenerator = null;
+            showToast('🗑️ تم المسح', 'info');
+        };
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        window.logout = async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('❌ حدث خطأ أثناء تسجيل الخروج', 'error');
+            }
+        };
+
+        // ============================================================
+        // AUTH GUARD
+        // ============================================================
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('loadingScreen').style.display = 'none';
+            if (user) {
+                currentUser = user;
+                document.getElementById('app').style.display = 'block';
+                console.log('👤 المستخدم:', user.email);
+                console.log('📱 مولّد QR Code جاهز للاستخدام');
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // ============================================================
+        // KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                generateQR();
+            }
+            if (e.key === 'Escape') {
+                clearQR();
+            }
+        });
+
+        console.log('📱 QR Generator Page Loaded');
+    </script>
+</body>
+</html>
