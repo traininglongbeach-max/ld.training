@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 5 Performers - Long Beach Resort</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#1B3A6B">
+    
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Tajawal', 'Arial', sans-serif;
+        }
+
+        :root {
+            /* ألوان Long Beach Resort من اللوجو */
+            --lbr-navy: #1B3A6B;
+            --lbr-navy-dark: #142C52;
+            --lbr-navy-light: #2C5490;
+            --lbr-orange: #F5A623;
+            --lbr-orange-dark: #D98A0F;
+            --lbr-orange-light: #FFB84D;
+            --lbr-cream: #FAF7F2;
+            --lbr-gray: #6B7280;
+            --lbr-light-gray: #E5E7EB;
+            --lbr-white: #FFFFFF;
+            --lbr-dark: #1F2937;
+            
+            --success: #10B981;
+            --danger: #EF4444;
+            
+            --shadow: 0 4px 20px rgba(27, 58, 107, 0.12);
+            --shadow-hover: 0 10px 35px rgba(27, 58, 107, 0.2);
+            --radius: 14px;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background: linear-gradient(135deg, #FAF7F2 0%, #F0EDE6 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Poppins', 'Tajawal', sans-serif;
+        }
+
+        /* ============================
+            NAVBAR
+        ============================ */
+        .navbar {
+            background: var(--lbr-white);
+            padding: 10px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            border-top: 3px solid var(--lbr-orange);
+        }
+
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar .logo img {
+            height: 52px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .navbar .logo .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar .logo .logo-text h1 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--lbr-navy);
+            letter-spacing: 0.3px;
+            line-height: 1.2;
+        }
+
+        .navbar .logo .logo-text span {
+            font-size: 0.68rem;
+            color: var(--lbr-orange);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-nav {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-nav:hover { transform: translateY(-2px); }
+
+        .btn-home {
+            background: var(--lbr-navy);
+            color: white;
+        }
+        .btn-home:hover {
+            background: var(--lbr-navy-dark);
+            box-shadow: 0 4px 15px rgba(27, 58, 107, 0.35);
+        }
+
+        .btn-refresh {
+            background: #F3F4F6;
+            color: var(--lbr-navy);
+        }
+        .btn-refresh:hover { background: var(--lbr-light-gray); }
+
+        .btn-logout {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-logout:hover { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35); }
+
+        /* ============================
+            CONTAINER
+        ============================ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ============================
+            LEADERBOARD SECTION
+        ============================ */
+        .leaderboard-section {
+            background: var(--lbr-white);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(27, 58, 107, 0.06);
+            width: 100%;
+        }
+
+        .leaderboard-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #F3F4F6;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .leaderboard-section .section-header h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--lbr-navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .leaderboard-section .section-header h2 i {
+            color: var(--lbr-orange);
+        }
+
+        .leaderboard-section .section-header .count-badge {
+            background: rgba(245, 166, 35, 0.12);
+            color: var(--lbr-orange-dark);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border: 1px solid rgba(245, 166, 35, 0.25);
+        }
+
+        /* ============================
+            FILTER BAR
+        ============================ */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding: 12px 18px;
+            background: #F9FAFB;
+            border-radius: 12px;
+            align-items: center;
+            border: 1px solid var(--lbr-light-gray);
+        }
+
+        .filter-bar .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-bar .filter-group label {
+            font-weight: 600;
+            font-size: 0.78rem;
+            color: var(--lbr-gray);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-bar .filter-group label i {
+            color: var(--lbr-navy);
+        }
+
+        .filter-bar select {
+            padding: 6px 12px;
+            border: 1.5px solid var(--lbr-light-gray);
+            border-radius: 8px;
+            font-size: 0.78rem;
+            background: white;
+            outline: none;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            color: var(--lbr-dark);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .filter-bar select:focus {
+            border-color: var(--lbr-navy);
+            box-shadow: 0 0 0 3px rgba(27, 58, 107, 0.1);
+        }
+
+        .filter-bar .filter-info {
+            font-size: 0.75rem;
+            color: var(--lbr-gray);
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .filter-bar .filter-info span {
+            color: var(--lbr-navy);
+            font-weight: 700;
+        }
+
+        /* ============================
+            LEADERBOARD CONTAINER
+        ============================ */
+        #leaderboardContainer {
+            width: 100%;
+            min-height: 350px;
+            background: #F9FAFB;
+            border-radius: var(--radius);
+            border: 2px dashed #D1D5DB;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #leaderboardContainer .empty-state {
+            text-align: center;
+            color: var(--lbr-gray);
+            padding: 40px;
+        }
+
+        #leaderboardContainer .empty-state i {
+            font-size: 3.5rem;
+            color: #D1D5DB;
+            margin-bottom: 12px;
+        }
+
+        #leaderboardContainer .empty-state h3 {
+            font-size: 1rem;
+            color: var(--lbr-dark);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        #leaderboardContainer .empty-state p {
+            font-size: 0.82rem;
+        }
+
+        /* ============================================================
+            LEADERBOARD CARD - PROFESSIONAL DESIGN
+        ============================================================ */
+        .leaderboard-card {
+            width: 100%;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+            padding: 28px 32px 24px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--lbr-light-gray);
+            font-family: 'Poppins', sans-serif;
+            direction: ltr;
+        }
+
+        /* Decorative top stripe */
+        .leaderboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--lbr-navy) 0%, var(--lbr-orange) 100%);
+        }
+
+        /* ===== HEADER - Logo + Hotel Name ===== */
+        /* ===== HEADER - Logo + Hotel Name ===== */
+        /* استخدام float و position بدل flex عشان يشتغل صح في الطباعة */
+        .leaderboard-header {
+            display: block;
+            position: relative;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #F3F4F6;
+            z-index: 1;
+            margin-bottom: 22px;
+            min-height: 130px;
+            overflow: hidden;
+        }
+
+        .leaderboard-header .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            position: absolute;
+            top: 0;
+            max-width: 220px;
+        }
+
+        .leaderboard-header .brand img {
+            height: 90px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            margin-left: 30px;
+        }
+
+        .leaderboard-header .brand-text h2 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--lbr-navy);
+            letter-spacing: 0.3px;
+            line-height: 1.2;
+            margin-bottom: 0;
+            display: block;
+            white-space: nowrap;
+        }
+
+        .leaderboard-header .brand-text span {
+            font-size: 0.65rem;
+            color: var(--lbr-orange);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .leaderboard-header .title-block {
+            display: block;
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            text-align: center;
+            max-width: 65%;
+        }
+
+        .leaderboard-header .title-block .main-title {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--lbr-navy);
+            line-height: 1.3;
+            margin-bottom: 6px;
+            text-align: center;
+            display: block;
+            white-space: nowrap;
+            margin-right: 300px;
+        }
+
+        .leaderboard-header .title-block .sub-title {
+            font-size: 0.72rem;
+            color: var(--lbr-gray);
+            font-weight: 500;
+            display: block;
+            text-align: center;
+            line-height: 1.5;
+            text-align: inherit;
+            margin-right: 288px;
+        }
+
+        .leaderboard-header .title-block .sub-title i {
+            color: var(--lbr-orange);
+            font-size: 0.7rem;
+            margin-right: 4px;
+        }
+
+        /* ===== BODY - 3 + 2 Layout ===== */
+        .leaderboard-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .row-top {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 55px;
+    width: 120%;
+    max-width: 950px;
+        }
+
+        .row-bottom {
+    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 55px;
+    width: 120%;
+    max-width: 950px;
+    align-items: center;
+    margin-left: 342px;
+    margin-top: 50px;
+        }
+
+        /* ===== EMPLOYEE CARD ===== */
+        .employee-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid var(--lbr-light-gray);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .employee-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(27, 58, 107, 0.18);
+            border-color: var(--lbr-orange);
+        }
+
+        /* ===== PHOTO - Smaller ===== */
+        .employee-card .photo-wrap {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            background: #F3F4F6;
+            position: relative;
+            border-radius: 0;
+        }
+
+        .employee-card .photo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .employee-card:hover .photo-wrap img {
+            transform: scale(1.06);
+        }
+
+        .employee-card .photo-wrap .fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #FFFFFF;
+            font-size: 2rem;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--lbr-navy) 0%, var(--lbr-navy-light) 100%);
+        }
+
+        /* ===== DARK NAVY STRIP ===== */
+        .employee-card .info {
+            background: var(--lbr-navy);
+            padding: 10px 10px 12px;
+            text-align: center;
+            width: 100%;
+            min-height: 62px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            position: relative;
+        }
+
+        /* Orange line at top of strip */
+        .employee-card .info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--lbr-orange);
+        }
+
+        .employee-card .info .name {
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: #FFFFFF;
+            line-height: 1.25;
+            letter-spacing: 0.2px;
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .employee-card .info .position {
+            font-size: 0.65rem;
+            color: var(--lbr-orange-light);
+            font-weight: 500;
+            line-height: 1.3;
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+
+        /* ===== FOOTER ===== */
+        .leaderboard-footer {
+            text-align: center;
+            padding-top: 14px;
+            border-top: 1px solid #F3F4F6;
+            margin-top: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .leaderboard-footer .footer-text {
+            color: #9CA3AF;
+            font-size: 0.62rem;
+            letter-spacing: 0.8px;
+            font-weight: 500;
+        }
+
+        .leaderboard-footer .footer-text strong {
+            color: var(--lbr-navy);
+            font-weight: 700;
+        }
+
+        .leaderboard-footer .footer-text .orange {
+            color: var(--lbr-orange);
+            font-weight: 700;
+        }
+
+        /* ============================
+            INPUT SECTION
+        ============================ */
+        .input-section {
+            background: var(--lbr-white);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(27, 58, 107, 0.06);
+        }
+
+        .input-section .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #F3F4F6;
+            flex-wrap: wrap;
+        }
+
+        .input-section .section-header h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--lbr-navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-section .section-header h2 i {
+            color: var(--lbr-orange);
+        }
+
+        .input-section .section-header .badge {
+            background: var(--lbr-orange);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .input-section .subtitle {
+            color: var(--lbr-gray);
+            font-size: 0.8rem;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-section .subtitle i { color: var(--lbr-orange); }
+
+        .input-table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 14px;
+        }
+
+        .input-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 480px;
+        }
+
+        .input-table th {
+            background: #F9FAFB;
+            color: var(--lbr-navy);
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 10px 12px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid var(--lbr-light-gray);
+        }
+
+        .input-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .input-table .rank-cell {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--lbr-navy);
+            text-align: center;
+            width: 60px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .input-table .rank-cell.gold { color: #D97706; }
+        .input-table .rank-cell.silver { color: #64748B; }
+        .input-table .rank-cell.bronze { color: #B45309; }
+
+        .input-table input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid var(--lbr-light-gray);
+            border-radius: 8px;
+            font-size: 0.82rem;
+            transition: var(--transition);
+            background: #FAFAFA;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .input-table input[type="text"]:focus {
+            border-color: var(--lbr-navy);
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(27, 58, 107, 0.1);
+        }
+
+        .input-table input[type="text"].filled {
+            border-color: var(--success);
+            background: #F0FDF4;
+        }
+
+        .input-table input[type="text"].error {
+            border-color: var(--danger);
+            background: #FEF2F2;
+        }
+
+        /* ============================
+            BUTTONS
+        ============================ */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 11px 22px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.2px;
+        }
+
+        .btn:hover { transform: translateY(-2px); }
+
+        .btn-primary {
+            background: var(--lbr-navy);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--lbr-navy-dark);
+            box-shadow: 0 4px 20px rgba(27, 58, 107, 0.35);
+        }
+
+        .btn-success {
+            background: var(--lbr-orange);
+            color: white;
+        }
+        .btn-success:hover {
+            background: var(--lbr-orange-dark);
+            box-shadow: 0 4px 20px rgba(245, 166, 35, 0.35);
+        }
+
+        .btn-secondary {
+            background: #F3F4F6;
+            color: var(--lbr-dark);
+        }
+        .btn-secondary:hover { background: var(--lbr-light-gray); }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-sm { padding: 6px 14px; font-size: 0.72rem; }
+
+        .download-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 2px solid #F3F4F6;
+        }
+
+        .download-actions .btn {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* ============================
+            TOAST
+        ============================ */
+        .toast {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--lbr-navy);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: calc(100vw - 30px);
+            text-align: center;
+            animation: toastIn .3s ease;
+            font-size: 0.85rem;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.warning { background: var(--lbr-orange); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* ============================
+            LOADING
+        ============================ */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .loading-box {
+            background: var(--lbr-white);
+            padding: 25px 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-hover);
+            text-align: center;
+            color: var(--lbr-navy);
+            font-weight: 700;
+        }
+
+        .loading-box .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 12px;
+            border: 4px solid var(--lbr-light-gray);
+            border-top-color: var(--lbr-orange);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ============================
+            RESPONSIVE
+        ============================ */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .navbar { padding: 12px 16px; flex-direction: column; }
+            .nav-actions { width: 100%; justify-content: center; }
+            .leaderboard-section, .input-section { padding: 16px; }
+
+            .navbar .logo img { height: 42px; }
+            .navbar .logo .logo-text h1 { font-size: 0.9rem; }
+
+            .leaderboard-card { padding: 20px 16px; }
+            
+            .leaderboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .leaderboard-header .brand img { height: 45px; }
+            .leaderboard-header .title-block {
+                text-align: left;
+                width: 100%;
+            }
+            .leaderboard-header .title-block .sub-title {
+                justify-content: flex-start;
+            }
+
+            .row-top { grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 100%; }
+            .row-bottom { grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 70%; }
+
+            .employee-card .info { padding: 8px 6px 10px; min-height: 55px; }
+            .employee-card .info .name { font-size: 0.68rem; }
+            .employee-card .info .position { font-size: 0.58rem; }
+
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .filter-bar .filter-group { justify-content: space-between; }
+            .filter-bar .filter-info { margin-left: 0; text-align: center; }
+            
+            .btn-group .btn { flex: 1 1 100%; }
+            .download-actions .btn { flex: 1 1 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .leaderboard-card { padding: 16px 12px; }
+            .leaderboard-header .brand img { height: 38px; }
+            .leaderboard-header .brand-text h2 { font-size: 0.85rem; }
+            .leaderboard-header .brand-text span { font-size: 0.55rem; letter-spacing: 1px; }
+            .leaderboard-header .title-block .main-title { font-size: 0.78rem; }
+            .leaderboard-header .title-block .sub-title { font-size: 0.62rem; }
+
+            .row-top { gap: 8px; }
+            .row-bottom { gap: 8px; max-width: 80%; }
+
+            .employee-card .info { padding: 6px 4px 8px; min-height: 48px; }
+            .employee-card .info .name { font-size: 0.6rem; }
+            .employee-card .info .position { font-size: 0.5rem; }
+            .employee-card .photo-wrap .fallback { font-size: 1.3rem; }
+        }
+
+        /* Print-friendly */
+        @media print {
+            body { background: white; padding: 0; }
+            .navbar, .input-section, .download-actions, .section-header,
+            .filter-bar, .btn-group { display: none !important; }
+            .leaderboard-section { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <div>Loading...</div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app">
+        <!-- Navbar -->
+        <div id="navbarContainer"></div>
+
+        <div class="container">
+            <!-- ============================================================
+                 LEADERBOARD SECTION
+            ============================================================ -->
+            <div class="leaderboard-section">
+                
+                <div class="section-header">
+                    <h2><i class="fas fa-crown"></i> Top Performers</h2>
+                    <span class="count-badge" id="previewCount">0 Employees</span>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label><i class="fas fa-calendar-alt"></i> Period:</label>
+                        <select id="periodFilter">
+                            <option value="month">Monthly</option>
+                            <option value="week">Weekly</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fas fa-calendar"></i> Month:</label>
+                        <select id="monthFilter"></select>
+                    </div>
+                    <div class="filter-group" id="weekFilterGroup" style="display:none;">
+                        <label><i class="fas fa-calendar-week"></i> Week:</label>
+                        <select id="weekFilter">
+                            <option value="1">Week 1</option>
+                            <option value="2">Week 2</option>
+                            <option value="3">Week 3</option>
+                            <option value="4">Week 4</option>
+                        </select>
+                    </div>
+                    <div class="filter-info" id="filterInfo">
+                        Showing: <span id="periodDisplay">Monthly</span> - <span id="monthDisplay"></span>
+                        <span id="weekDisplay"></span>
+                    </div>
+                </div>
+
+                <div id="leaderboardContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-trophy"></i>
+                        <h3>No Data Yet</h3>
+                        <p>Enter employee IDs below and click "Generate Leaderboard"</p>
+                    </div>
+                </div>
+
+                <!-- Download Buttons -->
+                <div class="download-actions">
+                    <button class="btn btn-success" id="downloadPngBtn" disabled>
+                        <i class="fas fa-image"></i> Download as PNG
+                    </button>
+                    <button class="btn btn-primary" id="downloadPdfBtn" disabled>
+                        <i class="fas fa-file-pdf"></i> Download as PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 INPUT SECTION
+            ============================================================ -->
+            <div class="input-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-pen"></i> Enter Employees</h2>
+                    <span class="badge">🏆 TOP 5</span>
+                </div>
+                <p class="subtitle">
+                    <i class="fas fa-info-circle"></i> Enter employee IDs in ranking order
+                </p>
+
+                <div class="input-table-wrapper">
+                    <table class="input-table" id="rankTable">
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">Rank</th>
+                                <th>Employee ID</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rankTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="generateBtn">
+                        <i class="fas fa-wand-magic-sparkles"></i> Generate Leaderboard
+                    </button>
+                    <button class="btn btn-secondary" id="clearBtn">
+                        <i class="fas fa-eraser"></i> Clear All
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="fillSampleBtn">
+                        <i class="fas fa-file-lines"></i> Sample
+                    </button>
+                </div>
+
+                <div style="margin-top:10px; font-size:0.7rem; color:var(--lbr-gray);">
+                    <i class="fas fa-lightbulb" style="color:var(--lbr-orange);"></i>
+                    Press <kbd style="background:#F3F4F6;padding:2px 8px;border-radius:4px;border:1px solid #E5E7EB;font-family:Poppins;">Ctrl + Enter</kbd> to generate quickly
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ============================================================
+        // GLOBALS
+        // ============================================================
+        let allEmployees = [];
+        let currentLeaderboardData = [];
+        let isGenerating = false;
+
+        const CACHE_KEY = 'lobster_employees_cache';
+        const CACHE_TIME_KEY = 'lobster_employees_cache_time';
+        const CACHE_DURATION_MS = 12 * 60 * 60 * 1000;
+
+        const TOP_COUNT = 5;
+        const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4', '5'];
+        
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const weekNames = ['1st', '2nd', '3rd', '4th'];
+
+        let currentPeriod = 'month';
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let currentWeek = 1;
+
+        // ============================================================
+        // ⚙️ Cloudinary Settings
+        // ============================================================
+        const CLOUDINARY_CLOUD_NAME = 'so9u5deh';
+        const CLOUDINARY_EXTENSION = 'webp';
+
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const navbarContainer = document.getElementById('navbarContainer');
+        const rankTableBody = document.getElementById('rankTableBody');
+        const leaderboardContainer = document.getElementById('leaderboardContainer');
+        const previewCount = document.getElementById('previewCount');
+        const generateBtn = document.getElementById('generateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const fillSampleBtn = document.getElementById('fillSampleBtn');
+        const downloadPngBtn = document.getElementById('downloadPngBtn');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        const periodFilter = document.getElementById('periodFilter');
+        const monthFilter = document.getElementById('monthFilter');
+        const weekFilter = document.getElementById('weekFilter');
+        const weekFilterGroup = document.getElementById('weekFilterGroup');
+        const periodDisplay = document.getElementById('periodDisplay');
+        const monthDisplay = document.getElementById('monthDisplay');
+        const weekDisplay = document.getElementById('weekDisplay');
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function showToast(message, type = 'success') {
+            document.querySelector('.toast')?.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast?.remove(), 3500);
+        }
+
+        function setLoading(show) {
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '-';
+            return String(text);
+        }
+
+        function getInitials(name) {
+            if (!name) return '?';
+            const parts = name.trim().split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function getAvatarColor(name) {
+            const colors = [
+                '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
+                '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#06B6D4',
+                '#E11D48', '#D97706', '#059669', '#2563EB', '#7C3AED'
+            ];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        // ============================================================
+        // ☁️ Cloudinary URL Builder
+        // ============================================================
+        function buildCloudinaryUrl(employeeId) {
+            if (!employeeId) return null;
+            const cleanId = String(employeeId).trim();
+            return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${cleanId}.${CLOUDINARY_EXTENSION}`;
+        }
+
+        function getEmployeePhoto(emp, employeeId) {
+            if (!emp) return null;
+            
+            const possibleFields = [
+                'photoUrl', 'photo', 'photoURL', 'image', 'imageUrl', 
+                'avatar', 'avatarUrl', 'profileImage', 'profileImageUrl',
+                'picture', 'pictureUrl', 'img', 'imgUrl', 'photo_url', 'image_url'
+            ];
+            
+            for (const field of possibleFields) {
+                if (emp[field] && typeof emp[field] === 'string' && emp[field].trim() !== '') {
+                    return emp[field].trim();
+                }
+            }
+            
+            const empId = emp.employeeCode || emp.id || employeeId;
+            if (empId) {
+                return buildCloudinaryUrl(empId);
+            }
+            
+            return null;
+        }
+
+        // ============================================================
+        // FILTER CONTROLS
+        // ============================================================
+        function populateMonthFilter() {
+            monthFilter.innerHTML = '';
+            for (let m = 0; m < 12; m++) {
+                const option = document.createElement('option');
+                option.value = m;
+                option.textContent = `${monthNames[m]} ${currentYear}`;
+                if (m === currentMonth) option.selected = true;
+                monthFilter.appendChild(option);
+            }
+        }
+
+        function updateFilterDisplay() {
+            const period = periodFilter.value;
+            const month = parseInt(monthFilter.value);
+            const week = parseInt(weekFilter.value);
+            
+            currentPeriod = period;
+            currentMonth = month;
+            currentWeek = week;
+            
+            periodDisplay.textContent = period === 'month' ? 'Monthly' : 'Weekly';
+            monthDisplay.textContent = `${monthNames[month]} ${currentYear}`;
+            
+            if (period === 'week') {
+                weekFilterGroup.style.display = 'flex';
+                weekDisplay.textContent = ` - Week ${weekNames[week - 1]}`;
+            } else {
+                weekFilterGroup.style.display = 'none';
+                weekDisplay.textContent = '';
+            }
+        }
+
+        // ============================================================
+        // LOAD EMPLOYEES
+        // ============================================================
+        async function loadEmployees(forceRefresh = false) {
+            try {
+                if (!forceRefresh) {
+                    const cachedData = localStorage.getItem(CACHE_KEY);
+                    const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
+                    const now = new Date().getTime();
+
+                    if (cachedData && cacheTime && (now - parseInt(cacheTime) < CACHE_DURATION_MS)) {
+                        allEmployees = JSON.parse(cachedData);
+                        console.log(`👥 Loaded ${allEmployees.length} employees from cache`);
+                        return;
+                    }
+                }
+
+                console.log('🔄 Fetching from Firebase...');
+                const result = await DB.getAll('employees');
+                allEmployees = result || [];
+                
+                localStorage.setItem(CACHE_KEY, JSON.stringify(allEmployees));
+                localStorage.setItem(CACHE_TIME_KEY, new Date().getTime().toString());
+                
+                console.log(`👥 Loaded ${allEmployees.length} employees from Firebase`);
+            } catch (error) {
+                console.error('❌ Failed to load employees:', error);
+                const cachedFallback = localStorage.getItem(CACHE_KEY);
+                if (cachedFallback) {
+                    allEmployees = JSON.parse(cachedFallback);
+                    showToast('⚠️ Data restored from cache', 'warning');
+                } else {
+                    allEmployees = [];
+                }
+            }
+        }
+
+        function findEmployeeById(empId) {
+            if (!empId) return null;
+            const idStr = String(empId).trim();
+            return allEmployees.find(e => String(e.id).trim() === idStr) || null;
+        }
+
+        // ============================================================
+        // RENDER INPUT TABLE
+        // ============================================================
+        function renderInputTable() {
+            let html = '';
+            for (let i = 1; i <= TOP_COUNT; i++) {
+                const rankClass = i === 1 ? 'gold' : i === 2 ? 'silver' : i === 3 ? 'bronze' : '';
+                const emoji = RANK_EMOJIS[i - 1];
+                html += `
+                    <tr>
+                        <td class="rank-cell ${rankClass}">${emoji} ${i}</td>
+                        <td>
+                            <input type="text" id="empInput_${i}" 
+                                   placeholder="Enter Employee ID" 
+                                   autocomplete="off"
+                                   class="rank-input"
+                                   data-rank="${i}">
+                        </td>
+                    </tr>
+                `;
+            }
+            rankTableBody.innerHTML = html;
+
+            document.querySelectorAll('.rank-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    const val = this.value.trim();
+                    if (val) {
+                        const emp = findEmployeeById(val);
+                        if (emp) {
+                            this.classList.add('filled');
+                            this.classList.remove('error');
+                        } else {
+                            this.classList.remove('filled');
+                            this.classList.add('error');
+                        }
+                    } else {
+                        this.classList.remove('filled', 'error');
+                    }
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') generateLeaderboard();
+                });
+            });
+        }
+
+        // ============================================================
+        // GET INPUT DATA
+        // ============================================================
+        function getInputData() {
+            const data = [];
+            for (let i = 1; i <= TOP_COUNT; i++) {
+                const input = document.getElementById(`empInput_${i}`);
+                const value = input ? input.value.trim() : '';
+                data.push({
+                    rank: i,
+                    employeeId: value,
+                    employee: value ? findEmployeeById(value) : null
+                });
+            }
+            return data;
+        }
+
+        // ============================================================
+        // GENERATE LEADERBOARD
+        // ============================================================
+        async function generateLeaderboard() {
+            if (isGenerating) return;
+            isGenerating = true;
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+            try {
+                const inputData = getInputData();
+                const validEntries = inputData.filter(d => d.employeeId && d.employee);
+
+                if (validEntries.length === 0) {
+                    showToast('⚠️ Please enter valid employee IDs', 'warning');
+                    return;
+                }
+
+                currentLeaderboardData = inputData.map(d => {
+                    const emp = d.employee;
+                    return {
+                        rank: d.rank,
+                        employeeId: d.employeeId,
+                        employee: emp,
+                        isValid: !!emp,
+                        name: emp ? emp.fullName || emp.name || 'Unknown' : 'Unknown',
+                        department: emp ? emp.department || 'N/A' : 'N/A',
+                        position: emp ? emp.position || emp.jobTitle || emp.job || emp.role || 'N/A' : 'N/A',
+                        employeeCode: emp ? emp.employeeCode || emp.id : d.employeeId,
+                        photoUrl: getEmployeePhoto(emp, d.employeeId),
+                        email: emp ? emp.email : null
+                    };
+                });
+
+                renderLeaderboard(currentLeaderboardData);
+                updatePreviewCount(currentLeaderboardData);
+                enableDownloadButtons(true);
+
+                showToast(`✅ Leaderboard generated for ${validEntries.length} employee(s)`, 'success');
+
+            } catch (error) {
+                console.error('❌ Generation error:', error);
+                showToast('❌ Failed to generate leaderboard', 'error');
+            } finally {
+                isGenerating = false;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Leaderboard';
+            }
+        }
+
+        // ============================================================
+        // RENDER LEADERBOARD
+        // ============================================================
+        function renderLeaderboard(data) {
+            const validItems = data.filter(d => d.isValid);
+
+            if (validItems.length === 0) {
+                leaderboardContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-trophy"></i>
+                        <h3>No Data Yet</h3>
+                        <p>Enter employee IDs below and click "Generate Leaderboard"</p>
+                    </div>
+                `;
+                return;
+            }
+
+            function buildCard(d) {
+                const initials = getInitials(d.name);
+                const avatarColor = getAvatarColor(d.name);
+                
+                let photoHtml = '';
+                if (d.photoUrl) {
+                    photoHtml = `
+                        <img src="${escapeHtml(d.photoUrl)}" 
+                             alt="${escapeHtml(d.name)}"
+                             crossorigin="anonymous"
+                             data-fallback-tried="0"
+                             onerror="
+                                if (this.dataset.fallbackTried === '0') {
+                                    this.dataset.fallbackTried = '1';
+                                    this.src = this.src.replace('.webp', '.jpg');
+                                } else if (this.dataset.fallbackTried === '1') {
+                                    this.dataset.fallbackTried = '2';
+                                    this.src = this.src.replace('.jpg', '.png');
+                                } else {
+                                    this.style.display='none';
+                                    this.parentElement.innerHTML='<span class=\\'fallback\\' style=\\'background:${avatarColor};\\'>${initials}</span>';
+                                }
+                             ">
+                    `;
+                } else {
+                    photoHtml = `<span class="fallback" style="background:${avatarColor};">${initials}</span>`;
+                }
+
+                return `
+                    <div class="employee-card">
+                        <div class="photo-wrap">
+                            ${photoHtml}
+                        </div>
+                        <div class="info">
+                            <div class="name" title="${escapeHtml(d.name)}">${escapeHtml(d.name)}</div>
+                            <div class="position" title="${escapeHtml(d.position)}">${escapeHtml(d.position)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const topThree = validItems.filter(d => d.rank <= 3);
+            const bottomTwo = validItems.filter(d => d.rank >= 4 && d.rank <= 5);
+
+            let topRowHtml = topThree.map(d => buildCard(d)).join('');
+            let bottomRowHtml = bottomTwo.map(d => buildCard(d)).join('');
+
+            if (topThree.length === 0 && validItems.length > 0) {
+                topRowHtml = validItems.slice(0, 3).map(d => buildCard(d)).join('');
+                bottomRowHtml = validItems.slice(3, 5).map(d => buildCard(d)).join('');
+            }
+
+            const month = parseInt(monthFilter.value);
+            const week = parseInt(weekFilter.value);
+            const period = periodFilter.value;
+            const monthName = monthNames[month];
+            const year = currentYear;
+            
+            let subtitleText = '';
+            
+            if (period === 'month') {
+                subtitleText = `<i class="fas fa-calendar-alt"></i> ${monthName} ${year}`;
+            } else {
+                subtitleText = `<i class="fas fa-calendar-alt"></i> ${monthName} ${year} &nbsp;•&nbsp; Week ${weekNames[week - 1]}`;
+            }
+
+            leaderboardContainer.innerHTML = `
+                <div class="leaderboard-card" id="leaderboardCard" dir="ltr">
+                    <div class="leaderboard-header">
+                        <div class="brand">
+                            <img src="logo.png" alt="Long Beach Resort" 
+                                 onerror="this.style.display='none'">
+                            <div class="brand-text">
+                                <h2>Long Beach Resort</h2>
+                            </div>
+                        </div>
+                        <div class="title-block">
+                            <div class="main-title">Lobster Ink Top Learners</div>
+                            <div class="sub-title">${subtitleText}</div>
+                        </div>
+                    </div>
+                    <div class="leaderboard-body">
+                        <div class="row-top">
+                            ${topRowHtml}
+                        </div>
+                        ${bottomRowHtml ? `<div class="row-bottom">${bottomRowHtml}</div>` : ''}
+                    </div>
+                    <div class="leaderboard-footer">
+                        <div class="footer-text">
+                            <strong>Long Beach Resort</strong> &nbsp;•&nbsp; 
+                            <span class="orange">Employee Recognition Program</span> &nbsp;•&nbsp; 
+                            © ${year}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updatePreviewCount(data) {
+            const count = data.filter(d => d.isValid).length;
+            previewCount.textContent = `${count} Employee${count !== 1 ? 's' : ''}`;
+        }
+
+        function enableDownloadButtons(enabled) {
+            downloadPngBtn.disabled = !enabled;
+            downloadPdfBtn.disabled = !enabled;
+        }
+
+        // ============================================================
+        // CLEAR ALL
+        // ============================================================
+        function clearAll() {
+            document.querySelectorAll('.rank-input').forEach(input => {
+                input.value = '';
+                input.classList.remove('filled', 'error');
+            });
+            currentLeaderboardData = [];
+            leaderboardContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-trophy"></i>
+                    <h3>No Data Yet</h3>
+                    <p>Enter employee IDs below and click "Generate Leaderboard"</p>
+                </div>
+            `;
+            previewCount.textContent = '0 Employees';
+            enableDownloadButtons(false);
+            showToast('🗑️ All data cleared', 'info');
+        }
+
+        // ============================================================
+        // FILL SAMPLE
+        // ============================================================
+        function fillSample() {
+            const sampleIds = allEmployees.slice(0, TOP_COUNT).map(e => String(e.id));
+            
+            while (sampleIds.length < TOP_COUNT) {
+                sampleIds.push(`EMP${String(sampleIds.length + 1).padStart(3, '0')}`);
+            }
+
+            const inputs = document.querySelectorAll('.rank-input');
+            inputs.forEach((input, index) => {
+                input.value = sampleIds[index] || '';
+                input.dispatchEvent(new Event('input'));
+            });
+
+            showToast('📋 Sample data filled', 'success');
+            setTimeout(generateLeaderboard, 300);
+        }
+
+        // ============================================================
+        // DOWNLOAD FUNCTIONS
+        // ============================================================
+        async function downloadAsPNG() {
+            const card = document.getElementById('leaderboardCard');
+            if (!card) {
+                showToast('⚠️ No leaderboard to download', 'warning');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                if (typeof htmlToImage === 'undefined') {
+                    await loadLibrariesAndDownload('png');
+                    return;
+                }
+
+                await document.fonts.ready;
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // ✅ الأبعاد المطلوبة: 1920 × 1080 (Full HD)
+                const TARGET_WIDTH = 1920;
+                const TARGET_HEIGHT = 1080;
+
+                // 1) ناخد الأبعاد الحقيقية للكارت
+                const realWidth = card.offsetWidth;
+                const realHeight = card.offsetHeight;
+
+                // 2) نحسب pixelRatio المناسب للعرض
+                const scale = TARGET_WIDTH / realWidth;
+
+                // 3) نولّد الصورة بالأبعاد المطلوبة
+                const dataUrl = await htmlToImage.toPng(card, {
+                    pixelRatio: scale,
+                    backgroundColor: '#FFFFFF',
+                    style: {
+                        direction: 'ltr',
+                        // نثبّت الأبعاد عشان html-to-image ميحسبهاش لوحده
+                        width: realWidth + 'px',
+                        height: realHeight + 'px'
+                    },
+                    width: realWidth,
+                    height: realHeight,
+                    cacheBust: true
+                });
+
+                // 4) نرسم الصورة على canvas عشان نضمن المقاس النهائي 1920×1080
+                const img = new Image();
+                img.src = dataUrl;
+
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+
+                // إنشاء canvas بالمقاس المطلوب بالظبط
+                const canvas = document.createElement('canvas');
+                canvas.width = TARGET_WIDTH;
+                canvas.height = TARGET_HEIGHT;
+
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+
+                // نحسب النسبة عشان نحافظ على أبعاد الصورة جوه إطار 1920×1080
+                const imgRatio = img.width / img.height;
+                const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
+
+                let drawWidth, drawHeight, offsetX, offsetY;
+
+                if (imgRatio > targetRatio) {
+                    // الصورة أعرض من الإطار
+                    drawWidth = TARGET_WIDTH;
+                    drawHeight = TARGET_WIDTH / imgRatio;
+                    offsetX = 0;
+                    offsetY = (TARGET_HEIGHT - drawHeight) / 2;
+                } else {
+                    // الصورة أطول من الإطار
+                    drawHeight = TARGET_HEIGHT;
+                    drawWidth = TARGET_HEIGHT * imgRatio;
+                    offsetX = (TARGET_WIDTH - drawWidth) / 2;
+                    offsetY = 0;
+                }
+
+                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+                // تحويل canvas إلى صورة نهائية 1920×1080
+                const finalDataUrl = canvas.toDataURL('image/png');
+
+                const link = document.createElement('a');
+                link.download = `Top_Performers_${new Date().toISOString().split('T')[0]}_1920x1080.png`;
+                link.href = finalDataUrl;
+                link.click();
+
+                showToast('✅ Image downloaded (1920 × 1080)', 'success');
+            } catch (error) {
+                console.error('Image export error:', error);
+                showToast('❌ Failed to download image', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        async function downloadAsPDF() {
+            const card = document.getElementById('leaderboardCard');
+            if (!card) {
+                showToast('⚠️ No leaderboard to download', 'warning');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                if (typeof htmlToImage === 'undefined' || typeof window.jspdf === 'undefined') {
+                    await loadLibrariesAndDownload('pdf');
+                    return;
+                }
+
+                await document.fonts.ready;
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                const dataUrl = await htmlToImage.toPng(card, {
+                    pixelRatio: 2,
+                    backgroundColor: '#FFFFFF',
+                    style: { direction: 'ltr' },
+                    cacheBust: true
+                });
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                
+                const img = new Image();
+                img.src = dataUrl;
+                
+                await new Promise(resolve => { img.onload = resolve; });
+
+                const pdfHeight = (img.height * pdfWidth) / img.width;
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Top_Performers_${new Date().toISOString().split('T')[0]}.pdf`);
+
+                showToast('✅ PDF downloaded successfully', 'success');
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                showToast('❌ Failed to download PDF', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function loadLibrariesAndDownload(type) {
+            try {
+                if (typeof htmlToImage === 'undefined') {
+                    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
+                }
+                if (typeof window.jspdf === 'undefined') {
+                    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+                }
+                
+                if (type === 'png') downloadAsPNG();
+                else downloadAsPDF();
+            } catch (err) {
+                console.error('Failed to load libraries:', err);
+                setLoading(false);
+                showToast('❌ Failed to load libraries', 'error');
+            }
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // ============================================================
+        // NAVBAR
+        // ============================================================
+        function renderNavbar() {
+            navbarContainer.innerHTML = `
+                <nav class="navbar">
+                    <div class="logo">
+                        <img src="logo.png" alt="Long Beach Resort" 
+                             onerror="this.style.display='none'">
+                        <div class="logo-text">
+                            <h1>Long Beach Resort</h1>
+                            <span>Top Performers</span>
+                        </div>
+                    </div>
+                    <div class="nav-actions">
+                        <button id="refreshDataBtn" class="btn-nav btn-refresh">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                        <a href="index.html" class="btn-nav btn-home">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                        <button id="logoutBtn" class="btn-nav btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </nav>
+            `;
+
+            document.getElementById('refreshDataBtn')?.addEventListener('click', async () => {
+                setLoading(true);
+                await loadEmployees(true);
+                
+                document.querySelectorAll('.rank-input').forEach(input => {
+                    input.dispatchEvent(new Event('input'));
+                });
+                
+                setLoading(false);
+                showToast('🔄 Employee list updated', 'success');
+            });
+
+            document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            });
+        }
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        async function init() {
+            renderNavbar();
+            renderInputTable();
+            populateMonthFilter();
+            updateFilterDisplay();
+
+            setLoading(true);
+            await loadEmployees();
+            setLoading(false);
+
+            periodFilter.addEventListener('change', updateFilterDisplay);
+            monthFilter.addEventListener('change', updateFilterDisplay);
+            weekFilter.addEventListener('change', updateFilterDisplay);
+
+            generateBtn.addEventListener('click', generateLeaderboard);
+            clearBtn.addEventListener('click', clearAll);
+            fillSampleBtn.addEventListener('click', fillSample);
+            downloadPngBtn.addEventListener('click', downloadAsPNG);
+            downloadPdfBtn.addEventListener('click', downloadAsPDF);
+
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    generateLeaderboard();
+                }
+            });
+
+            console.log('🏆 Leaderboard ready!');
+        }
+
+        // ============================================================
+        // AUTH
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await init();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+
+</body>
+</html>
