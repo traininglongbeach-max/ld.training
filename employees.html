@@ -553,16 +553,21 @@
         async function refreshData() {
             document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2rem;">⏳ جاري جلب أحدث البيانات من السيرفر...</td></tr>';
             
-            localStorage.removeItem('employees');
-            localStorage.removeItem('employees_timestamp');
-            localStorage.removeItem('employee_birthdays_final');
-            localStorage.removeItem('employee_birthdays_final_timestamp');
+            // ✅ مسح الكاش الفعلي المستخدم في database.js
+            localStorage.removeItem('db_cache_employees');
+            localStorage.removeItem('db_cache_meta_employees');
+            localStorage.removeItem('db_cache_employee_birthdays_final');
+            localStorage.removeItem('db_cache_meta_employee_birthdays_final');
             
-            showToast('⏳ جاري تحديث البيانات...', false);
+            showToast('⏳ جاري تحديث البيانات من Firebase...', false);
             
             try {
+                // ✅ إجبار DB على إعادة القراءة من Firestore
+                await DB.refresh('employees');
+                await DB.refresh('employee_birthdays_final');
+                
                 await updateUI();
-                showToast('✅ تم تحديث البيانات بنجاح');
+                showToast('✅ تم تحديث البيانات بنجاح من السيرفر');
             } catch (error) {
                 console.error(error);
                 showToast('❌ حدث خطأ أثناء التحديث', true);
