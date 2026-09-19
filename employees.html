@@ -12,7 +12,6 @@
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
     
-    <!-- تحويل السكريبتات لتعمل بنظام Modules -->
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
     
@@ -111,11 +110,7 @@
         .filter-group label { font-weight: bold; color: #1e3a5f; font-size: 0.85rem; }
         .filter-group select { padding: 0.7rem 1rem; border: 2px solid #e2e8f0; border-radius: 2rem; background: white; cursor: pointer; font-size: 0.9rem; min-width: 140px; }
 
-        /* ================= Multi-Select Dropdown Styles ================= */
-        .custom-multiselect {
-            position: relative;
-            min-width: 170px;
-        }
+        .custom-multiselect { position: relative; min-width: 170px; }
         .multiselect-btn {
             padding: 0.7rem 1rem;
             border: 2px solid #e2e8f0;
@@ -168,7 +163,7 @@
         .multiselect-options-list { display: flex; flex-direction: column; gap: 0.2rem; max-height: 200px; overflow-y: auto; }
 
         .table-container { background: white; border-radius: 1.5rem; padding: 1.5rem; overflow-x: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
         th, td { padding: 0.8rem; text-align: center; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
         th { background: #f7fafc; color: #1e3a5f; font-weight: bold; white-space: nowrap; }
         tr:hover { background: #f7fafc; }
@@ -177,6 +172,25 @@
         .delete-btn { background: #e53e3e; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 1rem; cursor: pointer; font-size: 0.8rem; }
         .view-photo-btn { background: #ed8936; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 1rem; cursor: pointer; font-size: 0.8rem; transition: 0.3s; }
         .view-photo-btn:hover { background: #dd6b20; transform: scale(1.05); }
+
+        .phone-btn {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.9rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .phone-btn:hover { background: #2b6cb0; transform: scale(1.05); }
+        .phone-btn.no-phone { background: #cbd5e0; cursor: not-allowed; opacity: 0.7; }
+        .phone-btn.no-phone:hover { transform: none; }
         
         .status-badge { display: inline-block; padding: 0.3rem 1rem; border-radius: 2rem; font-weight: bold; }
         .status-active { background: #c6f6d5; color: #22543d; font-size: 0.9rem; letter-spacing: 0.5px; }
@@ -205,13 +219,58 @@
         .photo-close-btn { position: absolute; top: -15px; right: -15px; background: #e53e3e; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); transition: 0.3s; }
         .photo-close-btn:hover { background: #c53030; transform: scale(1.1); }
 
+        .phone-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 2500; backdrop-filter: blur(5px); }
+        .phone-modal-content { position: relative; background: white; border-radius: 20px; padding: 30px 25px 25px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: phoneModalIn 0.3s ease; }
+        @keyframes phoneModalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .phone-modal-content .phone-icon-header { font-size: 50px; margin-bottom: 10px; }
+        .phone-modal-content h3 { color: #1e3a5f; margin-bottom: 8px; font-size: 1.1rem; }
+        .phone-modal-content .phone-emp-name { color: #4a5568; font-size: 0.9rem; margin-bottom: 20px; }
+        .phone-modal-content .phone-number-box {
+            background: linear-gradient(135deg, #ebf8ff, #bee3f8);
+            border: 2px solid #3182ce;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            direction: ltr;
+        }
+        .phone-modal-content .phone-number {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #1e3a5f;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            word-break: break-all;
+        }
+        .phone-modal-content .phone-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .phone-modal-content .phone-actions button, .phone-modal-content .phone-actions a {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+        .phone-modal-content .copy-btn { background: #2b7a4b; color: white; }
+        .phone-modal-content .copy-btn:hover { background: #1e5a38; }
+        .phone-modal-content .call-btn { background: #3182ce; color: white; }
+        .phone-modal-content .call-btn:hover { background: #2b6cb0; }
+        .phone-modal-content .close-phone-btn { position: absolute; top: -15px; right: -15px; background: #e53e3e; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); transition: 0.3s; }
+        .phone-modal-content .close-phone-btn:hover { background: #c53030; transform: scale(1.1); }
+        .phone-modal-content .no-phone-msg { color: #c53030; font-size: 1.1rem; padding: 30px 10px; }
+
         .toast-msg { position: fixed; bottom: 2rem; right: 2rem; background: #2b7a4b; color: white; padding: 0.8rem 1.5rem; border-radius: 2rem; z-index: 3000; animation: slideIn 0.3s ease; }
         .toast-msg.error { background: #e53e3e; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
 
-        /* ================= Responsive Media Queries ================= */
         @media (max-width: 1600px) { .container { max-width: 95%; } }
         @media (max-width: 1400px) { .container { max-width: 1140px; } }
         @media (max-width: 1200px) { .container { max-width: 960px; } }
@@ -233,7 +292,7 @@
             .total-card { flex-direction: column; text-align: center; padding: 1.2rem; }
             .total-card > div { width: 100%; }
             .total-card div[style*="display: flex"] { flex-direction: column !important; gap: 0.5rem !important; }
-            table { min-width: 800px; }
+            table { min-width: 900px; }
         }
         @media (max-width: 576px) {
             .page-header h1 { font-size: 1.6rem; }
@@ -243,6 +302,7 @@
             .modal-buttons button { width: 100%; }
             .photo-modal-content { padding: 15px; }
             .photo-modal-image-container { height: 300px; }
+            .phone-modal-content .phone-number { font-size: 1.4rem; }
             .search-box { flex-direction: column; }
             .search-box input, .search-box button { width: 100%; }
         }
@@ -308,9 +368,7 @@
                                 <span><strong>تحديد الكل</strong></span>
                             </label>
                         </div>
-                        <div class="multiselect-options-list" id="positionOptionsContainer">
-                            <!-- يتم توليد الوظائف ديناميكياً هنا -->
-                        </div>
+                        <div class="multiselect-options-list" id="positionOptionsContainer"></div>
                     </div>
                 </div>
             </div>
@@ -339,6 +397,7 @@
                         <th>Dep</th>
                         <th>Position</th>
                         <th>Level</th>
+                        <th>📱 Phone</th>
                         <th>تاريخ الميلاد (العمر)</th>
                         <th>Hire Date</th>
                         <th>Status</th>
@@ -346,7 +405,7 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr><td colspan="9" style="text-align:center;">⏳ جاري تحميل البيانات...</td></tr>
+                    <tr><td colspan="10" style="text-align:center;">⏳ جاري تحميل البيانات...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -364,6 +423,17 @@
         </div>
     </div>
 
+    <!-- Phone Modal -->
+    <div id="phoneModal" class="phone-modal" onclick="closePhoneModal()">
+        <div class="phone-modal-content" onclick="event.stopPropagation()">
+            <button class="close-phone-btn" onclick="closePhoneModal()">✕</button>
+            <div class="phone-icon-header">📱</div>
+            <h3 id="phoneModalName"></h3>
+            <div class="phone-emp-name" id="phoneModalId"></div>
+            <div id="phoneModalBody"></div>
+        </div>
+    </div>
+
     <div id="addModal" class="modal">
         <div class="modal-content">
             <h3>➕ إضافة موظف جديد</h3>
@@ -372,6 +442,7 @@
             <input type="text" id="empDept" placeholder="Dep (مثال: FO, HK, Lau)">
             <input type="text" id="empPosition" placeholder="Position">
             <input type="text" id="empLevel" placeholder="Level">
+            <input type="tel" id="empPhone" placeholder="📱 رقم الهاتف (Phone)" style="direction:ltr; text-align:left;">
             
             <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">🎂 تاريخ الميلاد (اختياري):</label>
             <div style="display: flex; gap: 0.5rem; margin: 0.5rem 0;">
@@ -407,6 +478,7 @@
             <input type="text" id="editDept" placeholder="Dep">
             <input type="text" id="editPosition" placeholder="Position">
             <input type="text" id="editLevel" placeholder="Level">
+            <input type="tel" id="editPhone" placeholder="📱 رقم الهاتف (Phone)" style="direction:ltr; text-align:left;">
             
             <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">🎂 تاريخ الميلاد (اختياري):</label>
             <div style="display: flex; gap: 0.5rem; margin: 0.5rem 0;">
@@ -444,15 +516,42 @@
         let birthdaysMap = {}; 
         let searchTerm = "";
         let filterDept = "all";
-        let selectedPositions = []; // مصفوفة لتخزين الوظائف المختارة
+        let selectedPositions = [];
         let filterLevel = "all";
         let filterStatus = "all";
         let currentEditId = null;
         let currentUserRole = null;
 
+        // ============================================================
+        // ✅ دالة تنسيق رقم الهاتف تلقائياً
+        // ============================================================
+        function formatPhoneNumber(phone) {
+            if (!phone) return '';
+            
+            // 1. تحويل لنص وإزالة كل حاجة مش رقم
+            let cleaned = String(phone).trim().replace(/[^0-9]/g, '');
+            
+            if (cleaned.length === 0) return '';
+            
+            // 2. إزالة كود الدولة 20 (مصر) لو موجود في الأول
+            if (cleaned.startsWith('20') && cleaned.length > 10) {
+                cleaned = cleaned.substring(2);
+            }
+            
+            // 3. إزالة كل الأصفار الزيادة في الأول
+            cleaned = cleaned.replace(/^0+/, '');
+            
+            // 4. إضافة صفر واحد في الأول
+            if (cleaned.length > 0 && !cleaned.startsWith('0')) {
+                cleaned = '0' + cleaned;
+            }
+            
+            return cleaned;
+        }
+
         // ========== دوال التحديث =================
         async function refreshData() {
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 2rem;">⏳ جاري جلب أحدث البيانات من السيرفر...</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2rem;">⏳ جاري جلب أحدث البيانات من السيرفر...</td></tr>';
             
             localStorage.removeItem('employees');
             localStorage.removeItem('employees_timestamp');
@@ -470,7 +569,7 @@
             }
         }
 
-        // ========== دوال ضغط ورفع الصور (Cloudinary) ==========
+        // ========== دوال ضغط ورفع الصور ==========
         const compressImage = (file) => {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -549,7 +648,7 @@
             }
         });
 
-        // ========== دوال تحميل البيانات من Firestore ==========
+        // ========== دوال تحميل البيانات ==========
         async function loadEmployees() {
             try {
                 const data = await DB.getAll('employees');
@@ -598,7 +697,6 @@
             return Array.from(depts).sort();
         }
 
-        // جلب الوظائف التابعة للقسم المختار فقط
         function getUniquePositions(dept = 'all') {
             const positions = new Set();
             employees.forEach(emp => {
@@ -626,7 +724,6 @@
             if (filterDept !== 'all') {
                 filtered = filtered.filter(emp => emp.department === filterDept);
             }
-            // الفلترة بالوظائف المختارة
             if (selectedPositions.length > 0) {
                 filtered = filtered.filter(emp => selectedPositions.includes(emp.position));
             }
@@ -640,7 +737,7 @@
             return filtered.sort((a, b) => parseInt(a.id) - parseInt(b.id));
         }
 
-        // ========== إدارة قائمة الوظائف المنسدلة متعددة الخيارات ==========
+        // ========== إدارة الوظائف المنسدلة ==========
         function togglePositionDropdown(event) {
             event.stopPropagation();
             const dropdown = document.getElementById('positionDropdownContent');
@@ -733,12 +830,11 @@
             updateUI();
         }
 
-        // عند تغيير القسم المختار
         async function onDeptChange() {
             const newDept = document.getElementById('deptFilter').value;
             if (newDept !== filterDept) {
                 filterDept = newDept;
-                selectedPositions = []; // إعادة تعيين اختيار الوظائف للقسم الجديد
+                selectedPositions = [];
                 renderPositionOptions(true);
             }
             await updateUI();
@@ -818,6 +914,13 @@
                         <button class="edit-btn" onclick="openEditModal('${emp.id}')">✏️ تعديل</button>
                         <button class="delete-btn" onclick="deleteEmployee('${emp.id}')">🗑️ حذف</button>
                     ` : '';
+
+                    // ✅ زر الهاتف مع تنسيق الرقم
+                    const phoneClean = formatPhoneNumber(emp.phone);
+                    const hasPhone = phoneClean.length > 0;
+                    const phoneBtn = hasPhone 
+                        ? `<button class="phone-btn" onclick="showPhone('${emp.id}', '${(emp.fullName || '').replace(/'/g, "\\'")}', '${phoneClean}')">📱 عرض</button>`
+                        : `<button class="phone-btn no-phone" disabled title="لا يوجد رقم هاتف">📱 لا يوجد</button>`;
                     
                     return `
                     <tr>
@@ -826,6 +929,7 @@
                         <td>${emp.department || '-'}</td>
                         <td>${emp.position || '-'}</td>
                         <td>${emp.level || '-'}</td>
+                        <td>${phoneBtn}</td>
                         <td style="direction: ltr;">${birthInfoHTML}</td>
                         <td>${emp.hireDate || '-'}</td>
                         <td><span class="status-badge ${(emp.status || 'Active') === 'Active' ? 'status-active' : 'status-left'}">${(emp.status || 'Active') === 'Active' ? '✅ نشط' : '❌ مستقيل'}</span></td>
@@ -835,7 +939,7 @@
                         </td>
                     </tr>`;
                 }).join('');
-                if (filtered.length === 0) tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;">📭 لا توجد بيانات مطابقة</td></tr>';
+                if (filtered.length === 0) tableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">📭 لا توجد بيانات مطابقة</td></tr>';
             }
         }
 
@@ -876,6 +980,7 @@
             document.getElementById('empDept').value = '';
             document.getElementById('empPosition').value = '';
             document.getElementById('empLevel').value = '';
+            document.getElementById('empPhone').value = '';
             document.getElementById('empHireDate').value = '';
             document.getElementById('empBirthYear').value = '';
             document.getElementById('empBirthMonth').value = '';
@@ -891,6 +996,7 @@
             const department = document.getElementById('empDept').value;
             const position = document.getElementById('empPosition').value;
             const level = document.getElementById('empLevel').value;
+            const phone = formatPhoneNumber(document.getElementById('empPhone').value);
             const hireDate = document.getElementById('empHireDate').value;
             const status = document.getElementById('empStatus').value;
             
@@ -912,7 +1018,7 @@
                 }
             }
 
-            const newEmp = { id: parseInt(id), fullName, department: department || '', position: position || '', level: level || '', hireDate: hireDate || '', status: status || 'Active' };
+            const newEmp = { id: parseInt(id), fullName, department: department || '', position: position || '', level: level || '', phone: phone || '', hireDate: hireDate || '', status: status || 'Active' };
             if (photoUrl) {
                 newEmp.photoUrl = photoUrl;
             }
@@ -950,6 +1056,7 @@
                 document.getElementById('editDept').value = emp.department || '';
                 document.getElementById('editPosition').value = emp.position || '';
                 document.getElementById('editLevel').value = emp.level || '';
+                document.getElementById('editPhone').value = emp.phone || '';
                 document.getElementById('editHireDate').value = emp.hireDate || '';
                 document.getElementById('editStatus').value = emp.status || 'Active';
                 
@@ -991,6 +1098,8 @@
                 emp.department = document.getElementById('editDept').value;
                 emp.position = document.getElementById('editPosition').value;
                 emp.level = document.getElementById('editLevel').value;
+                // ✅ تنسيق الرقم عند الحفظ
+                emp.phone = formatPhoneNumber(document.getElementById('editPhone').value);
                 emp.hireDate = document.getElementById('editHireDate').value;
                 emp.status = document.getElementById('editStatus').value;
                 
@@ -1065,6 +1174,9 @@
                     let department = row['Dep'] || row['department'] || row['Department'] || '';
                     let position = row['Position'] || row['position'] || '';
                     let level = row['Level'] || row['level'] || '';
+                    // ✅ قراءة وتنسيق رقم الهاتف
+                    let rawPhone = row['Phone'] || row['phone'] || row['Phone Number'] || row['phone_number'] || row['Mobile'] || row['mobile'] || row['موبايل'] || '';
+                    let phone = formatPhoneNumber(rawPhone);
                     let hireDate = row['Hire Date'] || row['hire_date'] || '';
                     let status = row['Status'] || row['status'] || 'Active';
                     
@@ -1082,7 +1194,8 @@
 
                         const newRecord = {
                             id: parseInt(empId), fullName: fullName.toString().trim(), department: department.toString().trim(), 
-                            position: position.toString().trim(), level: level.toString().trim(), hireDate: formattedDate || '', status: finalStatus
+                            position: position.toString().trim(), level: level.toString().trim(), phone: phone,
+                            hireDate: formattedDate || '', status: finalStatus
                         };
                         if (photoUrl) {
                             newRecord.photoUrl = photoUrl;
@@ -1133,6 +1246,7 @@
                     'Dep': emp.department,
                     'Position': emp.position,
                     'Level': emp.level,
+                    'Phone': formatPhoneNumber(emp.phone) || '',
                     'Year': bData?.year || bData?.Year || '',
                     'Month': bData?.month || bData?.Month || '',
                     'Day': bData?.day || bData?.Day || '',
@@ -1215,6 +1329,66 @@
 
         function closePhotoModal() { document.getElementById('photoModal').style.display = 'none'; }
 
+        // ✅ دالة عرض رقم الهاتف (مع التنسيق)
+        function showPhone(employeeId, employeeName, phoneNumber) {
+            const modal = document.getElementById('phoneModal');
+            const nameEl = document.getElementById('phoneModalName');
+            const idEl = document.getElementById('phoneModalId');
+            const bodyEl = document.getElementById('phoneModalBody');
+            
+            // ✅ تنسيق الرقم قبل العرض
+            const formattedPhone = formatPhoneNumber(phoneNumber);
+            
+            nameEl.textContent = employeeName;
+            idEl.textContent = `كود الموظف: ${employeeId}`;
+            
+            if (!formattedPhone || formattedPhone.length === 0) {
+                bodyEl.innerHTML = `<div class="no-phone-msg">❌ لا يوجد رقم هاتف مسجّل لهذا الموظف</div>`;
+            } else {
+                bodyEl.innerHTML = `
+                    <div class="phone-number-box">
+                        <div class="phone-number" id="phoneNumberText">${formattedPhone}</div>
+                    </div>
+                    <div class="phone-actions">
+                        <button class="copy-btn" onclick="copyPhoneNumber('${formattedPhone}')">📋 نسخ الرقم</button>
+                        <a class="call-btn" href="tel:${formattedPhone}">📞 اتصال</a>
+                    </div>
+                `;
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function closePhoneModal() { document.getElementById('phoneModal').style.display = 'none'; }
+
+        function copyPhoneNumber(phone) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(phone).then(() => {
+                    showToast('✅ تم نسخ الرقم: ' + phone);
+                }).catch(() => {
+                    fallbackCopy(phone);
+                });
+            } else {
+                fallbackCopy(phone);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('✅ تم نسخ الرقم: ' + text);
+            } catch (e) {
+                showToast('❌ فشل النسخ', true);
+            }
+            document.body.removeChild(ta);
+        }
+
         function checkAdminAndShowButtons() {
             if (currentUserRole === 'Admin' || currentUserRole === 'admin') {
                 document.querySelectorAll('.admin-only').forEach(el => el.classList.add('visible'));
@@ -1223,7 +1397,6 @@
             }
         }
 
-        // إغلاق القائمة المنسدلة للوظائف عند النقر في أي مكان آخر
         document.addEventListener('click', function(e) {
             const multiselect = document.getElementById('positionMultiselect');
             const dropdown = document.getElementById('positionDropdownContent');
@@ -1248,13 +1421,19 @@
         window.exportEmployeesToExcel = exportEmployeesToExcel;
         window.showEmployeePhoto = showEmployeePhoto;
         window.closePhotoModal = closePhotoModal;
+        window.showPhone = showPhone;
+        window.closePhoneModal = closePhoneModal;
+        window.copyPhoneNumber = copyPhoneNumber;
         window.logout = logout;
         window.openAddModal = openAddModal;
         window.refreshData = refreshData; 
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closePhotoModal(); closeModal('addModal'); closeModal('editModal');
+                closePhotoModal(); 
+                closePhoneModal();
+                closeModal('addModal'); 
+                closeModal('editModal');
                 const dropdown = document.getElementById('positionDropdownContent');
                 if (dropdown) dropdown.classList.remove('open');
             }
