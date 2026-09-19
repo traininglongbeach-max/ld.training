@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📇 تحويل Excel إلى VCF - جهات الاتصال</title>
+    <title>📇 تحويل الموظفين إلى VCF</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -14,20 +14,13 @@
     
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
 
         :root {
             --primary: #0B3B82;
             --primary-dark: #092c62;
-            --primary-light: #4a7bb5;
             --primary-gradient: linear-gradient(135deg, #0B3B82, #1a5bb5);
             --success: #10B981;
             --success-light: #D1FAE5;
@@ -45,711 +38,248 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body {
-            background: #F0F4F8;
-            min-height: 100vh;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        body { background: #F0F4F8; min-height: 100vh; padding: 0; display: flex; flex-direction: column; align-items: center; }
 
-        /* ============================
-           NAVBAR
-        ============================ */
+        /* NAVBAR */
         .navbar {
-            background: var(--white);
-            padding: 1rem 2rem;
+            background: var(--white); padding: 1rem 2rem;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            width: 100%;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem; width: 100%;
+            position: sticky; top: 0; z-index: 100;
         }
+        .navbar .logo h2 { color: #1e3a5f; font-size: 1.3rem; }
+        .navbar .logo span { color: #2b7a4b; }
+        .navbar .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .navbar .nav-links a, .navbar .nav-links button {
+            text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem;
+            font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s;
+        }
+        .navbar .nav-links a:hover, .navbar .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .navbar .nav-links .home { background: #2b7a4b; color: white; }
+        .navbar .nav-links .logout { background: #e53e3e; color: white; }
 
-        .navbar .logo h2 {
-            color: #1e3a5f;
-            font-size: 1.3rem;
-        }
-        .navbar .logo span {
-            color: #2b7a4b;
-        }
+        /* CONTAINER */
+        .container { max-width: 1200px; width: 100%; margin: 30px auto; padding: 0 20px; }
 
-        .navbar .nav-links {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .navbar .nav-links a,
-        .navbar .nav-links button {
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            font-size: 0.85rem;
-            transition: 0.3s;
-        }
-
-        .navbar .nav-links a:hover,
-        .navbar .nav-links button:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-
-        .navbar .nav-links .home {
-            background: #2b7a4b;
-            color: white;
-        }
-
-        .navbar .nav-links .logout {
-            background: #e53e3e;
-            color: white;
-        }
-
-        /* ============================
-           CONTAINER
-        ============================ */
-        .container {
-            max-width: 1100px;
-            width: 100%;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        /* ============================
-           HEADER
-        ============================ */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        /* HEADER */
+        .header { text-align: center; margin-bottom: 30px; }
         .header .icon {
-            font-size: 3rem;
-            color: var(--primary);
-            background: var(--gray-light);
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            box-shadow: var(--shadow);
+            font-size: 3rem; color: var(--primary); background: var(--gray-light);
+            width: 80px; height: 80px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px; box-shadow: var(--shadow);
         }
+        .header h1 { font-size: 2rem; font-weight: 900; color: var(--dark); }
+        .header h1 span { color: var(--primary); }
+        .header p { color: var(--gray); font-size: 1rem; margin-top: 5px; }
 
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--dark);
-        }
-
-        .header h1 span {
-            color: var(--primary);
-        }
-
-        .header p {
-            color: var(--gray);
-            font-size: 1rem;
-            margin-top: 5px;
-        }
-
-        /* ============================
-           CARD
-        ============================ */
+        /* CARD */
         .card {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: var(--shadow);
+            background: var(--white); border-radius: var(--radius);
+            padding: 30px; box-shadow: var(--shadow);
             border: 1px solid rgba(11, 59, 130, 0.06);
-            margin-bottom: 25px;
-            transition: var(--transition);
+            margin-bottom: 25px; transition: var(--transition);
         }
-
-        .card:hover {
-            box-shadow: var(--shadow-hover);
-        }
-
+        .card:hover { box-shadow: var(--shadow-hover); }
         .card-title {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--dark);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 1.2rem; font-weight: 800; color: var(--dark);
+            margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+        }
+        .card-title i { color: var(--primary); }
+
+        /* FILTERS */
+        .filters-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; margin-bottom: 20px;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-group label {
+            font-size: 0.85rem; font-weight: 700; color: var(--dark);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .filter-group label i { color: var(--primary); }
+        .filter-group select, .filter-group input {
+            padding: 10px 14px; border: 2px solid var(--gray-light);
+            border-radius: 10px; font-size: 0.9rem;
+            background: white; outline: none; transition: var(--transition);
+            font-family: 'Tajawal', sans-serif; color: var(--dark); cursor: pointer;
+        }
+        .filter-group select:focus, .filter-group input:focus {
+            border-color: var(--primary); box-shadow: 0 0 0 3px rgba(11, 59, 130, 0.1);
         }
 
-        .card-title i {
-            color: var(--primary);
-        }
-
-        /* ============================
-           UPLOAD AREA
-        ============================ */
-        .upload-area {
-            border: 3px dashed var(--gray-light);
-            border-radius: var(--radius);
-            padding: 50px 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            background: #FAFAFA;
-            position: relative;
-        }
-
-        .upload-area:hover {
-            border-color: var(--primary);
-            background: #F8FAFF;
-        }
-
-        .upload-area.dragover {
-            border-color: var(--primary);
-            background: #EBF5FB;
-            transform: scale(1.02);
-        }
-
-        .upload-area .upload-icon {
-            font-size: 4rem;
-            color: var(--gray);
-            margin-bottom: 15px;
-        }
-
-        .upload-area h3 {
-            font-size: 1.2rem;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-
-        .upload-area p {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .upload-area .file-types {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .upload-area .file-types span {
-            background: var(--gray-light);
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--gray);
-        }
-
-        .upload-area .expected-columns {
-            margin-top: 12px;
-            font-size: 0.8rem;
-            color: var(--gray);
-            background: var(--gray-light);
-            padding: 8px 16px;
-            border-radius: 10px;
-            display: inline-block;
-            border: 1px solid var(--success);
-        }
-
-        .upload-area .expected-columns strong {
-            color: var(--primary);
-        }
-
-        .upload-area .expected-columns .required {
-            color: var(--danger);
-            font-weight: 700;
-        }
-
-        .upload-area input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        /* ============================
-           ERROR MESSAGE
-        ============================ */
-        .error-message {
-            background: var(--danger-light);
-            border: 2px solid var(--danger);
-            border-radius: var(--radius);
-            padding: 20px;
-            text-align: center;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .error-message .error-icon {
-            font-size: 3rem;
-            color: var(--danger);
-            margin-bottom: 10px;
-        }
-
-        .error-message h3 {
-            color: var(--danger);
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        .error-message p {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .error-message .error-columns {
-            background: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin: 10px auto;
-            display: inline-block;
-            text-align: right;
-            font-size: 0.85rem;
-            border: 1px solid var(--danger-light);
-        }
-
-        .error-message .error-columns .found {
-            color: var(--danger);
-        }
-
-        .error-message .error-columns .required-col {
-            color: var(--success);
-            font-weight: 700;
-        }
-
-        /* ============================
-           PREVIEW TABLE
-        ============================ */
-        .table-wrapper {
-            overflow-x: auto;
-            margin-top: 15px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .table-wrapper::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .table-wrapper::-webkit-scrollbar-track {
-            background: var(--gray-light);
-            border-radius: 10px;
-        }
-
-        .table-wrapper::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-
-        .preview-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-
-        .preview-table thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .preview-table th {
-            background: var(--primary);
-            color: white;
+        /* NEW HIRES CHECKBOX */
+        .filter-checkbox {
+            display: flex; align-items: center; gap: 10px;
             padding: 12px 16px;
-            text-align: center;
-            font-weight: 700;
-            white-space: nowrap;
+            background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+            border-radius: 10px; border: 2px solid var(--warning);
+            cursor: pointer; transition: var(--transition); user-select: none;
+            margin-top: 15px;
+        }
+        .filter-checkbox:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
+        }
+        .filter-checkbox input[type="checkbox"] {
+            width: 20px; height: 20px; cursor: pointer; accent-color: var(--warning);
+        }
+        .filter-checkbox label {
+            font-weight: 700; font-size: 0.9rem; color: #92400E;
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
         }
 
-        .preview-table th:first-child {
-            border-radius: 0 8px 0 0;
+        /* ACTION BAR */
+        .action-bar {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            margin-top: 15px; padding-top: 20px;
+            border-top: 2px solid var(--gray-light);
         }
+        .action-bar .btn { flex: 1; min-width: 140px; }
 
-        .preview-table th:last-child {
-            border-radius: 8px 0 0 0;
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-item {
+            background: var(--white); padding: 18px 20px;
+            border-radius: var(--radius); text-align: center;
+            border: 1px solid rgba(11, 59, 130, 0.06);
+            box-shadow: var(--shadow); transition: var(--transition);
         }
+        .stat-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .stat-item .stat-number { font-size: 2rem; font-weight: 900; color: var(--primary); }
+        .stat-item .stat-label { font-size: 0.75rem; color: var(--gray); font-weight: 600; margin-top: 4px; }
+        .stat-item .stat-number.success { color: var(--success); }
+        .stat-item .stat-number.danger { color: var(--danger); }
+        .stat-item .stat-number.warning { color: var(--warning); }
 
+        /* TABLE */
+        .table-wrapper {
+            overflow-x: auto; margin-top: 15px; max-height: 600px;
+            overflow-y: auto; border-radius: 12px;
+            border: 1px solid var(--gray-light);
+        }
+        .table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
+        .table-wrapper::-webkit-scrollbar-track { background: var(--gray-light); border-radius: 10px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        .preview-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .preview-table thead { position: sticky; top: 0; z-index: 10; }
+        .preview-table th {
+            background: var(--primary); color: white;
+            padding: 12px 16px; text-align: center;
+            font-weight: 700; white-space: nowrap;
+        }
         .preview-table td {
-            padding: 10px 16px;
-            text-align: center;
-            border-bottom: 1px solid var(--gray-light);
-            vertical-align: middle;
+            padding: 10px 16px; text-align: center;
+            border-bottom: 1px solid var(--gray-light); vertical-align: middle;
+        }
+        .preview-table tbody tr:hover { background: var(--gray-light); }
+        .preview-table tbody tr.selected { background: #DBEAFE; }
+        .preview-table tbody tr.selected:hover { background: #BFDBFE; }
+
+        .preview-table input[type="checkbox"] {
+            width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);
         }
 
-        .preview-table tbody tr:hover {
-            background: var(--gray-light);
+        .badge-new {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white; padding: 2px 10px; border-radius: 20px;
+            font-size: 0.65rem; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 3px;
+        }
+        .badge-normal {
+            background: var(--gray-light); color: var(--gray);
+            padding: 2px 10px; border-radius: 20px;
+            font-size: 0.65rem; font-weight: 700;
+        }
+        .badge-no-phone {
+            background: var(--danger-light); color: var(--danger);
+            padding: 2px 10px; border-radius: 20px;
+            font-size: 0.65rem; font-weight: 700;
         }
 
-        .preview-table .vcf-preview {
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: 600;
-            direction: ltr;
+        /* BUTTONS */
+        .btn {
+            border: none; border-radius: 12px; padding: 12px 24px;
+            cursor: pointer; font-weight: 700; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 0.9rem; justify-content: center;
             font-family: 'Tajawal', sans-serif;
         }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: var(--primary-gradient); color: white; }
+        .btn-primary:hover { box-shadow: 0 4px 25px rgba(11, 59, 130, 0.35); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { box-shadow: 0 4px 25px rgba(16, 185, 129, 0.35); }
+        .btn-secondary { background: var(--gray-light); color: var(--dark); }
+        .btn-secondary:hover { background: #E2E8F0; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { box-shadow: 0 4px 25px rgba(245, 158, 11, 0.35); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-        .preview-table .badge-status {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: 700;
-        }
-
-        .badge-status.success {
-            background: var(--success-light);
-            color: var(--success);
-        }
-
-        .badge-status.error {
-            background: var(--danger-light);
-            color: var(--danger);
-        }
-
-        /* ============================
-           STATS
-        ============================ */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            background: var(--white);
-            padding: 18px 20px;
-            border-radius: var(--radius);
-            text-align: center;
-            border: 1px solid rgba(11, 59, 130, 0.06);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .stat-item:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .stat-item .stat-number {
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--primary);
-        }
-
-        .stat-item .stat-label {
-            font-size: 0.75rem;
-            color: var(--gray);
-            font-weight: 600;
-            margin-top: 4px;
-        }
-
-        .stat-item .stat-number.success {
-            color: var(--success);
-        }
-
-        .stat-item .stat-number.danger {
-            color: var(--danger);
-        }
-
-        .stat-item .stat-number.warning {
-            color: var(--warning);
-        }
-
-        /* ============================
-           BUTTONS
-        ============================ */
-        .btn {
-            border: none;
-            border-radius: 12px;
-            padding: 12px 28px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.95rem;
-            justify-content: center;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-primary {
-            background: var(--primary-gradient);
-            color: white;
-        }
-        .btn-primary:hover {
-            box-shadow: 0 4px 25px rgba(11, 59, 130, 0.35);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        .btn-success:hover {
-            box-shadow: 0 4px 25px rgba(16, 185, 129, 0.35);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        .btn-danger:hover {
-            box-shadow: 0 4px 25px rgba(239, 68, 68, 0.35);
-        }
-
-        .btn-secondary {
-            background: var(--gray-light);
-            color: var(--dark);
-        }
-        .btn-secondary:hover {
-            background: #E2E8F0;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .btn-group .btn {
-            flex: 1;
-            min-width: 140px;
-        }
-
-
-        /* ============================
-           EMPTY STATE
-        ============================ */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: var(--light-gray);
-            margin-bottom: 12px;
-        }
-
-        .empty-state h3 {
-            font-size: 1.1rem;
-            color: var(--dark);
-            margin-bottom: 6px;
-        }
-
-        .empty-state p {
-            font-size: 0.85rem;
-        }
-
-        /* ============================
-           TOAST
-        ============================ */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 28px;
-            border-radius: 14px;
-            font-weight: 700;
-            z-index: 9999;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: calc(100vw - 30px);
-            text-align: center;
-            animation: toastIn .3s ease;
-        }
-
-        .toast.success {
-            background: var(--success);
-            color: white;
-        }
-
-        .toast.error {
-            background: var(--danger);
-            color: white;
-        }
-
-        .toast.info {
-            background: var(--primary);
-            color: white;
-        }
-
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, 20px);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, 0);
-            }
-        }
-
-        /* ============================
-           LOADING
-        ============================ */
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading-spinner .spinner {
-            width: 40px;
-            height: 40px;
-            margin: 0 auto 10px;
+        /* LOADING */
+        .loading-state { text-align: center; padding: 60px 20px; }
+        .loading-state .spinner {
+            width: 50px; height: 50px; margin: 0 auto 15px;
             border: 4px solid var(--gray-light);
             border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-state p { color: var(--gray); font-weight: 600; font-size: 1rem; }
+
+        /* EMPTY STATE */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--gray); }
+        .empty-state i { font-size: 4rem; color: #CBD5E1; margin-bottom: 15px; }
+        .empty-state h3 { font-size: 1.2rem; color: var(--dark); margin-bottom: 8px; }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* TOAST */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 28px; border-radius: 14px;
+            font-weight: 700; z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: calc(100vw - 30px); text-align: center;
+            animation: toastIn .3s ease;
+        }
+        .toast.success { background: var(--success); color: white; }
+        .toast.error { background: var(--danger); color: white; }
+        .toast.info { background: var(--primary); color: white; }
+        .toast.warning { background: var(--warning); color: white; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .loading-spinner p {
-            color: var(--gray);
-            font-weight: 600;
-        }
-
-        /* ============================
-           RESPONSIVE
-        ============================ */
-        @media (max-width: 992px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
+        /* RESPONSIVE */
+        @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                text-align: center;
-                padding: 1rem;
-            }
-            .navbar .nav-links {
-                justify-content: center;
-                width: 100%;
-                margin-top: 0.5rem;
-            }
-            .navbar .nav-links a,
-            .navbar .nav-links button {
-                width: 100%;
-                text-align: center;
-            }
-
-            .container {
-                padding: 0 15px;
-                margin: 20px auto;
-            }
-
-            .card {
-                padding: 20px;
-            }
-
-            .upload-area {
-                padding: 30px 20px;
-            }
-
-            .upload-area .upload-icon {
-                font-size: 3rem;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .header .icon {
-                width: 60px;
-                height: 60px;
-                font-size: 2rem;
-            }
-
-            .preview-table {
-                font-size: 0.75rem;
-            }
-
-            .preview-table th,
-            .preview-table td {
-                padding: 8px 10px;
-            }
-
-            .btn-group .btn {
-                flex: 1 1 100%;
-            }
-
-            .format-example .example-code {
-                font-size: 0.75rem;
-                padding: 8px 12px;
-            }
+            .navbar { flex-direction: column; text-align: center; padding: 1rem; }
+            .navbar .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
+            .navbar .nav-links a, .navbar .nav-links button { width: 100%; text-align: center; }
+            .container { padding: 0 15px; margin: 20px auto; }
+            .card { padding: 20px; }
+            .header h1 { font-size: 1.5rem; }
+            .header .icon { width: 60px; height: 60px; font-size: 2rem; }
+            .filters-grid { grid-template-columns: 1fr; }
+            .preview-table { font-size: 0.75rem; }
+            .preview-table th, .preview-table td { padding: 8px 10px; }
+            .action-bar .btn { flex: 1 1 100%; }
         }
-
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 1.2rem;
-            }
-
-            .upload-area h3 {
-                font-size: 1rem;
-            }
-
-            .upload-area .file-types span {
-                font-size: 0.65rem;
-            }
-
-            .upload-area .expected-columns {
-                font-size: 0.7rem;
-            }
-
-            .preview-table {
-                font-size: 0.65rem;
-            }
-
-            .preview-table th,
-            .preview-table td {
-                padding: 6px 6px;
-            }
+            .stats-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.2rem; }
+            .preview-table { font-size: 0.65rem; }
+            .preview-table th, .preview-table td { padding: 6px 6px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ============================
-         NAVBAR
-    ============================ -->
+    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="logo">
             <h2>🎓 Learning & Development <span>System</span></h2>
@@ -760,147 +290,141 @@
         </div>
     </nav>
 
-    <!-- ============================
-         MAIN CONTAINER
-    ============================ -->
     <div class="container">
         <!-- HEADER -->
         <div class="header">
             <div class="icon">
                 <i class="fas fa-address-book"></i>
             </div>
-            <h1>📇 تحويل <span>Excel</span> إلى <span>VCF</span></h1>
-            <p>قم برفع ملف Excel لتحويل جهات الاتصال إلى ملف VCF للهواتف</p>
+            <h1>📇 تحويل <span>الموظفين</span> إلى <span>VCF</span></h1>
+            <p>اختر الموظفين وفلاتر التصدير لتحويلهم إلى ملف VCF</p>
         </div>
 
-        <!-- UPLOAD CARD -->
+        <!-- FILTERS CARD -->
         <div class="card">
             <div class="card-title">
-                <i class="fas fa-cloud-upload-alt"></i>
-                رفع الملف
+                <i class="fas fa-filter"></i>
+                فلاتر التصدير
             </div>
 
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">
-                    <i class="fas fa-file-excel"></i>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label><i class="fas fa-building"></i> القسم</label>
+                    <select id="filterDepartment">
+                        <option value="">كل الأقسام</option>
+                    </select>
                 </div>
-                <h3>اسحب الملف هنا أو اضغط للاختيار</h3>
-                <p>يدعم ملفات Excel (.xlsx, .xls)</p>
-                <div class="file-types">
-                    <span>.xlsx</span>
-                    <span>.xls</span>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-layer-group"></i> المستوي</label>
+                    <select id="filterLevel">
+                        <option value="">كل المستويات</option>
+                    </select>
                 </div>
-                <div class="expected-columns">
-                    <i class="fas fa-columns"></i>
-                    الأعمدة المطلوبة: <br>
-                    <strong>Employee ID</strong> • <strong>Full Name</strong> • <strong>Dep</strong> • <strong>Phone Numbers</strong>
-                    <br>
-                    <span style="font-size:0.7rem; color:var(--gray);">
-                        <i class="fas fa-info-circle"></i> يجب أن تكون الأعمدة بهذه التسميات بالضبط
-                    </span>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-user-check"></i> الحالة</label>
+                    <select id="filterStatus">
+                        <option value="all">الكل</option>
+                        <option value="new">تعيينات جديدة فقط</option>
+                        <option value="existing">الموظفين الحاليين</option>
+                    </select>
                 </div>
-                <input type="file" id="fileInput" accept=".xlsx,.xls">
+
+                <div class="filter-group">
+                    <label><i class="fas fa-search"></i> بحث بالاسم/الكود</label>
+                    <input type="text" id="filterSearch" placeholder="اكتب الاسم أو الكود...">
+                </div>
             </div>
 
-            <!-- Error Message -->
-            <div class="error-message" id="errorMessage">
-                <div class="error-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <h3>⚠️ تنسيق الملف غير صحيح</h3>
-                <p>الملف الذي قمت برفعه لا يحتوي على الأعمدة المطلوبة بالشكل الصحيح.</p>
-                <div class="error-columns" id="errorColumns">
-                    <div><strong>الأعمدة المطلوبة:</strong></div>
-                    <div style="margin-top:5px;">
-                        <span class="required-col">✅ Employee ID</span> • 
-                        <span class="required-col">✅ Full Name</span> • 
-                        <span class="required-col">✅ Dep</span> • 
-                        <span class="required-col">✅ Phone Numbers</span>
-                    </div>
-                    <div style="margin-top:8px; border-top:1px solid #FEE2E2; padding-top:8px;">
-                        <div><strong>الأعمدة الموجودة في ملفك:</strong></div>
-                        <div style="margin-top:5px;" id="foundColumns">
-                            <span class="found">❌ لا يوجد</span>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="resetUpload()" style="margin-top:15px;">
-                    <i class="fas fa-undo"></i> إعادة المحاولة
+            <div class="filter-checkbox">
+                <input type="checkbox" id="filterNewHiresOnly">
+                <label for="filterNewHiresOnly">
+                    <i class="fas fa-star"></i>
+                    عرض التعيينات الجديدة فقط (آخر 30 يوم)
+                </label>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-primary" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> تحديث البيانات
+                </button>
+                <button class="btn btn-secondary" id="selectAllBtn">
+                    <i class="fas fa-check-double"></i> تحديد الكل
+                </button>
+                <button class="btn btn-secondary" id="deselectAllBtn">
+                    <i class="fas fa-times"></i> إلغاء التحديد
+                </button>
+                <button class="btn btn-success" id="downloadVcfBtn" disabled>
+                    <i class="fas fa-download"></i> تحميل VCF
                 </button>
             </div>
+        </div>
 
-            <!-- Loading -->
-            <div class="loading-spinner" id="loading">
+        <!-- STATS -->
+        <div class="stats-grid" id="statsGrid" style="display:none;">
+            <div class="stat-item">
+                <div class="stat-number" id="totalContacts">0</div>
+                <div class="stat-label">📇 إجمالي الموظفين</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number success" id="selectedContacts">0</div>
+                <div class="stat-label">✅ محددين للتصدير</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number warning" id="newHiresCount">0</div>
+                <div class="stat-label">⭐ تعيينات جديدة</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number danger" id="invalidContacts">0</div>
+                <div class="stat-label">⚠️ بدون رقم هاتف</div>
+            </div>
+        </div>
+
+        <!-- TABLE CARD -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-table"></i>
+                قائمة الموظفين
+            </div>
+
+            <div id="loadingState" class="loading-state">
                 <div class="spinner"></div>
-                <p>⏳ جاري معالجة الملف...</p>
+                <p>⏳ جاري تحميل الموظفين...</p>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <i class="fas fa-users-slash"></i>
+                <h3>لا يوجد موظفين</h3>
+                <p>لم يتم العثور على موظفين مطابقين للفلاتر</p>
+            </div>
+
+            <div class="table-wrapper" id="tableWrapper" style="display:none;">
+                <table class="preview-table" id="previewTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">
+                                <input type="checkbox" id="headerCheckbox" style="cursor:pointer;">
+                            </th>
+                            <th>#</th>
+                            <th>القسم</th>
+                            <th>كود الموظف</th>
+                            <th>الاسم</th>
+                            <th>الليفل</th>
+                            <th>رقم الهاتف</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody"></tbody>
+                </table>
             </div>
         </div>
 
-        <!-- RESULTS CARD -->
-        <div id="resultsCard" style="display:none;">
-            <!-- Stats -->
-            <div class="stats-grid" id="statsGrid">
-                <div class="stat-item">
-                    <div class="stat-number" id="totalContacts">0</div>
-                    <div class="stat-label">📇 إجمالي جهات الاتصال</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number success" id="validContacts">0</div>
-                    <div class="stat-label">✅ صالحة</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number danger" id="invalidContacts">0</div>
-                    <div class="stat-label">⚠️ غير صالحة</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number warning" id="phoneFixed">0</div>
-                    <div class="stat-label">📱 تم إضافة 0</div>
-                </div>
-            </div>
-
-            <!-- Preview -->
-            <div class="card">
-                <div class="card-title">
-                    <i class="fas fa-table"></i>
-                    معاينة البيانات
-                </div>
-
-                <div class="table-wrapper">
-                    <table class="preview-table" id="previewTable">
-                        <thead>
-                            <tr>
-                                <th style="width:50px;">#</th>
-                                <th>القسم</th>
-                                <th>كود الموظف</th>
-                                <th>الاسم</th>
-                                <th>رقم الهاتف</th>
-                                <th style="min-width:200px;">صيغة VCF</th>
-                                <th style="width:80px;">الحالة</th>
-                            </tr>
-                        </thead>
-                        <tbody id="previewBody">
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-success" id="downloadVcfBtn" disabled>
-                        <i class="fas fa-download"></i> تحميل ملف VCF
-                    </button>
-                    <button class="btn btn-secondary" id="clearBtn">
-                        <i class="fas fa-eraser"></i> مسح الكل
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- FOOTER -->
         <div style="text-align:center; margin-top:30px; color:var(--gray); font-size:0.85rem;">
             <p>© 2026 Learning & Development Management System</p>
         </div>
     </div>
 
-    <!-- TOAST -->
     <div id="toast" style="display:none;"></div>
 
     <script type="module">
@@ -910,30 +434,37 @@
         // ============================================================
         // GLOBALS
         // ============================================================
-        let contactsData = [];
+        let allEmployees = [];
+        let filteredEmployees = [];
+        let selectedIds = new Set();
         let vcfContent = '';
-        let phoneFixedCount = 0;
 
-        // الأعمدة المطلوبة بالضبط
-        const REQUIRED_COLUMNS = ['Employee ID', 'Full Name', 'Dep', 'Phone Numbers'];
+        // ⚙️ عدد الأيام لاعتبار الموظف "تعيين جديد"
+        const NEW_HIRE_DAYS = 30;
 
         // ============================================================
         // DOM REFS
         // ============================================================
-        const fileInput = document.getElementById('fileInput');
-        const uploadArea = document.getElementById('uploadArea');
-        const loading = document.getElementById('loading');
-        const resultsCard = document.getElementById('resultsCard');
-        const previewBody = document.getElementById('previewBody');
-        const totalContacts = document.getElementById('totalContacts');
-        const validContacts = document.getElementById('validContacts');
-        const invalidContacts = document.getElementById('invalidContacts');
-        const phoneFixed = document.getElementById('phoneFixed');
+        const filterDepartment = document.getElementById('filterDepartment');
+        const filterLevel = document.getElementById('filterLevel');
+        const filterStatus = document.getElementById('filterStatus');
+        const filterSearch = document.getElementById('filterSearch');
+        const filterNewHiresOnly = document.getElementById('filterNewHiresOnly');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const deselectAllBtn = document.getElementById('deselectAllBtn');
         const downloadVcfBtn = document.getElementById('downloadVcfBtn');
-        const clearBtn = document.getElementById('clearBtn');
+        const statsGrid = document.getElementById('statsGrid');
+        const totalContacts = document.getElementById('totalContacts');
+        const selectedContacts = document.getElementById('selectedContacts');
+        const newHiresCount = document.getElementById('newHiresCount');
+        const invalidContacts = document.getElementById('invalidContacts');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const tableWrapper = document.getElementById('tableWrapper');
+        const previewBody = document.getElementById('previewBody');
+        const headerCheckbox = document.getElementById('headerCheckbox');
         const logoutBtn = document.getElementById('logoutBtn');
-        const errorMessage = document.getElementById('errorMessage');
-        const foundColumns = document.getElementById('foundColumns');
 
         // ============================================================
         // HELPERS
@@ -946,46 +477,7 @@
             clearTimeout(toast._timeout);
             toast._timeout = setTimeout(() => {
                 toast.style.display = 'none';
-            }, 4000);
-        }
-
-        function formatPhoneNumber(phone) {
-            if (!phone) return '';
-            let cleaned = String(phone).replace(/[^0-9]/g, '');
-            
-            if (cleaned.length > 0 && !cleaned.startsWith('0')) {
-                cleaned = '0' + cleaned;
-                phoneFixedCount++;
-            }
-            
-            return cleaned;
-        }
-
-        function generateDisplayName(dep, empId, name) {
-            const deptCode = dep || 'Unknown';
-            const empCode = empId || '000';
-            return `${deptCode} | ${empCode} | ${name}`;
-        }
-
-        function generateVcfEntry(name, dep, empId, phone) {
-            const deptCode = dep || 'Unknown';
-            const empCode = empId || '000';
-            const phoneNum = formatPhoneNumber(phone);
-            
-            const fullName = `${deptCode} | ${empCode} | ${name}`;
-            
-            const vcf = [
-                'BEGIN:VCARD',
-                'VERSION:3.0',
-                `FN:${fullName}`,
-                `N:${fullName};;;`,
-                `TEL:${phoneNum}`,
-                `ORG:${deptCode}`,
-                `NOTE:Employee ID: ${empCode}`,
-                'END:VCARD'
-            ].join('\n');
-            
-            return vcf;
+            }, 3500);
         }
 
         function escapeHtml(text) {
@@ -995,269 +487,353 @@
             return div.innerHTML;
         }
 
-        // ============================================================
-        // RESET UPLOAD
-        // ============================================================
-        window.resetUpload = function() {
-            errorMessage.style.display = 'none';
-            resultsCard.style.display = 'none';
-            fileInput.value = '';
-            contactsData = [];
-            vcfContent = '';
-            phoneFixedCount = 0;
-            previewBody.innerHTML = '';
-            totalContacts.textContent = '0';
-            validContacts.textContent = '0';
-            invalidContacts.textContent = '0';
-            phoneFixed.textContent = '0';
-            downloadVcfBtn.disabled = true;
-            loading.style.display = 'none';
-            showToast('🔄 تم إعادة تعيين التحميل', 'info');
-        };
-
-        // ============================================================
-        // VALIDATE COLUMNS
-        // ============================================================
-        function validateColumns(headers) {
-            // البحث عن الأعمدة المطابقة (تجاهل حالة الأحرف والمسافات)
-            const normalizedHeaders = headers.map(h => h.trim());
-            
-            const requiredNormalized = REQUIRED_COLUMNS.map(col => col.trim());
-            
-            const found = [];
-            const missing = [];
-            
-            requiredNormalized.forEach(req => {
-                const foundCol = normalizedHeaders.find(h => h.toLowerCase() === req.toLowerCase());
-                if (foundCol) {
-                    found.push(foundCol);
-                } else {
-                    missing.push(req);
+        // ✅ دالة ذكية لاستخراج قيمة من عدة حقول محتملة
+        function getField(obj, possibleFields, fallback = '') {
+            if (!obj) return fallback;
+            for (const f of possibleFields) {
+                if (obj[f] !== undefined && obj[f] !== null && String(obj[f]).trim() !== '') {
+                    return String(obj[f]).trim();
                 }
-            });
-            
-            return {
-                isValid: missing.length === 0,
-                found: found,
-                missing: missing,
-                allHeaders: headers
-            };
+            }
+            return fallback;
         }
 
-        function showColumnError(headers) {
-            const validation = validateColumns(headers);
+        // ✅ استخراج اسم الموظف
+        function getEmployeeName(emp) {
+            return getField(emp, ['fullName', 'name', 'employeeName', 'full_name', 'fullname'], 'غير معروف');
+        }
+
+        // ✅ استخراج كود الموظف
+        function getEmployeeId(emp) {
+            return getField(emp, ['employeeCode', 'empId', 'empCode', 'employeeId', 'code', 'id'], '-');
+        }
+
+        // ✅ استخراج القسم
+        function getEmployeeDepartment(emp) {
+            return getField(emp, ['department', 'dep', 'section', 'dept', 'division'], 'غير محدد');
+        }
+
+        // ✅ استخراج الليفل
+        function getEmployeeLevel(emp) {
+            return getField(emp, ['level', 'grade', 'positionLevel', 'jobLevel', 'empLevel', 'rank'], 'غير محدد');
+        }
+
+        // ✅ استخراج رقم الهاتف
+        function getEmployeePhone(emp) {
+            return getField(emp, ['phone', 'phoneNumber', 'mobile', 'mobileNumber', 'phoneNumbers', 'tel', 'telephone', 'phone_number'], '');
+        }
+
+        // ✅ هل الموظف تعيين جديد؟
+        function isNewHire(emp) {
+            // 1) حقل boolean مباشر
+            if (emp.isNew === true || emp.newHire === true || emp.isNewHire === true) return true;
             
-            // عرض الأعمدة الموجودة
-            let foundHtml = '';
-            if (validation.found.length > 0) {
-                foundHtml = validation.found.map(col => 
-                    `<span class="found">✅ ${col}</span>`
-                ).join(' • ');
-            } else {
-                foundHtml = `<span class="found">❌ لا يوجد</span>`;
+            // 2) تاريخ تعيين حديث
+            const dateFields = ['hireDate', 'joiningDate', 'startDate', 'createdAt', 'joinDate', 'dateOfJoining'];
+            for (const f of dateFields) {
+                if (emp[f]) {
+                    try {
+                        let date;
+                        if (emp[f].toDate) {
+                            date = emp[f].toDate();
+                        } else if (emp[f].seconds) {
+                            date = new Date(emp[f].seconds * 1000);
+                        } else {
+                            date = new Date(emp[f]);
+                        }
+                        
+                        if (!isNaN(date.getTime())) {
+                            const diffDays = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
+                            if (diffDays <= NEW_HIRE_DAYS && diffDays >= 0) return true;
+                        }
+                    } catch (e) { /* تجاهل */ }
+                }
             }
-            
-            // عرض الأعمدة المفقودة
-            let missingHtml = '';
-            if (validation.missing.length > 0) {
-                missingHtml = validation.missing.map(col => 
-                    `<span style="color:var(--danger); font-weight:700;">❌ ${col}</span>`
-                ).join(' • ');
+            return false;
+        }
+
+        // ✅ تنسيق رقم الهاتف (إضافة 0 لو مش موجود)
+        function formatPhoneNumber(phone) {
+            if (!phone) return '';
+            let cleaned = String(phone).replace(/[^0-9]/g, '');
+            if (cleaned.length > 0 && !cleaned.startsWith('0')) {
+                cleaned = '0' + cleaned;
             }
+            return cleaned;
+        }
+
+        // ✅ إنشاء مدخل VCF
+        function generateVcfEntry(emp) {
+            const name = getEmployeeName(emp);
+            const empId = getEmployeeId(emp);
+            const dept = getEmployeeDepartment(emp);
+            const phone = formatPhoneNumber(getEmployeePhone(emp));
             
-            foundColumns.innerHTML = `
-                <div style="margin-bottom:5px;">
-                    <strong>✅ الموجودة:</strong> ${foundHtml}
-                </div>
-                <div style="margin-top:5px;">
-                    <strong>❌ المفقودة:</strong> ${missingHtml || '✅ جميع الأعمدة موجودة'}
-                </div>
-                <div style="margin-top:8px; font-size:0.8rem; color:var(--gray); border-top:1px solid #FEE2E2; padding-top:8px;">
-                    <strong>📋 جميع الأعمدة في ملفك:</strong> 
-                    ${headers.map(h => `<span style="background:white; padding:2px 8px; border-radius:4px; margin:2px; display:inline-block; border:1px solid #E2E8F0;">${h}</span>`).join('')}
-                </div>
-            `;
+            const fullName = `${dept} | ${empId} | ${name}`;
             
-            errorMessage.style.display = 'block';
-            resultsCard.style.display = 'none';
-            loading.style.display = 'none';
-            
-            showToast('❌ تنسيق الملف غير صحيح - الأعمدة المطلوبة غير موجودة', 'error');
+            return [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                `FN:${fullName}`,
+                `N:${fullName};;;`,
+                `TEL:${phone}`,
+                `ORG:${dept}`,
+                `NOTE:Employee ID: ${empId}`,
+                'END:VCARD'
+            ].join('\n');
         }
 
         // ============================================================
-        // PROCESS EXCEL
+        // LOAD EMPLOYEES
         // ============================================================
-        function processExcelFile(data) {
+        async function loadEmployees(forceRefresh = false) {
+            loadingState.style.display = 'block';
+            emptyState.style.display = 'none';
+            tableWrapper.style.display = 'none';
+            statsGrid.style.display = 'none';
+
             try {
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-                if (!jsonData || jsonData.length === 0) {
-                    showToast('❌ لا توجد بيانات في الملف', 'error');
-                    loading.style.display = 'none';
-                    return;
-                }
-
-                // التحقق من الأعمدة
-                const headers = Object.keys(jsonData[0]);
-                console.log('📊 الأعمدة الموجودة:', headers);
+                await DB.init();
                 
-                const validation = validateColumns(headers);
-                
-                if (!validation.isValid) {
-                    showColumnError(headers);
-                    loading.style.display = 'none';
-                    return;
+                if (forceRefresh) {
+                    await DB.refresh('employees');
                 }
-
-                // إذا كانت الأعمدة صحيحة، نكمل المعالجة
-                console.log('✅ الأعمدة صحيحة:', validation.found);
-
-                // تحديد الأعمدة المطلوبة
-                let empIdCol = headers.find(h => h.toLowerCase() === 'employee id'.toLowerCase());
-                let nameCol = headers.find(h => h.toLowerCase() === 'full name'.toLowerCase());
-                let depCol = headers.find(h => h.toLowerCase() === 'dep'.toLowerCase());
-                let phoneCol = headers.find(h => h.toLowerCase() === 'phone numbers'.toLowerCase());
-
-                console.log('📌 الأعمدة المختارة:', { empIdCol, nameCol, depCol, phoneCol });
-
-                // بناء قائمة جهات الاتصال
-                contactsData = [];
-                phoneFixedCount = 0;
-                let validCount = 0;
-                let invalidCount = 0;
-
-                jsonData.forEach((row, index) => {
-                    let empId = empIdCol ? String(row[empIdCol] || '').trim() : '';
-                    let name = nameCol ? String(row[nameCol] || '').trim() : '';
-                    let dep = depCol ? String(row[depCol] || '').trim() : '';
-                    let phone = phoneCol ? String(row[phoneCol] || '').trim() : '';
-
-                    name = name.replace(/\s+/g, ' ').trim();
-                    dep = dep.replace(/\s+/g, ' ').trim();
-                    empId = empId.replace(/\s+/g, ' ').trim();
-                    
-                    const formattedPhone = formatPhoneNumber(phone);
-
-                    const isValid = name.length > 0 && formattedPhone.length >= 10;
-
-                    if (isValid) {
-                        validCount++;
-                    } else {
-                        invalidCount++;
-                    }
-
-                    const displayName = generateDisplayName(dep, empId, name);
-
-                    contactsData.push({
-                        empId,
-                        name,
-                        department: dep || 'Unknown',
-                        phone: formattedPhone,
-                        rawPhone: phone,
-                        isValid,
-                        displayName,
-                        vcf: isValid ? generateVcfEntry(name, dep, empId, formattedPhone) : null
-                    });
+                
+                const rawEmployees = await DB.getAll('employees') || [];
+                
+                // ✅ استبعاد الموظفين اللي غادروا (Left / Inactive / Terminated)
+                allEmployees = rawEmployees.filter(emp => {
+                    const status = String(emp.status || 'Active').trim();
+                    // نقبل: Active فقط أو حالة فاضية
+                    return status === 'Active' || status === '' || status.toLowerCase() === 'active';
                 });
-
-                // تحديث الإحصائيات
-                totalContacts.textContent = contactsData.length;
-                validContacts.textContent = validCount;
-                invalidContacts.textContent = invalidCount;
-                phoneFixed.textContent = phoneFixedCount;
-
-                // عرض البيانات في الجدول
-                renderPreview();
-
-                // إنشاء ملف VCF
-                generateVcfFile();
-
-                // عرض النتائج
-                resultsCard.style.display = 'block';
-                errorMessage.style.display = 'none';
-                downloadVcfBtn.disabled = false;
-
-                showToast(`✅ تم تحويل ${validCount} جهة اتصال بنجاح`, 'success');
-
+                
+                const removedCount = rawEmployees.length - allEmployees.length;
+                
+                console.log(`👥 Loaded ${allEmployees.length} active employees (${removedCount} left/inactive removed)`);
+                
+                // 🔍 Log أول موظف عشان نشوف شكل البيانات
+                if (allEmployees.length > 0) {
+                    console.log('🔍 شكل بيانات أول موظف:', allEmployees[0]);
+                    console.log('🔑 الحقول المتاحة:', Object.keys(allEmployees[0]));
+                }
+                
+                initFilters();
+                applyFilters();
+                
+                showToast(`✅ تم تحميل ${allEmployees.length} موظف نشط${removedCount > 0 ? ` (تم استبعاد ${removedCount} مستقيل)` : ''}`, 'success');
             } catch (error) {
-                console.error('❌ خطأ في معالجة الملف:', error);
-                showToast('❌ حدث خطأ أثناء معالجة الملف', 'error');
+                console.error('❌ Failed to load employees:', error);
+                showToast('❌ فشل تحميل الموظفين', 'error');
             } finally {
-                loading.style.display = 'none';
+                loadingState.style.display = 'none';
             }
         }
 
         // ============================================================
-        // RENDER PREVIEW
+        // INIT FILTERS
         // ============================================================
-        function renderPreview() {
-            if (contactsData.length === 0) {
-                previewBody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align:center; padding:30px; color:var(--gray);">
-                            <i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:10px;"></i>
-                            لا توجد بيانات لعرضها
+        function initFilters() {
+            // الأقسام الفريدة
+            const departments = [...new Set(allEmployees.map(getEmployeeDepartment))]
+                .filter(d => d && d !== 'غير محدد')
+                .sort();
+            
+            filterDepartment.innerHTML = '<option value="">كل الأقسام</option>' +
+                departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+
+            // الليفلات الفريدة
+            const levels = [...new Set(allEmployees.map(getEmployeeLevel))]
+                .filter(l => l && l !== 'غير محدد')
+                .sort();
+            
+            filterLevel.innerHTML = '<option value="">كل المستويات</option>' +
+                levels.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('');
+
+            console.log(`📊 ${departments.length} قسم, ${levels.length} ليفل`);
+        }
+
+        // ============================================================
+        // APPLY FILTERS
+        // ============================================================
+        function applyFilters() {
+            const dept = filterDepartment.value;
+            const level = filterLevel.value;
+            const status = filterStatus.value;
+            const searchTerm = filterSearch.value.trim().toLowerCase();
+            const newHiresOnly = filterNewHiresOnly.checked;
+
+            filteredEmployees = allEmployees.filter(emp => {
+                // فلتر القسم
+                if (dept && getEmployeeDepartment(emp) !== dept) return false;
+                
+                // فلتر الليفل
+                if (level && getEmployeeLevel(emp) !== level) return false;
+                
+                // فلتر الحالة
+                const empIsNew = isNewHire(emp);
+                if (status === 'new' && !empIsNew) return false;
+                if (status === 'existing' && empIsNew) return false;
+                
+                // فلتر التعيينات الجديدة (checkbox)
+                if (newHiresOnly && !empIsNew) return false;
+                
+                // فلتر البحث
+                if (searchTerm) {
+                    const name = getEmployeeName(emp).toLowerCase();
+                    const empId = getEmployeeId(emp).toLowerCase();
+                    if (!name.includes(searchTerm) && !empId.includes(searchTerm)) return false;
+                }
+                
+                return true;
+            });
+
+            renderTable();
+            updateStats();
+            updateHeaderCheckbox();
+        }
+
+        // ============================================================
+        // RENDER TABLE
+        // ============================================================
+        function renderTable() {
+            if (filteredEmployees.length === 0) {
+                emptyState.style.display = 'block';
+                tableWrapper.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tableWrapper.style.display = 'block';
+
+            previewBody.innerHTML = filteredEmployees.map((emp, index) => {
+                const empId = getEmployeeId(emp);
+                const name = getEmployeeName(emp);
+                const dept = getEmployeeDepartment(emp);
+                const level = getEmployeeLevel(emp);
+                const phone = formatPhoneNumber(getEmployeePhone(emp));
+                const isNew = isNewHire(emp);
+                const isSelected = selectedIds.has(empId);
+
+                let statusBadge = '';
+                if (!phone || phone.length < 10) {
+                    statusBadge = '<span class="badge-no-phone">⚠️ بدون هاتف</span>';
+                } else if (isNew) {
+                    statusBadge = '<span class="badge-new">⭐ جديد</span>';
+                } else {
+                    statusBadge = '<span class="badge-normal">موظف حالي</span>';
+                }
+
+                return `
+                    <tr class="${isSelected ? 'selected' : ''}" data-id="${escapeHtml(empId)}">
+                        <td>
+                            <input type="checkbox" class="row-checkbox" data-id="${escapeHtml(empId)}" 
+                                   ${isSelected ? 'checked' : ''} 
+                                   ${!phone || phone.length < 10 ? 'disabled' : ''}>
                         </td>
+                        <td>${index + 1}</td>
+                        <td>${escapeHtml(dept)}</td>
+                        <td>${escapeHtml(empId)}</td>
+                        <td>${escapeHtml(name)}</td>
+                        <td>${escapeHtml(level)}</td>
+                        <td>
+                            <span style="font-family:monospace;font-weight:600;color:${phone ? 'var(--success)' : 'var(--danger)'};">
+                                ${phone || '- بدون رقم -'}
+                            </span>
+                        </td>
+                        <td>${statusBadge}</td>
                     </tr>
                 `;
-                return;
-            }
+            }).join('');
 
-            previewBody.innerHTML = contactsData.map((contact, index) => `
-                <tr style="${!contact.isValid ? 'opacity:0.5;' : ''}">
-                    <td>${index + 1}</td>
-                    <td>
-                        <span style="background:var(--gray-light);padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;color:var(--primary);">
-                            ${escapeHtml(contact.department)}
-                        </span>
-                    </td>
-                    <td style="font-weight:600;color:var(--dark);">${escapeHtml(contact.empId)}</td>
-                    <td style="font-weight:600;">${escapeHtml(contact.name)}</td>
-                    <td>
-                        <span style="font-family:monospace;font-weight:600;color:var(--success);">
-                            ${contact.phone || '-'}
-                        </span>
-                    </td>
-                    <td class="vcf-preview" style="font-size:0.7rem;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(contact.displayName)}">
-                        ${contact.isValid ? escapeHtml(contact.displayName) : '⚠️ غير صالح'}
-                    </td>
-                    <td>
-                        <span class="badge-status ${contact.isValid ? 'success' : 'error'}">
-                            ${contact.isValid ? '✅ صالح' : '❌ غير صالح'}
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
+            // Event listeners للـ checkboxes
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const id = this.dataset.id;
+                    if (this.checked) {
+                        selectedIds.add(id);
+                    } else {
+                        selectedIds.delete(id);
+                    }
+                    this.closest('tr').classList.toggle('selected', this.checked);
+                    updateStats();
+                    updateHeaderCheckbox();
+                    updateDownloadButton();
+                });
+            });
         }
 
         // ============================================================
-        // GENERATE VCF
+        // UPDATE STATS
         // ============================================================
-        function generateVcfFile() {
-            const validContacts = contactsData.filter(c => c.isValid);
-            
-            if (validContacts.length === 0) {
-                vcfContent = '';
-                showToast('⚠️ لا توجد جهات اتصال صالحة للتصدير', 'error');
-                return;
-            }
+        function updateStats() {
+            statsGrid.style.display = 'grid';
+            totalContacts.textContent = filteredEmployees.length;
+            selectedContacts.textContent = selectedIds.size;
+            newHiresCount.textContent = filteredEmployees.filter(isNewHire).length;
+            invalidContacts.textContent = filteredEmployees.filter(e => formatPhoneNumber(getEmployeePhone(e)).length < 10).length;
+        }
 
-            vcfContent = validContacts.map(c => c.vcf).join('\n\n');
-            
-            console.log(`📇 تم إنشاء ملف VCF بـ ${validContacts.length} جهة اتصال`);
+        function updateHeaderCheckbox() {
+            const validEmployees = filteredEmployees.filter(e => formatPhoneNumber(getEmployeePhone(e)).length >= 10);
+            const allSelected = validEmployees.length > 0 && validEmployees.every(e => selectedIds.has(getEmployeeId(e)));
+            headerCheckbox.checked = allSelected;
+            headerCheckbox.indeterminate = !allSelected && validEmployees.some(e => selectedIds.has(getEmployeeId(e)));
+        }
+
+        function updateDownloadButton() {
+            downloadVcfBtn.disabled = selectedIds.size === 0;
+            downloadVcfBtn.innerHTML = selectedIds.size > 0 
+                ? `<i class="fas fa-download"></i> تحميل VCF (${selectedIds.size})`
+                : `<i class="fas fa-download"></i> تحميل VCF`;
+        }
+
+        // ============================================================
+        // SELECT ALL / DESELECT
+        // ============================================================
+        function selectAll() {
+            filteredEmployees.forEach(emp => {
+                const phone = formatPhoneNumber(getEmployeePhone(emp));
+                if (phone.length >= 10) {
+                    selectedIds.add(getEmployeeId(emp));
+                }
+            });
+            renderTable();
+            updateStats();
+            updateHeaderCheckbox();
+            updateDownloadButton();
+            showToast(`✅ تم تحديد ${selectedIds.size} موظف`, 'success');
+        }
+
+        function deselectAll() {
+            selectedIds.clear();
+            renderTable();
+            updateStats();
+            updateHeaderCheckbox();
+            updateDownloadButton();
+            showToast('🗑️ تم إلغاء تحديد الكل', 'info');
         }
 
         // ============================================================
         // DOWNLOAD VCF
         // ============================================================
         function downloadVcf() {
-            if (!vcfContent || vcfContent.length === 0) {
-                showToast('⚠️ لا توجد بيانات للتحميل', 'error');
+            if (selectedIds.size === 0) {
+                showToast('⚠️ لم تحدد أي موظف', 'warning');
                 return;
             }
+
+            const selectedEmployees = allEmployees.filter(emp => 
+                selectedIds.has(getEmployeeId(emp)) &&
+                formatPhoneNumber(getEmployeePhone(emp)).length >= 10
+            );
+
+            if (selectedEmployees.length === 0) {
+                showToast('⚠️ لا يوجد موظفين بأرقام صالحة', 'warning');
+                return;
+            }
+
+            vcfContent = selectedEmployees.map(generateVcfEntry).join('\n\n');
 
             try {
                 const blob = new Blob([vcfContent], { type: 'text/vcard;charset=utf-8' });
@@ -1269,9 +845,8 @@
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-                
-                const validCount = contactsData.filter(c => c.isValid).length;
-                showToast(`✅ تم تحميل ملف VCF بنجاح (${validCount} جهة اتصال)`, 'success');
+
+                showToast(`✅ تم تحميل ملف VCF بنجاح (${selectedEmployees.length} جهة اتصال)`, 'success');
             } catch (error) {
                 console.error('❌ خطأ في التحميل:', error);
                 showToast('❌ حدث خطأ أثناء تحميل الملف', 'error');
@@ -1279,105 +854,32 @@
         }
 
         // ============================================================
-        // CLEAR
-        // ============================================================
-        function clearAll() {
-            contactsData = [];
-            vcfContent = '';
-            phoneFixedCount = 0;
-            resultsCard.style.display = 'none';
-            errorMessage.style.display = 'none';
-            fileInput.value = '';
-            previewBody.innerHTML = '';
-            totalContacts.textContent = '0';
-            validContacts.textContent = '0';
-            invalidContacts.textContent = '0';
-            phoneFixed.textContent = '0';
-            downloadVcfBtn.disabled = true;
-            showToast('🗑️ تم مسح جميع البيانات', 'info');
-        }
-
-        // ============================================================
-        // FILE HANDLING
-        // ============================================================
-        function handleFile(file) {
-            if (!file) return;
-
-            // إخفاء أي رسائل خطأ سابقة
-            errorMessage.style.display = 'none';
-            resultsCard.style.display = 'none';
-
-            // التحقق من نوع الملف
-            const validTypes = [
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-excel',
-                'text/csv'
-            ];
-            
-            const extension = file.name.split('.').pop().toLowerCase();
-            if (!['xlsx', 'xls', 'csv'].includes(extension) && !validTypes.includes(file.type)) {
-                showToast('❌ الرجاء اختيار ملف Excel صالح (.xlsx, .xls)', 'error');
-                return;
-            }
-
-            loading.style.display = 'block';
-            downloadVcfBtn.disabled = true;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    processExcelFile(data);
-                } catch (error) {
-                    console.error('❌ خطأ:', error);
-                    showToast('❌ حدث خطأ أثناء قراءة الملف', 'error');
-                    loading.style.display = 'none';
-                }
-            };
-            reader.onerror = function() {
-                showToast('❌ حدث خطأ أثناء قراءة الملف', 'error');
-                loading.style.display = 'none';
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        // ============================================================
         // EVENT LISTENERS
         // ============================================================
-        fileInput.addEventListener('change', function(e) {
-            if (this.files && this.files.length > 0) {
-                handleFile(this.files[0]);
-            }
-        });
-
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-            
-            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
-
-        uploadArea.addEventListener('click', function(e) {
-            if (e.target.tagName !== 'INPUT') {
-                fileInput.click();
-            }
-        });
-
+        refreshBtn.addEventListener('click', () => loadEmployees(true));
+        selectAllBtn.addEventListener('click', selectAll);
+        deselectAllBtn.addEventListener('click', deselectAll);
         downloadVcfBtn.addEventListener('click', downloadVcf);
-        clearBtn.addEventListener('click', clearAll);
 
+        filterDepartment.addEventListener('change', applyFilters);
+        filterLevel.addEventListener('change', applyFilters);
+        filterStatus.addEventListener('change', applyFilters);
+        filterNewHiresOnly.addEventListener('change', applyFilters);
+
+        // بحث مع debounce
+        let searchTimeout;
+        filterSearch.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 300);
+        });
+
+        // header checkbox
+        headerCheckbox.addEventListener('change', function() {
+            if (this.checked) selectAll();
+            else deselectAll();
+        });
+
+        // Logout
         logoutBtn.addEventListener('click', async () => {
             try {
                 await signOut(auth);
@@ -1397,15 +899,10 @@
                 return;
             }
             console.log('👤 مستخدم مسجل دخول:', user.email);
+            await loadEmployees();
         });
 
-        // ============================================================
-        // INIT
-        // ============================================================
-        console.log('📇 أداة تحويل Excel إلى VCF جاهزة!');
-        console.log('📝 الأعمدة المطلوبة:', REQUIRED_COLUMNS.join(', '));
-        console.log('📝 مثال: Eng | 236 | خضرة حسين عبد القادر أبو زهرة');
-        console.log('📱 سيتم إضافة 0 تلقائياً لأرقام الهواتف');
+        console.log('📇 أداة تحويل الموظفين إلى VCF جاهزة!');
     </script>
 
 </body>
