@@ -144,6 +144,7 @@
         .training-card .card-actions .action-btn.cancel-btn { background: #e53e3e; color: white; }
         .training-card .card-actions .action-btn.postpone-btn { background: #4299e1; color: white; }
         .training-card .card-actions .action-btn.restore-btn { background: #718096; color: white; }
+        .training-card .card-actions .action-btn.edit-btn { background: #8b5cf6; color: white; }
         .training-card .card-footer { margin-top: 0.6rem; font-size: 0.65rem; color: #a0aec0; display: flex; justify-content: space-between; border-top: 1px solid #edf2f7; padding-top: 0.5rem; }
         
         .no-data { text-align: center; padding: 4rem 2rem; color: #a0aec0; font-size: 1.1rem; background: white; border-radius: 1.5rem; grid-column: 1 / -1; }
@@ -160,6 +161,128 @@
         .toast-msg.info { background: #4299e1; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+        /* ===== Admin Actions ===== */
+        .admin-only { display: none !important; }
+        body.is-admin .admin-only { display: inline-flex !important; }
+        body.is-admin .admin-only.block { display: block !important; }
+
+        .btn-add-session {
+            background: #2b7a4b;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.3rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 3px 10px rgba(43, 122, 75, 0.3);
+        }
+        .btn-add-session:hover { transform: translateY(-2px); opacity: 0.92; }
+
+        /* ===== Modal ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            padding: 1rem;
+        }
+        .modal-overlay.show { display: flex; }
+
+        .modal-box {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 540px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { transform: translateY(20px) scale(0.97); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #edf2f7;
+        }
+        .modal-header h2 { color: #1e3a5f; font-size: 1.3rem; }
+        .modal-close {
+            background: #f0f4f8;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #4a5568;
+            transition: 0.2s;
+        }
+        .modal-close:hover { background: #e53e3e; color: white; }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.85rem;
+        }
+        .form-group label .req { color: #e53e3e; }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.8rem;
+            font-size: 0.9rem;
+            font-family: 'Tajawal', sans-serif;
+            outline: none;
+            transition: 0.2s;
+            color: #1e3a5f;
+        }
+        .form-group input:focus,
+        .form-group select:focus { border-color: #2b7a4b; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+        .modal-actions button {
+            padding: 0.65rem 1.5rem;
+            border: none;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .modal-actions .btn-save { background: #2b7a4b; color: white; }
+        .modal-actions .btn-save:hover { opacity: 0.9; }
+        .modal-actions .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .modal-actions .btn-cancel { background: #edf2f7; color: #4a5568; }
+        .modal-actions .btn-cancel:hover { background: #e2e8f0; }
+
         @media (max-width: 768px) {
             .quick-filter-bar { flex-direction: column; align-items: stretch; }
             .quick-filter-bar .search-box input { width: 100%; }
@@ -169,6 +292,7 @@
             .cards-grid { grid-template-columns: 1fr; }
             .page-header { flex-direction: column; text-align: center; }
             .day-group .cards-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -177,6 +301,56 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loader"></div>
         <div class="loading-text">⏳ جاري تحميل الجدول التدريبي...</div>
+    </div>
+
+    <!-- Modal للإضافة/التعديل (للأدمن فقط) -->
+    <div class="modal-overlay" id="sessionModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modalTitle">➕ Add New Session</h2>
+                <button class="modal-close" onclick="window.closeSessionModal()">✖</button>
+            </div>
+            <form id="sessionForm" onsubmit="window.saveSession(event)">
+                <input type="hidden" id="sessionId" value="">
+                
+                <div class="form-group">
+                    <label>📝 Topic <span class="req">*</span></label>
+                    <input type="text" id="f_topic" required placeholder="e.g. Fire Safety Training">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>📅 Date <span class="req">*</span></label>
+                        <input type="date" id="f_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>🕐 Time <span class="req">*</span></label>
+                        <input type="text" id="f_time" required placeholder="e.g. 10:00 AM">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🏷️ Required Category <span class="req">*</span></label>
+                        <input type="text" id="f_category" required placeholder="e.g. All Employees">
+                    </div>
+                    <div class="form-group">
+                        <label>📊 Status</label>
+                        <select id="f_status">
+                            <option value="scheduled">Scheduled</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="postponed">Postponed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="window.closeSessionModal()">Cancel</button>
+                    <button type="submit" class="btn-save" id="saveBtn">💾 Save Session</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div id="mainContent" style="display: none;"></div>
@@ -189,9 +363,11 @@
             getFirestore, 
             collection, 
             getDocs,
+            getDoc,
             doc,
             updateDoc,
-            setDoc
+            setDoc,
+            addDoc
         } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
         const firestoreDb = getFirestore(getApp());
@@ -215,6 +391,9 @@
         
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
+        let isAdmin = false;
+        let editingSessionId = null;
 
         function showToast(message, type = 'success') {
             document.querySelector('.toast-msg')?.remove();
@@ -396,28 +575,28 @@
             return baseSessions;
         }
 
-        // ========== Status Update Functions (محسّن) ==========
-        // ========== Status Update Function (مُعدّل) ==========
-        // ✅ نرسل الحقول المعدّلة فقط (patch) بدل المستند الكامل
-        // حتى تنجح قاعدة hasOnly(['status', 'statusUpdatedAt'])
+        // ========== Status Update Functions ==========
         async function updateSessionStatus(id, newStatus) {
             showLoading(true, '⏳ جاري تحديث حالة الجلسة...');
             
             try {
-                const updatedAt = new Date().toISOString();
-
-                // ✅ نستخدم updateDoc بدل DB.update لإرسال الحقول المعدّلة فقط
-                const docRef = doc(firestoreDb, 'training_schedule', id);
-                await updateDoc(docRef, {
-                    status: newStatus,
-                    statusUpdatedAt: updatedAt
-                });
+                const record = await DB.get('training_schedule', id);
                 
-                // ⭐ تحديث الكاش المحلي
+                if (!record) {
+                    showToast('❌ لم يتم العثور على الجلسة', 'error');
+                    showLoading(false);
+                    return false;
+                }
+
+                record.status = newStatus;
+                record.statusUpdatedAt = new Date().toISOString();
+
+                await DB.update('training_schedule', record);
+                
                 const index = cachedSessions.findIndex(s => s.id === id);
                 if (index !== -1) {
                     cachedSessions[index].status = newStatus;
-                    cachedSessions[index].statusUpdatedAt = updatedAt;
+                    cachedSessions[index].statusUpdatedAt = record.statusUpdatedAt;
                 }
                 
                 const statusText = {
@@ -509,6 +688,9 @@
                         <button class="action-btn cancel-btn" onclick="cancelSession('${s.id}')">❌ Cancel</button>
                     `;
                 }
+
+                // ⭐ زر التعديل - للأدمن فقط
+                actionsHtml += `<button class="action-btn edit-btn admin-only" onclick="window.openEditSession('${s.id}')">✏️ Edit</button>`;
 
                 return `
                     <div class="${cardClass}">
@@ -643,8 +825,9 @@
                             <h1>📅 <span>Monthly</span> Training Schedule</h1>
                             <p>View all scheduled training sessions organized by date</p>
                         </div>
-                        <div>
+                        <div style="display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap;">
                             ${sourceBadge}
+                            <button class="btn-add-session admin-only" onclick="window.openAddSession()">➕ Add Session</button>
                         </div>
                     </div>
 
@@ -719,9 +902,164 @@
         
         window.logout = async () => { await signOut(auth); window.location.href = 'login.html'; };
 
+        // ========== Admin Modal Controllers ==========
+        window.openAddSession = () => {
+            if (!isAdmin) { showToast('⛔ Admin only', 'error'); return; }
+            editingSessionId = null;
+            document.getElementById('modalTitle').textContent = '➕ Add New Session';
+            document.getElementById('sessionForm').reset();
+            document.getElementById('sessionId').value = '';
+            document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('f_status').value = 'scheduled';
+            document.getElementById('sessionModal').classList.add('show');
+        };
+
+        window.openEditSession = (id) => {
+            if (!isAdmin) { showToast('⛔ Admin only', 'error'); return; }
+            const session = cachedSessions.find(s => s.id === id);
+            if (!session) { showToast('❌ Session not found', 'error'); return; }
+
+            editingSessionId = id;
+            document.getElementById('modalTitle').textContent = '✏️ Edit Session';
+            document.getElementById('sessionId').value = id;
+            document.getElementById('f_topic').value = session.topic || '';
+            document.getElementById('f_date').value = session.date || '';
+            document.getElementById('f_time').value = session.time || '';
+            document.getElementById('f_category').value = session.requiredCategory || '';
+            document.getElementById('f_status').value = session.status || 'scheduled';
+            document.getElementById('sessionModal').classList.add('show');
+        };
+
+        window.closeSessionModal = () => {
+            document.getElementById('sessionModal').classList.remove('show');
+            editingSessionId = null;
+        };
+
+        window.saveSession = async (e) => {
+            e.preventDefault();
+            if (!isAdmin) { showToast('⛔ Admin only', 'error'); return; }
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '⏳ Saving...';
+
+            const payload = {
+                topic: document.getElementById('f_topic').value.trim(),
+                date: document.getElementById('f_date').value,
+                time: document.getElementById('f_time').value.trim(),
+                required_category: document.getElementById('f_category').value.trim(),
+                status: document.getElementById('f_status').value,
+                statusUpdatedAt: new Date().toISOString()
+            };
+
+            try {
+                const id = document.getElementById('sessionId').value;
+
+                if (id) {
+                    // === Update existing ===
+                    payload.imported_at = cachedSessions.find(s => s.id === id)?.importedAt || null;
+                    await setDoc(doc(firestoreDb, 'training_schedule', id), payload, { merge: true });
+                    
+                    // تحديث الكاش المحلي
+                    const idx = cachedSessions.findIndex(s => s.id === id);
+                    if (idx !== -1) {
+                        cachedSessions[idx] = {
+                            ...cachedSessions[idx],
+                            topic: payload.topic,
+                            date: payload.date,
+                            time: payload.time,
+                            requiredCategory: payload.required_category,
+                            status: payload.status,
+                            statusUpdatedAt: payload.statusUpdatedAt
+                        };
+                    }
+                    showToast('✅ Session updated successfully', 'success');
+                } else {
+                    // === Add new ===
+                    payload.imported_at = new Date().toISOString();
+                    const newDocRef = doc(collection(firestoreDb, 'training_schedule'));
+                    await setDoc(newDocRef, payload);
+                    
+                    // إضافة للكاش
+                    cachedSessions.push({
+                        id: newDocRef.id,
+                        date: payload.date,
+                        topic: payload.topic,
+                        time: payload.time,
+                        requiredCategory: payload.required_category,
+                        importedAt: payload.imported_at,
+                        status: payload.status,
+                        statusUpdatedAt: payload.statusUpdatedAt
+                    });
+                    showToast('✅ Session added successfully', 'success');
+                }
+
+                window.closeSessionModal();
+                renderPage();
+            } catch (err) {
+                console.error('Save failed:', err);
+                showToast('❌ Failed to save session', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Save Session';
+            }
+        };
+
+        // إغلاق الـ modal عند الضغط على الخلفية
+        document.getElementById('sessionModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'sessionModal') window.closeSessionModal();
+        });
+
+        // إغلاق بـ ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') window.closeSessionModal?.();
+        });
+
+        // ========== Check Admin Role ==========
+        async function checkAdminRole(user) {
+            try {
+                // 1) محاولة القراءة من Firestore (users collection)
+                const userDocRef = doc(firestoreDb, 'users', user.uid);
+                const userSnap = await getDoc(userDocRef);
+                
+                if (userSnap.exists()) {
+                    const data = userSnap.data();
+                    const role = (data.role || data.userType || data.type || '').toLowerCase();
+                    if (role === 'admin' || role === 'administrator' || data.isAdmin === true) {
+                        return true;
+                    }
+                }
+                
+                // 2) fallback: قراءة من localStorage (إذا auth-guard بيحفظ الدور)
+                const storedRole = (localStorage.getItem('userRole') || localStorage.getItem('role') || '').toLowerCase();
+                if (storedRole === 'admin' || storedRole === 'administrator') return true;
+                
+                // 3) fallback: قراءة من الـ custom claims
+                if (user.getIdTokenResult) {
+                    const tokenResult = await user.getIdTokenResult();
+                    if (tokenResult.claims.admin === true || tokenResult.claims.role === 'admin') return true;
+                }
+                
+                return false;
+            } catch (e) {
+                console.warn('⚠️ Could not determine admin role:', e);
+                return false;
+            }
+        }
+
         // ===== Init Auth =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // ⭐ التحقق من صلاحية الأدمن أولاً
+                isAdmin = await checkAdminRole(user);
+                if (isAdmin) {
+                    document.body.classList.add('is-admin');
+                    console.log('👑 Admin mode enabled');
+                } else {
+                    document.body.classList.remove('is-admin');
+                    console.log('👤 Viewer mode');
+                }
+                
                 await loadDataFromFirestore(false);
                 renderPage();
             } else {
