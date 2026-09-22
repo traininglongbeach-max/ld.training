@@ -28,6 +28,9 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
+            position: sticky;   
+            top: 0;              
+            z-index: 999;          
         }
         .logo h2 { color: #1e3a5f; }
         .logo span { color: #2b7a4b; }
@@ -382,7 +385,7 @@
                 <label>📌 الحالة:</label>
                 <select id="statusFilter" onchange="updateFilters()">
                     <option value="all">الكل</option>
-                    <option value="Active">✅ نشط</option>
+                    <option value="Active" selected>✅ نشط</option>
                     <option value="Left">❌ مستقيل</option>
                 </select>
             </div>
@@ -518,7 +521,7 @@
         let filterDept = "all";
         let selectedPositions = [];
         let filterLevel = "all";
-        let filterStatus = "all";
+        let filterStatus = "Active"; // ✅ الافتراضي: نشط
         let currentEditId = null;
         let currentUserRole = null;
 
@@ -714,9 +717,16 @@
             return Array.from(positions).sort();
         }
 
-        function getUniqueLevels() {
+        // ✅ فلتر المستويات مرتبط بالقسم
+        function getUniqueLevels(dept = 'all') {
             const levels = new Set();
-            employees.forEach(emp => { if (emp.level && emp.level.trim() !== '') levels.add(emp.level.trim()); });
+            employees.forEach(emp => {
+                if (emp.level && emp.level.trim() !== '') {
+                    if (dept === 'all' || emp.department === dept) {
+                        levels.add(emp.level.trim());
+                    }
+                }
+            });
             return Array.from(levels).sort();
         }
 
@@ -840,6 +850,7 @@
             if (newDept !== filterDept) {
                 filterDept = newDept;
                 selectedPositions = [];
+                filterLevel = "all"; // ✅ إعادة تعيين فلتر المستوى عند تغيير القسم
                 renderPositionOptions(true);
             }
             await updateUI();
@@ -851,7 +862,6 @@
             
             const filtered = filterEmployees();
             const departments = getUniqueDepartments();
-            const levels = getUniqueLevels();
             
             const totalEmployees = employees.length;
             const activeCount = employees.filter(e => (e.status || 'Active') === 'Active').length;
@@ -881,8 +891,14 @@
             
             renderPositionOptions();
 
+            // ✅ فلتر المستويات مرتبط بالقسم
             const levelFilter = document.getElementById('levelFilter');
-            if (levelFilter) levelFilter.innerHTML = '<option value="all">كل المستويات</option>' + levels.map(lvl => `<option value="${lvl}" ${filterLevel === lvl ? 'selected' : ''}>${lvl}</option>`).join('');
+            const levelsForDept = getUniqueLevels(filterDept);
+            // لو المستوى المختار مش موجود في القسم الحالي، صفّره
+            if (filterLevel !== 'all' && !levelsForDept.includes(filterLevel)) {
+                filterLevel = 'all';
+            }
+            if (levelFilter) levelFilter.innerHTML = '<option value="all">كل المستويات</option>' + levelsForDept.map(lvl => `<option value="${lvl}" ${filterLevel === lvl ? 'selected' : ''}>${lvl}</option>`).join('');
             
             const statusFilter = document.getElementById('statusFilter');
             if (statusFilter && statusFilter.value !== filterStatus) statusFilter.value = filterStatus;
@@ -968,11 +984,11 @@
             filterDept = "all"; 
             selectedPositions = []; 
             filterLevel = "all"; 
-            filterStatus = "all";
+            filterStatus = "Active"; // ✅ إعادة تعيين إلى نشط
             
             document.getElementById('deptFilter').value = "all";
             document.getElementById('levelFilter').value = "all";
-            document.getElementById('statusFilter').value = "all";
+            document.getElementById('statusFilter').value = "Active";
             document.getElementById('searchInput').value = "";
             
             renderPositionOptions(true);
