@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>تدريبات Off Job - نظام إدارة التعليم والتطوير</title>
+    <title>تسجيل تدريبات -Off Job </title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -180,56 +180,88 @@
         }
 
         // حفظ وتحديث مباشر لجدول الكورسات في Firestore
-        window.saveCourse = async () => {
-            const code = document.getElementById('courseCode').value.trim();
-            const editMode = document.getElementById('courseModal').dataset.editMode === 'true';
-            const oldCode = parseInt(document.getElementById('courseModal').dataset.oldCode);
-            const newCodeNum = parseInt(code);
-            
-            if (!code || !document.getElementById('courseName').value.trim() || isNaN(newCodeNum)) { 
-                showToast('❌ الرجاء إدخال كود صحيح واسم الكورس', true); 
-                return; 
-            }
+window.saveCourse = async () => {
+    const code = document.getElementById('courseCode').value.trim();
+    const name = document.getElementById('courseName').value.trim();
+    const category = document.getElementById('courseCategory').value.trim();
+    const targetAudience = document.getElementById('courseTargetAudience').value.trim();
+    const duration = document.getElementById('courseDuration').value.trim();
+    const trainingType = document.getElementById('courseTrainingType').value;
+    const status = document.getElementById('courseStatus').value;
+    
+    const editMode = document.getElementById('courseModal').dataset.editMode === 'true';
+    const oldCode = parseInt(document.getElementById('courseModal').dataset.oldCode);
+    const newCodeNum = parseInt(code);
+    
+    // ✅ التحقق من جميع الحقول الإجبارية
+    if (!code || isNaN(newCodeNum)) { 
+        showToast('❌ الرجاء إدخال كود الكورس بشكل صحيح', true); 
+        return; 
+    }
+    if (!name) { 
+        showToast('❌ الرجاء إدخال اسم الكورس', true); 
+        return; 
+    }
+    if (!category) { 
+        showToast('❌ الرجاء اختيار التصنيف', true); 
+        return; 
+    }
+    if (!targetAudience) { 
+        showToast('❌ الرجاء إدخال الجمهور المستهدف', true); 
+        return; 
+    }
+    if (!duration || isNaN(Number(duration)) || Number(duration) <= 0) { 
+        showToast('❌ الرجاء إدخال مدة ساعات صحيحة', true); 
+        return; 
+    }
+    if (!trainingType) { 
+        showToast('❌ الرجاء اختيار نوع التدريب', true); 
+        return; 
+    }
+    if (!status) { 
+        showToast('❌ الرجاء اختيار الحالة', true); 
+        return; 
+    }
 
-            const data = {
-                id: String(newCodeNum),
-                course_code: newCodeNum,
-                course_name: document.getElementById('courseName').value.trim(),
-                description: document.getElementById('courseDescription').value.trim(),
-                category: document.getElementById('courseCategory').value.trim(),
-                target_audience: document.getElementById('courseTargetAudience').value.trim(),
-                duration_hours: Number(document.getElementById('courseDuration').value) || 0,
-                training_type: document.getElementById('courseTrainingType').value,
-                status: document.getElementById('courseStatus').value
-            };
-            
-            if (editMode) {
-                if (newCodeNum !== oldCode && isCourseCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
-                    return;
-                }
-                if (newCodeNum !== oldCode) {
-                    await DB.delete('offjob_courses', String(oldCode));
-                    await DB.insert('offjob_courses', data);
-                } else {
-                    await DB.update('offjob_courses', data);
-                }
-                const index = courses.findIndex(c => c.course_code === oldCode);
-                if (index !== -1) courses[index] = data;
-                showToast('✅ تم تحديث الكورس بالسيرفر');
-            } else {
-                if (isCourseCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
-                    return;
-                }
-                await DB.insert('offjob_courses', data);
-                courses.push(data);
-                showToast('✅ تم إضافة الكورس للسيرفر');
-            }
-            
-            renderPage();
-            document.getElementById('courseModal').style.display = 'none';
-        };
+    const data = {
+        id: String(newCodeNum),
+        course_code: newCodeNum,
+        course_name: name,
+        description: document.getElementById('courseDescription').value.trim(),
+        category: category,
+        target_audience: targetAudience,
+        duration_hours: Number(duration),
+        training_type: trainingType,
+        status: status
+    };
+    
+    if (editMode) {
+        if (newCodeNum !== oldCode && isCourseCodeExists(newCodeNum)) {
+            showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+            return;
+        }
+        if (newCodeNum !== oldCode) {
+            await DB.delete('offjob_courses', String(oldCode));
+            await DB.insert('offjob_courses', data);
+        } else {
+            await DB.update('offjob_courses', data);
+        }
+        const index = courses.findIndex(c => c.course_code === oldCode);
+        if (index !== -1) courses[index] = data;
+        showToast('✅ تم تحديث الكورس بالسيرفر');
+    } else {
+        if (isCourseCodeExists(newCodeNum)) {
+            showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+            return;
+        }
+        await DB.insert('offjob_courses', data);
+        courses.push(data);
+        showToast('✅ تم إضافة الكورس للسيرفر');
+    }
+    
+    renderPage();
+    document.getElementById('courseModal').style.display = 'none';
+};
 
         window.deleteCourse = async (courseCode) => {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذا الكورس من السيرفر نهائياً؟')) return;
@@ -240,60 +272,106 @@
         };
 
         // حفظ وتحديث مباشر لجدول الجلسات في Firestore
-        window.saveSession = async () => {
-            const code = document.getElementById('sessionCode').value.trim();
-            const courseCode = document.getElementById('sessionCourseCode').value.trim();
-            const editMode = document.getElementById('sessionModal').dataset.editMode === 'true';
-            const oldCode = parseInt(document.getElementById('sessionModal').dataset.oldCode);
-            const newCodeNum = parseInt(code);
-            const courseCodeNum = parseInt(courseCode);
-            
-            if (!code || !courseCode || isNaN(newCodeNum) || isNaN(courseCodeNum)) { 
-                showToast('❌ الرجاء إدخال أكواد صحيحة', true); 
-                return; 
-            }
+window.saveSession = async () => {
+    const code = document.getElementById('sessionCode').value.trim();
+    const courseCode = document.getElementById('sessionCourseCode').value.trim();
+    const trainerName = document.getElementById('trainerName').value.trim();
+    const sessionDate = document.getElementById('sessionDate').value;
+    const startTime = document.getElementById('sessionStartTime').value;
+    const endTime = document.getElementById('sessionEndTime').value;
+    const location = document.getElementById('sessionLocation').value.trim();
+    const maxCapacity = document.getElementById('sessionMaxCapacity').value.trim();
+    const status = document.getElementById('sessionStatus').value;
+    
+    const editMode = document.getElementById('sessionModal').dataset.editMode === 'true';
+    const oldCode = parseInt(document.getElementById('sessionModal').dataset.oldCode);
+    const newCodeNum = parseInt(code);
+    const courseCodeNum = parseInt(courseCode);
+    
+    // ✅ التحقق من جميع الحقول الإجبارية
+    if (!code || isNaN(newCodeNum)) { 
+        showToast('❌ الرجاء إدخال كود الجلسة بشكل صحيح', true); 
+        return; 
+    }
+    if (!courseCode || isNaN(courseCodeNum)) { 
+        showToast('❌ الرجاء اختيار الكورس التابع له', true); 
+        return; 
+    }
+    if (!trainerName) { 
+        showToast('❌ الرجاء إدخال اسم المدرب', true); 
+        return; 
+    }
+    if (!sessionDate) { 
+        showToast('❌ الرجاء إدخال تاريخ الجلسة', true); 
+        return; 
+    }
+    if (!startTime) { 
+        showToast('❌ الرجاء إدخال وقت البداية', true); 
+        return; 
+    }
+    if (!endTime) { 
+        showToast('❌ الرجاء إدخال وقت النهاية', true); 
+        return; 
+    }
+    // التحقق من أن وقت النهاية بعد وقت البداية
+    if (endTime <= startTime) {
+        showToast('❌ وقت النهاية يجب أن يكون بعد وقت البداية', true); 
+        return;
+    }
+    if (!location) { 
+        showToast('❌ الرجاء إدخال الموقع', true); 
+        return; 
+    }
+    if (!maxCapacity || isNaN(Number(maxCapacity)) || Number(maxCapacity) <= 0) { 
+        showToast('❌ الرجاء إدخال سعة قصوى صحيحة', true); 
+        return; 
+    }
+    if (!status) { 
+        showToast('❌ الرجاء اختيار الحالة', true); 
+        return; 
+    }
 
-            const data = {
-                id: String(newCodeNum),
-                session_code: newCodeNum,
-                course_code: courseCodeNum,
-                trainer_name: document.getElementById('trainerName').value.trim(),
-                session_date: document.getElementById('sessionDate').value,
-                start_time: document.getElementById('sessionStartTime').value,
-                end_time: document.getElementById('sessionEndTime').value,
-                location: document.getElementById('sessionLocation').value.trim(),
-                max_capacity: Number(document.getElementById('sessionMaxCapacity').value) || null,
-                status: document.getElementById('sessionStatus').value,
-                notes: document.getElementById('sessionNotes').value.trim()
-            };
-            
-            if (editMode) {
-                if (newCodeNum !== oldCode && isSessionCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
-                    return;
-                }
-                if (newCodeNum !== oldCode) {
-                    await DB.delete('offjob_sessions', String(oldCode));
-                    await DB.insert('offjob_sessions', data);
-                } else {
-                    await DB.update('offjob_sessions', data);
-                }
-                const index = sessions.findIndex(s => s.session_code === oldCode);
-                if (index !== -1) sessions[index] = data;
-                showToast('✅ تم تحديث الجلسة بالسيرفر');
-            } else {
-                if (isSessionCodeExists(newCodeNum)) {
-                    showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
-                    return;
-                }
-                await DB.insert('offjob_sessions', data);
-                sessions.push(data);
-                showToast('✅ تم إضافة الجلسة للسيرفر');
-            }
-            
-            renderPage();
-            document.getElementById('sessionModal').style.display = 'none';
-        };
+    const data = {
+        id: String(newCodeNum),
+        session_code: newCodeNum,
+        course_code: courseCodeNum,
+        trainer_name: trainerName,
+        session_date: sessionDate,
+        start_time: startTime,
+        end_time: endTime,
+        location: location,
+        max_capacity: Number(maxCapacity),
+        status: status,
+        notes: document.getElementById('sessionNotes').value.trim()
+    };
+    
+    if (editMode) {
+        if (newCodeNum !== oldCode && isSessionCodeExists(newCodeNum)) {
+            showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+            return;
+        }
+        if (newCodeNum !== oldCode) {
+            await DB.delete('offjob_sessions', String(oldCode));
+            await DB.insert('offjob_sessions', data);
+        } else {
+            await DB.update('offjob_sessions', data);
+        }
+        const index = sessions.findIndex(s => s.session_code === oldCode);
+        if (index !== -1) sessions[index] = data;
+        showToast('✅ تم تحديث الجلسة بالسيرفر');
+    } else {
+        if (isSessionCodeExists(newCodeNum)) {
+            showToast(`❌ الكود ${newCodeNum} مستخدم بالفعل!`, true);
+            return;
+        }
+        await DB.insert('offjob_sessions', data);
+        sessions.push(data);
+        showToast('✅ تم إضافة الجلسة للسيرفر');
+    }
+    
+    renderPage();
+    document.getElementById('sessionModal').style.display = 'none';
+};
 
         window.deleteSession = async (sessionCode) => {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذه الجلسة من السيرفر نهائياً؟')) return;
@@ -660,14 +738,14 @@
                         <div id="courseModal" class="modal">
                             <div class="modal-content">
                                 <h3 id="courseModalTitle">إضافة كورس</h3>
-                                <div class="form-group"><label>كود الكورس *</label><input type="number" id="courseCode"></div>
-                                <div class="form-group"><label>اسم الكورس *</label><input type="text" id="courseName"></div>
+                                <div class="form-group"><label>كود الكورس <span style="color:red;">*</span></label><input type="number" id="courseCode" required></div>
+                                <div class="form-group"><label>اسم الكورس <span style="color:red;">*</span></label><input type="text" id="courseName" required></div>
                                 <div class="form-group"><label>الوصف</label><textarea id="courseDescription" rows="2"></textarea></div>
-                                <div class="form-group"><label>التصنيف</label><select id="courseCategory"><option value="">-- اختر --</option><option value="Compliance">Compliance</option><option value="Service">Service</option><option value="Soft Skills">Soft Skills</option></select></div>
-                                <div class="form-group"><label>الجمهور المستهدف</label><input type="text" id="courseTargetAudience"></div>
-                                <div class="form-group"><label>⏱️ مدة الساعات</label><input type="number" id="courseDuration" step="0.5"></div>
-                                <div class="form-group"><label>نوع التدريب</label><select id="courseTrainingType"><option value="Off Job">Off Job</option><option value="Outsourced">Outsourced</option><option value="Online">Online</option><option value="Blended">Blended</option></select></div>
-                                <div class="form-group"><label>الحالة</label><select id="courseStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Archived">Archived</option></select></div>
+                                <div class="form-group"><label>التصنيف <span style="color:red;">*</span></label><select id="courseCategory" required><option value="">-- اختر --</option><option value="Compliance">Compliance</option><option value="Service">Service</option><option value="Soft Skills">Soft Skills</option></select></div>
+                                <div class="form-group"><label>الجمهور المستهدف <span style="color:red;">*</span></label><input type="text" id="courseTargetAudience" required></div>
+                                <div class="form-group"><label>⏱️ مدة الساعات <span style="color:red;">*</span></label><input type="number" id="courseDuration" step="0.5" min="0.5" required></div>
+                                <div class="form-group"><label>نوع التدريب <span style="color:red;">*</span></label><select id="courseTrainingType" required><option value="Off Job">Off Job</option><option value="Outsourced">Outsourced</option><option value="Online">Online</option><option value="Blended">Blended</option></select></div>
+                                <div class="form-group"><label>الحالة <span style="color:red;">*</span></label><select id="courseStatus" required><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Archived">Archived</option></select></div>
                                 <div class="modal-buttons"><button onclick="window.saveCourse()">💾 حفظ</button><button onclick="window.closeModal('courseModal')" style="background:#a0aec0;">❌ إلغاء</button></div>
                             </div>
                         </div>
@@ -676,15 +754,15 @@
                         <div id="sessionModal" class="modal">
                             <div class="modal-content">
                                 <h3 id="sessionModalTitle">إضافة جلسة</h3>
-                                <div class="form-group"><label>كود الجلسة *</label><input type="number" id="sessionCode"></div>
-                                <div class="form-group"><label>الكورس التابع له *</label><select id="sessionCourseCode"></select></div>
-                                <div class="form-group"><label>👨‍🏫 المدرب</label><input type="text" id="trainerName"></div>
-                                <div class="form-group"><label>📅 التاريخ</label><input type="date" id="sessionDate"></div>
-                                <div class="form-group"><label>🕐 وقت البداية</label><input type="time" id="sessionStartTime"></div>
-                                <div class="form-group"><label>🕐 وقت النهاية</label><input type="time" id="sessionEndTime"></div>
-                                <div class="form-group"><label>📍 الموقع</label><input type="text" id="sessionLocation"></div>
-                                <div class="form-group"><label>👥 السعة القصوى</label><input type="number" id="sessionMaxCapacity"></div>
-                                <div class="form-group"><label>الحالة</label><select id="sessionStatus"><option value="Active">Active</option><option value="Cancelled">Cancelled</option><option value="Completed">Completed</option><option value="Scheduled">Scheduled</option></select></div>
+                                <div class="form-group"><label>كود الجلسة <span style="color:red;">*</span></label><input type="number" id="sessionCode" required></div>
+                                <div class="form-group"><label>الكورس التابع له <span style="color:red;">*</span></label><select id="sessionCourseCode" required></select></div>
+                                <div class="form-group"><label>👨‍🏫 المدرب <span style="color:red;">*</span></label><input type="text" id="trainerName" required></div>
+                                <div class="form-group"><label>📅 التاريخ <span style="color:red;">*</span></label><input type="date" id="sessionDate" required></div>
+                                <div class="form-group"><label>🕐 وقت البداية <span style="color:red;">*</span></label><input type="time" id="sessionStartTime" required></div>
+                                <div class="form-group"><label>🕐 وقت النهاية <span style="color:red;">*</span></label><input type="time" id="sessionEndTime" required></div>
+                                <div class="form-group"><label>📍 الموقع <span style="color:red;">*</span></label><input type="text" id="sessionLocation" required></div>
+                                <div class="form-group"><label>👥 السعة القصوى <span style="color:red;">*</span></label><input type="number" id="sessionMaxCapacity" min="1" required></div>
+                                <div class="form-group"><label>الحالة <span style="color:red;">*</span></label><select id="sessionStatus" required><option value="Active">Active</option><option value="Cancelled">Cancelled</option><option value="Completed">Completed</option><option value="Scheduled">Scheduled</option></select></div>
                                 <div class="form-group"><label>ملاحظات</label><textarea id="sessionNotes" rows="2"></textarea></div>
                                 <div class="modal-buttons"><button onclick="window.saveSession()">💾 حفظ</button><button onclick="window.closeModal('sessionModal')" style="background:#a0aec0;">❌ إلغاء</button></div>
                             </div>
