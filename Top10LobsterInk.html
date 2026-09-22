@@ -44,18 +44,17 @@
 
         /* ===== NAVBAR ===== */
         .navbar {
-            background: var(--lbr-white);
-            padding: 10px 24px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
-            max-width: 1200px;
-            margin: 0 auto 20px;
-            border-top: 3px solid var(--lbr-orange);
+            gap: 1rem;
+            position: sticky;     
+            top: 0;               
+            z-index: 999;         
         }
 
         .navbar .logo { display: flex; align-items: center; gap: 12px; }
