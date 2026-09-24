@@ -9,7 +9,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
     
     <script type="module" src="auth-guard.js"></script>
@@ -50,7 +49,7 @@
         }
         .navbar .logo h2 { color: #1e3a5f; font-size: 1.3rem; }
         .navbar .logo span { color: #2b7a4b; }
-        .navbar .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .navbar .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
         .navbar .nav-links a, .navbar .nav-links button {
             text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem;
             font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.3s;
@@ -58,6 +57,18 @@
         .navbar .nav-links a:hover, .navbar .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
         .navbar .nav-links .home { background: #2b7a4b; color: white; }
         .navbar .nav-links .logout { background: #e53e3e; color: white; }
+
+        /* CACHE BADGE */
+        .cache-badge {
+            font-size: 0.7rem; font-weight: 700; padding: 4px 12px;
+            border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;
+            transition: var(--transition);
+        }
+        .cache-badge.fresh { background: #D1FAE5; color: #065F46; }
+        .cache-badge.cached { background: #FEF3C7; color: #92400E; }
+        .cache-badge.loading { background: #DBEAFE; color: #1E40AF; }
+        .cache-badge.error { background: #FEE2E2; color: #991B1B; }
+        .cache-badge i { font-size: 0.7rem; }
 
         /* CONTAINER */
         .container { max-width: 1200px; width: 100%; margin: 30px auto; padding: 0 20px; }
@@ -85,7 +96,9 @@
         .card-title {
             font-size: 1.2rem; font-weight: 800; color: var(--dark);
             margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+            justify-content: space-between; flex-wrap: wrap;
         }
+        .card-title > span { display: flex; align-items: center; gap: 10px; }
         .card-title i { color: var(--primary); }
 
         /* FILTERS */
@@ -129,6 +142,31 @@
             font-weight: 700; font-size: 0.9rem; color: #92400E;
             cursor: pointer; display: flex; align-items: center; gap: 6px;
         }
+
+        /* HIRE DATE FILTER SECTION */
+        .hire-date-section {
+            margin-top: 15px; padding: 16px;
+            background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+            border: 2px solid #BFDBFE; border-radius: 12px;
+        }
+        .hire-date-section .section-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px; flex-wrap: wrap; gap: 10px;
+        }
+        .hire-date-section .section-header h4 {
+            font-size: 0.95rem; font-weight: 800; color: #1E40AF;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .hire-date-section .section-header h4 i { color: #2563EB; }
+        .hire-date-section .date-hint {
+            font-size: 0.75rem; color: #1E40AF; font-weight: 600;
+            background: rgba(255,255,255,0.7); padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .hire-date-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .hire-date-grid .filter-group label i { color: #2563EB; }
 
         /* ACTION BAR */
         .action-bar {
@@ -216,6 +254,9 @@
         .btn-secondary:hover { background: #E2E8F0; }
         .btn-warning { background: var(--warning); color: white; }
         .btn-warning:hover { box-shadow: 0 4px 25px rgba(245, 158, 11, 0.35); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { box-shadow: 0 4px 25px rgba(239, 68, 68, 0.35); }
+        .btn-sm { padding: 6px 14px; font-size: 0.75rem; border-radius: 8px; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
         /* LOADING */
@@ -265,6 +306,7 @@
             .header h1 { font-size: 1.5rem; }
             .header .icon { width: 60px; height: 60px; font-size: 2rem; }
             .filters-grid { grid-template-columns: 1fr; }
+            .hire-date-grid { grid-template-columns: 1fr; }
             .preview-table { font-size: 0.75rem; }
             .preview-table th, .preview-table td { padding: 8px 10px; }
             .action-bar .btn { flex: 1 1 100%; }
@@ -285,6 +327,9 @@
             <h2>🎓 Learning & Development <span>System</span></h2>
         </div>
         <div class="nav-links">
+            <span id="cacheBadge" class="cache-badge loading">
+                <i class="fas fa-spinner fa-spin"></i> جاري التحميل...
+            </span>
             <a href="index.html" class="home">🏠 Home</a>
             <button id="logoutBtn" class="logout">🚪 Logout</button>
         </div>
@@ -303,8 +348,10 @@
         <!-- FILTERS CARD -->
         <div class="card">
             <div class="card-title">
-                <i class="fas fa-filter"></i>
-                فلاتر التصدير
+                <span>
+                    <i class="fas fa-filter"></i>
+                    فلاتر التصدير
+                </span>
             </div>
 
             <div class="filters-grid">
@@ -334,6 +381,28 @@
                 <div class="filter-group">
                     <label><i class="fas fa-search"></i> بحث بالاسم/الكود</label>
                     <input type="text" id="filterSearch" placeholder="اكتب الاسم أو الكود...">
+                </div>
+            </div>
+
+            <!-- HIRE DATE FILTER (YEAR + MONTH) -->
+            <div class="hire-date-section">
+                <div class="section-header">
+                    <h4><i class="fas fa-calendar-alt"></i> فلتر التعيينات حسب السنة والشهر</h4>
+                    <span class="date-hint" id="currentDateHint"></span>
+                </div>
+                <div class="hire-date-grid">
+                    <div class="filter-group">
+                        <label><i class="fas fa-calendar"></i> السنة</label>
+                        <select id="filterYear">
+                            <option value="">كل السنوات</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fas fa-calendar-week"></i> الشهر</label>
+                        <select id="filterMonth">
+                            <option value="">كل الشهور</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -384,8 +453,10 @@
         <!-- TABLE CARD -->
         <div class="card">
             <div class="card-title">
-                <i class="fas fa-table"></i>
-                قائمة الموظفين
+                <span>
+                    <i class="fas fa-table"></i>
+                    قائمة الموظفين
+                </span>
             </div>
 
             <div id="loadingState" class="loading-state">
@@ -410,8 +481,9 @@
                             <th>القسم</th>
                             <th>كود الموظف</th>
                             <th>الاسم</th>
-                            <th>الليفل</th>
+                            <th>المستوي</th>
                             <th>رقم الهاتف</th>
+                            <th>تاريخ التعيين</th>
                             <th>الحالة</th>
                         </tr>
                     </thead>
@@ -432,15 +504,261 @@
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
         // ============================================================
+        // ⚙️ CACHE CONFIGURATION (IndexedDB)
+        // ============================================================
+        const CACHE_CONFIG = {
+            DB_NAME: 'ExcelToVCF_Cache',
+            DB_VERSION: 1,
+            STORE_NAME: 'employees',
+            META_STORE: 'meta',
+            TTL: 5 * 60 * 1000,               // 5 دقائق صلاحية
+            MAX_EMPLOYEES: 10000              // حد أقصى كبير جداً (IndexedDB يتحمل)
+        };
+
+        // ============================================================
+        // 🗄️ INDEXEDDB MANAGER
+        // ============================================================
+        const IDB = {
+            _db: null,
+            _openPromise: null,
+
+            // ✅ فتح قاعدة البيانات (مع cache للـ connection)
+            async open() {
+                if (this._db) return this._db;
+                if (this._openPromise) return this._openPromise;
+
+                this._openPromise = new Promise((resolve, reject) => {
+                    const request = indexedDB.open(CACHE_CONFIG.DB_NAME, CACHE_CONFIG.DB_VERSION);
+
+                    request.onerror = () => {
+                        console.error('❌ IndexedDB open error:', request.error);
+                        reject(request.error);
+                    };
+
+                    request.onsuccess = () => {
+                        this._db = request.result;
+                        console.log('✅ IndexedDB opened successfully');
+                        resolve(this._db);
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        console.log('🔧 IndexedDB upgrade needed');
+
+                        if (!db.objectStoreNames.contains(CACHE_CONFIG.STORE_NAME)) {
+                            const store = db.createObjectStore(CACHE_CONFIG.STORE_NAME, { keyPath: 'cacheKey' });
+                            store.createIndex('byTimestamp', 'timestamp', { unique: false });
+                            console.log('📦 Created store:', CACHE_CONFIG.STORE_NAME);
+                        }
+
+                        if (!db.objectStoreNames.contains(CACHE_CONFIG.META_STORE)) {
+                            db.createObjectStore(CACHE_CONFIG.META_STORE, { keyPath: 'key' });
+                            console.log('📦 Created store:', CACHE_CONFIG.META_STORE);
+                        }
+                    };
+                });
+
+                return this._openPromise;
+            },
+
+            // ✅ حفظ البيانات في الكاش
+            async save(employees) {
+                try {
+                    const db = await this.open();
+
+                    let dataToSave = employees;
+                    if (employees.length > CACHE_CONFIG.MAX_EMPLOYEES) {
+                        console.warn(`⚠️ عدد كبير (${employees.length})، سيتم تخزين ${CACHE_CONFIG.MAX_EMPLOYEES} فقط`);
+                        dataToSave = employees.slice(0, CACHE_CONFIG.MAX_EMPLOYEES);
+                    }
+
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction([CACHE_CONFIG.STORE_NAME, CACHE_CONFIG.META_STORE], 'readwrite');
+                        const store = tx.objectStore(CACHE_CONFIG.STORE_NAME);
+                        const metaStore = tx.objectStore(CACHE_CONFIG.META_STORE);
+
+                        store.clear();
+
+                        const timestamp = Date.now();
+                        const record = {
+                            cacheKey: 'all_employees',
+                            data: dataToSave,
+                            timestamp: timestamp,
+                            count: dataToSave.length,
+                            totalCount: employees.length,
+                            isPartial: dataToSave.length < employees.length
+                        };
+                        store.put(record);
+
+                        metaStore.put({
+                            key: 'last_update',
+                            timestamp: timestamp,
+                            count: dataToSave.length,
+                            totalCount: employees.length,
+                            isPartial: dataToSave.length < employees.length
+                        });
+
+                        tx.oncomplete = () => {
+                            console.log(`💾 IndexedDB cache saved: ${dataToSave.length}/${employees.length} employees`);
+                            resolve(true);
+                        };
+
+                        tx.onerror = () => {
+                            console.error('❌ IndexedDB save error:', tx.error);
+                            reject(tx.error);
+                        };
+                    });
+                } catch (e) {
+                    console.warn('⚠️ فشل حفظ الكاش في IndexedDB:', e.message);
+                    return false;
+                }
+            },
+
+            // ✅ قراءة البيانات من الكاش
+            async load() {
+                try {
+                    const db = await this.open();
+
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction([CACHE_CONFIG.STORE_NAME, CACHE_CONFIG.META_STORE], 'readonly');
+                        const store = tx.objectStore(CACHE_CONFIG.STORE_NAME);
+                        const metaStore = tx.objectStore(CACHE_CONFIG.META_STORE);
+
+                        const dataRequest = store.get('all_employees');
+                        const metaRequest = metaStore.get('last_update');
+
+                        tx.oncomplete = () => {
+                            const record = dataRequest.result;
+                            const meta = metaRequest.result;
+
+                            if (!record || !record.data || !record.timestamp) {
+                                resolve(null);
+                                return;
+                            }
+
+                            const age = Date.now() - record.timestamp;
+
+                            if (age > CACHE_CONFIG.TTL) {
+                                console.log(`⏰ Cache expired (age: ${Math.round(age / 1000)}s)`);
+                                this.clear().catch(() => {});
+                                resolve(null);
+                                return;
+                            }
+
+                            if (record.isPartial) {
+                                console.log(`⚠️ Cache is partial (${record.count}/${record.totalCount})`);
+                                resolve(null);
+                                return;
+                            }
+
+                            console.log(`✅ IndexedDB cache loaded: ${record.data.length} employees (age: ${Math.round(age / 1000)}s)`);
+                            resolve({
+                                data: record.data,
+                                age: age,
+                                timestamp: record.timestamp
+                            });
+                        };
+
+                        tx.onerror = () => {
+                            console.error('❌ IndexedDB load error:', tx.error);
+                            reject(tx.error);
+                        };
+                    });
+                } catch (e) {
+                    console.warn('⚠️ فشل قراءة الكاش من IndexedDB:', e.message);
+                    return null;
+                }
+            },
+
+            // ✅ مسح الكاش
+            async clear() {
+                try {
+                    const db = await this.open();
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction([CACHE_CONFIG.STORE_NAME, CACHE_CONFIG.META_STORE], 'readwrite');
+                        tx.objectStore(CACHE_CONFIG.STORE_NAME).clear();
+                        tx.objectStore(CACHE_CONFIG.META_STORE).clear();
+
+                        tx.oncomplete = () => {
+                            console.log('🗑️ IndexedDB cache cleared');
+                            resolve(true);
+                        };
+                        tx.onerror = () => reject(tx.error);
+                    });
+                } catch (e) {
+                    console.warn('⚠️ فشل مسح الكاش:', e.message);
+                    return false;
+                }
+            },
+
+            // ✅ الحصول على معلومات الكاش
+            async getInfo() {
+                try {
+                    const db = await this.open();
+                    return new Promise((resolve) => {
+                        const tx = db.transaction(CACHE_CONFIG.META_STORE, 'readonly');
+                        const metaStore = tx.objectStore(CACHE_CONFIG.META_STORE);
+                        const request = metaStore.get('last_update');
+
+                        tx.oncomplete = () => {
+                            if (!request.result) {
+                                resolve(null);
+                                return;
+                            }
+                            const meta = request.result;
+                            resolve({
+                                timestamp: meta.timestamp,
+                                age: Date.now() - meta.timestamp,
+                                count: meta.count,
+                                totalCount: meta.totalCount,
+                                isPartial: meta.isPartial
+                            });
+                        };
+                        tx.onerror = () => resolve(null);
+                    });
+                } catch (e) {
+                    return null;
+                }
+            },
+
+            // ✅ حذف قاعدة البيانات بالكامل
+            async deleteDatabase() {
+                try {
+                    if (this._db) {
+                        this._db.close();
+                        this._db = null;
+                        this._openPromise = null;
+                    }
+                    return new Promise((resolve, reject) => {
+                        const request = indexedDB.deleteDatabase(CACHE_CONFIG.DB_NAME);
+                        request.onsuccess = () => {
+                            console.log('🗑️ IndexedDB deleted');
+                            resolve(true);
+                        };
+                        request.onerror = () => reject(request.error);
+                    });
+                } catch (e) {
+                    console.warn('⚠️ فشل حذف قاعدة البيانات:', e.message);
+                    return false;
+                }
+            }
+        };
+
+        // ============================================================
         // GLOBALS
         // ============================================================
         let allEmployees = [];
         let filteredEmployees = [];
         let selectedIds = new Set();
         let vcfContent = '';
+        let cacheInfo = { fromCache: false, age: 0, timestamp: 0 };
 
-        // ⚙️ عدد الأيام لاعتبار الموظف "تعيين جديد"
         const NEW_HIRE_DAYS = 30;
+
+        const MONTH_NAMES_AR = [
+            'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+            'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+        ];
 
         // ============================================================
         // DOM REFS
@@ -450,6 +768,9 @@
         const filterStatus = document.getElementById('filterStatus');
         const filterSearch = document.getElementById('filterSearch');
         const filterNewHiresOnly = document.getElementById('filterNewHiresOnly');
+        const filterYear = document.getElementById('filterYear');
+        const filterMonth = document.getElementById('filterMonth');
+        const currentDateHint = document.getElementById('currentDateHint');
         const refreshBtn = document.getElementById('refreshBtn');
         const selectAllBtn = document.getElementById('selectAllBtn');
         const deselectAllBtn = document.getElementById('deselectAllBtn');
@@ -465,6 +786,7 @@
         const previewBody = document.getElementById('previewBody');
         const headerCheckbox = document.getElementById('headerCheckbox');
         const logoutBtn = document.getElementById('logoutBtn');
+        const cacheBadge = document.getElementById('cacheBadge');
 
         // ============================================================
         // HELPERS
@@ -487,7 +809,6 @@
             return div.innerHTML;
         }
 
-        // ✅ دالة ذكية لاستخراج قيمة من عدة حقول محتملة
         function getField(obj, possibleFields, fallback = '') {
             if (!obj) return fallback;
             for (const f of possibleFields) {
@@ -498,37 +819,28 @@
             return fallback;
         }
 
-        // ✅ استخراج اسم الموظف
         function getEmployeeName(emp) {
             return getField(emp, ['fullName', 'name', 'employeeName', 'full_name', 'fullname'], 'غير معروف');
         }
 
-        // ✅ استخراج كود الموظف
         function getEmployeeId(emp) {
             return getField(emp, ['employeeCode', 'empId', 'empCode', 'employeeId', 'code', 'id'], '-');
         }
 
-        // ✅ استخراج القسم
         function getEmployeeDepartment(emp) {
             return getField(emp, ['department', 'dep', 'section', 'dept', 'division'], 'غير محدد');
         }
 
-        // ✅ استخراج الليفل
         function getEmployeeLevel(emp) {
             return getField(emp, ['level', 'grade', 'positionLevel', 'jobLevel', 'empLevel', 'rank'], 'غير محدد');
         }
 
-        // ✅ استخراج رقم الهاتف
         function getEmployeePhone(emp) {
             return getField(emp, ['phone', 'phoneNumber', 'mobile', 'mobileNumber', 'phoneNumbers', 'tel', 'telephone', 'phone_number'], '');
         }
 
-        // ✅ هل الموظف تعيين جديد؟
-        function isNewHire(emp) {
-            // 1) حقل boolean مباشر
-            if (emp.isNew === true || emp.newHire === true || emp.isNewHire === true) return true;
-            
-            // 2) تاريخ تعيين حديث
+        function getHireDate(emp) {
+            if (!emp) return null;
             const dateFields = ['hireDate', 'joiningDate', 'startDate', 'createdAt', 'joinDate', 'dateOfJoining'];
             for (const f of dateFields) {
                 if (emp[f]) {
@@ -541,18 +853,32 @@
                         } else {
                             date = new Date(emp[f]);
                         }
-                        
-                        if (!isNaN(date.getTime())) {
-                            const diffDays = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
-                            if (diffDays <= NEW_HIRE_DAYS && diffDays >= 0) return true;
-                        }
+                        if (!isNaN(date.getTime())) return date;
                     } catch (e) { /* تجاهل */ }
                 }
+            }
+            return null;
+        }
+
+        function formatHireDate(emp) {
+            const date = getHireDate(emp);
+            if (!date) return '-';
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${year}/${month}/${day}`;
+        }
+
+        function isNewHire(emp) {
+            if (emp.isNew === true || emp.newHire === true || emp.isNewHire === true) return true;
+            const date = getHireDate(emp);
+            if (date) {
+                const diffDays = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
+                if (diffDays <= NEW_HIRE_DAYS && diffDays >= 0) return true;
             }
             return false;
         }
 
-        // ✅ تنسيق رقم الهاتف (إضافة 0 لو مش موجود)
         function formatPhoneNumber(phone) {
             if (!phone) return '';
             let cleaned = String(phone).replace(/[^0-9]/g, '');
@@ -562,7 +888,27 @@
             return cleaned;
         }
 
-        // ✅ إنشاء مدخل VCF
+        function naturalCompare(a, b) {
+            const ax = [];
+            const bx = [];
+            
+            String(a).replace(/(\d+)|(\D+)/g, (_, num, str) => {
+                ax.push([num ? Number(num) : Infinity, str || '']);
+            });
+            String(b).replace(/(\d+)|(\D+)/g, (_, num, str) => {
+                bx.push([num ? Number(num) : Infinity, str || '']);
+            });
+            
+            while (ax.length && bx.length) {
+                const an = ax.shift();
+                const bn = bx.shift();
+                const nn = (an[0] - bn[0]) || an[1].localeCompare(bn[1]);
+                if (nn) return nn;
+            }
+            
+            return ax.length - bx.length;
+        }
+
         function generateVcfEntry(emp) {
             const name = getEmployeeName(emp);
             const empId = getEmployeeId(emp);
@@ -584,13 +930,116 @@
         }
 
         // ============================================================
-        // LOAD EMPLOYEES
+        // 🏷️ CACHE BADGE UI
+        // ============================================================
+        function updateCacheBadge(state, message) {
+            if (!cacheBadge) return;
+            cacheBadge.className = `cache-badge ${state}`;
+
+            const icons = {
+                fresh: '<i class="fas fa-database"></i>',
+                cached: '<i class="fas fa-bolt"></i>',
+                loading: '<i class="fas fa-spinner fa-spin"></i>',
+                error: '<i class="fas fa-exclamation-triangle"></i>'
+            };
+
+            cacheBadge.innerHTML = `${icons[state] || ''} ${message}`;
+        }
+
+        function getCacheAgeText(age) {
+            const seconds = Math.floor(age / 1000);
+            if (seconds < 60) return `${seconds} ثانية`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} دقيقة`;
+            const hours = Math.floor(minutes / 60);
+            return `${hours} ساعة`;
+        }
+
+        // ============================================================
+        // INIT YEAR & MONTH FILTERS
+        // ============================================================
+        function initYearMonthFilters() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+
+            const yearsSet = new Set();
+            allEmployees.forEach(emp => {
+                const date = getHireDate(emp);
+                if (date) yearsSet.add(date.getFullYear());
+            });
+            yearsSet.add(currentYear);
+
+            const years = [...yearsSet].sort((a, b) => b - a);
+
+            filterYear.innerHTML = '<option value="">كل السنوات</option>' +
+                years.map(y => `<option value="${y}">${y}</option>`).join('');
+
+            filterMonth.innerHTML = '<option value="">كل الشهور</option>' +
+                MONTH_NAMES_AR.map((name, i) => 
+                    `<option value="${i + 1}">${name}</option>`
+                ).join('');
+
+            filterYear.value = String(currentYear);
+            filterMonth.value = String(currentMonth);
+
+            currentDateHint.innerHTML = `📅 معروض حالياً: <strong>${MONTH_NAMES_AR[currentMonth - 1]} ${currentYear}</strong>`;
+
+            console.log(`📅 Year filter: ${years.length} سنوات, Current: ${currentYear}/${currentMonth}`);
+        }
+
+        // ============================================================
+        // 🔄 PROCESS RAW EMPLOYEES
+        // ============================================================
+        function processRawEmployees(rawEmployees) {
+            const activeEmployees = rawEmployees.filter(emp => {
+                const status = String(emp.status || 'Active').trim();
+                return status === 'Active' || status === '' || status.toLowerCase() === 'active';
+            });
+
+            activeEmployees.sort((a, b) => 
+                naturalCompare(getEmployeeId(a), getEmployeeId(b))
+            );
+
+            return activeEmployees;
+        }
+
+        // ============================================================
+        // 📥 LOAD EMPLOYEES (with IndexedDB cache)
         // ============================================================
         async function loadEmployees(forceRefresh = false) {
             loadingState.style.display = 'block';
             emptyState.style.display = 'none';
             tableWrapper.style.display = 'none';
             statsGrid.style.display = 'none';
+
+            // ✅ محاولة استخدام الكاش أولاً
+            if (!forceRefresh) {
+                try {
+                    const cached = await IDB.load();
+                    if (cached) {
+                        console.log('⚡ Using IndexedDB cached data');
+                        cacheInfo = { fromCache: true, age: cached.age, timestamp: cached.timestamp };
+                        
+                        allEmployees = processRawEmployees(cached.data);
+                        
+                        updateCacheBadge('cached', `كاش (${getCacheAgeText(cached.age)})`);
+                        
+                        initFilters();
+                        initYearMonthFilters();
+                        applyFilters();
+                        
+                        loadingState.style.display = 'none';
+                        showToast(`⚡ تم التحميل من الكاش (${allEmployees.length} موظف)`, 'info');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('⚠️ فشل قراءة الكاش:', e);
+                }
+            }
+
+            // ⏳ تحميل من قاعدة البيانات
+            updateCacheBadge('loading', 'جاري التحميل...');
 
             try {
                 await DB.init();
@@ -601,30 +1050,33 @@
                 
                 const rawEmployees = await DB.getAll('employees') || [];
                 
-                // ✅ استبعاد الموظفين اللي غادروا (Left / Inactive / Terminated)
-                allEmployees = rawEmployees.filter(emp => {
-                    const status = String(emp.status || 'Active').trim();
-                    // نقبل: Active فقط أو حالة فاضية
-                    return status === 'Active' || status === '' || status.toLowerCase() === 'active';
-                });
+                // 💾 حفظ في IndexedDB (مع انتظار الانتهاء)
+                await IDB.save(rawEmployees);
+                
+                // معالجة البيانات
+                allEmployees = processRawEmployees(rawEmployees);
                 
                 const removedCount = rawEmployees.length - allEmployees.length;
+                cacheInfo = { fromCache: false, age: 0, timestamp: Date.now() };
                 
-                console.log(`👥 Loaded ${allEmployees.length} active employees (${removedCount} left/inactive removed)`);
+                console.log(`👥 Loaded ${allEmployees.length} active employees (${removedCount} removed)`);
                 
-                // 🔍 Log أول موظف عشان نشوف شكل البيانات
                 if (allEmployees.length > 0) {
                     console.log('🔍 شكل بيانات أول موظف:', allEmployees[0]);
                     console.log('🔑 الحقول المتاحة:', Object.keys(allEmployees[0]));
                 }
                 
+                updateCacheBadge('fresh', `محدث (${allEmployees.length})`);
+                
                 initFilters();
+                initYearMonthFilters();
                 applyFilters();
                 
                 showToast(`✅ تم تحميل ${allEmployees.length} موظف نشط${removedCount > 0 ? ` (تم استبعاد ${removedCount} مستقيل)` : ''}`, 'success');
             } catch (error) {
                 console.error('❌ Failed to load employees:', error);
                 showToast('❌ فشل تحميل الموظفين', 'error');
+                updateCacheBadge('error', 'فشل التحميل');
             } finally {
                 loadingState.style.display = 'none';
             }
@@ -634,7 +1086,6 @@
         // INIT FILTERS
         // ============================================================
         function initFilters() {
-            // الأقسام الفريدة
             const departments = [...new Set(allEmployees.map(getEmployeeDepartment))]
                 .filter(d => d && d !== 'غير محدد')
                 .sort();
@@ -642,7 +1093,6 @@
             filterDepartment.innerHTML = '<option value="">كل الأقسام</option>' +
                 departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
 
-            // الليفلات الفريدة
             const levels = [...new Set(allEmployees.map(getEmployeeLevel))]
                 .filter(l => l && l !== 'غير محدد')
                 .sort();
@@ -662,35 +1112,60 @@
             const status = filterStatus.value;
             const searchTerm = filterSearch.value.trim().toLowerCase();
             const newHiresOnly = filterNewHiresOnly.checked;
+            const year = filterYear.value;
+            const month = filterMonth.value;
 
             filteredEmployees = allEmployees.filter(emp => {
-                // فلتر القسم
                 if (dept && getEmployeeDepartment(emp) !== dept) return false;
-                
-                // فلتر الليفل
                 if (level && getEmployeeLevel(emp) !== level) return false;
                 
-                // فلتر الحالة
                 const empIsNew = isNewHire(emp);
                 if (status === 'new' && !empIsNew) return false;
                 if (status === 'existing' && empIsNew) return false;
-                
-                // فلتر التعيينات الجديدة (checkbox)
                 if (newHiresOnly && !empIsNew) return false;
                 
-                // فلتر البحث
                 if (searchTerm) {
                     const name = getEmployeeName(emp).toLowerCase();
                     const empId = getEmployeeId(emp).toLowerCase();
                     if (!name.includes(searchTerm) && !empId.includes(searchTerm)) return false;
                 }
+
+                if (year || month) {
+                    const hireDate = getHireDate(emp);
+                    if (!hireDate) return false;
+                    if (year && hireDate.getFullYear() !== Number(year)) return false;
+                    if (month && (hireDate.getMonth() + 1) !== Number(month)) return false;
+                }
                 
                 return true;
             });
 
+            filteredEmployees.sort((a, b) => 
+                naturalCompare(getEmployeeId(a), getEmployeeId(b))
+            );
+
+            updateDateHint();
             renderTable();
             updateStats();
             updateHeaderCheckbox();
+        }
+
+        // ============================================================
+        // UPDATE DATE HINT
+        // ============================================================
+        function updateDateHint() {
+            const year = filterYear.value;
+            const month = filterMonth.value;
+
+            if (!year && !month) {
+                currentDateHint.innerHTML = `📅 معروض: <strong>كل الفترات</strong>`;
+            } else if (year && !month) {
+                currentDateHint.innerHTML = `📅 معروض: <strong>سنة ${year}</strong>`;
+            } else if (!year && month) {
+                currentDateHint.innerHTML = `📅 معروض: <strong>شهر ${MONTH_NAMES_AR[Number(month) - 1]}</strong>`;
+            } else {
+                currentDateHint.innerHTML = `📅 معروض: <strong>${MONTH_NAMES_AR[Number(month) - 1]} ${year}</strong>`;
+            }
         }
 
         // ============================================================
@@ -712,6 +1187,7 @@
                 const dept = getEmployeeDepartment(emp);
                 const level = getEmployeeLevel(emp);
                 const phone = formatPhoneNumber(getEmployeePhone(emp));
+                const hireDate = formatHireDate(emp);
                 const isNew = isNewHire(emp);
                 const isSelected = selectedIds.has(empId);
 
@@ -741,12 +1217,16 @@
                                 ${phone || '- بدون رقم -'}
                             </span>
                         </td>
+                        <td>
+                            <span style="font-weight:600;color:${hireDate !== '-' ? 'var(--primary)' : 'var(--gray)'};">
+                                ${hireDate}
+                            </span>
+                        </td>
                         <td>${statusBadge}</td>
                     </tr>
                 `;
             }).join('');
 
-            // Event listeners للـ checkboxes
             document.querySelectorAll('.row-checkbox').forEach(cb => {
                 cb.addEventListener('change', function() {
                     const id = this.dataset.id;
@@ -833,6 +1313,10 @@
                 return;
             }
 
+            selectedEmployees.sort((a, b) => 
+                naturalCompare(getEmployeeId(a), getEmployeeId(b))
+            );
+
             vcfContent = selectedEmployees.map(generateVcfEntry).join('\n\n');
 
             try {
@@ -856,7 +1340,11 @@
         // ============================================================
         // EVENT LISTENERS
         // ============================================================
-        refreshBtn.addEventListener('click', () => loadEmployees(true));
+        refreshBtn.addEventListener('click', () => {
+            showToast('🔄 جاري تحديث البيانات...', 'info');
+            loadEmployees(true);
+        });
+
         selectAllBtn.addEventListener('click', selectAll);
         deselectAllBtn.addEventListener('click', deselectAll);
         downloadVcfBtn.addEventListener('click', downloadVcf);
@@ -865,21 +1353,20 @@
         filterLevel.addEventListener('change', applyFilters);
         filterStatus.addEventListener('change', applyFilters);
         filterNewHiresOnly.addEventListener('change', applyFilters);
+        filterYear.addEventListener('change', applyFilters);
+        filterMonth.addEventListener('change', applyFilters);
 
-        // بحث مع debounce
         let searchTimeout;
         filterSearch.addEventListener('input', () => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(applyFilters, 300);
         });
 
-        // header checkbox
         headerCheckbox.addEventListener('change', function() {
             if (this.checked) selectAll();
             else deselectAll();
         });
 
-        // Logout
         logoutBtn.addEventListener('click', async () => {
             try {
                 await signOut(auth);
@@ -902,7 +1389,20 @@
             await loadEmployees();
         });
 
-        console.log('📇 أداة تحويل الموظفين إلى VCF جاهزة!');
+        // ============================================================
+        // 🧹 CLEANUP LEGACY CACHES (localStorage)
+        // ============================================================
+        try {
+            const legacyKeys = ['employees_cache_v1', 'employees_vcf_cache_v1'];
+            legacyKeys.forEach(k => {
+                if (localStorage.getItem(k)) {
+                    localStorage.removeItem(k);
+                    console.log(`🗑️ Removed legacy localStorage cache: ${k}`);
+                }
+            });
+        } catch (e) { /* تجاهل */ }
+
+        console.log('📇 أداة تحويل الموظفين إلى VCF جاهزة! (مع IndexedDB)');
     </script>
 
 </body>
