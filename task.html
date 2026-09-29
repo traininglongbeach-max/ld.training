@@ -93,6 +93,7 @@ body{background:#f0f4f8;padding-bottom:80px}
 .action-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem}
 .btn{padding:.6rem 1rem;border:none;border-radius:2rem;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s;display:inline-flex;align-items:center;gap:.35rem}
 .btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 .btn-know-all{background:#c6f6d5;color:#22543d}
 .btn-know-all:hover{background:#9ae6b4}
 .btn-save{background:#2b7a4b;color:#fff}
@@ -467,6 +468,11 @@ let filterDay = '';
 let savedSpotChecks = [];
 let savedResults = [];
 
+// ✅ Sets و Map للبحث السريع ومنع التكرار
+let selectedEmployeeIds = new Set();   // الموظفين المعروضين حالياً في selectedEmployees
+let savedEmployeeIds = new Set();      // الموظفين الموجودين في DB لهذا القسم
+let savedResultsMap = new Map();       // resultId → result object
+
 // Exclude levels
 let excludedLevels = new Set();
 const DEFAULT_EXCLUDED = [
@@ -639,6 +645,10 @@ async function loadAll() {
     savedSpotChecks = await DB.getAll('spot_checks') || [];
     savedResults   = await DB.getAll('spot_check_results') || [];
 
+    // ✅ بناء Map للنتائج
+    savedResultsMap = new Map();
+    savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
+
     initExcludedLevelChips();
     renderTaskSelectForDate(spotDate);
 
@@ -755,6 +765,7 @@ document.getElementById('taskSelect').addEventListener('change', async (e) => {
 document.getElementById('deptSelect').addEventListener('change', async (e) => {
   currentDept = e.target.value;
   selectedEmployees = [];
+  selectedEmployeeIds = new Set();
   await loadSavedForDept();
   renderEmployeeList();
   renderResults();
@@ -770,28 +781,45 @@ document.getElementById('deptSelect').addEventListener('change', async (e) => {
 function resetSession() {
   currentDept = '';
   selectedEmployees = [];
+  selectedEmployeeIds = new Set();
+  savedEmployeeIds = new Set();
   document.getElementById('deptSelect').value = '';
   renderResults();
   updateVisibility();
 }
 
+/* ===================== refreshSavedForDate ===================== */
 async function refreshSavedForDate() {
+  // ✅ اقرأ من الكاش (DB.getAll) — مش من Firestore مباشرة
   savedSpotChecks = await DB.getAll('spot_checks') || [];
   savedResults   = await DB.getAll('spot_check_results') || [];
+
+  // ✅ بناء Map للبحث السريع
+  savedResultsMap = new Map();
+  savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
+
   renderDeptSummary();
   renderOverallSummary();
   renderAllEmpTable();
   renderDontKnowTable();
 }
 
+/* ===================== loadSavedForDept ===================== */
 async function loadSavedForDept() {
   if (!spotDate || !currentTask || !currentDept) {
     selectedEmployees = [];
+    selectedEmployeeIds = new Set();
+    savedEmployeeIds = new Set();
     return;
   }
   const sc = savedSpotChecks.find(s =>
     s.date === spotDate && String(s.task_id) === String(currentTask.id));
-  if (!sc) { selectedEmployees = []; return; }
+  if (!sc) {
+    selectedEmployees = [];
+    selectedEmployeeIds = new Set();
+    savedEmployeeIds = new Set();
+    return;
+  }
 
   const res = savedResults.filter(r =>
     String(r.spot_check_id) === String(sc.id) && r.department === currentDept);
@@ -809,9 +837,13 @@ async function loadSavedForDept() {
       fromDb: true
     };
   });
+
+  // ✅ استخدم Set للبحث السريع
+  selectedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
+  savedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
 }
 
-/* ===================== ✅ Render Employee List (Direct Search) ===================== */
+/* ===================== ✅ Render Employee List ===================== */
 function renderEmployeeList() {
   const input = document.getElementById('empSearch');
   const q = (input?.value || '').trim().toLowerCase();
@@ -824,7 +856,8 @@ function renderEmployeeList() {
     return;
   }
 
-  const selectedIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
+  // ✅ استخدم Set مباشر
+  const selectedIds = selectedEmployeeIds;
 
   let filtered = employees.filter(e =>
     e.department === currentDept && !isLevelExcluded(e.level));
@@ -892,24 +925,62 @@ function renderEmployeeList() {
   }).join('');
 }
 
+/* ===================== ✅ toggleEmployee (منع التكرار) ===================== */
 window.toggleEmployee = function(empId) {
   empId = String(empId);
-  const idx = selectedEmployees.findIndex(s => String(s.employee_id) === empId);
-  if (idx >= 0) {
-    selectedEmployees.splice(idx, 1);
-  } else {
-    const emp = employees.find(e => String(e.id) === empId);
-    if (!emp) return;
-    selectedEmployees.push({
-      employee_id: empId,
-      name: emp.name,
-      position: emp.position,
-      level: emp.level,
-      department: emp.department,
-      result: 'KNOW',
-      fromDb: false
-    });
+
+  // ✅ إذا كان موجود → احذفه
+  if (selectedEmployeeIds.has(empId)) {
+    selectedEmployeeIds.delete(empId);
+    const idx = selectedEmployees.findIndex(s => String(s.employee_id) === empId);
+    if (idx >= 0) selectedEmployees.splice(idx, 1);
+    renderEmployeeList();
+    renderResults();
+    return;
   }
+
+  // ✅ إذا مش موجود → ضيفه
+  const emp = employees.find(e => String(e.id) === empId);
+  if (!emp) return;
+
+  // لو موجود في DB (نفس القسم) → ضيفه بالنتيجة المحفوظة
+  if (savedEmployeeIds.has(empId)) {
+    const dbResult = savedResults.find(r =>
+      String(r.employee_id) === empId &&
+      String(r.spot_check_id) === String(
+        savedSpotChecks.find(s => s.date === spotDate && String(s.task_id) === String(currentTask?.id))?.id
+      )
+    );
+    if (dbResult) {
+      selectedEmployees.push({
+        employee_id: empId,
+        name: emp.name,
+        position: emp.position,
+        level: emp.level,
+        department: emp.department,
+        result: dbResult.result,
+        resultId: dbResult.id,
+        fromDb: true
+      });
+      selectedEmployeeIds.add(empId);
+      renderEmployeeList();
+      renderResults();
+      return;
+    }
+  }
+
+  // ✅ جديد → KNOW افتراضياً
+  selectedEmployees.push({
+    employee_id: empId,
+    name: emp.name,
+    position: emp.position,
+    level: emp.level,
+    department: emp.department,
+    result: 'KNOW',
+    fromDb: false
+  });
+  selectedEmployeeIds.add(empId);
+
   renderEmployeeList();
   renderResults();
 };
@@ -950,21 +1021,32 @@ window.setResult = function(idx, result) {
     renderResults();
   }
 };
+
 window.removeEmployee = function(idx) {
+  if (!selectedEmployees[idx]) return;
+  const empId = String(selectedEmployees[idx].employee_id);
   selectedEmployees.splice(idx, 1);
+  selectedEmployeeIds.delete(empId);
   renderEmployeeList();
   renderResults();
 };
+
 window.setAllKnow = function() {
   selectedEmployees.forEach(s => s.result = 'KNOW');
   renderResults();
   toast('✓ All marked as "Know"');
 };
+
 window.clearSelected = function() {
-  if (!confirm('Clear all recorded employees for this department?')) return;
-  selectedEmployees = [];
+  if (!confirm('Clear unsaved employees? (Saved ones stay)')) return;
+
+  // ✅ احتفظ فقط بالموظفين المحفوظين في DB
+  selectedEmployees = selectedEmployees.filter(s => s.fromDb);
+  selectedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
+
   renderEmployeeList();
   renderResults();
+  toast('✓ Cleared unsaved employees');
 };
 
 /* ===================== Live Summary ===================== */
@@ -990,7 +1072,7 @@ function updateVisibility() {
   document.getElementById('saveBar').style.display       = ready ? 'flex'  : 'none';
 }
 
-/* ===================== Save ===================== */
+/* ===================== ✅ Save (Low Reads + No Duplicates) ===================== */
 window.saveDeptResults = async function() {
   if (!spotDate || !currentTask || !currentDept) {
     toast('Select date, task and department', 'error'); return;
@@ -999,12 +1081,36 @@ window.saveDeptResults = async function() {
     toast('No employees to save', 'warn'); return;
   }
 
+  const saveBtn = document.querySelector('.btn-save');
+  const originalText = saveBtn?.textContent;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '💾 Saving...'; }
+
   try {
+    // ✅ 1. قراءة واحدة فقط (refresh مرة واحدة، مش لكل موظف)
+    try {
+      await Promise.all([
+        DB.refresh('spot_checks'),
+        DB.refresh('spot_check_results')
+      ]);
+      savedSpotChecks = await DB.getAll('spot_checks') || [];
+      savedResults    = await DB.getAll('spot_check_results') || [];
+      savedResultsMap = new Map();
+      savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
+    } catch (e) {
+      console.warn('Refresh before save failed, using cache:', e);
+    }
+
+    // ✅ 2. ID ثابت للـ spot_check: {date}_{taskId}
+    const scId = `${spotDate}_${String(currentTask.id)}`;
+
     let sc = savedSpotChecks.find(s =>
-      s.date === spotDate && String(s.task_id) === String(currentTask.id));
+      String(s.id) === scId ||
+      (s.date === spotDate && String(s.task_id) === String(currentTask.id))
+    );
 
     if (!sc) {
-      const created = await DB.insert('spot_checks', {
+      await DB.insert('spot_checks', {
+        id: scId,  // ← المفتاح
         date: spotDate,
         task_id: String(currentTask.id),
         task_name: currentTask.name,
@@ -1013,70 +1119,94 @@ window.saveDeptResults = async function() {
         updated_at: Date.now()
       });
 
-      if (!created) throw new Error('فشل إنشاء الـ Spot Check');
-
       sc = {
-        id: String(created),
+        id: scId,
         date: spotDate,
         task_id: String(currentTask.id),
         task_name: currentTask.name,
         created_by: currentUser?.uid || 'unknown'
       };
       savedSpotChecks.push(sc);
-
-      try { savedSpotChecks = await DB.getAll('spot_checks') || []; }
-      catch (e) { console.warn('Could not refresh spot_checks:', e); }
     }
 
-    let added = 0, updated = 0;
+    // ✅ 3. بناء Map سريع للنتائج الحالية
+    const existingMap = new Map();
+    savedResults
+      .filter(r => String(r.spot_check_id) === String(sc.id))
+      .forEach(r => {
+        const key = String(r.employee_id);
+        if (!existingMap.has(key)) existingMap.set(key, r);
+      });
+
+    // ✅ 4. إزالة التكرار من selectedEmployees (احتياطي)
+    const uniqueEmployees = [];
+    const seenIds = new Set();
     for (const s of selectedEmployees) {
-      const existing = savedResults.find(r =>
-        String(r.spot_check_id) === String(sc.id) &&
-        String(r.employee_id) === String(s.employee_id));
+      const empId = String(s.employee_id);
+      if (seenIds.has(empId)) continue;
+      seenIds.add(empId);
+      uniqueEmployees.push(s);
+    }
+
+    // ✅ 5. حفظ النتائج
+    let added = 0, updated = 0, skipped = 0;
+
+    for (const s of uniqueEmployees) {
+      const empId = String(s.employee_id);
+      const existing = existingMap.get(empId);
 
       if (existing) {
+        // موجود → حدّث فقط لو النتيجة اتغيرت
         if (existing.result !== s.result) {
           existing.result = s.result;
           existing.updated_at = Date.now();
           await DB.update('spot_check_results', existing);
           updated++;
+        } else {
+          skipped++;
         }
       } else {
-        const created = await DB.insert('spot_check_results', {
+        // ✅ جديد → ID ثابت لمنع التكرار
+        const resultId = `${sc.id}_${empId}`;
+        await DB.insert('spot_check_results', {
+          id: resultId,
           spot_check_id: String(sc.id),
-          employee_id: String(s.employee_id),
+          employee_id: empId,
           department: String(currentDept),
           result: s.result,
+          created_by: currentUser?.uid || 'unknown',
           created_at: Date.now(),
           updated_at: Date.now()
         });
-
-        if (created) {
-          savedResults.push({
-            id: String(created),
-            spot_check_id: String(sc.id),
-            employee_id: String(s.employee_id),
-            department: String(currentDept),
-            result: s.result
-          });
-          added++;
-        }
+        added++;
       }
     }
 
+    // ✅ 6. reload مرة واحدة فقط
     try {
       savedSpotChecks = await DB.getAll('spot_checks') || [];
       savedResults    = await DB.getAll('spot_check_results') || [];
+      savedResultsMap = new Map();
+      savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
     } catch (e) { console.warn('Reload failed:', e); }
 
+    // ✅ 7. إعادة رسم كامل
+    await loadSavedForDept();
+    renderEmployeeList();
+    renderResults();
     renderDeptSummary();
     renderOverallSummary();
     renderAllEmpTable();
     renderDontKnowTable();
-    toast(`✅ Saved — Added: ${added}, Updated: ${updated}`);
+
+    // ✅ 8. رسالة نجاح
+    const msg = `✅ Saved — Added: ${added}, Updated: ${updated}${skipped ? `, Skipped: ${skipped}` : ''}`;
+    toast(msg);
   } catch (err) {
     console.error('❌ Save failed:', err);
     toast('Save failed: ' + (err.message || ''), 'error');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = originalText || '💾 Save Department Results'; }
   }
 };
 
@@ -1089,6 +1219,7 @@ window.goNextDept = async function() {
   document.getElementById('deptSelect').value = next;
   currentDept = next;
   selectedEmployees = [];
+  selectedEmployeeIds = new Set();
   await loadSavedForDept();
   renderEmployeeList();
   renderResults();
@@ -1193,7 +1324,7 @@ document.querySelectorAll('th[data-sort]').forEach(th => {
   });
 });
 
-/* ===================== ✅ All Employees Table (Know + Don't Know) ===================== */
+/* ===================== ✅ All Employees Table ===================== */
 function getAllEmployeesData() {
   if (!spotDate || !currentTask) return [];
   const sc = savedSpotChecks.find(s =>
@@ -1219,7 +1350,6 @@ function getAllEmployeesData() {
 
 window.setAllEmpFilter = function(filter) {
   aeFilter = filter;
-  // Update UI
   document.getElementById('filterAll').style.opacity = filter === 'all' ? '1' : '.5';
   document.getElementById('filterKnow').style.opacity = filter === 'KNOW' ? '1' : '.5';
   document.getElementById('filterDont').style.opacity = filter === 'DONT_KNOW' ? '1' : '.5';
@@ -1240,13 +1370,11 @@ function renderAllEmpTable() {
 
   section.style.display = 'block';
 
-  // Apply filter
   if (aeFilter === 'KNOW') list = list.filter(x => x.result === 'KNOW');
   else if (aeFilter === 'DONT_KNOW') list = list.filter(x => x.result === 'DONT_KNOW');
 
   badge.textContent = `${list.length} / ${getAllEmployeesData().length} employees`;
 
-  // Sort
   const sorted = [...list].sort((a, b) => {
     let va = a[aeSortKey], vb = b[aeSortKey];
     if (typeof va === 'string') va = va.toLowerCase();
@@ -1289,20 +1417,18 @@ function renderAllEmpTable() {
   }).join('');
 }
 
-/* ===================== Change Result (Direct from table) ===================== */
+/* ===================== Change Result ===================== */
 window.changeResult = async function(resultId, newResult) {
   try {
-    const result = savedResults.find(r => String(r.id) === String(resultId));
-    if (!result) {
-      toast('Result not found', 'error'); return;
-    }
+    const result = savedResultsMap.get(String(resultId));
+    if (!result) { toast('Result not found', 'error'); return; }
     if (result.result === newResult) return;
 
     result.result = newResult;
     result.updated_at = Date.now();
     await DB.update('spot_check_results', result);
 
-    // تحديث محلي
+    savedResultsMap.set(String(resultId), result);
     const idx = savedResults.findIndex(r => String(r.id) === String(resultId));
     if (idx >= 0) savedResults[idx].result = newResult;
 
@@ -1318,9 +1444,8 @@ window.changeResult = async function(resultId, newResult) {
   }
 };
 
-/* ===================== Edit Result (Choose via prompt) ===================== */
 window.editResultRow = async function(resultId) {
-  const result = savedResults.find(r => String(r.id) === String(resultId));
+  const result = savedResultsMap.get(String(resultId));
   if (!result) { toast('Result not found', 'error'); return; }
 
   const currentLabel = result.result === 'KNOW' ? 'Know' : "Don't Know";
@@ -1337,17 +1462,20 @@ window.deleteResultRow = async function(resultId, empName) {
   try {
     await DB.delete('spot_check_results', resultId);
 
-    // تحديث محلي
+    savedResultsMap.delete(String(resultId));
     const idx = savedResults.findIndex(r => String(r.id) === String(resultId));
-    if (idx >= 0) savedResults.splice(idx, 1);
+    if (idx >= 0) {
+      const removed = savedResults.splice(idx, 1)[0];
+      if (removed) {
+        const empId = String(removed.employee_id);
+        savedEmployeeIds.delete(empId);
+        selectedEmployeeIds.delete(empId);
+      }
+    }
 
-    // إذا كان الموظف في selectedEmployees (نفس القسم) → أزله
-    const removed = employees.find(e => String(e.id) === String(savedResults?.[0]?.employee_id));
-    // reload selected for current dept
     await loadSavedForDept();
     renderEmployeeList();
     renderResults();
-
     renderDeptSummary();
     renderOverallSummary();
     renderAllEmpTable();
@@ -1681,14 +1809,10 @@ function initSearchInput() {
 
   console.log('✅ Search input initialized');
 
-  // بحث فوري مع كل حرف
   input.addEventListener('input', () => {
-    const q = input.value;
-    console.log('🔍 Search query:', q);
     renderEmployeeList();
   });
 
-  // Escape لمسح البحث
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       input.value = '';
@@ -1697,7 +1821,7 @@ function initSearchInput() {
   });
 }
 
-// ✅ صدّر الدوال على window أيضاً (للاحتياط)
+// ✅ صدّر الدوال على window
 window.renderEmployeeList = renderEmployeeList;
 window.toggleEmployee = toggleEmployee;
 window.setResult = setResult;
@@ -1714,7 +1838,7 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
   initDateFilters();
-  initSearchInput();   // ✅ جديد
+  initSearchInput();
 
   await loadAll();
   document.getElementById('deptSelect').innerHTML =
@@ -1728,7 +1852,7 @@ onAuthStateChanged(auth, async (user) => {
   initDontKnowSortHandlers();
   setAllEmpFilter('all');
 
-  console.log('✅ Spot Check ready');
+  console.log('✅ Spot Check ready (No duplicates + Low reads)');
 });
 </script>
 </body>
