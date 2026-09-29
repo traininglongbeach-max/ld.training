@@ -6,6 +6,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
+// ✅ استيراد IndexedDB cache
+import { cacheSet, cacheGet, cacheGetMeta, cacheRemove, cacheClear } from './cache.js';
+
 // ==================== إعدادات فيربيز ====================
 const firebaseConfig = {
     apiKey: "AIzaSyDOFd1M8IIxG7UyLdGHpu24TzC77kBa740",
@@ -30,118 +33,90 @@ export const db = initializeFirestore(app, {
 export const auth = getAuth(app);
 
 // ==================== إعدادات الكاش ====================
-const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 ساعات بالميلي ثانية
-const CACHE_VERSION = 1;
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 ساعات
+const CACHE_VERSION = 2;               // ✅ رفعنا الإصدار لإبطال localStorage القديم
 
 // ==================== الكاش الداخلي ====================
-const memoryCache = new Map(); // تخزين البيانات في الذاكرة
-const pendingRequests = new Map(); // منع التكرار في الطلبات
+const memoryCache = new Map();
+const pendingRequests = new Map();
 
 // ==================== دوال مساعدة داخلية ====================
-
-/**
- * الحصول على مفتاح التخزين المحلي
- */
-function getStorageKey(collectionName) {
-    return `db_cache_${collectionName}`;
-}
-
-/**
- * الحصول على مفتاح معلومات التخزين المحلي
- */
-function getStorageMetaKey(collectionName) {
-    return `db_cache_meta_${collectionName}`;
-}
 
 /**
  * تحميل البيانات من الذاكرة
  */
 function loadFromMemory(collectionName) {
     if (memoryCache.has(collectionName)) {
-        console.log(`📖 القراءة من Memory Cache: ${collectionName}`);
+        console.log(`📖 Memory Cache: ${collectionName}`);
         return memoryCache.get(collectionName);
     }
     return null;
 }
 
 /**
- * تحميل البيانات من LocalStorage
+ * ✅ تحميل البيانات من IndexedDB
  */
-function loadFromLocalStorage(collectionName) {
+async function loadFromIndexedDB(collectionName) {
     try {
-        const key = getStorageKey(collectionName);
-        const metaKey = getStorageMetaKey(collectionName);
-        
-        const data = localStorage.getItem(key);
-        const meta = localStorage.getItem(metaKey);
-        
-        if (!data || !meta) {
-            console.log(`⚠️ لا يوجد كاش في LocalStorage: ${collectionName}`);
+        const meta = await cacheGetMeta(collectionName);
+        if (!meta) {
+            console.log(`⚠️ No IndexedDB cache: ${collectionName}`);
             return null;
         }
-        
-        const parsedData = JSON.parse(data);
-        const parsedMeta = JSON.parse(meta);
-        
-        // التحقق من الإصدار والصلاحية
-        if (parsedMeta.version !== CACHE_VERSION) {
-            console.log(`🔄 إصدار الكاش غير متطابق لـ ${collectionName}، سيتم حذفه`);
-            localStorage.removeItem(key);
-            localStorage.removeItem(metaKey);
+
+        if (isCacheExpired(meta)) {
+            console.log(`⏰ IndexedDB cache expired: ${collectionName}`);
+            await cacheRemove(collectionName);
             return null;
         }
-        
-        if (isCacheExpired(parsedMeta.timestamp)) {
-            console.log(`⏰ انتهت صلاحية الكاش لـ ${collectionName}`);
-            return null;
+
+        const data = await cacheGet(collectionName);
+        if (data) {
+            const cnt = Array.isArray(data) ? data.length : 1;
+            console.log(`📖 IndexedDB Cache: ${collectionName} (${cnt} items)`);
+            return data;
         }
-        
-        console.log(`📖 القراءة من LocalStorage: ${collectionName} (${parsedData.length} عنصر)`);
-        return parsedData;
+        return null;
     } catch (error) {
-        console.error(`❌ فشل تحميل من LocalStorage: ${collectionName}`, error);
+        console.error(`❌ IndexedDB load failed: ${collectionName}`, error);
         return null;
     }
 }
 
 /**
- * حفظ البيانات في الكاش (الذاكرة + التخزين المحلي)
+ * ✅ حفظ البيانات في IndexedDB
  */
-function saveCache(collectionName, data) {
+async function saveCache(collectionName, data) {
     try {
-        // حفظ في الذاكرة
+        // 1. حفظ في الذاكرة
         memoryCache.set(collectionName, data);
-        console.log(`💾 حفظ في Memory Cache: ${collectionName} (${data.length} عنصر)`);
-        
-        // حفظ في LocalStorage
-        const key = getStorageKey(collectionName);
-        const metaKey = getStorageMetaKey(collectionName);
-        
-        localStorage.setItem(key, JSON.stringify(data));
-        localStorage.setItem(metaKey, JSON.stringify({
-            version: CACHE_VERSION,
-            timestamp: Date.now(),
-            count: data.length
-        }));
-        
-        console.log(`💾 حفظ في LocalStorage: ${collectionName} (${data.length} عنصر)`);
+        const cnt = Array.isArray(data) ? data.length : 1;
+        console.log(`💾 Memory Cache: ${collectionName} (${cnt} items)`);
+
+        // 2. حفظ في IndexedDB (async)
+        const ok = await cacheSet(collectionName, data);
+        if (ok) {
+            console.log(`💾 IndexedDB: ${collectionName} (${cnt} items)`);
+        } else {
+            console.warn(`⚠️ IndexedDB save failed: ${collectionName}`);
+        }
     } catch (error) {
-        console.error(`❌ فشل حفظ الكاش: ${collectionName}`, error);
+        console.error(`❌ Cache save failed: ${collectionName}`, error);
     }
 }
 
 /**
  * تحديث عنصر في الكاش
  */
-function updateCache(collectionName, id, newData) {
+async function updateCache(collectionName, id, newData) {
     const cached = loadFromMemory(collectionName);
     if (!cached) return false;
-    
+
     const index = cached.findIndex(item => String(item.id) === String(id));
     if (index !== -1) {
         cached[index] = { ...cached[index], ...newData };
-        saveCache(collectionName, cached);
-        console.log(`🔄 تحديث الكاش: ${collectionName} - ID: ${id}`);
+        await saveCache(collectionName, cached);
+        console.log(`🔄 Cache updated: ${collectionName} - ID: ${id}`);
         return true;
     }
     return false;
@@ -150,14 +125,33 @@ function updateCache(collectionName, id, newData) {
 /**
  * حذف عنصر من الكاش
  */
-function removeCacheItem(collectionName, id) {
+async function removeCacheItem(collectionName, id) {
     const cached = loadFromMemory(collectionName);
     if (!cached) return false;
-    
+
     const filtered = cached.filter(item => String(item.id) !== String(id));
     if (filtered.length !== cached.length) {
-        saveCache(collectionName, filtered);
-        console.log(`🗑️ حذف من الكاش: ${collectionName} - ID: ${id}`);
+        await saveCache(collectionName, filtered);
+        console.log(`🗑️ Cache removed: ${collectionName} - ID: ${id}`);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * حذف عدة عناصر من الكاش دفعة واحدة
+ */
+async function removeCacheItems(collectionName, idsArray) {
+    const cached = loadFromMemory(collectionName);
+    if (!cached) return false;
+
+    const idSet = new Set(idsArray.map(String));
+    const filtered = cached.filter(item => !idSet.has(String(item.id)));
+    const removedCount = cached.length - filtered.length;
+
+    if (removedCount > 0) {
+        await saveCache(collectionName, filtered);
+        console.log(`🗑️ Cache bulk removed: ${collectionName} - ${removedCount} items`);
         return true;
     }
     return false;
@@ -166,19 +160,18 @@ function removeCacheItem(collectionName, id) {
 /**
  * إضافة عنصر إلى الكاش
  */
-function addToCache(collectionName, item) {
+async function addToCache(collectionName, item) {
     const cached = loadFromMemory(collectionName);
     if (!cached) {
-        saveCache(collectionName, [item]);
+        await saveCache(collectionName, [item]);
         return true;
     }
-    
-    // تجنب التكرار
-    const exists = cached.some(cachedItem => String(cachedItem.id) === String(item.id));
+
+    const exists = cached.some(c => String(c.id) === String(item.id));
     if (!exists) {
         cached.push(item);
-        saveCache(collectionName, cached);
-        console.log(`➕ إضافة إلى الكاش: ${collectionName} - ID: ${item.id}`);
+        await saveCache(collectionName, cached);
+        console.log(`➕ Cache added: ${collectionName} - ID: ${item.id}`);
         return true;
     }
     return false;
@@ -195,94 +188,86 @@ function isCacheExpired(timestamp) {
  * تحميل البيانات من Firestore مع منع التكرار
  */
 async function fetchFromFirestore(collectionName) {
-    // التحقق من وجود طلب مكرر
     if (pendingRequests.has(collectionName)) {
-        console.log(`⏳ انتظار طلب جارٍ لـ ${collectionName}`);
+        console.log(`⏳ Waiting for pending request: ${collectionName}`);
         return pendingRequests.get(collectionName);
     }
-    
-    console.log(`🔥 القراءة من Firestore: ${collectionName}`);
-    
+
+    console.log(`🔥 Firestore Read: ${collectionName}`);
+
     const promise = (async () => {
         try {
             const querySnapshot = await getDocs(collection(db, collectionName));
-            const data = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
+            const data = querySnapshot.docs.map(d => ({
+                id: d.id,
+                ...d.data()
             }));
-            
-            // حفظ في الكاش
-            saveCache(collectionName, data);
+
+            await saveCache(collectionName, data);
             return data;
         } catch (error) {
-            console.error(`❌ فشل القراءة من Firestore: ${collectionName}`, error);
+            console.error(`❌ Firestore Read Failed: ${collectionName}`, error);
             throw error;
         } finally {
-            // إزالة الطلب المعلق
             pendingRequests.delete(collectionName);
         }
     })();
-    
+
     pendingRequests.set(collectionName, promise);
     return promise;
 }
 
 /**
- * تحميل البيانات (استراتيجية متعددة المستويات)
+ * تحميل البيانات (متعدد المستويات)
  */
 async function loadData(collectionName) {
-    // 1. محاولة القراءة من الذاكرة
+    // 1. Memory
     let data = loadFromMemory(collectionName);
     if (data) return data;
-    
-    // 2. محاولة القراءة من LocalStorage
-    data = loadFromLocalStorage(collectionName);
+
+    // 2. IndexedDB
+    data = await loadFromIndexedDB(collectionName);
     if (data) {
-        // حفظ في الذاكرة
         memoryCache.set(collectionName, data);
         return data;
     }
-    
-    // 3. القراءة من Firestore
+
+    // 3. Firestore
     return await fetchFromFirestore(collectionName);
 }
 
 // ==================== كائن DB الأساسي ====================
 export const DB = {
-    // ==================== تهيئة قاعدة البيانات ====================
     async init() {
-        console.log("✅ تم الاتصال بقاعدة بيانات Firestore بنجاح (مع الكاش الحديث)");
-        console.log(`📋 إعدادات الكاش: TTL=${CACHE_TTL/3600000} ساعات, الإصدار=${CACHE_VERSION}`);
+        console.log("✅ Firestore connected (IndexedDB cache enabled)");
+        console.log(`📋 Cache: TTL=${CACHE_TTL/3600000}h, Version=${CACHE_VERSION}`);
         return Promise.resolve();
     },
 
-    // ==================== إدراج عنصر واحد ====================
+    // ==================== إدراج عنصر ====================
     async insert(storeName, data) {
         try {
             let id = data.id;
-            
+
             if (id) {
-                // إذا كان للعنصر ID مسبق
                 await setDoc(doc(db, storeName, String(id)), data);
-                console.log(`✅ تم إدراج عنصر في ${storeName} (ID: ${id})`);
+                console.log(`✅ Inserted ${storeName} (ID: ${id})`);
             } else {
-                // إنشاء ID تلقائي من Firestore
                 const docRef = await addDoc(collection(db, storeName), data);
                 id = docRef.id;
                 await updateDoc(docRef, { id: id });
                 data.id = id;
-                console.log(`✅ تم إدراج عنصر جديد في ${storeName} (ID: ${id})`);
+                console.log(`✅ Inserted new ${storeName} (ID: ${id})`);
             }
-            
-            // تحديث الكاش المحلي
+
             const cached = loadFromMemory(storeName);
             if (cached) {
-                addToCache(storeName, data);
+                await addToCache(storeName, data);
             }
-            
+
             return id;
         } catch (error) {
-            console.error(`❌ فشل إدراج في ${storeName}:`, error);
+            console.error(`❌ Insert failed: ${storeName}`, error);
             throw error;
         }
     },
@@ -290,18 +275,16 @@ export const DB = {
     // ==================== تحديث عنصر ====================
     async update(storeName, data) {
         try {
-            if (!data.id) throw new Error("ID مطلوب للتحديث");
-            
+            if (!data.id) throw new Error("ID required for update");
+
             const docRef = doc(db, storeName, String(data.id));
             await updateDoc(docRef, data);
-            console.log(`✅ تم تحديث عنصر في ${storeName} (ID: ${data.id})`);
-            
-            // تحديث الكاش المحلي
-            updateCache(storeName, data.id, data);
-            
+            console.log(`✅ Updated ${storeName} (ID: ${data.id})`);
+
+            await updateCache(storeName, data.id, data);
             return data.id;
         } catch (error) {
-            console.error(`❌ فشل تحديث في ${storeName}:`, error);
+            console.error(`❌ Update failed: ${storeName}`, error);
             throw error;
         }
     },
@@ -309,33 +292,28 @@ export const DB = {
     // ==================== استرجاع عنصر بواسطة ID ====================
     async get(storeName, id) {
         try {
-            // محاولة القراءة من الكاش أولاً
             const cached = loadFromMemory(storeName);
             if (cached) {
                 const found = cached.find(item => String(item.id) === String(id));
                 if (found) {
-                    console.log(`📖 القراءة من Memory Cache: ${storeName} - ID: ${id}`);
+                    console.log(`📖 Memory hit: ${storeName} - ID: ${id}`);
                     return found;
                 }
             }
-            
-            // إذا لم يوجد في الكاش، القراءة من Firestore
-            console.log(`🔥 القراءة من Firestore: ${storeName} - ID: ${id}`);
+
+            console.log(`🔥 Firestore get: ${storeName} - ID: ${id}`);
             const docRef = doc(db, storeName, String(id));
             const docSnap = await getDoc(docRef);
-            
+
             if (docSnap.exists()) {
                 const data = { id: docSnap.id, ...docSnap.data() };
-                
-                // إضافة إلى الكاش
-                addToCache(storeName, data);
-                
+                await addToCache(storeName, data);
                 return data;
             }
-            
+
             return null;
         } catch (error) {
-            console.error(`❌ فشل استرجاع من ${storeName}:`, error);
+            console.error(`❌ Get failed: ${storeName}`, error);
             throw error;
         }
     },
@@ -345,49 +323,88 @@ export const DB = {
         try {
             return await loadData(storeName);
         } catch (error) {
-            console.error(`❌ فشل استرجاع الكل من ${storeName}:`, error);
+            console.error(`❌ GetAll failed: ${storeName}`, error);
             throw error;
         }
     },
 
-    // ==================== حذف عنصر بواسطة ID ====================
+    // ==================== حذف عنصر ====================
     async delete(storeName, id) {
         try {
             await deleteDoc(doc(db, storeName, String(id)));
-            console.log(`✅ تم حذف عنصر من ${storeName} (ID: ${id})`);
-            
-            // حذف من الكاش المحلي
-            removeCacheItem(storeName, id);
+            console.log(`✅ Deleted ${storeName} (ID: ${id})`);
+            await removeCacheItem(storeName, id);
         } catch (error) {
-            console.error(`❌ فشل حذف من ${storeName}:`, error);
+            console.error(`❌ Delete failed: ${storeName}`, error);
             throw error;
         }
     },
 
-    // ==================== فلترة البيانات ====================
+    // ==================== ✅ الحذف الدفعي ====================
+    /**
+     * حذف عدة عناصر من Collection واحد باستخدام writeBatch
+     * @param {string} storeName - اسم الـ Collection
+     * @param {Array<string|number>} idsArray - قائمة الـ IDs
+     * @returns {Promise<number>} - عدد العناصر المحذوفة
+     */
+    async bulkDelete(storeName, idsArray) {
+        try {
+            if (!idsArray || idsArray.length === 0) return 0;
+
+            const CHUNK_SIZE = 400;   // Firestore batch limit = 500 — نترك هامش
+            let deleted = 0;
+
+            for (let i = 0; i < idsArray.length; i += CHUNK_SIZE) {
+                const chunk = idsArray.slice(i, i + CHUNK_SIZE);
+                const batch = writeBatch(db);
+
+                chunk.forEach(id => {
+                    batch.delete(doc(db, storeName, String(id)));
+                });
+
+                await batch.commit();
+                deleted += chunk.length;
+                console.log(`🗑️ Bulk deleted ${chunk.length} from ${storeName}`);
+
+                // تأخير بسيط بين الدفعات لتفادي rate limit
+                if (i + CHUNK_SIZE < idsArray.length) {
+                    await new Promise(r => setTimeout(r, 300));
+                }
+            }
+
+            // امسح من الكاش
+            await removeCacheItems(storeName, idsArray);
+
+            console.log(`✅ BulkDelete done: ${deleted} items from ${storeName}`);
+            return deleted;
+        } catch (error) {
+            console.error(`❌ BulkDelete failed: ${storeName}`, error);
+            throw error;
+        }
+    },
+
+    // ==================== فلترة ====================
     async filter(storeName, predicate) {
         try {
-            // القراءة من الكاش دائماً
             const all = await loadData(storeName);
             const result = all.filter(predicate);
-            console.log(`🔍 فلترة البيانات: ${storeName} - تم العثور على ${result.length} عنصر`);
+            console.log(`🔍 Filter: ${storeName} → ${result.length} items`);
             return result;
         } catch (error) {
-            console.error(`❌ فشل فلترة البيانات في ${storeName}:`, error);
+            console.error(`❌ Filter failed: ${storeName}`, error);
             throw error;
         }
     },
 
-    // ==================== البحث عن عنصر واحد ====================
+    // ==================== البحث عن عنصر ====================
     async find(storeName, predicate) {
         try {
-            // القراءة من الكاش دائماً
             const all = await loadData(storeName);
             const result = all.find(predicate) || null;
-            console.log(`🔍 البحث عن عنصر: ${storeName} - ${result ? 'تم العثور' : 'لم يتم العثور'}`);
+            console.log(`🔍 Find: ${storeName} → ${result ? 'found' : 'not found'}`);
             return result;
         } catch (error) {
-            console.error(`❌ فشل البحث عن عنصر في ${storeName}:`, error);
+            console.error(`❌ Find failed: ${storeName}`, error);
             throw error;
         }
     },
@@ -396,75 +413,68 @@ export const DB = {
     async bulkInsert(storeName, dataArray) {
         try {
             if (!dataArray || dataArray.length === 0) return [];
-            
+
             const CHUNK_SIZE = 50;
             const results = [];
-            
+
             for (let i = 0; i < dataArray.length; i += CHUNK_SIZE) {
                 const chunk = dataArray.slice(i, i + CHUNK_SIZE);
                 const batch = writeBatch(db);
                 const chunkResults = [];
-                
+
                 chunk.forEach(item => {
-                    const docRef = item.id ? doc(db, storeName, String(item.id)) : doc(collection(db, storeName));
+                    const docRef = item.id
+                        ? doc(db, storeName, String(item.id))
+                        : doc(collection(db, storeName));
                     const itemData = item.id ? item : { ...item, id: docRef.id };
                     batch.set(docRef, itemData, { merge: true });
                     chunkResults.push(itemData);
                 });
-                
+
                 await batch.commit();
-                console.log(`✅ تم دمج دفعة من ${chunk.length} عنصر في ${storeName}`);
+                console.log(`✅ Batch committed: ${chunk.length} items → ${storeName}`);
                 results.push(...chunkResults);
-                
+
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
-            
-            console.log(`✅ تم الانتهاء من إدراج ودمج ${dataArray.length} عنصر في ${storeName} بنجاح`);
-            
-            // تحديث الكاش بالكامل
+
+            console.log(`✅ Bulk insert done: ${dataArray.length} items → ${storeName}`);
+
+            // تحديث الكاش
             try {
                 const currentData = await loadData(storeName);
                 if (currentData) {
-                    // دمج البيانات الجديدة مع القديمة
                     const mergedData = [...currentData];
                     results.forEach(newItem => {
                         const index = mergedData.findIndex(item => String(item.id) === String(newItem.id));
-                        if (index !== -1) {
-                            mergedData[index] = newItem;
-                        } else {
-                            mergedData.push(newItem);
-                        }
+                        if (index !== -1) mergedData[index] = newItem;
+                        else mergedData.push(newItem);
                     });
-                    saveCache(storeName, mergedData);
+                    await saveCache(storeName, mergedData);
                 } else {
-                    saveCache(storeName, results);
+                    await saveCache(storeName, results);
                 }
             } catch (cacheError) {
-                console.warn(`⚠️ فشل تحديث الكاش بعد bulkInsert: ${storeName}`, cacheError);
+                console.warn(`⚠️ Cache update failed after bulkInsert: ${storeName}`, cacheError);
             }
-            
+
             return results;
         } catch (error) {
-            console.error(`❌ فشل الإدراج الدفعي في ${storeName}:`, error);
+            console.error(`❌ BulkInsert failed: ${storeName}`, error);
             throw error;
         }
     },
 
-    // ==================== تحديث كاش Collection محدد ====================
+    // ==================== تحديث كاش Collection ====================
     async refresh(collectionName) {
         try {
-            console.log(`🔄 تحديث الكاش لـ ${collectionName}`);
-            // حذف الكاش القديم
+            console.log(`🔄 Refreshing: ${collectionName}`);
             memoryCache.delete(collectionName);
-            const key = getStorageKey(collectionName);
-            const metaKey = getStorageMetaKey(collectionName);
-            localStorage.removeItem(key);
-            localStorage.removeItem(metaKey);
-            
-            // تحميل جديد من Firestore
+            await cacheRemove(collectionName);
+
             return await fetchFromFirestore(collectionName);
         } catch (error) {
-            console.error(`❌ فشل تحديث الكاش لـ ${collectionName}:`, error);
+            console.error(`❌ Refresh failed: ${collectionName}`, error);
             throw error;
         }
     },
@@ -472,48 +482,47 @@ export const DB = {
     // ==================== تحديث جميع الكاش ====================
     async refreshAll() {
         try {
-            console.log('🔄 تحديث جميع الكاش');
+            console.log('🔄 Refreshing all caches');
             const collections = Array.from(memoryCache.keys());
             const results = {};
-            
+
             for (const collectionName of collections) {
                 results[collectionName] = await this.refresh(collectionName);
             }
-            
-            console.log(`✅ تم تحديث ${collections.length} Collection`);
+
+            console.log(`✅ Refreshed ${collections.length} collections`);
             return results;
         } catch (error) {
-            console.error('❌ فشل تحديث جميع الكاش:', error);
+            console.error('❌ RefreshAll failed:', error);
             throw error;
         }
     },
 
     // ==================== مسح الكاش ====================
-    clearCache() {
+    async clearCache() {
         try {
-            console.log('🗑️ مسح الكاش بالكامل');
-            
-            // مسح الذاكرة
+            console.log('🗑️ Clearing all caches');
+
             memoryCache.clear();
-            
-            // مسح LocalStorage
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith('db_cache_')) {
-                    localStorage.removeItem(key);
-                }
-            });
-            
-            console.log('✅ تم مسح الكاش بالكامل');
+            await cacheClear();
+
+            // نظّف أيضاً أي localStorage قديم
+            try {
+                Object.keys(localStorage)
+                    .filter(k => k.startsWith('db_cache_'))
+                    .forEach(k => localStorage.removeItem(k));
+            } catch (e) {}
+
+            console.log('✅ All caches cleared');
             return true;
         } catch (error) {
-            console.error('❌ فشل مسح الكاش:', error);
+            console.error('❌ ClearCache failed:', error);
             throw error;
         }
     },
 
     // ==================== معلومات الكاش ====================
-    cacheInfo() {
+    async cacheInfo() {
         try {
             const info = {
                 version: CACHE_VERSION,
@@ -521,55 +530,45 @@ export const DB = {
                 ttlHours: CACHE_TTL / 3600000,
                 memoryCollections: Array.from(memoryCache.keys()),
                 memoryCount: memoryCache.size,
-                localStorageCollections: []
+                indexedDBCollections: []
             };
-            
-            // جمع معلومات LocalStorage
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith('db_cache_meta_')) {
-                    const collectionName = key.replace('db_cache_meta_', '');
-                    try {
-                        const meta = JSON.parse(localStorage.getItem(key));
-                        info.localStorageCollections.push({
-                            name: collectionName,
-                            count: meta.count,
-                            timestamp: new Date(meta.timestamp).toISOString(),
-                            expired: isCacheExpired(meta.timestamp),
-                            version: meta.version
-                        });
-                    } catch (e) {
-                        console.warn(`⚠️ فشل قراءة معلومات الكاش لـ ${collectionName}`);
-                    }
+
+            // جمع معلومات IndexedDB
+            try {
+                const cacheModule = await import('./cache.js');
+                const keys = await cacheModule.cacheKeys();
+                for (const key of keys) {
+                    const meta = await cacheGetMeta(key);
+                    const data = await cacheGet(key);
+                    info.indexedDBCollections.push({
+                        name: key,
+                        count: Array.isArray(data) ? data.length : (data ? 1 : 0),
+                        timestamp: meta ? new Date(meta).toISOString() : null,
+                        expired: meta ? isCacheExpired(meta) : true
+                    });
                 }
-            });
-            
-            console.log('📊 معلومات الكاش:', info);
+            } catch (e) {
+                console.warn('⚠️ Could not read IndexedDB info:', e);
+            }
+
+            console.log('📊 Cache info:', info);
             return info;
         } catch (error) {
-            console.error('❌ فشل الحصول على معلومات الكاش:', error);
+            console.error('❌ CacheInfo failed:', error);
             throw error;
         }
     },
 
-    // ==================== إبطال كاش Collection محدد ====================
-    invalidate(collectionName) {
+    // ==================== إبطال كاش Collection ====================
+    async invalidate(collectionName) {
         try {
-            console.log(`🚫 إبطال الكاش لـ ${collectionName}`);
-            
-            // حذف من الذاكرة
+            console.log(`🚫 Invalidating: ${collectionName}`);
             memoryCache.delete(collectionName);
-            
-            // حذف من LocalStorage
-            const key = getStorageKey(collectionName);
-            const metaKey = getStorageMetaKey(collectionName);
-            localStorage.removeItem(key);
-            localStorage.removeItem(metaKey);
-            
-            console.log(`✅ تم إبطال الكاش لـ ${collectionName}`);
+            await cacheRemove(collectionName);
+            console.log(`✅ Invalidated: ${collectionName}`);
             return true;
         } catch (error) {
-            console.error(`❌ فشل إبطال الكاش لـ ${collectionName}:`, error);
+            console.error(`❌ Invalidate failed: ${collectionName}`, error);
             throw error;
         }
     }
@@ -578,26 +577,20 @@ export const DB = {
 // ==================== تصدير للاستخدام العام ====================
 window.DB = DB;
 
-// ==================== تنظيف الكاش عند تغيير الإصدار ====================
-// التحقق من الإصدار عند التحميل
-(() => {
+// ==================== تنظيف الكاش القديم من localStorage عند الترقية ====================
+(async () => {
     try {
         const versionKey = 'db_cache_version';
         const currentVersion = localStorage.getItem(versionKey);
-        
-        if (currentVersion && parseInt(currentVersion) !== CACHE_VERSION) {
-            console.log(`🔄 تغيير الإصدار من ${currentVersion} إلى ${CACHE_VERSION}، سيتم مسح الكاش القديم`);
-            // مسح الكاش القديم
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith('db_cache_')) {
-                    localStorage.removeItem(key);
-                }
-            });
+
+        if (!currentVersion || parseInt(currentVersion) !== CACHE_VERSION) {
+            console.log(`🔄 Version change ${currentVersion} → ${CACHE_VERSION}, clearing old localStorage cache`);
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('db_cache_'))
+                .forEach(k => localStorage.removeItem(k));
+            localStorage.setItem(versionKey, String(CACHE_VERSION));
         }
-        
-        localStorage.setItem(versionKey, String(CACHE_VERSION));
     } catch (error) {
-        console.warn('⚠️ فشل التحقق من إصدار الكاش:', error);
+        console.warn('⚠️ Version check failed:', error);
     }
 })();
