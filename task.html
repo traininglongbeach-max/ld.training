@@ -843,10 +843,10 @@ async function loadSavedForDept() {
   savedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
 }
 
-/* ===================== ✅ Render Employee List ===================== */
+/* ===================== ✅ Render Employee List (Smart Search) ===================== */
 function renderEmployeeList() {
   const input = document.getElementById('empSearch');
-  const q = (input?.value || '').trim().toLowerCase();
+  const rawQuery = (input?.value || '').trim().toLowerCase();
   const list = document.getElementById('empList');
   const searchCountEl = document.getElementById('searchCount');
 
@@ -856,34 +856,60 @@ function renderEmployeeList() {
     return;
   }
 
-  // ✅ استخدم Set مباشر
+  // ✅ تقسيم البحث لكلمات (يدعم "ahmed mohamed ali")
+  const queryParts = rawQuery.split(/\s+/).filter(Boolean);
+
   const selectedIds = selectedEmployeeIds;
 
   let filtered = employees.filter(e =>
     e.department === currentDept && !isLevelExcluded(e.level));
 
-  if (q) {
+  // ✅ فلترة متعددة الكلمات
+  if (queryParts.length > 0) {
     filtered = filtered.filter(e => {
-      const firstName = extractFirstName(e.name).toLowerCase();
-      return firstName.startsWith(q);
+      const fullName = (e.name || '').toLowerCase();
+      // كل كلمة في البحث لازم تكون موجودة في الاسم الكامل
+      return queryParts.every(part => fullName.includes(part));
+    });
+
+    // ✅ ترتيب النتائج حسب جودة المطابقة
+    filtered.sort((a, b) => {
+      const aScore = getMatchScore(a.name, queryParts);
+      const bScore = getMatchScore(b.name, queryParts);
+      if (aScore !== bScore) return bScore - aScore;  // الأعلى أولاً
+      return a.name.localeCompare(b.name, 'en');
+    });
+  } else {
+    // ترتيب عادي بدون بحث
+    filtered.sort((a,b) => {
+      const aS = selectedIds.has(String(a.id)) ? 1 : 0;
+      const bS = selectedIds.has(String(b.id)) ? 1 : 0;
+      if (aS !== bS) return aS - bS;
+      return a.name.localeCompare(b.name, 'en');
     });
   }
 
-  filtered.sort((a,b) => {
-    const aS = selectedIds.has(String(a.id)) ? 1 : 0;
-    const bS = selectedIds.has(String(b.id)) ? 1 : 0;
-    if (aS !== bS) return aS - bS;
-    return a.name.localeCompare(b.name, 'en');
-  });
+  // ✅ إذا فيه بحث، رتب المحددين أولاً
+  if (queryParts.length > 0) {
+    filtered.sort((a, b) => {
+      const aS = selectedIds.has(String(a.id)) ? 1 : 0;
+      const bS = selectedIds.has(String(b.id)) ? 1 : 0;
+      if (aS !== bS) return aS - bS;
+      const aScore = getMatchScore(a.name, queryParts);
+      const bScore = getMatchScore(b.name, queryParts);
+      if (aScore !== bScore) return bScore - aScore;
+      return a.name.localeCompare(b.name, 'en');
+    });
+  }
 
   const totalInDept = employees.filter(e =>
     e.department === currentDept && !isLevelExcluded(e.level)).length;
 
   document.getElementById('deptCount').textContent =
-    q ? `${filtered.length} match / ${totalInDept} total` : `${totalInDept} employees (excl. filtered levels)`;
+    queryParts.length ? `${filtered.length} match / ${totalInDept} total` : `${totalInDept} employees (excl. filtered levels)`;
 
   if (searchCountEl) {
-    if (q) {
+    if (queryParts.length) {
       searchCountEl.textContent = `${filtered.length} found`;
       searchCountEl.style.display = 'inline-block';
     } else {
@@ -892,25 +918,15 @@ function renderEmployeeList() {
   }
 
   if (filtered.length === 0) {
-    list.innerHTML = q
-      ? `<div class="empty">No employees starting with "<strong>${escapeHtml(q)}</strong>"</div>`
+    list.innerHTML = queryParts.length
+      ? `<div class="empty">No employees match "<strong>${escapeHtml(rawQuery)}</strong>"</div>`
       : '<div class="empty">No employees in this department</div>';
     return;
   }
 
   list.innerHTML = filtered.slice(0, 300).map(e => {
     const isSel = selectedIds.has(String(e.id));
-    const firstName = extractFirstName(e.name);
-    const restName = e.name.substring(firstName.length).trim();
-
-    let nameHTML;
-    if (q && firstName.toLowerCase().startsWith(q)) {
-      const matched = firstName.substring(0, q.length);
-      const remaining = firstName.substring(q.length);
-      nameHTML = `<span class="match-highlight">${escapeHtml(matched)}</span>${escapeHtml(remaining)}${restName ? ' ' + escapeHtml(restName) : ''}`;
-    } else {
-      nameHTML = escapeHtml(e.name);
-    }
+    const nameHTML = highlightMatches(e.name, queryParts);
 
     return `
       <label class="emp-item ${isSel?'selected':''}">
@@ -923,6 +939,99 @@ function renderEmployeeList() {
       </label>
     `;
   }).join('');
+}
+
+/* ===================== ✅ حساب جودة المطابقة ===================== */
+/**
+ * يحسب درجة تطابق الاسم مع كلمات البحث
+ * الدرجة الأعلى = تطابق أفضل
+ */
+function getMatchScore(fullName, queryParts) {
+  if (!fullName || !queryParts.length) return 0;
+
+  const name = fullName.toLowerCase();
+  const nameWords = name.split(/\s+/).filter(Boolean);
+
+  let score = 0;
+
+  queryParts.forEach((part, idx) => {
+    // ✅ الاسم الأول يبدأ بالكلمة → أعلى درجة
+    if (nameWords[0]?.startsWith(part)) {
+      score += 1000 - idx * 10;
+      return;
+    }
+
+    // ✅ أي كلمة تبدأ بالبحث → درجة عالية
+    const wordStarts = nameWords.findIndex(w => w.startsWith(part));
+    if (wordStarts !== -1) {
+      score += 500 - wordStarts * 5 - idx * 10;
+      return;
+    }
+
+    // ✅ الكلمة موجودة في أي مكان في الاسم → درجة متوسطة
+    if (name.includes(part)) {
+      score += 100 - idx * 5;
+    }
+  });
+
+  // ✅ مكافأة لو الاسم كامل يبدأ بالبحث كاملاً
+  if (name.startsWith(queryParts.join(' '))) {
+    score += 500;
+  }
+
+  return score;
+}
+
+/* ===================== ✅ إبراز الكلمات المطابقة ===================== */
+function highlightMatches(fullName, queryParts) {
+  if (!fullName) return '';
+  if (!queryParts || !queryParts.length) return escapeHtml(fullName);
+
+  const name = String(fullName);
+  const lowerName = name.toLowerCase();
+
+  // ✅ جمع كل الفواصل الزمنية اللي فيها مطابقة
+  const ranges = [];
+
+  queryParts.forEach(part => {
+    let startIdx = 0;
+    while (true) {
+      const idx = lowerName.indexOf(part, startIdx);
+      if (idx === -1) break;
+      ranges.push({ start: idx, end: idx + part.length });
+      startIdx = idx + part.length;
+    }
+  });
+
+  if (ranges.length === 0) return escapeHtml(fullName);
+
+  // ✅ دمج الفواصل المتقاطعة
+  ranges.sort((a, b) => a.start - b.start);
+  const merged = [ranges[0]];
+  for (let i = 1; i < ranges.length; i++) {
+    const last = merged[merged.length - 1];
+    if (ranges[i].start <= last.end) {
+      last.end = Math.max(last.end, ranges[i].end);
+    } else {
+      merged.push(ranges[i]);
+    }
+  }
+
+  // ✅ بناء HTML
+  let result = '';
+  let cursor = 0;
+  merged.forEach(r => {
+    if (cursor < r.start) {
+      result += escapeHtml(name.substring(cursor, r.start));
+    }
+    result += `<span class="match-highlight">${escapeHtml(name.substring(r.start, r.end))}</span>`;
+    cursor = r.end;
+  });
+  if (cursor < name.length) {
+    result += escapeHtml(name.substring(cursor));
+  }
+
+  return result;
 }
 
 /* ===================== ✅ toggleEmployee (منع التكرار) ===================== */
