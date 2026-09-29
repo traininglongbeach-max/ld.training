@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة مواضيع الـ Spot Check</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script type="module" src="auth-guard.js"></script>
+<script type="module" src="database.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
+body{background:#f0f4f8;padding-bottom:80px}
+
+.navbar{background:#fff;padding:.8rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem;position:sticky;top:0;z-index:999}
+.logo h2{color:#1e3a5f;font-size:1.1rem}
+.logo span{color:#2b7a4b}
+.nav-links{display:flex;gap:.4rem;flex-wrap:wrap}
+.nav-links a,.nav-links button{text-decoration:none;padding:.45rem .9rem;border-radius:2rem;font-weight:500;cursor:pointer;border:none;font-size:.82rem}
+.nav-links .home{background:#2b7a4b;color:#fff}
+.nav-links .spot{background:#ed8936;color:#fff}
+.nav-links .logout{background:#e53e3e;color:#fff}
+
+.container{max-width:1200px;margin:1.2rem auto;padding:0 1rem}
+
+.header-card{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.header-card h1{color:#1e3a5f;font-size:1.4rem;margin-bottom:.4rem}
+.header-card p{color:#718096;font-size:.85rem}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.7rem;margin-bottom:1rem}
+.stat-box{background:#fff;border-radius:1rem;padding:1rem;text-align:center;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.stat-box .lbl{font-size:.78rem;color:#718096;margin-bottom:.3rem}
+.stat-box .val{font-size:1.6rem;font-weight:900;color:#1e3a5f}
+.stat-box.active .val{color:#38a169}
+.stat-box.scheduled .val{color:#3182ce}
+.stat-box.today .val{color:#ed8936}
+
+/* Toolbar */
+.toolbar{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.search-input{flex:1;min-width:200px;padding:.7rem 1rem;border:2px solid #e2e8f0;border-radius:2rem;font-size:.9rem}
+.search-input:focus{outline:none;border-color:#2b7a4b}
+.filter-select{padding:.7rem 1rem;border:2px solid #e2e8f0;border-radius:2rem;font-size:.9rem;background:#fff;cursor:pointer;min-width:150px}
+.btn{padding:.65rem 1.2rem;border:none;border-radius:2rem;font-weight:700;cursor:pointer;font-size:.85rem;transition:.2s;display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:#2b7a4b;color:#fff}
+.btn-primary:hover{background:#1e5a38}
+.btn-secondary{background:#4299e1;color:#fff}
+.btn-danger{background:#e53e3e;color:#fff}
+.btn-warn{background:#ed8936;color:#fff}
+.btn-sm{padding:.4rem .8rem;font-size:.78rem;border-radius:1rem}
+.btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:50%}
+
+/* Table */
+.table-card{background:#fff;border-radius:1.2rem;padding:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:800px}
+th,td{padding:.75rem .6rem;text-align:center;border-bottom:1px solid #e2e8f0;font-size:.87rem;vertical-align:middle}
+th{background:#1e3a5f;color:#fff;font-weight:700;font-size:.82rem}
+tr:hover{background:#f7fafc}
+.task-name{text-align:right;font-weight:700;color:#2d3748}
+.task-desc{font-size:.75rem;color:#718096;margin-top:2px;font-weight:400}
+.status-badge{display:inline-block;padding:.25rem .8rem;border-radius:1rem;font-weight:700;font-size:.75rem;white-space:nowrap}
+.status-active{background:#c6f6d5;color:#22543d}
+.status-inactive{background:#e2e8f0;color:#718096}
+.schedule-badge{display:inline-block;padding:.3rem .7rem;border-radius:1rem;font-weight:700;font-size:.72rem;white-space:nowrap}
+.sch-always{background:#e6fffa;color:#234e52}
+.sch-single{background:#fefcbf;color:#744210}
+.sch-range{background:#bee3f8;color:#2c5282}
+.sch-today{background:#fed7d7;color:#822727;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.date-cell{font-size:.78rem;color:#4a5568;direction:ltr;font-weight:600}
+.action-btns{display:flex;gap:.35rem;justify-content:center;flex-wrap:wrap}
+
+.empty{text-align:center;padding:2rem;color:#a0aec0;font-size:.9rem}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);justify-content:center;align-items:center;z-index:2000;padding:1rem;overflow-y:auto}
+.modal.open{display:flex;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-content{background:#fff;border-radius:1.2rem;padding:1.5rem;width:100%;max-width:520px;animation:slideUp .25s;max-height:95vh;overflow-y:auto}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-content h3{color:#1e3a5f;margin-bottom:1rem;padding-right:.7rem;border-right:4px solid #2b7a4b}
+.modal-content label{display:block;font-weight:700;color:#1e3a5f;font-size:.85rem;margin:.9rem 0 .35rem}
+.modal-content input[type=text],.modal-content input[type=date],.modal-content textarea,.modal-content select{width:100%;padding:.75rem;border:2px solid #e2e8f0;border-radius:.7rem;font-size:.9rem;font-family:inherit;background:#fff}
+.modal-content input:focus,.modal-content textarea:focus,.modal-content select:focus{outline:none;border-color:#2b7a4b}
+.modal-content textarea{resize:vertical;min-height:60px}
+
+.checkbox-row{display:flex;align-items:center;gap:.5rem;margin-top:.8rem}
+.checkbox-row input[type=checkbox]{width:18px;height:18px;accent-color:#2b7a4b;cursor:pointer}
+.checkbox-row label{margin:0;cursor:pointer}
+
+/* Schedule Radios */
+.schedule-radios{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-top:.4rem}
+.schedule-radio{position:relative}
+.schedule-radio input{position:absolute;opacity:0;pointer-events:none}
+.schedule-radio label{display:block;padding:.7rem .5rem;text-align:center;border:2px solid #e2e8f0;border-radius:.7rem;cursor:pointer;font-size:.82rem;font-weight:700;color:#4a5568;transition:.15s;margin:0}
+.schedule-radio input:checked + label{background:#ebf8ff;border-color:#3182ce;color:#2c5282}
+.schedule-radio label:hover{border-color:#a0aec0}
+
+.date-range-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.date-field{display:none}
+.date-field.visible{display:block}
+
+/* Quick Buttons */
+.quick-dates{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem}
+.quick-date-btn{padding:.35rem .7rem;border:1.5px solid #e2e8f0;background:#fff;border-radius:1rem;font-size:.75rem;cursor:pointer;color:#4a5568;font-weight:600}
+.quick-date-btn:hover{background:#ebf8ff;border-color:#3182ce;color:#2c5282}
+
+.modal-buttons{display:flex;gap:.5rem;margin-top:1.2rem}
+.modal-buttons button{flex:1;padding:.75rem;border-radius:.8rem;font-weight:700;cursor:pointer;border:none;font-size:.9rem;transition:.2s}
+.modal-buttons button:disabled{opacity:.6;cursor:not-allowed}
+.modal-buttons .save{background:#2b7a4b;color:#fff}
+.modal-buttons .cancel{background:#a0aec0;color:#fff}
+.modal-buttons .danger{background:#e53e3e;color:#fff}
+.modal-buttons .danger:hover:not(:disabled){background:#c53030}
+
+/* Delete Info Box */
+#deleteInfoBox{margin-top:.8rem}
+.del-loading{color:#718096;font-size:.85rem;text-align:center;padding:.6rem}
+.del-clean{background:#f0fff4;border:2px solid #9ae6b4;border-radius:.8rem;padding:.8rem;color:#22543d;font-size:.85rem;text-align:center}
+.del-warning{background:#fff5f5;border:2px solid #fc8181;border-radius:.8rem;padding:.9rem;color:#742a2a;font-size:.85rem}
+.del-warning .title{font-weight:900;margin-bottom:.5rem;font-size:.9rem}
+.del-warning .row{display:flex;align-items:center;gap:.4rem;padding:.2rem 0}
+.del-warning .note{margin-top:.6rem;padding-top:.6rem;border-top:1px dashed #fc8181;font-size:.78rem;opacity:.85}
+.del-err{background:#fffaf0;border:2px solid #f6ad55;border-radius:.8rem;padding:.8rem;color:#7b341e;font-size:.85rem;text-align:center}
+.del-progress{margin-top:.7rem;background:#edf2f7;border-radius:1rem;height:8px;overflow:hidden}
+.del-progress-bar{height:100%;background:#2b7a4b;width:0%;transition:width .3s}
+
+/* Toast */
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;background:#2b7a4b;color:#fff;padding:.75rem 1.2rem;border-radius:2rem;z-index:3000;animation:slideIn .3s;font-weight:700;font-size:.85rem;box-shadow:0 5px 20px rgba(0,0,0,.2);max-width:90%}
+.toast.error{background:#e53e3e}
+.toast.warn{background:#d69e2e}
+.toast.info{background:#4299e1}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Mobile */
+@media(max-width:600px){
+  .container{padding:0 .7rem}
+  .toolbar{flex-direction:column;align-items:stretch}
+  .btn{justify-content:center}
+  .modal-buttons{flex-direction:column}
+  .schedule-radios{grid-template-columns:1fr}
+  .date-range-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="logo"><h2>📚 إدارة <span>مواضيع</span> الـ Spot Check</h2></div>
+  <div class="nav-links">
+    <a href="index.html" class="home">🏠 الرئيسية</a>
+    <a href="task.html" class="spot">🎯 Spot Check</a>
+    <button onclick="logout()" class="logout">🚪 خروج</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="header-card">
+    <h1>🎯 المواضيع / Task of the Day</h1>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="lbl">إجمالي المواضيع</div>
+      <div class="val" id="statTotal">0</div>
+    </div>
+    <div class="stat-box active">
+      <div class="lbl">✅ نشطة</div>
+      <div class="val" id="statActive">0</div>
+    </div>
+    <div class="stat-box scheduled">
+      <div class="lbl">📅 مجدولة</div>
+      <div class="val" id="statScheduled">0</div>
+    </div>
+    <div class="stat-box today">
+      <div class="lbl">🔥 اليوم</div>
+      <div class="val" id="statToday">0</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input type="text" id="searchInput" class="search-input"
+           placeholder="🔍 ابحث في المواضيع..." oninput="renderTable()">
+    <select id="statusFilter" class="filter-select" onchange="renderTable()">
+      <option value="all">كل الحالات</option>
+      <option value="active">✅ نشطة فقط</option>
+      <option value="inactive">⏸️ معطّلة فقط</option>
+      <option value="today">🔥 مواضيع اليوم</option>
+      <option value="upcoming">📅 قادمة</option>
+      <option value="past">🕓 سابقة</option>
+    </select>
+    <button class="btn btn-primary" onclick="openAddModal()">➕ إضافة موضوع</button>
+    <button class="btn btn-secondary btn-icon" onclick="refreshData()" title="تحديث">🔄</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th style="text-align:right">الموضوع / Standard</th>
+            <th style="width:160px">📅 الجدولة</th>
+            <th style="width:110px">الحالة</th>
+            <th style="width:220px">العمليات</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="5" class="empty">⏳ جاري التحميل...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">➕ إضافة موضوع جديد</h3>
+
+    <label>📝 اسم الموضوع / Standard *</label>
+    <input type="text" id="taskName" maxlength="120" placeholder="مثال: Telephone Standards">
+
+    <label>📄 وصف (اختياري)</label>
+    <textarea id="taskDesc" maxlength="300" placeholder="وصف مختصر..."></textarea>
+
+    <label>📅 نوع الجدولة *</label>
+    <div class="schedule-radios">
+      <div class="schedule-radio">
+        <input type="radio" name="scheduleType" id="schAlways" value="always" checked onchange="onScheduleChange()">
+        <label for="schAlways">♾️ دائم</label>
+      </div>
+      <div class="schedule-radio">
+        <input type="radio" name="scheduleType" id="schSingle" value="single" onchange="onScheduleChange()">
+        <label for="schSingle">📌 يوم واحد</label>
+      </div>
+      <div class="schedule-radio">
+        <input type="radio" name="scheduleType" id="schRange" value="range" onchange="onScheduleChange()">
+        <label for="schRange">📆 فترة</label>
+      </div>
+    </div>
+
+    <!-- Single Date -->
+    <div id="singleDateField" class="date-field">
+      <label>📅 التاريخ</label>
+      <input type="date" id="taskSingleDate">
+      <div class="quick-dates">
+        <button type="button" class="quick-date-btn" onclick="setQuickDate('today')">اليوم</button>
+        <button type="button" class="quick-date-btn" onclick="setQuickDate('tomorrow')">غداً</button>
+        <button type="button" class="quick-date-btn" onclick="setQuickDate('+7')">بعد أسبوع</button>
+      </div>
+    </div>
+
+    <!-- Date Range -->
+    <div id="rangeDateField" class="date-field">
+      <div class="date-range-row">
+        <div>
+          <label>📅 من تاريخ</label>
+          <input type="date" id="taskFromDate">
+        </div>
+        <div>
+          <label>📅 إلى تاريخ</label>
+          <input type="date" id="taskToDate">
+        </div>
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="taskActive" checked>
+      <label for="taskActive">✅ نشط (متاح للتسجيل)</label>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="save" onclick="saveTask()" id="saveBtn">💾 حفظ</button>
+      <button class="cancel" onclick="closeModal()">❌ إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal" id="deleteModal">
+  <div class="modal-content">
+    <h3>⚠️ تأكيد الحذف</h3>
+    <p style="color:#4a5568;font-size:.9rem;line-height:1.6;margin-top:.5rem">
+      هل أنت متأكد من حذف الموضوع:<br>
+      <strong id="deleteTaskName" style="color:#e53e3e;font-size:1rem;display:block;margin-top:.5rem"></strong>
+    </p>
+
+    <!-- Info Box (related data) -->
+    <div id="deleteInfoBox"></div>
+
+    <div class="modal-buttons">
+      <button class="danger" id="confirmDeleteBtn" onclick="confirmDelete()" disabled>🗑️ نعم، احذف</button>
+      <button class="cancel" onclick="closeDeleteModal()">❌ إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { auth, DB } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+/* ===================== State ===================== */
+let tasks = [];
+let editingId = null;
+let deletingId = null;
+let deleteRelated = null;   // { spotCheckIds:Set, resultIds:[] }
+
+/* ===================== Helpers ===================== */
+const todayISO = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+};
+
+function toast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2800);
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtDateShort(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('ar-EG', {day:'2-digit',month:'short',year:'numeric'});
+}
+
+function getScheduleState(t) {
+  const type = t.scheduleType || 'always';
+  if (type === 'always') return 'always';
+
+  const today = todayISO();
+
+  if (type === 'single') {
+    if (!t.scheduleDate) return 'always';
+    if (t.scheduleDate === today) return 'today';
+    if (t.scheduleDate > today) return 'upcoming';
+    return 'past';
+  }
+
+  if (type === 'range') {
+    if (!t.scheduleFrom && !t.scheduleTo) return 'always';
+    const from = t.scheduleFrom || '0000-01-01';
+    const to   = t.scheduleTo   || '9999-12-31';
+    if (today >= from && today <= to) return 'today';
+    if (today < from) return 'upcoming';
+    return 'past';
+  }
+
+  return 'always';
+}
+
+function getScheduleLabel(t) {
+  const type = t.scheduleType || 'always';
+  if (type === 'always') return { text:'♾️ دائم', cls:'sch-always' };
+
+  if (type === 'single') {
+    if (!t.scheduleDate) return { text:'♾️ دائم', cls:'sch-always' };
+    const state = getScheduleState(t);
+    const cls = state === 'today' ? 'sch-today' : 'sch-single';
+    const prefix = state === 'today' ? '🔥 ' : '';
+    return { text: prefix + fmtDateShort(t.scheduleDate), cls };
+  }
+
+  if (type === 'range') {
+    if (!t.scheduleFrom && !t.scheduleTo) return { text:'♾️ دائم', cls:'sch-always' };
+    const state = getScheduleState(t);
+    const cls = state === 'today' ? 'sch-today' : 'sch-range';
+    const prefix = state === 'today' ? '🔥 ' : '';
+    const from = t.scheduleFrom ? fmtDateShort(t.scheduleFrom) : '…';
+    const to   = t.scheduleTo   ? fmtDateShort(t.scheduleTo)   : '…';
+    return { text: `${prefix}${from} → ${to}`, cls };
+  }
+
+  return { text:'—', cls:'' };
+}
+
+/* ===================== Load ===================== */
+async function loadTasks() {
+  try {
+    tasks = await DB.getAll('tasks') || [];
+    tasks.sort((a,b) => {
+      if ((a.isActive!==false) !== (b.isActive!==false))
+        return (a.isActive!==false) ? -1 : 1;
+      return (a.name||'').localeCompare(b.name||'', 'ar');
+    });
+  } catch (err) {
+    console.error('Load tasks error:', err);
+    toast('❌ فشل تحميل المواضيع', 'error');
+    tasks = [];
+  }
+}
+
+/* ===================== Render ===================== */
+function renderStats() {
+  const total = tasks.length;
+  const active = tasks.filter(t => t.isActive !== false).length;
+  const scheduled = tasks.filter(t => (t.scheduleType||'always') !== 'always').length;
+  const todayCount = tasks.filter(t => getScheduleState(t) === 'today' && t.isActive !== false).length;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statScheduled').textContent = scheduled;
+  document.getElementById('statToday').textContent = todayCount;
+}
+
+function renderTable() {
+  renderStats();
+  const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const status = document.getElementById('statusFilter').value;
+
+  let filtered = [...tasks];
+  if (q) {
+    filtered = filtered.filter(t =>
+      (t.name||'').toLowerCase().includes(q) ||
+      (t.description||'').toLowerCase().includes(q));
+  }
+  if (status === 'active')   filtered = filtered.filter(t => t.isActive !== false);
+  if (status === 'inactive') filtered = filtered.filter(t => t.isActive === false);
+  if (status === 'today')    filtered = filtered.filter(t => getScheduleState(t) === 'today');
+  if (status === 'upcoming') filtered = filtered.filter(t => getScheduleState(t) === 'upcoming');
+  if (status === 'past')     filtered = filtered.filter(t => getScheduleState(t) === 'past');
+
+  const body = document.getElementById('tableBody');
+  if (filtered.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">📭 لا توجد مواضيع مطابقة</td></tr>';
+    return;
+  }
+
+  body.innerHTML = filtered.map((t, i) => {
+    const isActive = t.isActive !== false;
+    const sched = getScheduleLabel(t);
+    const state = getScheduleState(t);
+    const dimmed = state === 'past' ? 'opacity:.6' : '';
+
+    return `
+      <tr style="${dimmed}">
+        <td>${i+1}</td>
+        <td class="task-name">
+          <div>${escapeHtml(t.name)}</div>
+          ${t.description ? `<div class="task-desc">${escapeHtml(t.description)}</div>` : ''}
+        </td>
+        <td><span class="schedule-badge ${sched.cls}">${sched.text}</span></td>
+        <td>
+          <span class="status-badge ${isActive?'status-active':'status-inactive'}">
+            ${isActive?'✅ نشط':'⏸️ معطّل'}
+          </span>
+        </td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-secondary btn-sm" onclick="openEditModal('${t.id}')">✏️ تعديل</button>
+            <button class="btn ${isActive?'btn-warn':'btn-primary'} btn-sm" onclick="toggleActive('${t.id}')">
+              ${isActive?'⏸️':'✅'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="openDeleteModal('${t.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ===================== Schedule UI ===================== */
+window.onScheduleChange = function() {
+  const type = document.querySelector('input[name="scheduleType"]:checked').value;
+  document.getElementById('singleDateField').classList.toggle('visible', type === 'single');
+  document.getElementById('rangeDateField').classList.toggle('visible', type === 'range');
+
+  if (type === 'single' && !document.getElementById('taskSingleDate').value) {
+    document.getElementById('taskSingleDate').value = todayISO();
+  }
+  if (type === 'range' && !document.getElementById('taskFromDate').value) {
+    document.getElementById('taskFromDate').value = todayISO();
+  }
+};
+
+window.setQuickDate = function(when) {
+  const input = document.getElementById('taskSingleDate');
+  const d = new Date();
+  if (when === 'today') { /* today */ }
+  else if (when === 'tomorrow') d.setDate(d.getDate() + 1);
+  else if (when === '+7') d.setDate(d.getDate() + 7);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  input.value = `${y}-${m}-${day}`;
+};
+
+/* ===================== Add/Edit ===================== */
+window.openAddModal = function() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '➕ إضافة موضوع جديد';
+  document.getElementById('taskName').value = '';
+  document.getElementById('taskDesc').value = '';
+  document.getElementById('taskActive').checked = true;
+  document.getElementById('schAlways').checked = true;
+  document.getElementById('taskSingleDate').value = '';
+  document.getElementById('taskFromDate').value = '';
+  document.getElementById('taskToDate').value = '';
+  document.getElementById('saveBtn').textContent = '💾 حفظ';
+  onScheduleChange();
+  document.getElementById('editModal').classList.add('open');
+  setTimeout(()=>document.getElementById('taskName').focus(), 100);
+};
+
+window.openEditModal = function(id) {
+  const t = tasks.find(x => String(x.id) === String(id));
+  if (!t) return;
+  editingId = t.id;
+  document.getElementById('modalTitle').textContent = '✏️ تعديل الموضوع';
+  document.getElementById('taskName').value = t.name || '';
+  document.getElementById('taskDesc').value = t.description || '';
+  document.getElementById('taskActive').checked = t.isActive !== false;
+
+  const type = t.scheduleType || 'always';
+  document.getElementById(type === 'single' ? 'schSingle'
+        : type === 'range'  ? 'schRange'
+        : 'schAlways').checked = true;
+
+  document.getElementById('taskSingleDate').value = t.scheduleDate || '';
+  document.getElementById('taskFromDate').value = t.scheduleFrom || '';
+  document.getElementById('taskToDate').value = t.scheduleTo || '';
+
+  document.getElementById('saveBtn').textContent = '💾 حفظ التعديلات';
+  onScheduleChange();
+  document.getElementById('editModal').classList.add('open');
+};
+
+window.closeModal = function() {
+  document.getElementById('editModal').classList.remove('open');
+  editingId = null;
+};
+
+/* ===================== Save ===================== */
+window.saveTask = async function() {
+  const name = document.getElementById('taskName').value.trim();
+  const description = document.getElementById('taskDesc').value.trim();
+  const isActive = document.getElementById('taskActive').checked;
+  const scheduleType = document.querySelector('input[name="scheduleType"]:checked').value;
+
+  if (!name) { toast('❌ أدخل اسم الموضوع', 'error'); return; }
+
+  const schedule = { scheduleType };
+  if (scheduleType === 'single') {
+    const d = document.getElementById('taskSingleDate').value;
+    if (!d) { toast('❌ اختر التاريخ', 'error'); return; }
+    schedule.scheduleDate = d;
+    schedule.scheduleFrom = '';
+    schedule.scheduleTo = '';
+  } else if (scheduleType === 'range') {
+    const from = document.getElementById('taskFromDate').value;
+    const to   = document.getElementById('taskToDate').value;
+    if (!from || !to) { toast('❌ اختر تاريخ البداية والنهاية', 'error'); return; }
+    if (to < from) { toast('❌ تاريخ النهاية قبل البداية', 'error'); return; }
+    schedule.scheduleFrom = from;
+    schedule.scheduleTo = to;
+    schedule.scheduleDate = '';
+  } else {
+    schedule.scheduleDate = '';
+    schedule.scheduleFrom = '';
+    schedule.scheduleTo = '';
+  }
+
+  const dup = tasks.find(t =>
+    String(t.id) !== String(editingId) &&
+    (t.name||'').toLowerCase().trim() === name.toLowerCase() &&
+    (t.scheduleType || 'always') === scheduleType &&
+    (t.scheduleDate || '') === (schedule.scheduleDate || '') &&
+    (t.scheduleFrom || '') === (schedule.scheduleFrom || '') &&
+    (t.scheduleTo   || '') === (schedule.scheduleTo   || '')
+  );
+  if (dup) { toast('⚠️ يوجد موضوع بنفس الاسم والجدولة', 'warn'); return; }
+
+  try {
+    if (editingId) {
+      const t = tasks.find(x => String(x.id) === String(editingId));
+      const updated = { ...t, name, description, isActive, ...schedule, updatedAt: Date.now() };
+      await DB.update('tasks', updated);
+      toast('✅ تم حفظ التعديلات');
+    } else {
+      const newTask = {
+        name, description, isActive, ...schedule,
+        createdAt: Date.now(), updatedAt: Date.now(),
+        created_by: auth.currentUser?.uid || 'unknown'
+      };
+      await DB.insert('tasks', newTask);
+      toast('✅ تمت إضافة الموضوع');
+    }
+    closeModal();
+    await loadTasks();
+    renderTable();
+  } catch (err) {
+    console.error('Save task error:', err);
+    toast('❌ فشل الحفظ: ' + (err.message || ''), 'error');
+  }
+};
+
+/* ===================== Toggle Active ===================== */
+window.toggleActive = async function(id) {
+  const t = tasks.find(x => String(x.id) === String(id));
+  if (!t) return;
+  try {
+    t.isActive = !(t.isActive !== false);
+    t.updatedAt = Date.now();
+    await DB.update('tasks', t);
+    toast(t.isActive ? '✅ تم التنشيط' : '⏸️ تم التعطيل');
+    await loadTasks();
+    renderTable();
+  } catch (err) {
+    console.error(err);
+    toast('❌ فشل التحديث', 'error');
+  }
+};
+
+/* ===================== Delete ===================== */
+window.openDeleteModal = async function(id) {
+  const t = tasks.find(x => String(x.id) === String(id));
+  if (!t) return;
+  deletingId = id;
+
+  document.getElementById('deleteTaskName').textContent = t.name;
+
+  const infoBox = document.getElementById('deleteInfoBox');
+  const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+  infoBox.innerHTML = '<div class="del-loading">⏳ جاري حساب البيانات المرتبطة...</div>';
+  confirmBtn.disabled = true;
+
+  document.getElementById('deleteModal').classList.add('open');
+
+  try {
+    // اجلب spot_checks و spot_check_results
+    const allSpotChecks = await DB.getAll('spot_checks') || [];
+    const allResults    = await DB.getAll('spot_check_results') || [];
+
+    // فلتر المرتبطة بهذه المهمة
+    const linkedChecks = allSpotChecks.filter(sc =>
+      String(sc.task_id) === String(id)
+    );
+    const linkedCheckIds = new Set(linkedChecks.map(sc => String(sc.id)));
+    const linkedResults = allResults.filter(r =>
+      linkedCheckIds.has(String(r.spot_check_id))
+    );
+
+    // احفظهم للاستخدام في confirmDelete
+    deleteRelated = {
+      spotCheckIds: linkedCheckIds,
+      resultIds: linkedResults.map(r => r.id)
+    };
+
+    const totalResults = linkedResults.length;
+    const totalChecks = linkedChecks.length;
+
+    if (totalChecks === 0) {
+      infoBox.innerHTML = `
+        <div class="del-clean">
+          ✅ لا توجد Spot Checks مرتبطة بهذا الموضوع<br>
+          <span style="font-size:.78rem;opacity:.8">سيتم حذف الموضوع فقط</span>
+        </div>
+      `;
+    } else {
+      infoBox.innerHTML = `
+        <div class="del-warning">
+          <div class="title">⚠️ سيتم حذف البيانات التالية نهائياً:</div>
+          <div class="row">📅 <strong>${totalChecks}</strong> Spot Check(s)</div>
+          <div class="row">👥 <strong>${totalResults}</strong> نتيجة موظف</div>
+          <div class="note">هذه العملية لا يمكن التراجع عنها!</div>
+        </div>
+      `;
+    }
+
+    confirmBtn.disabled = false;
+  } catch (err) {
+    console.error('Error loading related data:', err);
+    infoBox.innerHTML = `
+      <div class="del-err">
+        ⚠️ تعذّر قراءة البيانات المرتبطة. قد يفشل الحذف الكامل.
+      </div>
+    `;
+    deleteRelated = { spotCheckIds: new Set(), resultIds: [] };
+    confirmBtn.disabled = false;
+  }
+};
+
+window.closeDeleteModal = function() {
+  document.getElementById('deleteModal').classList.remove('open');
+  deletingId = null;
+  deleteRelated = null;
+  const infoBox = document.getElementById('deleteInfoBox');
+  if (infoBox) infoBox.innerHTML = '';
+  const btn = document.getElementById('confirmDeleteBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '🗑️ نعم، احذف';
+  }
+};
+
+window.confirmDelete = async function() {
+  if (!deletingId) return;
+
+  const btn = document.getElementById('confirmDeleteBtn');
+  const infoBox = document.getElementById('deleteInfoBox');
+  btn.disabled = true;
+
+  const related = deleteRelated || { spotCheckIds: new Set(), resultIds: [] };
+  const spotCheckIds = related.spotCheckIds || new Set();
+  const resultIds = related.resultIds || [];
+
+  let deletedResults = 0;
+  let deletedChecks = 0;
+  let failed = 0;
+
+  try {
+    // ===== شريط التقدم =====
+    const totalOps = resultIds.length + spotCheckIds.size + 1;
+    let doneOps = 0;
+    const updateProgress = (label) => {
+      doneOps++;
+      const pct = Math.round((doneOps / totalOps) * 100);
+      infoBox.innerHTML = `
+        <div style="margin-top:.8rem">
+          <div style="font-size:.82rem;color:#4a5568;text-align:center;font-weight:700">${label}</div>
+          <div class="del-progress"><div class="del-progress-bar" style="width:${pct}%"></div></div>
+          <div style="text-align:center;font-size:.72rem;color:#718096;margin-top:.3rem">${pct}%</div>
+        </div>
+      `;
+    };
+
+    // ===== 1. احذف النتائج (batch واحد) =====
+    if (resultIds.length > 0) {
+      updateProgress(`⏳ حذف ${resultIds.length} نتيجة...`);
+
+      // جرّب bulkDelete إن وُجد، وإلا loop
+      if (typeof DB.bulkDelete === 'function') {
+        try {
+          await DB.bulkDelete('spot_check_results', resultIds);
+          deletedResults = resultIds.length;
+        } catch (e) {
+          console.warn('bulkDelete failed, falling back to loop', e);
+          // fallback: loop
+          for (const rid of resultIds) {
+            try {
+              await DB.delete('spot_check_results', rid);
+              deletedResults++;
+            } catch (err) { failed++; }
+          }
+        }
+      } else {
+        // loop
+        for (const rid of resultIds) {
+          try {
+            await DB.delete('spot_check_results', rid);
+            deletedResults++;
+          } catch (err) { failed++; }
+        }
+      }
+    }
+
+    // ===== 2. احذف الـ spot_checks =====
+    const scIds = Array.from(spotCheckIds);
+    if (scIds.length > 0) {
+      updateProgress(`⏳ حذف ${scIds.length} Spot Check...`);
+
+      if (typeof DB.bulkDelete === 'function') {
+        try {
+          await DB.bulkDelete('spot_checks', scIds);
+          deletedChecks = scIds.length;
+        } catch (e) {
+          console.warn('bulkDelete failed, falling back to loop', e);
+          for (const scId of scIds) {
+            try {
+              await DB.delete('spot_checks', scId);
+              deletedChecks++;
+            } catch (err) { failed++; }
+          }
+        }
+      } else {
+        for (const scId of scIds) {
+          try {
+            await DB.delete('spot_checks', scId);
+            deletedChecks++;
+          } catch (err) { failed++; }
+        }
+      }
+    }
+
+    // ===== 3. احذف المهمة نفسها =====
+    updateProgress(`⏳ حذف الموضوع...`);
+    await DB.delete('tasks', deletingId);
+
+    // ===== رسالة النجاح =====
+    if (failed > 0) {
+      toast(`⚠️ تم الحذف مع ${failed} خطأ`, 'warn');
+    } else if (deletedResults === 0 && deletedChecks === 0) {
+      toast('🗑️ تم حذف الموضوع (بدون بيانات مرتبطة)');
+    } else {
+      toast(`🗑️ تم حذف الموضوع + ${deletedChecks} Spot Check + ${deletedResults} نتيجة`);
+    }
+
+    closeDeleteModal();
+    await loadTasks();
+    renderTable();
+  } catch (err) {
+    console.error('Delete failed:', err);
+    toast('❌ فشل الحذف: ' + (err.message || ''), 'error');
+    btn.disabled = false;
+    btn.textContent = '🗑️ نعم، احذف';
+  }
+};
+
+/* ===================== Refresh ===================== */
+window.refreshData = async function() {
+  toast('⏳ جاري التحديث...', 'info');
+  try {
+    if (DB.refresh) {
+      await Promise.all([
+        DB.refresh('tasks').catch(()=>null),
+        DB.refresh('spot_checks').catch(()=>null),
+        DB.refresh('spot_check_results').catch(()=>null)
+      ]);
+    }
+    await loadTasks();
+    renderTable();
+    toast('✅ تم التحديث');
+  } catch (err) {
+    toast('❌ فشل التحديث', 'error');
+  }
+};
+
+window.logout = async function() {
+  if (confirm('تسجيل الخروج؟')) {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  }
+};
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
+});
+
+/* ===================== Init ===================== */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  await loadTasks();
+  renderTable();
+  console.log('✅ Tasks Manager ready');
+});
+</script>
+</body>
+</html>
