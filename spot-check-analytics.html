@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spot Check Analytics - L&D System</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script type="module" src="auth-guard.js"></script>
+<script type="module" src="database.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
+body{background:#f0f4f8;padding-bottom:60px}
+
+/* Navbar */
+.navbar{background:#fff;padding:.8rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem;position:sticky;top:0;z-index:999}
+.logo h2{color:#1e3a5f;font-size:1.1rem}
+.logo span{color:#2b7a4b}
+.nav-links{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.nav-links a,.nav-links button{text-decoration:none;padding:.45rem .9rem;border-radius:2rem;font-weight:600;cursor:pointer;border:none;font-size:.82rem;transition:.2s}
+.nav-links .home{background:#2b7a4b;color:#fff}
+.nav-links .refresh{background:#4299e1;color:#fff}
+.nav-links .logout{background:#e53e3e;color:#fff}
+
+/* Container */
+.container{max-width:1400px;margin:1rem auto;padding:0 1rem}
+
+/* Header */
+.page-header{background:linear-gradient(135deg,#1e3a5f,#2b7a4b);color:#fff;border-radius:1rem;padding:1.2rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem}
+.page-header h1{font-size:1.3rem;display:flex;align-items:center;gap:.5rem}
+.page-header .info{font-size:.85rem;opacity:.9}
+
+/* Filter Bar */
+.filter-bar{background:#fff;border-radius:1rem;padding:.9rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05);display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.filter-bar label{font-weight:700;color:#1e3a5f;font-size:.82rem}
+.filter-bar select,.filter-bar input{padding:.55rem .8rem;border:2px solid #e2e8f0;border-radius:.7rem;font-size:.85rem;background:#fff;cursor:pointer;font-family:inherit}
+.filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:#2b7a4b}
+.filter-bar .btn{padding:.55rem 1rem;border:none;border-radius:2rem;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s}
+.filter-bar .btn-primary{background:#2b7a4b;color:#fff}
+.filter-bar .btn-primary:hover{background:#1e5a38}
+.filter-bar .btn-secondary{background:#4299e1;color:#fff}
+
+/* Range Buttons */
+.range-buttons{display:flex;gap:.3rem;flex-wrap:wrap}
+.range-btn{padding:.45rem .9rem;border:2px solid #e2e8f0;background:#fff;border-radius:2rem;font-size:.78rem;font-weight:700;cursor:pointer;color:#4a5568;transition:.15s}
+.range-btn:hover{background:#ebf8ff;border-color:#3182ce;color:#2c5282}
+.range-btn.active{background:#2b7a4b;border-color:#2b7a4b;color:#fff}
+
+/* Stats Overview */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.7rem;margin-bottom:1rem}
+.stat-card{background:#fff;border-radius:1rem;padding:.9rem;box-shadow:0 3px 12px rgba(0,0,0,.05);text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#2b7a4b}
+.stat-card.know::before{background:#38a169}
+.stat-card.dont::before{background:#e53e3e}
+.stat-card.pct::before{background:#d69e2e}
+.stat-card.emp::before{background:#4299e1}
+.stat-card .icon{font-size:1.6rem;margin-bottom:.25rem}
+.stat-card .lbl{font-size:.72rem;color:#718096;margin-bottom:.2rem}
+.stat-card .val{font-size:1.5rem;font-weight:900;color:#1e3a5f}
+.stat-card .sub{font-size:.7rem;color:#a0aec0;margin-top:.2rem}
+
+/* Section */
+.section{background:#fff;border-radius:1rem;padding:1rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.section-title{color:#1e3a5f;font-size:.95rem;font-weight:700;margin-bottom:.8rem;padding-left:.6rem;border-left:3px solid #2b7a4b;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem}
+.section-title .badge{background:#ebf8ff;color:#2b6cb0;padding:.2rem .65rem;border-radius:1rem;font-size:.72rem;font-weight:700}
+
+/* Two-column layout */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+
+/* Tables */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem;direction:ltr}
+th,td{padding:.55rem .5rem;text-align:center;border-bottom:1px solid #e2e8f0}
+th{background:#1e3a5f;color:#fff;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.4px}
+tr:hover{background:#f7fafc}
+td.name-cell{text-align:left;font-weight:700;color:#2d3748}
+td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
+.rank-badge{display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;background:#edf2f7;border-radius:50%;font-weight:900;font-size:.78rem;color:#4a5568}
+.rank-badge.gold{background:#fefcbf;color:#744210;font-size:.9rem}
+.rank-badge.silver{background:#e2e8f0;color:#4a5568}
+.rank-badge.bronze{background:#feebc8;color:#7b341e}
+.pct-cell{font-weight:900}
+.pct-cell.good{color:#38a169}
+.pct-cell.mid{color:#d69e2e}
+.pct-cell.bad{color:#e53e3e}
+.know-cell{color:#38a169;font-weight:700}
+.dont-cell{color:#e53e3e;font-weight:700}
+.empty{text-align:center;padding:1.5rem;color:#a0aec0;font-size:.85rem}
+
+/* Chart */
+.chart-box{background:#fff;border-radius:1rem;padding:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05);margin-bottom:1rem}
+.chart-container{position:relative;height:300px;margin-top:.5rem}
+@media(max-width:768px){.chart-container{height:240px}}
+
+/* Toast */
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;background:#2b7a4b;color:#fff;padding:.7rem 1.1rem;border-radius:2rem;z-index:3000;font-weight:700;font-size:.85rem;box-shadow:0 5px 20px rgba(0,0,0,.2);max-width:90%;animation:slideIn .3s}
+.toast.error{background:#e53e3e}
+.toast.info{background:#4299e1}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:none;justify-content:center;align-items:center;z-index:5000;backdrop-filter:blur(4px)}
+.loading-overlay.active{display:flex}
+.loading-spinner{text-align:center}
+.spinner{width:60px;height:60px;border:5px solid #e2e8f0;border-top-color:#2b7a4b;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-spinner p{color:#1e3a5f;font-weight:700}
+
+@media(max-width:600px){
+  .container{padding:0 .7rem}
+  .page-header{padding:1rem}
+  .page-header h1{font-size:1.1rem}
+  .filter-bar{padding:.7rem}
+  .section{padding:.8rem}
+}
+
+.allEmpSection{
+    width: 800px;
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="logo"><h2>📊 <span>Spot Check</span> Analytics</h2></div>
+  <div class="nav-links">
+    <a href="index.html" class="home">🏠 Home</a>
+    <a href="task.html">🎯 Spot Check</a>
+    <a href="tasks-manager.html">📚 Tasks</a>
+    <button onclick="refreshData()" class="refresh">🔄 Refresh</button>
+    <button onclick="logout()" class="logout">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>📊 Spot Check Analytics Dashboard</h1>
+      <div class="info" id="headerInfo">Loading data...</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:.72rem;opacity:.9">Last Updated</div>
+      <div style="font-weight:900" id="lastUpdated">—</div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <label>📅 Quick Range:</label>
+    <div class="range-buttons">
+      <button class="range-btn" data-range="today" onclick="setQuickRange('today')">Today</button>
+      <button class="range-btn active" data-range="week" onclick="setQuickRange('week')">This Week</button>
+      <button class="range-btn" data-range="month" onclick="setQuickRange('month')">This Month</button>
+      <button class="range-btn" data-range="last30" onclick="setQuickRange('last30')">Last 30 Days</button>
+      <button class="range-btn" data-range="all" onclick="setQuickRange('all')">All Time</button>
+    </div>
+    <label style="margin-left:auto">📆 Custom:</label>
+    <input type="date" id="dateFrom" onchange="applyCustomRange()">
+    <span>→</span>
+    <input type="date" id="dateTo" onchange="applyCustomRange()">
+    <button class="btn btn-primary" onclick="loadAnalytics()">🔄 Apply</button>
+  </div>
+
+  <!-- Overview Stats -->
+  <div class="stats-grid" id="overviewStats">
+    <div class="stat-card emp">
+      <div class="icon">👥</div>
+      <div class="lbl">Total Checked</div>
+      <div class="val" id="statTotal">0</div>
+      <div class="sub" id="statDays">0 days</div>
+    </div>
+    <div class="stat-card know">
+      <div class="icon">🟢</div>
+      <div class="lbl">Know</div>
+      <div class="val" id="statKnow">0</div>
+      <div class="sub" id="statKnowPct">0%</div>
+    </div>
+    <div class="stat-card dont">
+      <div class="icon">🔴</div>
+      <div class="lbl">Don't Know</div>
+      <div class="val" id="statDont">0</div>
+      <div class="sub" id="statDontPct">0%</div>
+    </div>
+    <div class="stat-card pct">
+      <div class="icon">📈</div>
+      <div class="lbl">Overall %</div>
+      <div class="val" id="statPct">0%</div>
+      <div class="sub">Know / Total</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">🎯</div>
+      <div class="lbl">Unique Tasks</div>
+      <div class="val" id="statTasks">0</div>
+      <div class="sub">Different standards</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">🏢</div>
+      <div class="lbl">Departments</div>
+      <div class="val" id="statDepts">0</div>
+      <div class="sub">Covered</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-box">
+    <div class="section-title" style="border:none;padding:0;margin-bottom:.5rem">
+      <span>📈 Daily Trend</span>
+      <span class="badge" id="trendRange"></span>
+    </div>
+    <div class="chart-container">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Top/Bottom Employees -->
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-title">
+        <span>🥇 Top 5 Employees (Highest Know %)</span>
+        <span class="badge" id="topEmpBadge">0</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th style="text-align:left">Name</th>
+              <th style="text-align:left">Dept</th>
+              <th>Checked</th>
+              <th>Know</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody id="topEmpBody">
+            <tr><td colspan="6" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span>🔻 Bottom 5 Employees (Lowest Know %)</span>
+        <span class="badge" id="bottomEmpBadge">0</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th style="text-align:left">Name</th>
+              <th style="text-align:left">Dept</th>
+              <th>Checked</th>
+              <th>Don't</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody id="bottomEmpBody">
+            <tr><td colspan="6" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top/Bottom Departments -->
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-title">
+        <span>🏆 Top Departments</span>
+        <span class="badge" id="topDeptBadge">0</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th style="text-align:left">Department</th>
+              <th>Checked</th>
+              <th>Know</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody id="topDeptBody">
+            <tr><td colspan="5" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span>⚠️ Bottom Departments</span>
+        <span class="badge" id="bottomDeptBadge">0</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th style="text-align:left">Department</th>
+              <th>Checked</th>
+              <th>Don't</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody id="bottomDeptBody">
+            <tr><td colspan="5" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Report -->
+  <div class="section">
+    <div class="section-title">
+      <span>📅 Weekly Report (Last 8 Weeks)</span>
+      <span class="badge" id="weeklyBadge">0 weeks</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">Week</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Checked</th>
+            <th>Know</th>
+            <th>Don't Know</th>
+            <th>%</th>
+            <th>Tasks</th>
+          </tr>
+        </thead>
+        <tbody id="weeklyBody">
+          <tr><td colspan="8" class="empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Monthly Report -->
+  <div class="section">
+    <div class="section-title">
+      <span>📆 Monthly Report (Last 6 Months)</span>
+      <span class="badge" id="monthlyBadge">0 months</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">Month</th>
+            <th>Checked</th>
+            <th>Know</th>
+            <th>Don't Know</th>
+            <th>%</th>
+            <th>Tasks</th>
+            <th>Days</th>
+          </tr>
+        </thead>
+        <tbody id="monthlyBody">
+          <tr><td colspan="7" class="empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <p>⏳ Loading analytics...</p>
+  </div>
+</div>
+
+<script type="module">
+import { auth, DB } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+/* ===================== State ===================== */
+let employees = [];
+let savedSpotChecks = [];
+let savedResults = [];
+let currentRange = { from: null, to: null };
+let trendChartInstance = null;
+
+/* ===================== Helpers ===================== */
+function toast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2800);
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+}
+
+function toISO(date) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+/* ===================== Range Filtering ===================== */
+function setQuickRange(range) {
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.range-btn[data-range="${range}"]`)?.classList.add('active');
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  if (range === 'today') {
+    currentRange = { from: toISO(today), to: toISO(today) };
+  } else if (range === 'week') {
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(today.setDate(diff));
+    currentRange = { from: toISO(monday), to: toISO(new Date()) };
+  } else if (range === 'month') {
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    currentRange = { from: toISO(firstDay), to: toISO(new Date()) };
+  } else if (range === 'last30') {
+    const past = new Date(today);
+    past.setDate(past.getDate() - 30);
+    currentRange = { from: toISO(past), to: toISO(new Date()) };
+  } else if (range === 'all') {
+    currentRange = { from: null, to: null };
+  }
+
+  document.getElementById('dateFrom').value = currentRange.from || '';
+  document.getElementById('dateTo').value = currentRange.to || '';
+
+  loadAnalytics();
+}
+
+function applyCustomRange() {
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  if (!from || !to) return;
+  currentRange = { from, to };
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  loadAnalytics();
+}
+
+function isDateInRange(iso) {
+  if (!iso) return false;
+  if (currentRange.from && iso < currentRange.from) return false;
+  if (currentRange.to && iso > currentRange.to) return false;
+  return true;
+}
+
+/* ===================== Load Data ===================== */
+async function loadData() {
+  try {
+    const emps = await DB.getAll('employees') || [];
+    employees = emps.map(e => ({
+      id: String(e.id),
+      name: e.fullName || '',
+      department: (e.department || '').trim(),
+      position: (e.position || '').trim()
+    }));
+
+    savedSpotChecks = await DB.getAll('spot_checks') || [];
+    savedResults    = await DB.getAll('spot_check_results') || [];
+
+    console.log('✅ Data loaded:', {
+      employees: employees.length,
+      spotChecks: savedSpotChecks.length,
+      results: savedResults.length
+    });
+  } catch (err) {
+    console.error('Load error:', err);
+    toast('Failed to load data', 'error');
+  }
+}
+
+/* ===================== Main Analytics ===================== */
+function loadAnalytics() {
+  showLoading(true);
+  try {
+    // Filter spot checks by date range
+    const filteredChecks = savedSpotChecks.filter(sc => isDateInRange(sc.date));
+    const filteredCheckIds = new Set(filteredChecks.map(sc => String(sc.id)));
+    const filteredResults = savedResults.filter(r => filteredCheckIds.has(String(r.spot_check_id)));
+
+    // Update header
+    const rangeLabel = currentRange.from
+      ? `${fmtDate(currentRange.from)} → ${fmtDate(currentRange.to)}`
+      : 'All Time';
+    document.getElementById('headerInfo').textContent =
+      `${filteredChecks.length} spot checks • ${filteredResults.length} total results`;
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+
+    // Overview stats
+    renderOverview(filteredChecks, filteredResults);
+
+    // Trend chart
+    renderTrendChart(filteredChecks, filteredResults);
+
+    // Top/Bottom Employees
+    renderTopEmployees(filteredResults);
+    renderBottomEmployees(filteredResults);
+
+    // Top/Bottom Departments
+    renderTopDepartments(filteredResults);
+    renderBottomDepartments(filteredResults);
+
+    // Weekly & Monthly
+    renderWeeklyReport();
+    renderMonthlyReport();
+
+    showLoading(false);
+    toast('✅ Analytics updated');
+  } catch (err) {
+    console.error(err);
+    showLoading(false);
+    toast('Failed to render analytics', 'error');
+  }
+}
+
+function showLoading(show) {
+  document.getElementById('loadingOverlay').classList.toggle('active', show);
+}
+
+/* ===================== Overview Stats ===================== */
+function renderOverview(checks, results) {
+  const total = results.length;
+  const know = results.filter(r => r.result === 'KNOW').length;
+  const dont = total - know;
+  const pct = total ? (know / total * 100) : 0;
+
+  const uniqueDates = new Set(checks.map(c => c.date)).size;
+  const uniqueTasks = new Set(checks.map(c => c.task_id)).size;
+  const uniqueDepts = new Set(results.map(r => r.department)).size;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statDays').textContent = `${uniqueDates} day${uniqueDates !== 1 ? 's' : ''}`;
+  document.getElementById('statKnow').textContent = know;
+  document.getElementById('statKnowPct').textContent = total ? `${(know/total*100).toFixed(1)}%` : '0%';
+  document.getElementById('statDont').textContent = dont;
+  document.getElementById('statDontPct').textContent = total ? `${(dont/total*100).toFixed(1)}%` : '0%';
+  document.getElementById('statPct').textContent = `${pct.toFixed(2)}%`;
+  document.getElementById('statTasks').textContent = uniqueTasks;
+  document.getElementById('statDepts').textContent = uniqueDepts;
+
+  document.getElementById('trendRange').textContent = currentRange.from
+    ? `${fmtDate(currentRange.from)} → ${fmtDate(currentRange.to)}`
+    : 'All Time';
+}
+
+/* ===================== Trend Chart ===================== */
+function renderTrendChart(checks, results) {
+  // Group by date
+  const byDate = {};
+  checks.forEach(sc => {
+    if (!byDate[sc.date]) byDate[sc.date] = { know: 0, dont: 0, total: 0 };
+  });
+  results.forEach(r => {
+    const sc = checks.find(c => String(c.id) === String(r.spot_check_id));
+    if (!sc) return;
+    if (r.result === 'KNOW') byDate[sc.date].know++;
+    else byDate[sc.date].dont++;
+    byDate[sc.date].total++;
+  });
+
+  const dates = Object.keys(byDate).sort();
+  const knowData = dates.map(d => byDate[d].know);
+  const dontData = dates.map(d => byDate[d].dont);
+  const pctData = dates.map(d => {
+    const t = byDate[d].total;
+    return t ? +(byDate[d].know / t * 100).toFixed(2) : 0;
+  });
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if (trendChartInstance) trendChartInstance.destroy();
+
+  trendChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: dates.map(d => fmtDate(d)),
+      datasets: [
+        {
+          label: 'Know',
+          data: knowData,
+          backgroundColor: '#38a169',
+          borderColor: '#2f855a',
+          borderWidth: 1,
+          order: 2,
+          yAxisID: 'y1'
+        },
+        {
+          label: "Don't Know",
+          data: dontData,
+          backgroundColor: '#e53e3e',
+          borderColor: '#c53030',
+          borderWidth: 1,
+          order: 2,
+          yAxisID: 'y1'
+        },
+        {
+          label: 'Percentage %',
+          data: pctData,
+          type: 'line',
+          borderColor: '#d69e2e',
+          backgroundColor: '#fefcbf',
+          borderWidth: 3,
+          pointRadius: 6,
+          pointBackgroundColor: '#fefcbf',
+          pointBorderColor: '#d69e2e',
+          pointBorderWidth: 2,
+          tension: 0.3,
+          order: 1,
+          yAxisID: 'y2'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Tajawal', size: 12, weight: '700' }, usePointStyle: true, padding: 15 } },
+        tooltip: { backgroundColor: '#1e3a5f', titleFont: { family: 'Tajawal' }, bodyFont: { family: 'Tajawal' } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 11 } } },
+        y1: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Count', font: { family: 'Tajawal', size: 11 } }, ticks: { font: { family: 'Tajawal', size: 11 }, precision: 0 } },
+        y2: { type: 'linear', position: 'right', beginAtZero: true, max: 100, title: { display: true, text: 'Percentage %', font: { family: 'Tajawal', size: 11 }, color: '#d69e2e' }, ticks: { font: { family: 'Tajawal', size: 11 }, color: '#d69e2e', callback: v => v + '%' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+/* ===================== Employee Analytics ===================== */
+function getEmployeeStats(results) {
+  const stats = {};
+  results.forEach(r => {
+    const eid = String(r.employee_id);
+    if (!stats[eid]) stats[eid] = { id: eid, know: 0, dont: 0, total: 0 };
+    if (r.result === 'KNOW') stats[eid].know++;
+    else stats[eid].dont++;
+    stats[eid].total++;
+  });
+
+  return Object.values(stats).map(s => {
+    const emp = employees.find(e => String(e.id) === s.id);
+    return {
+      ...s,
+      name: emp?.name || `#${s.id}`,
+      department: emp?.department || '—',
+      position: emp?.position || '',
+      pct: s.total ? (s.know / s.total * 100) : 0
+    };
+  });
+}
+
+function renderTopEmployees(results) {
+  const stats = getEmployeeStats(results);
+  // Only consider employees with at least 2 checks for meaningful top
+  const filtered = stats.filter(s => s.total >= 1);
+
+  const top = [...filtered]
+    .sort((a, b) => {
+      if (b.pct !== a.pct) return b.pct - a.pct;
+      return b.total - a.total;
+    })
+    .slice(0, 5);
+
+  const body = document.getElementById('topEmpBody');
+  document.getElementById('topEmpBadge').textContent = `${filtered.length} employees`;
+
+  if (top.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" class="empty">No data</td></tr>';
+    return;
+  }
+
+  body.innerHTML = top.map((s, i) => {
+    const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    return `<tr>
+      <td><span class="rank-badge ${rankCls}">${i+1}</span></td>
+      <td class="name-cell">${escapeHtml(s.name)}</td>
+      <td class="dept-cell">${escapeHtml(s.department)}</td>
+      <td>${s.total}</td>
+      <td class="know-cell">${s.know}</td>
+      <td class="pct-cell good">${s.pct.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderBottomEmployees(results) {
+  const stats = getEmployeeStats(results);
+  // Only consider employees with at least 2 checks for meaningful bottom
+  const filtered = stats.filter(s => s.total >= 1);
+
+  const bottom = [...filtered]
+    .sort((a, b) => {
+      if (a.pct !== b.pct) return a.pct - b.pct;
+      return b.total - a.total;
+    })
+    .slice(0, 5);
+
+  const body = document.getElementById('bottomEmpBody');
+  document.getElementById('bottomEmpBadge').textContent = `${filtered.length} employees`;
+
+  if (bottom.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" class="empty">No data</td></tr>';
+    return;
+  }
+
+  body.innerHTML = bottom.map((s, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td class="name-cell">${escapeHtml(s.name)}</td>
+      <td class="dept-cell">${escapeHtml(s.department)}</td>
+      <td>${s.total}</td>
+      <td class="dont-cell">${s.dont}</td>
+      <td class="pct-cell bad">${s.pct.toFixed(1)}%</td>
+    </tr>
+  `).join('');
+}
+
+/* ===================== Department Analytics ===================== */
+function getDeptStats(results) {
+  const stats = {};
+  results.forEach(r => {
+    const d = r.department || '—';
+    if (!stats[d]) stats[d] = { department: d, know: 0, dont: 0, total: 0 };
+    if (r.result === 'KNOW') stats[d].know++;
+    else stats[d].dont++;
+    stats[d].total++;
+  });
+  return Object.values(stats).map(s => ({
+    ...s,
+    pct: s.total ? (s.know / s.total * 100) : 0
+  }));
+}
+
+function renderTopDepartments(results) {
+  const stats = getDeptStats(results);
+  const top = [...stats].sort((a, b) => b.pct - a.pct).slice(0, 7);
+
+  const body = document.getElementById('topDeptBody');
+  document.getElementById('topDeptBadge').textContent = `${stats.length} departments`;
+
+  if (top.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">No data</td></tr>';
+    return;
+  }
+
+  body.innerHTML = top.map((s, i) => {
+    const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    return `<tr>
+      <td><span class="rank-badge ${rankCls}">${i+1}</span></td>
+      <td class="dept-cell">${escapeHtml(s.department)}</td>
+      <td>${s.total}</td>
+      <td class="know-cell">${s.know}</td>
+      <td class="pct-cell good">${s.pct.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderBottomDepartments(results) {
+  const stats = getDeptStats(results);
+  const bottom = [...stats].sort((a, b) => a.pct - b.pct).slice(0, 7);
+
+  const body = document.getElementById('bottomDeptBody');
+  document.getElementById('bottomDeptBadge').textContent = `${stats.length} departments`;
+
+  if (bottom.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">No data</td></tr>';
+    return;
+  }
+
+  body.innerHTML = bottom.map((s, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td class="dept-cell">${escapeHtml(s.department)}</td>
+      <td>${s.total}</td>
+      <td class="dont-cell">${s.dont}</td>
+      <td class="pct-cell bad">${s.pct.toFixed(1)}%</td>
+    </tr>
+  `).join('');
+}
+
+/* ===================== Weekly Report ===================== */
+function renderWeeklyReport() {
+  // Group by ISO week
+  const byWeek = {};
+  savedSpotChecks.forEach(sc => {
+    if (!sc.date) return;
+    const d = new Date(sc.date + 'T00:00:00');
+    const weekStart = new Date(d);
+    const day = weekStart.getDay();
+    const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+    weekStart.setDate(diff);
+    const weekKey = toISO(weekStart);
+
+    if (!byWeek[weekKey]) byWeek[weekKey] = {
+      start: weekKey,
+      end: toISO(new Date(weekStart.getTime() + 6*24*60*60*1000)),
+      spotCheckIds: new Set(),
+      taskIds: new Set(),
+      know: 0,
+      dont: 0,
+      total: 0
+    };
+    byWeek[weekKey].spotCheckIds.add(String(sc.id));
+    byWeek[weekKey].taskIds.add(String(sc.task_id));
+  });
+
+  savedResults.forEach(r => {
+    const sc = savedSpotChecks.find(c => String(c.id) === String(r.spot_check_id));
+    if (!sc) return;
+    const d = new Date(sc.date + 'T00:00:00');
+    const weekStart = new Date(d);
+    const day = weekStart.getDay();
+    const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+    weekStart.setDate(diff);
+    const weekKey = toISO(weekStart);
+    if (!byWeek[weekKey]) return;
+    if (r.result === 'KNOW') byWeek[weekKey].know++;
+    else byWeek[weekKey].dont++;
+    byWeek[weekKey].total++;
+  });
+
+  const weeks = Object.values(byWeek)
+    .sort((a, b) => b.start.localeCompare(a.start))
+    .slice(0, 8);
+
+  const body = document.getElementById('weeklyBody');
+  document.getElementById('weeklyBadge').textContent = `${weeks.length} weeks`;
+
+  if (weeks.length === 0) {
+    body.innerHTML = '<tr><td colspan="8" class="empty">No data</td></tr>';
+    return;
+  }
+
+  body.innerHTML = weeks.map(w => {
+    const pct = w.total ? (w.know / w.total * 100) : 0;
+    const pctCls = pct >= 95 ? 'good' : pct >= 80 ? 'mid' : 'bad';
+    return `<tr>
+      <td class="dept-cell">Week of ${fmtDate(w.start)}</td>
+      <td>${fmtDate(w.start)}</td>
+      <td>${fmtDate(w.end)}</td>
+      <td>${w.total}</td>
+      <td class="know-cell">${w.know}</td>
+      <td class="dont-cell">${w.dont}</td>
+      <td class="pct-cell ${pctCls}">${pct.toFixed(1)}%</td>
+      <td>${w.taskIds.size}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ===================== Monthly Report ===================== */
+function renderMonthlyReport() {
+  const byMonth = {};
+  savedSpotChecks.forEach(sc => {
+    if (!sc.date) return;
+    const monthKey = sc.date.substring(0, 7); // YYYY-MM
+    if (!byMonth[monthKey]) byMonth[monthKey] = {
+      month: monthKey,
+      spotCheckIds: new Set(),
+      taskIds: new Set(),
+      dates: new Set(),
+      know: 0,
+      dont: 0,
+      total: 0
+    };
+    byMonth[monthKey].spotCheckIds.add(String(sc.id));
+    byMonth[monthKey].taskIds.add(String(sc.task_id));
+    byMonth[monthKey].dates.add(sc.date);
+  });
+
+  savedResults.forEach(r => {
+    const sc = savedSpotChecks.find(c => String(c.id) === String(r.spot_check_id));
+    if (!sc) return;
+    const monthKey = sc.date.substring(0, 7);
+    if (!byMonth[monthKey]) return;
+    if (r.result === 'KNOW') byMonth[monthKey].know++;
+    else byMonth[monthKey].dont++;
+    byMonth[monthKey].total++;
+  });
+
+  const months = Object.values(byMonth)
+    .sort((a, b) => b.month.localeCompare(a.month))
+    .slice(0, 6);
+
+  const body = document.getElementById('monthlyBody');
+  document.getElementById('monthlyBadge').textContent = `${months.length} months`;
+
+  if (months.length === 0) {
+    body.innerHTML = '<tr><td colspan="7" class="empty">No data</td></tr>';
+    return;
+  }
+
+  body.innerHTML = months.map(m => {
+    const pct = m.total ? (m.know / m.total * 100) : 0;
+    const pctCls = pct >= 95 ? 'good' : pct >= 80 ? 'mid' : 'bad';
+    const monthLabel = new Date(m.month + '-01T00:00:00').toLocaleDateString('en-GB', {month:'long', year:'numeric'});
+    return `<tr>
+      <td class="dept-cell">${monthLabel}</td>
+      <td>${m.total}</td>
+      <td class="know-cell">${m.know}</td>
+      <td class="dont-cell">${m.dont}</td>
+      <td class="pct-cell ${pctCls}">${pct.toFixed(1)}%</td>
+      <td>${m.taskIds.size}</td>
+      <td>${m.dates.size}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ===================== Refresh & Logout ===================== */
+window.refreshData = async function() {
+  showLoading(true);
+  try {
+    if (DB.refresh) {
+      await Promise.all([
+        DB.refresh('employees').catch(()=>null),
+        DB.refresh('spot_checks').catch(()=>null),
+        DB.refresh('spot_check_results').catch(()=>null)
+      ]);
+    }
+    await loadData();
+    loadAnalytics();
+    toast('✅ Data refreshed');
+  } catch (err) {
+    console.error(err);
+    toast('❌ Refresh failed', 'error');
+    showLoading(false);
+  }
+};
+
+window.logout = async function() {
+  if (confirm('Log out?')) {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  }
+};
+
+window.setQuickRange = setQuickRange;
+window.applyCustomRange = applyCustomRange;
+window.loadAnalytics = loadAnalytics;
+
+/* ===================== Init ===================== */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  showLoading(true);
+  await loadData();
+
+  // Default: this week
+  setQuickRange('week');
+
+  console.log('✅ Analytics ready');
+});
+</script>
+</body>
+</html>
