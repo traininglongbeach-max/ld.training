@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة مواضيع الـ Spot Check</title>
+<title>إدارة مواضيع الـ Task of the Day</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script type="module" src="auth-guard.js"></script>
 <script type="module" src="database.js"></script>
@@ -152,7 +152,7 @@ tr:hover{background:#f7fafc}
 <body>
 
 <div class="navbar">
-  <div class="logo"><h2>📚 إدارة <span>مواضيع</span> الـ Spot Check</h2></div>
+  <div class="logo"><h2>📚 إدارة <span>مواضيع</span> الـ  Task of the Day</h2></div>
   <div class="nav-links">
     <a href="index.html" class="home">🏠 الرئيسية</a>
     <a href="task.html" class="spot">🎯 Spot Check</a>
@@ -189,7 +189,8 @@ tr:hover{background:#f7fafc}
   <!-- Toolbar -->
   <div class="toolbar">
     <input type="text" id="searchInput" class="search-input"
-           placeholder="🔍 ابحث في المواضيع..." oninput="renderTable()">
+           placeholder="🔍 ابحث في المواضيع ثم اضغط Enter..."
+           onkeydown="if(event.key==='Enter'){renderTable();}">
     <select id="statusFilter" class="filter-select" onchange="renderTable()">
       <option value="all">كل الحالات</option>
       <option value="active">✅ نشطة فقط</option>
@@ -318,7 +319,7 @@ let tasks = [];
 let editingId = null;
 let deletingId = null;
 let deleteRelated = null;
-let isAdminUser = false;   // ✅ جديد
+let isAdminUser = false;
 
 /* ===================== Helpers ===================== */
 const todayISO = () => {
@@ -402,11 +403,6 @@ function getScheduleLabel(t) {
 async function loadTasks() {
   try {
     tasks = await DB.getAll('tasks') || [];
-    tasks.sort((a,b) => {
-      if ((a.isActive!==false) !== (b.isActive!==false))
-        return (a.isActive!==false) ? -1 : 1;
-      return (a.name||'').localeCompare(b.name||'', 'ar');
-    });
   } catch (err) {
     console.error('Load tasks error:', err);
     toast('❌ فشل تحميل المواضيع', 'error');
@@ -443,6 +439,45 @@ function renderTable() {
   if (status === 'today')    filtered = filtered.filter(t => getScheduleState(t) === 'today');
   if (status === 'upcoming') filtered = filtered.filter(t => getScheduleState(t) === 'upcoming');
   if (status === 'past')     filtered = filtered.filter(t => getScheduleState(t) === 'past');
+
+  /* ✅ ترتيب حسب التاريخ */
+  const getSortDate = (t) => {
+    const type = t.scheduleType || 'always';
+    if (type === 'single' && t.scheduleDate) return t.scheduleDate;
+    if (type === 'range') return t.scheduleFrom || t.scheduleTo || '';
+    return ''; // دائم
+  };
+
+  const stateOrder = { today: 0, upcoming: 1, always: 2, past: 3 };
+
+  filtered.sort((a, b) => {
+    // 1) النشطة أولاً
+    const aActive = a.isActive !== false ? 0 : 1;
+    const bActive = b.isActive !== false ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
+
+    // 2) حسب الحالة (اليوم → قادم → دائم → سابق)
+    const aState = stateOrder[getScheduleState(a)] ?? 99;
+    const bState = stateOrder[getScheduleState(b)] ?? 99;
+    if (aState !== bState) return aState - bState;
+
+    // 3) داخل نفس الحالة: حسب التاريخ
+    const aDate = getSortDate(a);
+    const bDate = getSortDate(b);
+
+    // لو الاتنين دائم → ترتيب أبجدي
+    if (!aDate && !bDate) return (a.name||'').localeCompare(b.name||'', 'ar');
+
+    // دائم بعد اللي له تاريخ في نفس الحالة (احتياطي)
+    if (!aDate) return 1;
+    if (!bDate) return -1;
+
+    // القادم: الأقرب أولاً | السابق: الأحدث أولاً
+    const state = getScheduleState(a);
+    if (state === 'upcoming') return aDate.localeCompare(bDate);
+    if (state === 'past')     return bDate.localeCompare(aDate);
+    return aDate.localeCompare(bDate);
+  });
 
   const body = document.getElementById('tableBody');
   if (filtered.length === 0) {
@@ -511,7 +546,7 @@ window.setQuickDate = function(when) {
 
 /* ===================== Add/Edit ===================== */
 window.openAddModal = function() {
-  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }   // ✅ حماية إضافية
+  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }
 
   editingId = null;
   document.getElementById('modalTitle').textContent = '➕ إضافة موضوع جديد';
@@ -529,7 +564,7 @@ window.openAddModal = function() {
 };
 
 window.openEditModal = function(id) {
-  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }   // ✅ حماية إضافية
+  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }
 
   const t = tasks.find(x => String(x.id) === String(id));
   if (!t) return;
@@ -560,7 +595,7 @@ window.closeModal = function() {
 
 /* ===================== Save ===================== */
 window.saveTask = async function() {
-  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }   // ✅ حماية إضافية
+  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }
 
   const name = document.getElementById('taskName').value.trim();
   const description = document.getElementById('taskDesc').value.trim();
@@ -626,7 +661,7 @@ window.saveTask = async function() {
 
 /* ===================== Toggle Active ===================== */
 window.toggleActive = async function(id) {
-  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }   // ✅ حماية إضافية
+  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }
 
   const t = tasks.find(x => String(x.id) === String(id));
   if (!t) return;
@@ -645,7 +680,7 @@ window.toggleActive = async function(id) {
 
 /* ===================== Delete ===================== */
 window.openDeleteModal = async function(id) {
-  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }   // ✅ حماية إضافية
+  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }
 
   const t = tasks.find(x => String(x.id) === String(id));
   if (!t) return;
@@ -726,7 +761,7 @@ window.closeDeleteModal = function() {
 };
 
 window.confirmDelete = async function() {
-  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }   // ✅ حماية إضافية
+  if (!isAdminUser) { toast('⛔ للأدمن فقط', 'error'); return; }
   if (!deletingId) return;
 
   const btn = document.getElementById('confirmDeleteBtn');
@@ -861,6 +896,19 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
 });
 
+/* ===================== ✅ Search on Enter ===================== */
+function initSearchBehavior() {
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+
+  // عند مسح الحقل → أعد العرض تلقائياً
+  input.addEventListener('input', () => {
+    if (input.value.trim() === '') {
+      renderTable();
+    }
+  });
+}
+
 /* ===================== Init ===================== */
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
@@ -878,6 +926,9 @@ onAuthStateChanged(auth, async (user) => {
 
   // ✅ إضافة/إزالة كلاس is-admin على body
   document.body.classList.toggle('is-admin', isAdminUser);
+
+  // ✅ تهيئة سلوك البحث
+  initSearchBehavior();
 
   await loadTasks();
   renderTable();
