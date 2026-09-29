@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Spot Check - L&D System</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script type="module" src="auth-guard.js"></script>
+<script type="module" src="database.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
+body{background:#f0f4f8;padding-bottom:80px}
+
+/* Navbar */
+.navbar{background:#fff;padding:.8rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem;position:sticky;top:0;z-index:999}
+.logo h2{color:#1e3a5f;font-size:1.1rem}
+.logo span{color:#2b7a4b}
+.nav-links{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.nav-links a,.nav-links button{text-decoration:none;padding:.45rem .9rem;border-radius:2rem;font-weight:600;cursor:pointer;border:none;font-size:.82rem;transition:.2s}
+.nav-links .home{background:#2b7a4b;color:#fff}
+.nav-links .refresh{background:#4299e1;color:#fff}
+.nav-links .refresh:hover{background:#3182ce}
+.nav-links .logout{background:#e53e3e;color:#fff}
+
+/* Container */
+.container{max-width:1400px;margin:1.2rem auto;padding:0 1rem}
+
+/* Header Card */
+.header-card{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.header-card h1{color:#1e3a5f;font-size:1.4rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+
+/* Setup Grid */
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.9rem}
+.setup-item label{display:block;font-weight:700;color:#1e3a5f;font-size:.85rem;margin-bottom:.35rem}
+.setup-item input,.setup-item select{width:100%;padding:.7rem .9rem;border:2px solid #e2e8f0;border-radius:.8rem;font-size:.9rem;background:#fff;transition:.2s}
+.setup-item input:focus,.setup-item select:focus{outline:none;border-color:#2b7a4b}
+
+/* Date Filters */
+.date-filters{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.date-filters select{width:100%;padding:.7rem .9rem;border:2px solid #e2e8f0;border-radius:.8rem;font-size:.9rem;background:#fff;cursor:pointer}
+.date-filters select:focus{outline:none;border-color:#2b7a4b}
+
+.selected-date-preview{margin-top:.6rem;padding:.55rem .9rem;background:#ebf8ff;border:2px solid #bee3f8;border-radius:.8rem;font-size:.85rem;color:#2c5282;font-weight:700;display:flex;align-items:center;gap:.5rem}
+.selected-date-preview .icon{font-size:1.1rem}
+
+/* Exclude Levels */
+.exclude-levels{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
+.exclude-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .7rem;background:#edf2f7;border-radius:1rem;font-size:.78rem;cursor:pointer;user-select:none;transition:.15s;border:2px solid transparent}
+.exclude-chip:hover{background:#e2e8f0}
+.exclude-chip.active{background:#fed7d7;color:#c53030;border-color:#fc8181;font-weight:700}
+.exclude-chip input{display:none}
+
+/* Sections */
+.section{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.section-title{color:#1e3a5f;font-size:1.05rem;font-weight:700;margin-bottom:1rem;padding-left:.7rem;border-left:4px solid #2b7a4b;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.section-title .badge{background:#ebf8ff;color:#2b6cb0;padding:.25rem .7rem;border-radius:1rem;font-size:.78rem;font-weight:700}
+
+/* Search */
+.search-box{display:flex;gap:.5rem;margin-bottom:1rem;position:relative}
+.search-box input{flex:1;padding:.75rem 1rem;border:2px solid #e2e8f0;border-radius:2rem;font-size:.9rem}
+.search-box input:focus{outline:none;border-color:#2b7a4b;box-shadow:0 0 0 3px rgba(43,122,75,.1)}
+.search-count{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-size:.75rem;color:#718096;font-weight:700;background:#f7fafc;padding:.2rem .6rem;border-radius:1rem;pointer-events:none}
+
+/* Employee List */
+.emp-list{max-height:340px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.8rem;padding:.4rem}
+.emp-item{display:flex;align-items:center;gap:.7rem;padding:.7rem .8rem;border-radius:.6rem;cursor:pointer;transition:.15s;border-bottom:1px solid #f0f4f8}
+.emp-item:last-child{border-bottom:none}
+.emp-item:hover{background:#f7fafc}
+.emp-item.selected{background:#e6fffa;border-left:3px solid #2b7a4b}
+.emp-item input[type=checkbox]{width:20px;height:20px;accent-color:#2b7a4b;cursor:pointer;flex-shrink:0}
+.emp-info{flex:1;min-width:0}
+.emp-name{font-weight:700;color:#2d3748;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emp-meta{font-size:.75rem;color:#718096;margin-top:2px}
+.emp-id{background:#edf2f7;color:#4a5568;padding:.15rem .5rem;border-radius:.4rem;font-size:.72rem;font-weight:700;flex-shrink:0}
+
+/* Match Highlight */
+.match-highlight{background:#fefcbf;color:#744210;font-weight:900;padding:0 2px;border-radius:3px;letter-spacing:.5px;border-bottom:2px solid #d69e2e}
+
+/* Result Rows */
+.result-row{display:flex;align-items:center;gap:.6rem;padding:.65rem .8rem;border-radius:.7rem;background:#f9fafb;margin-bottom:.4rem;flex-wrap:wrap}
+.result-row .rname{flex:1;min-width:120px;font-weight:700;color:#2d3748;font-size:.88rem}
+.result-row .rmeta{font-size:.72rem;color:#718096}
+.result-row .rmeta-sub{font-size:.7rem;color:#a0aec0}
+.toggle-group{display:flex;gap:.3rem;flex-shrink:0}
+.toggle-btn{padding:.4rem .8rem;border-radius:2rem;border:2px solid #e2e8f0;background:#fff;cursor:pointer;font-size:.78rem;font-weight:700;transition:.15s;white-space:nowrap}
+.toggle-btn.know.active{background:#c6f6d5;border-color:#38a169;color:#22543d}
+.toggle-btn.dont.active{background:#fed7d7;border-color:#e53e3e;color:#822727}
+.toggle-btn:not(.active){color:#a0aec0}
+.btn-remove{background:#fed7d7;color:#c53030;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-weight:900;flex-shrink:0}
+
+/* Action Buttons */
+.action-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem}
+.btn{padding:.6rem 1rem;border:none;border-radius:2rem;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s;display:inline-flex;align-items:center;gap:.35rem}
+.btn:hover{transform:translateY(-1px)}
+.btn-know-all{background:#c6f6d5;color:#22543d}
+.btn-know-all:hover{background:#9ae6b4}
+.btn-save{background:#2b7a4b;color:#fff}
+.btn-save:hover{background:#1e5a38}
+.btn-next{background:#3182ce;color:#fff}
+.btn-next:hover{background:#2b6cb0}
+.btn-clear{background:#e2e8f0;color:#4a5568}
+
+/* Summary */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.7rem;margin-top:1rem}
+.summary-box{background:linear-gradient(135deg,#f7fafc,#edf2f7);border-radius:.8rem;padding:.8rem;text-align:center}
+.summary-box .lbl{font-size:.75rem;color:#718096;margin-bottom:.25rem}
+.summary-box .val{font-size:1.4rem;font-weight:900;color:#1e3a5f}
+.summary-box.know .val{color:#38a169}
+.summary-box.dont .val{color:#e53e3e}
+.summary-box.pct .val{color:#2b7a4b}
+
+/* Tables */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:700px;direction:ltr}
+th,td{padding:.7rem .6rem;text-align:center;border-bottom:1px solid #e2e8f0;font-size:.87rem}
+th{background:#1e3a5f;color:#fff;font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;user-select:none;position:relative}
+th:hover{background:#2c5282}
+th .sort-icon{font-size:.7rem;margin-left:.3rem;opacity:.6}
+th.sorted .sort-icon{opacity:1}
+tr:hover{background:#f7fafc}
+tr.total-row{background:#edf2f7;font-weight:900}
+tr.total-row td{border-top:2px solid #1e3a5f}
+td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
+.pct-cell.good{color:#38a169;font-weight:700}
+.pct-cell.mid{color:#d69e2e;font-weight:700}
+.pct-cell.bad{color:#e53e3e;font-weight:700}
+.rank-badge{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;background:#edf2f7;border-radius:50%;font-weight:900;font-size:.72rem;color:#4a5568}
+.rank-badge.gold{background:#fefcbf;color:#744210}
+.rank-badge.silver{background:#e2e8f0;color:#4a5568}
+.rank-badge.bronze{background:#feebc8;color:#7b341e}
+
+/* Dept Summary Header */
+.dept-summary-header{background:linear-gradient(135deg,#1e3a5f,#2b7a4b);color:#fff;border-radius:.9rem;padding:.9rem 1.1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem}
+.dept-summary-header .info{display:flex;flex-direction:column;gap:.15rem}
+.dept-summary-header .label{font-size:.72rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+.dept-summary-header .value{font-size:1rem;font-weight:900}
+.dept-summary-header .date-badge{background:rgba(255,255,255,.15);padding:.4rem .9rem;border-radius:1rem;font-size:.82rem;font-weight:700}
+.dept-summary-header .badge{padding:.3rem .8rem;border-radius:1rem;font-size:.78rem;font-weight:700}
+
+/* Chart */
+.chart-container{position:relative;height:300px;margin-top:.5rem}
+@media(max-width:768px){.chart-container{height:260px}}
+
+/* Side-by-side layout for Chart + Dept Summary */
+.chart-dept-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: start;
+}
+.chart-dept-wrapper .section {
+  margin-bottom: 0;
+}
+@media (max-width: 992px) {
+  .chart-dept-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Compact styling inside wrapper */
+.chart-dept-wrapper #deptTable th,
+.chart-dept-wrapper #deptTable td {
+  padding: .45rem .4rem;
+  font-size: 16px;
+}
+.chart-dept-wrapper #deptTable th {
+  font-size: 18px;
+}
+.chart-dept-wrapper .dept-summary-header {
+  padding: .65rem .85rem;
+  margin-bottom: .7rem;
+}
+.chart-dept-wrapper .dept-summary-header .value {
+  font-size: 20px;
+}
+.chart-dept-wrapper .dept-summary-header .label {
+  font-size: .65rem;
+}
+.chart-dept-wrapper .dept-summary-header .date-badge {
+    font-size: 20px;
+}
+.chart-dept-wrapper .section-title {
+  font-size: .95rem;
+  margin-bottom: .7rem;
+}
+.chart-dept-wrapper .section-title .badge {
+  font-size: .7rem;
+  padding: .2rem .55rem;
+}
+.chart-dept-wrapper .rank-badge {
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  font-size: .65rem;
+}
+
+/* All Employees Table (Know + Don't Know) */
+#allEmpSection .section-title{border-left-color:#2b7a4b}
+.emp-status-badge{display:inline-block;padding:.25rem .75rem;border-radius:1rem;font-weight:700;font-size:.75rem;white-space:nowrap}
+.emp-status-badge.know{background:#c6f6d5;color:#22543d}
+.emp-status-badge.dont{background:#fed7d7;color:#822727}
+.row-actions{display:flex;gap:.35rem;justify-content:center;flex-wrap:wrap}
+.btn-action{padding:.35rem .7rem;border:none;border-radius:1rem;font-size:.75rem;font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:.25rem}
+.btn-action.edit{background:#4299e1;color:#fff}
+.btn-action.edit:hover{background:#3182ce}
+.btn-action.toggle-k{background:#38a169;color:#fff}
+.btn-action.toggle-k:hover{background:#2f855a}
+.btn-action.toggle-d{background:#e53e3e;color:#fff}
+.btn-action.toggle-d:hover{background:#c53030}
+.btn-action.delete{background:#a0aec0;color:#fff}
+.btn-action.delete:hover{background:#718096}
+tr.row-know{background:#f0fff4}
+tr.row-know:hover{background:#e6fffa}
+tr.row-dont{background:#fff5f5}
+tr.row-dont:hover{background:#fed7d7}
+
+/* Empty State */
+.empty{text-align:center;padding:1.5rem;color:#a0aec0;font-size:.88rem}
+
+/* Toast */
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;background:#2b7a4b;color:#fff;padding:.75rem 1.2rem;border-radius:2rem;z-index:3000;animation:slideIn .3s;font-weight:700;font-size:.85rem;box-shadow:0 5px 20px rgba(0,0,0,.2);max-width:90%}
+.toast.error{background:#e53e3e}
+.toast.warn{background:#d69e2e}
+.toast.info{background:#4299e1}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Mobile */
+@media(max-width:768px){
+  .container{padding:0 .7rem}
+  .header-card,.section{padding:.9rem}
+  .header-card h1{font-size:1.15rem}
+  .setup-grid{grid-template-columns:1fr}
+  .date-filters{grid-template-columns:1fr}
+  .result-row{flex-direction:column;align-items:stretch}
+  .toggle-group{width:100%}
+  .toggle-btn{flex:1;text-align:center}
+  .action-bar .btn{flex:1;justify-content:center}
+  .navbar{padding:.6rem .8rem}
+  .logo h2{font-size:.95rem}
+}
+@media(max-width:480px){
+  .summary-box .val{font-size:1.1rem}
+  .btn{font-size:.75rem;padding:.55rem .8rem}
+  .dept-summary-header{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="logo"><h2>🎯 <span>Daily</span> Spot Check</h2></div>
+  <div class="nav-links">
+    <a href="index.html" class="home">🏠 Home</a>
+    <a href="tasks-manager.html">📚 Tasks</a>
+    <button onclick="refreshData()" class="refresh">🔄 Refresh</button>
+    <button onclick="logout()" class="logout">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Setup -->
+  <div class="header-card">
+    <h1>📋 Spot Check </h1>
+    <div class="setup-grid">
+
+      <div class="setup-item">
+        <label>📅 Date Filter (Year / Month / Day)</label>
+        <div class="date-filters">
+          <select id="filterYear"></select>
+          <select id="filterMonth"></select>
+          <select id="filterDay"></select>
+        </div>
+        <div class="selected-date-preview" id="selectedDatePreview">
+          <span class="icon">📅</span>
+          <span id="selectedDateText">—</span>
+        </div>
+      </div>
+
+      <div class="setup-item">
+        <label>🎯 Task / Standard</label>
+        <select id="taskSelect"><option value="">— Select Task —</option></select>
+      </div>
+
+      <div class="setup-item">
+        <label>📂 Department</label>
+        <select id="deptSelect"><option value="">— Select Department —</option></select>
+      </div>
+
+    </div>
+
+    <!-- Exclude Levels -->
+    <div class="setup-item" style="margin-top:1rem">
+      <label>🚫 Exclude Levels (auto: Managers / HODs / AHODs / Directors / GM)</label>
+      <div class="exclude-levels" id="excludeLevelsChips"></div>
+    </div>
+  </div>
+
+  <!-- Search & Add -->
+  <div class="section" id="addSection" style="display:none">
+    <div class="section-title">
+      <span>🔍 Search Employees (by First Name)</span>
+      <span class="badge" id="deptCount">0 employees</span>
+    </div>
+    <div class="search-box">
+      <input type="text" id="empSearch" placeholder="🔍 Type first letter(s) — e.g., H → Hassan, Hamada..." autocomplete="off">
+      <span class="search-count" id="searchCount" style="display:none"></span>
+    </div>
+    <div class="emp-list" id="empList">
+      <div class="empty">⏳ Loading...</div>
+    </div>
+  </div>
+
+  <!-- Selected / Results -->
+  <div class="section" id="resultSection" style="display:none">
+    <div class="section-title">
+      <span>✏️ Checked Employees</span>
+      <span class="badge" id="selectedCount">0 employees</span>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-know-all" onclick="setAllKnow()">✓ Mark All as "Know"</button>
+      <button class="btn btn-clear" onclick="clearSelected()">🗑️ Clear All</button>
+    </div>
+    <div id="resultList"><div class="empty">No employees recorded yet</div></div>
+    <div class="summary-grid" id="liveSummary"></div>
+  </div>
+
+  <!-- Save Actions -->
+  <div class="action-bar" id="saveBar" style="display:none">
+    <button class="btn btn-save" onclick="saveDeptResults()">💾 Save Department Results</button>
+    <button class="btn btn-next" onclick="goNextDept()">➡️ Next Department</button>
+  </div>
+
+  <!-- Chart + Department Summary (Side by Side) -->
+  <div class="chart-dept-wrapper">
+
+    <div class="section" id="chartSection" style="display:none">
+      <div class="section-title">
+        <span>📈 Overall Performance</span>
+        <span class="badge" id="chartDate"></span>
+      </div>
+      <div class="chart-container">
+        <canvas id="totalChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Department Summary -->
+    <div class="section" id="deptSummarySection">
+      <div class="dept-summary-header" id="deptSummaryHeader">
+        <div class="info">
+          <div class="value" id="deptHeaderTask">—</div>
+        </div>
+        <div class="date-badge" id="deptHeaderDate">—</div>
+      </div>
+      <div class="table-wrap">
+        <table id="deptTable">
+          <thead>
+            <tr>
+              <th style="width:50px">#</th>
+              <th data-sort="department" style="text-align:left">Department <span class="sort-icon">↕</span></th>
+              <th data-sort="total">Checked <span class="sort-icon">↕</span></th>
+              <th data-sort="know">Know <span class="sort-icon">↕</span></th>
+              <th data-sort="dont">Don't Know <span class="sort-icon">↕</span></th>
+              <th data-sort="pct" class="sorted">Percentage <span class="sort-icon">↓</span></th>
+            </tr>
+          </thead>
+          <tbody id="deptSummaryBody">
+            <tr><td colspan="6" class="empty">No data available</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ✅ All Employees (Know + Don't Know) with Edit/Delete -->
+  <div class="section" id="allEmpSection" style="display:none">
+    <div class="section-title">
+      <span>📋 All Checked Employees (Know + Don't Know)</span>
+      <span class="badge" id="allEmpBadge">0 employees</span>
+    </div>
+
+    <!-- Filter buttons -->
+    <div class="action-bar">
+      <button class="btn btn-know-all" id="filterAll" onclick="setAllEmpFilter('all')">👥 All</button>
+      <button class="btn btn-know-all" id="filterKnow" onclick="setAllEmpFilter('KNOW')">🟢 Know Only</button>
+      <button class="btn btn-clear" id="filterDont" onclick="setAllEmpFilter('DONT_KNOW')">🔴 Don't Know Only</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="allEmpTable">
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th data-ae-sort="department" style="text-align:left">Department <span class="ae-sort-icon">↕</span></th>
+            <th data-ae-sort="employee_id">Employee ID <span class="ae-sort-icon">↕</span></th>
+            <th data-ae-sort="name" style="text-align:left">Employee Name <span class="ae-sort-icon">↕</span></th>
+            <th data-ae-sort="position" style="text-align:left">Position <span class="ae-sort-icon">↕</span></th>
+            <th data-ae-sort="result">Result <span class="ae-sort-icon">↕</span></th>
+            <th style="width:200px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="allEmpBody">
+          <tr><td colspan="7" class="empty">No data available</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Don't Know Employees Table (احتياطي) -->
+  <div class="section" id="dontKnowSection" style="display:none">
+    <div class="section-title">
+      <span>🔴 Don't Know Employees</span>
+      <span class="badge" id="dontKnowBadge">0 employees</span>
+    </div>
+    <div class="table-wrap">
+      <table id="dontKnowTable">
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th data-dk-sort="department" style="text-align:left">Department <span class="dk-sort-icon">↕</span></th>
+            <th data-dk-sort="employee_id">Employee ID <span class="dk-sort-icon">↕</span></th>
+            <th data-dk-sort="name" style="text-align:left">Employee Name <span class="dk-sort-icon">↕</span></th>
+            <th data-dk-sort="position" style="text-align:left">Position <span class="dk-sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="dontKnowBody">
+          <tr><td colspan="5" class="empty">No data available</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Overall Summary -->
+  <div class="section" id="overallSection">
+    <div class="section-title">
+      <span>🏆 Overall Summary</span>
+      <span class="badge" id="overallDate"></span>
+    </div>
+    <div class="summary-grid" id="overallSummary"></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { auth, DB } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+/* ===================== State ===================== */
+let employees = [];
+let departments = [];
+let allTasks = [];
+let tasks = [];
+let currentUser = null;
+
+let spotDate = '';
+let currentTask = null;
+let currentDept = '';
+let selectedEmployees = [];
+
+let filterYear = '';
+let filterMonth = '';
+let filterDay = '';
+
+let savedSpotChecks = [];
+let savedResults = [];
+
+// Exclude levels
+let excludedLevels = new Set();
+const DEFAULT_EXCLUDED = [
+  'manager','assistant','director','asst. manager','asst manager','dir.',
+  'ahod','ahods','hod','hods','gm','0.05'
+];
+
+// Sort (Dept Summary)
+let sortKey = 'pct';
+let sortDir = 'desc';
+
+// Sort (Don't Know Table)
+let dkSortKey = 'department';
+let dkSortDir = 'asc';
+
+// Sort + Filter (All Employees Table)
+let aeSortKey = 'department';
+let aeSortDir = 'asc';
+let aeFilter = 'all';   // 'all' | 'KNOW' | 'DONT_KNOW'
+
+// Chart
+let totalChartInstance = null;
+
+/* ===================== Helpers ===================== */
+const todayISO = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+};
+
+const fmtDate = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+};
+
+function toast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2800);
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function isLevelExcluded(level) {
+  if (!level) return false;
+  const lv = String(level).toLowerCase().trim();
+  if (!lv) return false;
+  for (const ex of excludedLevels) {
+    const exLow = String(ex).toLowerCase().trim();
+    if (!exLow) continue;
+    if (lv === exLow) return true;
+    if (lv.includes(exLow)) return true;
+  }
+  return false;
+}
+
+function extractFirstName(fullName) {
+  if (!fullName) return '';
+  const trimmed = String(fullName).trim();
+  const parts = trimmed.split(/\s+/);
+  return parts[0] || '';
+}
+
+/* ===================== Date Filters ===================== */
+function buildYearOptions() {
+  const sel = document.getElementById('filterYear');
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear - 2; y <= currentYear + 2; y++) years.push(y);
+  sel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+  sel.value = currentYear;
+  filterYear = String(currentYear);
+}
+
+function buildMonthOptions() {
+  const sel = document.getElementById('filterMonth');
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  sel.innerHTML = months.map((m, i) => `<option value="${String(i+1).padStart(2,'0')}">${m}</option>`).join('');
+  const currentMonth = String(new Date().getMonth() + 1).padStart(2,'0');
+  sel.value = currentMonth;
+  filterMonth = currentMonth;
+}
+
+function buildDayOptions() {
+  const sel = document.getElementById('filterDay');
+  const days = [];
+  for (let d = 1; d <= 31; d++) days.push(String(d).padStart(2,'0'));
+  sel.innerHTML = days.map(d => `<option value="${d}">${d}</option>`).join('');
+  const currentDay = String(new Date().getDate()).padStart(2,'0');
+  sel.value = currentDay;
+  filterDay = currentDay;
+}
+
+function updateSpotDateFromFilters() {
+  const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
+  const safeDay = Math.min(parseInt(filterDay), daysInMonth);
+  spotDate = `${filterYear}-${filterMonth}-${String(safeDay).padStart(2,'0')}`;
+  document.getElementById('selectedDateText').textContent = fmtDate(spotDate);
+}
+
+function rebuildDayOptions() {
+  const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
+  const daySel = document.getElementById('filterDay');
+  const prevValue = daySel.value;
+  daySel.innerHTML = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const v = String(d).padStart(2,'0');
+    daySel.innerHTML += `<option value="${v}">${v}</option>`;
+  }
+  if (parseInt(prevValue) <= daysInMonth) daySel.value = prevValue;
+  else daySel.value = String(daysInMonth).padStart(2,'0');
+  filterDay = daySel.value;
+}
+
+async function onDateFilterChange() {
+  filterYear = document.getElementById('filterYear').value;
+  filterMonth = document.getElementById('filterMonth').value;
+  rebuildDayOptions();
+  updateSpotDateFromFilters();
+  resetSession();
+  renderTaskSelectForDate(spotDate);
+  await refreshSavedForDate();
+}
+
+function initDateFilters() {
+  buildYearOptions();
+  buildMonthOptions();
+  buildDayOptions();
+  updateSpotDateFromFilters();
+
+  document.getElementById('filterYear').addEventListener('change', onDateFilterChange);
+  document.getElementById('filterMonth').addEventListener('change', onDateFilterChange);
+  document.getElementById('filterDay').addEventListener('change', async () => {
+    filterDay = document.getElementById('filterDay').value;
+    updateSpotDateFromFilters();
+    resetSession();
+    renderTaskSelectForDate(spotDate);
+    await refreshSavedForDate();
+  });
+}
+
+/* ===================== Load All ===================== */
+async function loadAll() {
+  try {
+    const emps = await DB.getAll('employees') || [];
+    employees = emps
+      .filter(e => (e.status || 'Active') === 'Active')
+      .map(e => ({
+        id: String(e.id),
+        name: e.fullName || '',
+        department: (e.department || '').trim(),
+        position: (e.position || '').trim(),
+        level: (e.level || '').trim(),
+        status: e.status || 'Active'
+      }));
+
+    const set = new Set();
+    employees.forEach(e => { if (e.department) set.add(e.department); });
+    departments = [...set].sort();
+
+    allTasks = await DB.getAll('tasks') || [];
+    savedSpotChecks = await DB.getAll('spot_checks') || [];
+    savedResults   = await DB.getAll('spot_check_results') || [];
+
+    initExcludedLevelChips();
+    renderTaskSelectForDate(spotDate);
+
+    console.log('✅ Loaded:', { emp: employees.length, depts: departments.length, tasks: allTasks.length });
+  } catch (err) {
+    console.error('Load error:', err);
+    toast('Failed to load data', 'error');
+  }
+}
+
+/* ===================== Exclude Levels UI ===================== */
+function initExcludedLevelChips() {
+  const levels = new Set();
+  employees.forEach(e => { if (e.level) levels.add(e.level.trim()); });
+  const sortedLevels = [...levels].sort();
+
+  if (excludedLevels.size === 0) {
+    sortedLevels.forEach(lv => {
+      const low = lv.toLowerCase();
+      if (DEFAULT_EXCLUDED.some(d => low.includes(d))) {
+        excludedLevels.add(lv);
+      }
+    });
+  }
+
+  const container = document.getElementById('excludeLevelsChips');
+  if (sortedLevels.length === 0) {
+    container.innerHTML = '<div style="color:#a0aec0;font-size:.85rem">No levels found</div>';
+    return;
+  }
+
+  container.innerHTML = sortedLevels.map(lv => {
+    const isExcluded = excludedLevels.has(lv);
+    return `<label class="exclude-chip ${isExcluded?'active':''}" data-level="${escapeHtml(lv)}">
+      <input type="checkbox" ${isExcluded?'checked':''}>
+      <span class="chip-icon">${isExcluded?'🚫':'✓'}</span>
+      <span class="chip-label">${escapeHtml(lv)}</span>
+    </label>`;
+  }).join('');
+
+  container.querySelectorAll('.exclude-chip').forEach(chip => {
+    const checkbox = chip.querySelector('input');
+    const level = chip.getAttribute('data-level');
+
+    checkbox.addEventListener('change', (e) => {
+      e.stopPropagation();
+      applyExcludeToggle(level, checkbox.checked);
+    });
+
+    chip.addEventListener('click', (e) => {
+      if (e.target === checkbox) return;
+      e.preventDefault();
+      checkbox.checked = !checkbox.checked;
+      applyExcludeToggle(level, checkbox.checked);
+    });
+  });
+}
+
+function applyExcludeToggle(level, isExcluded) {
+  if (isExcluded) excludedLevels.add(level);
+  else excludedLevels.delete(level);
+
+  const chip = document.querySelector(`#excludeLevelsChips .exclude-chip[data-level="${CSS.escape(level)}"]`);
+  if (chip) {
+    chip.classList.toggle('active', isExcluded);
+    const icon = chip.querySelector('.chip-icon');
+    if (icon) icon.textContent = isExcluded ? '🚫' : '✓';
+  }
+
+  if (currentDept) renderEmployeeList();
+  renderResults();
+}
+
+/* ===================== Task Select ===================== */
+function getTasksForDate(all, isoDate) {
+  if (!isoDate) return [];
+  return all.filter(t => {
+    if (t.isActive === false) return false;
+    const type = t.scheduleType || 'always';
+    if (type === 'always') return true;
+    if (type === 'single') return t.scheduleDate === isoDate;
+    if (type === 'range') {
+      const from = t.scheduleFrom || '0000-01-01';
+      const to   = t.scheduleTo   || '9999-12-31';
+      return isoDate >= from && isoDate <= to;
+    }
+    return true;
+  });
+}
+
+function renderTaskSelectForDate(isoDate) {
+  const sel = document.getElementById('taskSelect');
+  tasks = getTasksForDate(allTasks, isoDate);
+
+  if (tasks.length === 0) {
+    sel.innerHTML = '<option value="">— No tasks for this date —</option>';
+    sel.disabled = true;
+  } else {
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">— Select Task —</option>' +
+      tasks.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+  }
+  currentTask = null;
+}
+
+/* ===================== Event Handlers ===================== */
+document.getElementById('taskSelect').addEventListener('change', async (e) => {
+  const id = e.target.value;
+  currentTask = id ? tasks.find(t => String(t.id) === String(id)) : null;
+  resetSession();
+  await refreshSavedForDate();
+});
+
+document.getElementById('deptSelect').addEventListener('change', async (e) => {
+  currentDept = e.target.value;
+  selectedEmployees = [];
+  await loadSavedForDept();
+  renderEmployeeList();
+  renderResults();
+  updateVisibility();
+  // Focus on search
+  setTimeout(() => {
+    const s = document.getElementById('empSearch');
+    if (s) s.focus();
+  }, 150);
+});
+
+/* ===================== Session ===================== */
+function resetSession() {
+  currentDept = '';
+  selectedEmployees = [];
+  document.getElementById('deptSelect').value = '';
+  renderResults();
+  updateVisibility();
+}
+
+async function refreshSavedForDate() {
+  savedSpotChecks = await DB.getAll('spot_checks') || [];
+  savedResults   = await DB.getAll('spot_check_results') || [];
+  renderDeptSummary();
+  renderOverallSummary();
+  renderAllEmpTable();
+  renderDontKnowTable();
+}
+
+async function loadSavedForDept() {
+  if (!spotDate || !currentTask || !currentDept) {
+    selectedEmployees = [];
+    return;
+  }
+  const sc = savedSpotChecks.find(s =>
+    s.date === spotDate && String(s.task_id) === String(currentTask.id));
+  if (!sc) { selectedEmployees = []; return; }
+
+  const res = savedResults.filter(r =>
+    String(r.spot_check_id) === String(sc.id) && r.department === currentDept);
+
+  selectedEmployees = res.map(r => {
+    const emp = employees.find(e => String(e.id) === String(r.employee_id));
+    return {
+      employee_id: String(r.employee_id),
+      name: emp?.name || `#${r.employee_id}`,
+      position: emp?.position || '',
+      level: emp?.level || '',
+      department: r.department,
+      result: r.result,
+      resultId: r.id,
+      fromDb: true
+    };
+  });
+}
+
+/* ===================== ✅ Render Employee List (Direct Search) ===================== */
+function renderEmployeeList() {
+  const input = document.getElementById('empSearch');
+  const q = (input?.value || '').trim().toLowerCase();
+  const list = document.getElementById('empList');
+  const searchCountEl = document.getElementById('searchCount');
+
+  if (!currentDept) {
+    list.innerHTML = '<div class="empty">Select a department first</div>';
+    if (searchCountEl) searchCountEl.style.display = 'none';
+    return;
+  }
+
+  const selectedIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
+
+  let filtered = employees.filter(e =>
+    e.department === currentDept && !isLevelExcluded(e.level));
+
+  if (q) {
+    filtered = filtered.filter(e => {
+      const firstName = extractFirstName(e.name).toLowerCase();
+      return firstName.startsWith(q);
+    });
+  }
+
+  filtered.sort((a,b) => {
+    const aS = selectedIds.has(String(a.id)) ? 1 : 0;
+    const bS = selectedIds.has(String(b.id)) ? 1 : 0;
+    if (aS !== bS) return aS - bS;
+    return a.name.localeCompare(b.name, 'en');
+  });
+
+  const totalInDept = employees.filter(e =>
+    e.department === currentDept && !isLevelExcluded(e.level)).length;
+
+  document.getElementById('deptCount').textContent =
+    q ? `${filtered.length} match / ${totalInDept} total` : `${totalInDept} employees (excl. filtered levels)`;
+
+  if (searchCountEl) {
+    if (q) {
+      searchCountEl.textContent = `${filtered.length} found`;
+      searchCountEl.style.display = 'inline-block';
+    } else {
+      searchCountEl.style.display = 'none';
+    }
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = q
+      ? `<div class="empty">No employees starting with "<strong>${escapeHtml(q)}</strong>"</div>`
+      : '<div class="empty">No employees in this department</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.slice(0, 300).map(e => {
+    const isSel = selectedIds.has(String(e.id));
+    const firstName = extractFirstName(e.name);
+    const restName = e.name.substring(firstName.length).trim();
+
+    let nameHTML;
+    if (q && firstName.toLowerCase().startsWith(q)) {
+      const matched = firstName.substring(0, q.length);
+      const remaining = firstName.substring(q.length);
+      nameHTML = `<span class="match-highlight">${escapeHtml(matched)}</span>${escapeHtml(remaining)}${restName ? ' ' + escapeHtml(restName) : ''}`;
+    } else {
+      nameHTML = escapeHtml(e.name);
+    }
+
+    return `
+      <label class="emp-item ${isSel?'selected':''}">
+        <input type="checkbox" ${isSel?'checked':''} onchange="toggleEmployee('${e.id}')">
+        <div class="emp-info">
+          <div class="emp-name">${nameHTML}</div>
+          <div class="emp-meta">${escapeHtml(e.position || '—')}${e.level?' • '+escapeHtml(e.level):''}</div>
+        </div>
+        <span class="emp-id">#${e.id}</span>
+      </label>
+    `;
+  }).join('');
+}
+
+window.toggleEmployee = function(empId) {
+  empId = String(empId);
+  const idx = selectedEmployees.findIndex(s => String(s.employee_id) === empId);
+  if (idx >= 0) {
+    selectedEmployees.splice(idx, 1);
+  } else {
+    const emp = employees.find(e => String(e.id) === empId);
+    if (!emp) return;
+    selectedEmployees.push({
+      employee_id: empId,
+      name: emp.name,
+      position: emp.position,
+      level: emp.level,
+      department: emp.department,
+      result: 'KNOW',
+      fromDb: false
+    });
+  }
+  renderEmployeeList();
+  renderResults();
+};
+
+/* ===================== Render Results ===================== */
+function renderResults() {
+  const list = document.getElementById('resultList');
+  document.getElementById('selectedCount').textContent = `${selectedEmployees.length} employees`;
+
+  if (selectedEmployees.length === 0) {
+    list.innerHTML = '<div class="empty">No employees recorded yet</div>';
+    renderLiveSummary();
+    return;
+  }
+
+  list.innerHTML = selectedEmployees.map((s, i) => `
+    <div class="result-row">
+      <div style="flex:1;min-width:0">
+        <div class="rname">${escapeHtml(s.name)}</div>
+        <div class="rmeta">${escapeHtml(s.position || '—')} <span class="rmeta-sub">#${s.employee_id}</span></div>
+      </div>
+      <div class="toggle-group">
+        <button class="toggle-btn know ${s.result==='KNOW'?'active':''}"
+                onclick="setResult(${i}, 'KNOW')">🟢 Know</button>
+        <button class="toggle-btn dont ${s.result==='DONT_KNOW'?'active':''}"
+                onclick="setResult(${i}, 'DONT_KNOW')">🔴 Don't Know</button>
+      </div>
+      <button class="btn-remove" onclick="removeEmployee(${i})" title="Remove">✕</button>
+    </div>
+  `).join('');
+
+  renderLiveSummary();
+}
+
+window.setResult = function(idx, result) {
+  if (selectedEmployees[idx]) {
+    selectedEmployees[idx].result = result;
+    renderResults();
+  }
+};
+window.removeEmployee = function(idx) {
+  selectedEmployees.splice(idx, 1);
+  renderEmployeeList();
+  renderResults();
+};
+window.setAllKnow = function() {
+  selectedEmployees.forEach(s => s.result = 'KNOW');
+  renderResults();
+  toast('✓ All marked as "Know"');
+};
+window.clearSelected = function() {
+  if (!confirm('Clear all recorded employees for this department?')) return;
+  selectedEmployees = [];
+  renderEmployeeList();
+  renderResults();
+};
+
+/* ===================== Live Summary ===================== */
+function renderLiveSummary() {
+  const total = selectedEmployees.length;
+  const know  = selectedEmployees.filter(s => s.result === 'KNOW').length;
+  const dont  = total - know;
+  const pct   = total ? (know / total * 100).toFixed(2) : '0.00';
+
+  document.getElementById('liveSummary').innerHTML = `
+    <div class="summary-box"><div class="lbl">Checked</div><div class="val">${total}</div></div>
+    <div class="summary-box know"><div class="lbl">Know</div><div class="val">${know}</div></div>
+    <div class="summary-box dont"><div class="lbl">Don't Know</div><div class="val">${dont}</div></div>
+    <div class="summary-box pct"><div class="lbl">Percentage</div><div class="val">${pct}%</div></div>
+  `;
+}
+
+/* ===================== Visibility ===================== */
+function updateVisibility() {
+  const ready = spotDate && currentTask && currentDept;
+  document.getElementById('addSection').style.display    = ready ? 'block' : 'none';
+  document.getElementById('resultSection').style.display = ready ? 'block' : 'none';
+  document.getElementById('saveBar').style.display       = ready ? 'flex'  : 'none';
+}
+
+/* ===================== Save ===================== */
+window.saveDeptResults = async function() {
+  if (!spotDate || !currentTask || !currentDept) {
+    toast('Select date, task and department', 'error'); return;
+  }
+  if (selectedEmployees.length === 0) {
+    toast('No employees to save', 'warn'); return;
+  }
+
+  try {
+    let sc = savedSpotChecks.find(s =>
+      s.date === spotDate && String(s.task_id) === String(currentTask.id));
+
+    if (!sc) {
+      const created = await DB.insert('spot_checks', {
+        date: spotDate,
+        task_id: String(currentTask.id),
+        task_name: currentTask.name,
+        created_by: currentUser?.uid || 'unknown',
+        created_at: Date.now(),
+        updated_at: Date.now()
+      });
+
+      if (!created) throw new Error('فشل إنشاء الـ Spot Check');
+
+      sc = {
+        id: String(created),
+        date: spotDate,
+        task_id: String(currentTask.id),
+        task_name: currentTask.name,
+        created_by: currentUser?.uid || 'unknown'
+      };
+      savedSpotChecks.push(sc);
+
+      try { savedSpotChecks = await DB.getAll('spot_checks') || []; }
+      catch (e) { console.warn('Could not refresh spot_checks:', e); }
+    }
+
+    let added = 0, updated = 0;
+    for (const s of selectedEmployees) {
+      const existing = savedResults.find(r =>
+        String(r.spot_check_id) === String(sc.id) &&
+        String(r.employee_id) === String(s.employee_id));
+
+      if (existing) {
+        if (existing.result !== s.result) {
+          existing.result = s.result;
+          existing.updated_at = Date.now();
+          await DB.update('spot_check_results', existing);
+          updated++;
+        }
+      } else {
+        const created = await DB.insert('spot_check_results', {
+          spot_check_id: String(sc.id),
+          employee_id: String(s.employee_id),
+          department: String(currentDept),
+          result: s.result,
+          created_at: Date.now(),
+          updated_at: Date.now()
+        });
+
+        if (created) {
+          savedResults.push({
+            id: String(created),
+            spot_check_id: String(sc.id),
+            employee_id: String(s.employee_id),
+            department: String(currentDept),
+            result: s.result
+          });
+          added++;
+        }
+      }
+    }
+
+    try {
+      savedSpotChecks = await DB.getAll('spot_checks') || [];
+      savedResults    = await DB.getAll('spot_check_results') || [];
+    } catch (e) { console.warn('Reload failed:', e); }
+
+    renderDeptSummary();
+    renderOverallSummary();
+    renderAllEmpTable();
+    renderDontKnowTable();
+    toast(`✅ Saved — Added: ${added}, Updated: ${updated}`);
+  } catch (err) {
+    console.error('❌ Save failed:', err);
+    toast('Save failed: ' + (err.message || ''), 'error');
+  }
+};
+
+/* ===================== Next Dept ===================== */
+window.goNextDept = async function() {
+  if (!currentDept) return;
+  const idx = departments.indexOf(currentDept);
+  if (idx === -1) return;
+  const next = departments[(idx + 1) % departments.length];
+  document.getElementById('deptSelect').value = next;
+  currentDept = next;
+  selectedEmployees = [];
+  await loadSavedForDept();
+  renderEmployeeList();
+  renderResults();
+  updateVisibility();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toast(`➡️ ${next}`);
+};
+
+/* ===================== Dept Stats ===================== */
+function getDeptStats() {
+  if (!spotDate || !currentTask) return [];
+  const sc = savedSpotChecks.find(s =>
+    s.date === spotDate && String(s.task_id) === String(currentTask.id));
+  if (!sc) return [];
+
+  const byDept = {};
+  savedResults.filter(r => String(r.spot_check_id) === String(sc.id)).forEach(r => {
+    if (!byDept[r.department]) byDept[r.department] = { total:0, know:0 };
+    byDept[r.department].total++;
+    if (r.result === 'KNOW') byDept[r.department].know++;
+  });
+
+  return Object.entries(byDept).map(([dept, v]) => ({
+    department: dept,
+    total: v.total,
+    know: v.know,
+    dont: v.total - v.know,
+    pct: v.total ? (v.know/v.total*100) : 0
+  }));
+}
+
+/* ===================== Department Summary ===================== */
+function renderDeptSummary() {
+  const body = document.getElementById('deptSummaryBody');
+  const headerTask = document.getElementById('deptHeaderTask');
+  const headerDate = document.getElementById('deptHeaderDate');
+
+  headerTask.textContent = currentTask?.name || '—';
+  headerDate.textContent = spotDate ? fmtDate(spotDate) : '—';
+
+  const stats = getDeptStats();
+  if (stats.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" class="empty">No data for this day</td></tr>';
+    renderTotalChart();
+    return;
+  }
+
+  const sorted = [...stats].sort((a,b) => {
+    let va = a[sortKey], vb = b[sortKey];
+    if (sortKey === 'department') {
+      return sortDir === 'asc' ? va.localeCompare(vb, 'en') : vb.localeCompare(va, 'en');
+    }
+    return sortDir === 'asc' ? va - vb : vb - va;
+  });
+
+  body.innerHTML = sorted.map((s, i) => {
+    const pctCls = s.pct >= 95 ? 'good' : s.pct >= 80 ? 'mid' : 'bad';
+    const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const rank = sortKey === 'pct' && sortDir === 'desc'
+      ? `<span class="rank-badge ${rankCls}">${i+1}</span>` : (i+1);
+    return `<tr>
+      <td>${rank}</td>
+      <td class="dept-cell">${escapeHtml(s.department)}</td>
+      <td>${s.total}</td>
+      <td style="color:#38a169;font-weight:700">${s.know}</td>
+      <td style="color:#e53e3e;font-weight:700">${s.dont}</td>
+      <td class="pct-cell ${pctCls}">${s.pct.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+
+  const gT = stats.reduce((a,b)=>a+b.total,0);
+  const gK = stats.reduce((a,b)=>a+b.know,0);
+  const gD = gT - gK;
+  const gP = gT ? (gK/gT*100).toFixed(2) : '0.00';
+  body.innerHTML += `<tr class="total-row">
+    <td>—</td>
+    <td class="dept-cell">TOTAL</td>
+    <td>${gT}</td>
+    <td style="color:#38a169">${gK}</td>
+    <td style="color:#e53e3e">${gD}</td>
+    <td class="pct-cell good">${gP}%</td>
+  </tr>`;
+
+  renderTotalChart();
+}
+
+/* ===================== Sort Handlers (Dept Table) ===================== */
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.getAttribute('data-sort');
+    if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else { sortKey = key; sortDir = key === 'department' ? 'asc' : 'desc'; }
+    document.querySelectorAll('th[data-sort]').forEach(t => {
+      t.classList.remove('sorted');
+      const ic = t.querySelector('.sort-icon');
+      if (ic) ic.textContent = '↕';
+    });
+    th.classList.add('sorted');
+    const ic = th.querySelector('.sort-icon');
+    if (ic) ic.textContent = sortDir === 'asc' ? '↑' : '↓';
+    renderDeptSummary();
+  });
+});
+
+/* ===================== ✅ All Employees Table (Know + Don't Know) ===================== */
+function getAllEmployeesData() {
+  if (!spotDate || !currentTask) return [];
+  const sc = savedSpotChecks.find(s =>
+    s.date === spotDate && String(s.task_id) === String(currentTask.id));
+  if (!sc) return [];
+
+  const allResults = savedResults.filter(r =>
+    String(r.spot_check_id) === String(sc.id));
+
+  return allResults.map(r => {
+    const emp = employees.find(e => String(e.id) === String(r.employee_id));
+    return {
+      department: r.department || emp?.department || '—',
+      employee_id: String(r.employee_id),
+      name: emp?.name || `#${r.employee_id}`,
+      position: emp?.position || '—',
+      level: emp?.level || '',
+      result: r.result,
+      resultId: r.id
+    };
+  });
+}
+
+window.setAllEmpFilter = function(filter) {
+  aeFilter = filter;
+  // Update UI
+  document.getElementById('filterAll').style.opacity = filter === 'all' ? '1' : '.5';
+  document.getElementById('filterKnow').style.opacity = filter === 'KNOW' ? '1' : '.5';
+  document.getElementById('filterDont').style.opacity = filter === 'DONT_KNOW' ? '1' : '.5';
+  renderAllEmpTable();
+};
+
+function renderAllEmpTable() {
+  const section = document.getElementById('allEmpSection');
+  const body = document.getElementById('allEmpBody');
+  const badge = document.getElementById('allEmpBadge');
+
+  let list = getAllEmployeesData();
+
+  if (list.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+
+  // Apply filter
+  if (aeFilter === 'KNOW') list = list.filter(x => x.result === 'KNOW');
+  else if (aeFilter === 'DONT_KNOW') list = list.filter(x => x.result === 'DONT_KNOW');
+
+  badge.textContent = `${list.length} / ${getAllEmployeesData().length} employees`;
+
+  // Sort
+  const sorted = [...list].sort((a, b) => {
+    let va = a[aeSortKey], vb = b[aeSortKey];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return aeSortDir === 'asc' ? -1 : 1;
+    if (va > vb) return aeSortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  if (sorted.length === 0) {
+    body.innerHTML = `<tr><td colspan="7" class="empty">No employees match this filter</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = sorted.map((item, idx) => {
+    const isKnow = item.result === 'KNOW';
+    const rowCls = isKnow ? 'row-know' : 'row-dont';
+    const badgeCls = isKnow ? 'know' : 'dont';
+    const badgeTxt = isKnow ? '🟢 Know' : '🔴 Don\'t Know';
+    const empEscaped = escapeHtml(item.name).replace(/'/g, "\\'");
+
+    return `<tr class="${rowCls}">
+      <td>${idx + 1}</td>
+      <td class="dept-cell">${escapeHtml(item.department)}</td>
+      <td><strong>#${item.employee_id}</strong></td>
+      <td style="text-align:left">${escapeHtml(item.name)}</td>
+      <td style="text-align:left">${escapeHtml(item.position)}</td>
+      <td><span class="emp-status-badge ${badgeCls}">${badgeTxt}</span></td>
+      <td>
+        <div class="row-actions">
+          ${isKnow
+            ? `<button class="btn-action toggle-d" onclick="changeResult('${item.resultId}', 'DONT_KNOW')" title="Mark as Don't Know">🔴</button>`
+            : `<button class="btn-action toggle-k" onclick="changeResult('${item.resultId}', 'KNOW')" title="Mark as Know">🟢</button>`
+          }
+          <button class="btn-action edit" onclick="editResultRow('${item.resultId}')" title="Edit">✏️</button>
+          <button class="btn-action delete" onclick="deleteResultRow('${item.resultId}', '${empEscaped}')" title="Delete">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ===================== Change Result (Direct from table) ===================== */
+window.changeResult = async function(resultId, newResult) {
+  try {
+    const result = savedResults.find(r => String(r.id) === String(resultId));
+    if (!result) {
+      toast('Result not found', 'error'); return;
+    }
+    if (result.result === newResult) return;
+
+    result.result = newResult;
+    result.updated_at = Date.now();
+    await DB.update('spot_check_results', result);
+
+    // تحديث محلي
+    const idx = savedResults.findIndex(r => String(r.id) === String(resultId));
+    if (idx >= 0) savedResults[idx].result = newResult;
+
+    renderDeptSummary();
+    renderOverallSummary();
+    renderAllEmpTable();
+    renderDontKnowTable();
+
+    toast(`✅ Changed to ${newResult === 'KNOW' ? 'Know' : "Don't Know"}`);
+  } catch (err) {
+    console.error(err);
+    toast('Failed to update: ' + (err.message || ''), 'error');
+  }
+};
+
+/* ===================== Edit Result (Choose via prompt) ===================== */
+window.editResultRow = async function(resultId) {
+  const result = savedResults.find(r => String(r.id) === String(resultId));
+  if (!result) { toast('Result not found', 'error'); return; }
+
+  const currentLabel = result.result === 'KNOW' ? 'Know' : "Don't Know";
+  const choice = confirm(`Current: ${currentLabel}\n\nClick OK to change to "${result.result === 'KNOW' ? "Don't Know" : 'Know'}", Cancel to keep.`);
+  if (choice) {
+    await window.changeResult(resultId, result.result === 'KNOW' ? 'DONT_KNOW' : 'KNOW');
+  }
+};
+
+/* ===================== Delete Result Row ===================== */
+window.deleteResultRow = async function(resultId, empName) {
+  if (!confirm(`Delete result for:\n"${empName}"?\n\nThis cannot be undone.`)) return;
+
+  try {
+    await DB.delete('spot_check_results', resultId);
+
+    // تحديث محلي
+    const idx = savedResults.findIndex(r => String(r.id) === String(resultId));
+    if (idx >= 0) savedResults.splice(idx, 1);
+
+    // إذا كان الموظف في selectedEmployees (نفس القسم) → أزله
+    const removed = employees.find(e => String(e.id) === String(savedResults?.[0]?.employee_id));
+    // reload selected for current dept
+    await loadSavedForDept();
+    renderEmployeeList();
+    renderResults();
+
+    renderDeptSummary();
+    renderOverallSummary();
+    renderAllEmpTable();
+    renderDontKnowTable();
+    toast('🗑️ Result deleted');
+  } catch (err) {
+    console.error(err);
+    toast('Failed to delete: ' + (err.message || ''), 'error');
+  }
+};
+
+/* ===================== Sort Handlers (All Emp Table) ===================== */
+function initAllEmpSortHandlers() {
+  document.querySelectorAll('th[data-ae-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.getAttribute('data-ae-sort');
+      if (aeSortKey === key) aeSortDir = aeSortDir === 'asc' ? 'desc' : 'asc';
+      else { aeSortKey = key; aeSortDir = 'asc'; }
+      document.querySelectorAll('th[data-ae-sort]').forEach(t => {
+        t.classList.remove('sorted');
+        const ic = t.querySelector('.ae-sort-icon');
+        if (ic) ic.textContent = '↕';
+      });
+      th.classList.add('sorted');
+      const ic = th.querySelector('.ae-sort-icon');
+      if (ic) ic.textContent = aeSortDir === 'asc' ? '↑' : '↓';
+      renderAllEmpTable();
+    });
+  });
+}
+
+/* ===================== Overall Summary ===================== */
+function renderOverallSummary() {
+  document.getElementById('overallDate').textContent = spotDate ? fmtDate(spotDate) : '';
+
+  if (!spotDate || !currentTask) {
+    document.getElementById('overallSummary').innerHTML = '<div class="empty">Select date and task</div>';
+    return;
+  }
+
+  const sc = savedSpotChecks.find(s =>
+    s.date === spotDate && String(s.task_id) === String(currentTask.id));
+  if (!sc) {
+    document.getElementById('overallSummary').innerHTML = '<div class="empty">No data available</div>';
+    return;
+  }
+
+  const results = savedResults.filter(r => String(r.spot_check_id) === String(sc.id));
+  const total = results.length;
+  const know = results.filter(r => r.result === 'KNOW').length;
+  const dont = total - know;
+  const pct = total ? (know/total*100).toFixed(2) : '0.00';
+
+  document.getElementById('overallSummary').innerHTML = `
+    <div class="summary-box"><div class="lbl">Total Checked</div><div class="val">${total}</div></div>
+    <div class="summary-box know"><div class="lbl">Know</div><div class="val">${know}</div></div>
+    <div class="summary-box dont"><div class="lbl">Don't Know</div><div class="val">${dont}</div></div>
+    <div class="summary-box pct"><div class="lbl">Overall %</div><div class="val">${pct}%</div></div>
+  `;
+}
+
+/* ===================== Don't Know Employees Table ===================== */
+function getDontKnowEmployees() {
+  if (!spotDate || !currentTask) return [];
+  const sc = savedSpotChecks.find(s =>
+    s.date === spotDate && String(s.task_id) === String(currentTask.id));
+  if (!sc) return [];
+
+  const dontKnowResults = savedResults.filter(r =>
+    String(r.spot_check_id) === String(sc.id) && r.result === 'DONT_KNOW');
+
+  return dontKnowResults.map(r => {
+    const emp = employees.find(e => String(e.id) === String(r.employee_id));
+    return {
+      department: r.department || emp?.department || '—',
+      employee_id: String(r.employee_id),
+      name: emp?.name || `#${r.employee_id}`,
+      position: emp?.position || '—',
+      level: emp?.level || ''
+    };
+  });
+}
+
+function renderDontKnowTable() {
+  const section = document.getElementById('dontKnowSection');
+  const body = document.getElementById('dontKnowBody');
+  const badge = document.getElementById('dontKnowBadge');
+
+  const list = getDontKnowEmployees();
+  if (list.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  badge.textContent = `${list.length} employee${list.length !== 1 ? 's' : ''}`;
+
+  const sorted = [...list].sort((a, b) => {
+    let va = a[dkSortKey], vb = b[dkSortKey];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return dkSortDir === 'asc' ? -1 : 1;
+    if (va > vb) return dkSortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const byDept = {};
+  sorted.forEach(item => {
+    const dept = item.department || '—';
+    if (!byDept[dept]) byDept[dept] = [];
+    byDept[dept].push(item);
+  });
+
+  const deptKeys = Object.keys(byDept).sort((a,b) => a.localeCompare(b, 'en'));
+  let html = '';
+  let runningIdx = 0;
+
+  deptKeys.forEach(dept => {
+    const count = byDept[dept].length;
+    html += `<tr class="dk-dept-header"><td colspan="5">📂 ${escapeHtml(dept)} <span style="float:right;background:#fc8181;color:#fff;padding:.15rem .6rem;border-radius:1rem;font-size:.75rem">${count}</span></td></tr>`;
+    byDept[dept].forEach(item => {
+      runningIdx++;
+      html += `<tr class="dk-emp-row">
+        <td>${runningIdx}</td>
+        <td class="dept-cell">${escapeHtml(item.department)}</td>
+        <td><strong>#${item.employee_id}</strong></td>
+        <td style="text-align:left">${escapeHtml(item.name)}</td>
+        <td style="text-align:left">${escapeHtml(item.position)}</td>
+      </tr>`;
+    });
+  });
+
+  body.innerHTML = html;
+}
+
+function initDontKnowSortHandlers() {
+  document.querySelectorAll('th[data-dk-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.getAttribute('data-dk-sort');
+      if (dkSortKey === key) dkSortDir = dkSortDir === 'asc' ? 'desc' : 'asc';
+      else { dkSortKey = key; dkSortDir = 'asc'; }
+      document.querySelectorAll('th[data-dk-sort]').forEach(t => {
+        t.classList.remove('sorted');
+        const ic = t.querySelector('.dk-sort-icon');
+        if (ic) ic.textContent = '↕';
+      });
+      th.classList.add('sorted');
+      const ic = th.querySelector('.dk-sort-icon');
+      if (ic) ic.textContent = dkSortDir === 'asc' ? '↑' : '↓';
+      renderDontKnowTable();
+    });
+  });
+}
+
+/* ===================== Total Chart ===================== */
+function renderTotalChart() {
+  const section = document.getElementById('chartSection');
+  const stats = getDeptStats();
+
+  if (!stats || stats.length === 0) {
+    section.style.display = 'none';
+    if (totalChartInstance) { totalChartInstance.destroy(); totalChartInstance = null; }
+    return;
+  }
+
+  section.style.display = 'block';
+  document.getElementById('chartDate').textContent = spotDate ? fmtDate(spotDate) : '';
+
+  const totalEmployees = stats.reduce((a,b) => a + b.total, 0);
+  const totalKnow      = stats.reduce((a,b) => a + b.know, 0);
+  const totalDont      = totalEmployees - totalKnow;
+  const totalPct       = totalEmployees ? +(totalKnow / totalEmployees * 100).toFixed(2) : 0;
+
+  const ctx = document.getElementById('totalChart').getContext('2d');
+  if (totalChartInstance) totalChartInstance.destroy();
+
+  const valueLabelsPlugin = {
+    id: 'valueLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      ctx.save();
+      ctx.font = 'bold 16px Tajawal, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      chart.data.datasets.forEach((dataset, dsIdx) => {
+        const meta = chart.getDatasetMeta(dsIdx);
+        if (meta.hidden) return;
+        meta.data.forEach((element, i) => {
+          const value = dataset.data[i];
+          if (value == null) return;
+          let label = '', color = '#2c5282';
+          if (dataset.label === 'Percentage %') { label = value + '%'; color = '#b7791f'; }
+          else label = String(value);
+          const x = element.x, y = element.y;
+          const offset = dataset.type === 'line' ? -14 : -8;
+          ctx.save();
+          const tw = ctx.measureText(label).width;
+          ctx.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx.fillRect(x - tw/2 - 4, y + offset - 18, tw + 8, 20);
+          ctx.restore();
+          ctx.fillStyle = color;
+          ctx.fillText(label, x, y + offset);
+        });
+      });
+      ctx.restore();
+    }
+  };
+
+  totalChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [''],
+      datasets: [
+        { label: 'Number of employees', data: [totalEmployees], backgroundColor: '#4299e1', borderColor: '#3182ce', borderWidth: 2, order: 1, yAxisID: 'y1', barPercentage: 0.6, categoryPercentage: 0.7 },
+        { label: 'Know', data: [totalKnow], backgroundColor: '#ed8936', borderColor: '#dd6b20', borderWidth: 2, order: 2, yAxisID: 'y1', barPercentage: 0.6, categoryPercentage: 0.7 },
+        { label: "Don't Know", data: [totalDont], backgroundColor: '#a0aec0', borderColor: '#718096', borderWidth: 2, order: 3, yAxisID: 'y1', barPercentage: 0.6, categoryPercentage: 0.7 },
+        { label: 'Percentage %', data: [totalPct], type: 'line', borderColor: '#d69e2e', backgroundColor: '#fefcbf', borderWidth: 3, pointRadius: 10, pointBackgroundColor: '#fefcbf', pointBorderColor: '#d69e2e', pointBorderWidth: 3, pointHoverRadius: 12, tension: 0, order: 0, yAxisID: 'y2' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 40, right: 20, left: 10, bottom: 10 } },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Tajawal', size: 12, weight: '700' }, usePointStyle: true, pointStyle: 'rectRounded', padding: 12, color: '#2d3748', boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#1e3a5f',
+          titleFont: { family: 'Tajawal', size: 14 },
+          bodyFont: { family: 'Tajawal', size: 13 },
+          padding: 12,
+          callbacks: {
+            label: (ctx) => {
+              const label = ctx.dataset.label || '';
+              const val = ctx.parsed.y;
+              if (label.includes('%')) return ` ${label}: ${val}%`;
+              return ` ${label}: ${val}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 14, weight: '700' }, color: '#4a5568' } },
+        y1: { type: 'linear', position: 'left', beginAtZero: true, suggestedMax: Math.max(totalEmployees, totalKnow, 1) * 1.2,
+          title: { display: true, text: 'Number of Employees', font: { family: 'Tajawal', size: 11, weight: '700' }, color: '#4a5568' },
+          ticks: { font: { family: 'Tajawal', size: 11 }, color: '#718096', precision: 0, stepSize: Math.max(10, Math.ceil(Math.max(totalEmployees, 100) / 5 / 10) * 10) },
+          grid: { color: '#edf2f7' } },
+        y2: { type: 'linear', position: 'right', beginAtZero: true, max: 100,
+          title: { display: true, text: 'Percentage %', font: { family: 'Tajawal', size: 11, weight: '700' }, color: '#d69e2e' },
+          ticks: { font: { family: 'Tajawal', size: 11 }, color: '#d69e2e', callback: v => v + '%', stepSize: 20 },
+          grid: { drawOnChartArea: false } }
+      }
+    },
+    plugins: [valueLabelsPlugin]
+  });
+}
+
+/* ===================== Refresh ===================== */
+window.refreshData = async function() {
+  toast('⏳ Refreshing...', 'info');
+  try {
+    if (DB.refresh) {
+      await Promise.all([
+        DB.refresh('employees').catch(()=>null),
+        DB.refresh('tasks').catch(()=>null),
+        DB.refresh('spot_checks').catch(()=>null),
+        DB.refresh('spot_check_results').catch(()=>null)
+      ]);
+    }
+
+    const keepYear = filterYear, keepMonth = filterMonth, keepDay = filterDay;
+    const keepTaskId = currentTask?.id, keepDept = currentDept;
+
+    await loadAll();
+
+    if (keepYear) document.getElementById('filterYear').value = keepYear;
+    if (keepMonth) document.getElementById('filterMonth').value = keepMonth;
+    if (keepDay) {
+      rebuildDayOptions();
+      const dim = new Date(parseInt(keepYear), parseInt(keepMonth), 0).getDate();
+      const safeDay = Math.min(parseInt(keepDay), dim);
+      document.getElementById('filterDay').value = String(safeDay).padStart(2,'0');
+    }
+    filterYear = document.getElementById('filterYear').value;
+    filterMonth = document.getElementById('filterMonth').value;
+    filterDay = document.getElementById('filterDay').value;
+    updateSpotDateFromFilters();
+    renderTaskSelectForDate(spotDate);
+
+    if (keepTaskId) {
+      const found = tasks.find(t => String(t.id) === String(keepTaskId));
+      if (found) {
+        currentTask = found;
+        document.getElementById('taskSelect').value = found.id;
+      }
+    }
+
+    document.getElementById('deptSelect').innerHTML =
+      '<option value="">— Select Department —</option>' +
+      departments.map(d => `<option value="${d}">${d}</option>`).join('');
+    if (keepDept && departments.includes(keepDept)) {
+      currentDept = keepDept;
+      document.getElementById('deptSelect').value = keepDept;
+      await loadSavedForDept();
+      renderEmployeeList();
+      renderResults();
+    }
+
+    await refreshSavedForDate();
+    updateVisibility();
+    toast('✅ Refreshed');
+  } catch (err) {
+    console.error('Refresh error:', err);
+    toast('❌ Refresh failed', 'error');
+  }
+};
+
+/* ===================== Logout ===================== */
+window.logout = async function() {
+  if (confirm('Log out?')) {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  }
+};
+
+/* ===================== ✅ ربط البحث المباشر ===================== */
+function initSearchInput() {
+  const input = document.getElementById('empSearch');
+  if (!input) {
+    console.error('❌ empSearch input not found!');
+    return;
+  }
+
+  console.log('✅ Search input initialized');
+
+  // بحث فوري مع كل حرف
+  input.addEventListener('input', () => {
+    const q = input.value;
+    console.log('🔍 Search query:', q);
+    renderEmployeeList();
+  });
+
+  // Escape لمسح البحث
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      input.value = '';
+      renderEmployeeList();
+    }
+  });
+}
+
+// ✅ صدّر الدوال على window أيضاً (للاحتياط)
+window.renderEmployeeList = renderEmployeeList;
+window.toggleEmployee = toggleEmployee;
+window.setResult = setResult;
+window.removeEmployee = removeEmployee;
+window.setAllKnow = setAllKnow;
+window.clearSelected = clearSelected;
+window.saveDeptResults = saveDeptResults;
+window.goNextDept = goNextDept;
+window.refreshData = refreshData;
+window.logout = logout;
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+
+  initDateFilters();
+  initSearchInput();   // ✅ جديد
+
+  await loadAll();
+  document.getElementById('deptSelect').innerHTML =
+    '<option value="">— Select Department —</option>' +
+    departments.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  await refreshSavedForDate();
+  updateVisibility();
+
+  initAllEmpSortHandlers();
+  initDontKnowSortHandlers();
+  setAllEmpFilter('all');
+
+  console.log('✅ Spot Check ready');
+});
+</script>
+</body>
+</html>
