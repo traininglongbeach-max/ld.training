@@ -9,7 +9,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
     
     <!-- السكريبتات بنظام Modules للاتصال بالفيربيز -->
@@ -390,6 +389,18 @@
         const BDAY_CACHE_KEY = 'BirthdaysApp_DataCache';
         const COLLECTION_KEY = 'employee_birthdays_final';
 
+        // ===== دالة إزالة التكرار =====
+        function deduplicateEmployees(data) {
+            const map = new Map();
+            data.forEach(emp => {
+                const code = String(emp.code || emp.id || '').trim();
+                if (!map.has(code)) {
+                    map.set(code, emp);
+                }
+            });
+            return Array.from(map.values());
+        }
+
         // ===== 1. دالة التحميل الذكية من الذاكرة أو الفايربيز =====
         async function loadSavedData() {
             const cachedData = localStorage.getItem(BDAY_CACHE_KEY);
@@ -417,7 +428,8 @@
                     DB.getAll('employees')
                 ]);
                 
-                employees = bdayData || [];
+                // ✅ إزالة التكرار من بيانات أعياد الميلاد
+                employees = deduplicateEmployees(bdayData || []);
                 
                 const activeIds = [];
                 const empMapForCache = [];
@@ -438,7 +450,7 @@
                     activeIds: activeIds,
                     fullEmpData: empMapForCache
                 }));
-                console.log(`✅ Loaded ${employees.length} birthdays from Firebase`);
+                console.log(`✅ Loaded ${employees.length} unique birthdays from Firebase`);
             } catch (error) {
                 console.error("❌ Error loading data:", error);
                 alert("حدث خطأ أثناء جلب البيانات، سيتم محاولة استخدام آخر داتا محفوظة.");
@@ -583,7 +595,18 @@
                 return false;
             });
 
-            displayResults(filtered, month, day);
+            // ✅ إزالة التكرار: الاحتفاظ بأول ظهور فقط لكل كود موظف
+            const uniqueEmployees = [];
+            const seenIds = new Set();
+            for (const emp of filtered) {
+                const empCode = String(emp.code || emp.id || '').trim();
+                if (!seenIds.has(empCode)) {
+                    seenIds.add(empCode);
+                    uniqueEmployees.push(emp);
+                }
+            }
+
+            displayResults(uniqueEmployees, month, day);
         }
 
         function displayResults(employeesList, month, day) {
@@ -593,7 +616,18 @@
             
             if (!grid) return;
             
-            if (employeesList.length === 0) {
+            // ✅ حماية إضافية من التكرار
+            const uniqueList = [];
+            const seen = new Set();
+            for (const emp of employeesList) {
+                const empCode = String(emp.code || emp.id || '').trim();
+                if (!seen.has(empCode)) {
+                    seen.add(empCode);
+                    uniqueList.push(emp);
+                }
+            }
+            
+            if (uniqueList.length === 0) {
                 grid.innerHTML = `<div class="empty-state"><i class="fas fa-sad-tear"></i><p>No active employee birthdays found on ${monthNames[month-1]} ${day}</p></div>`;
                 if (statsDiv) statsDiv.style.display = 'none';
                 return;
@@ -601,12 +635,12 @@
 
             if (statsDiv) {
                 statsDiv.style.display = 'block';
-                statsDiv.innerHTML = `🎉 ${employeesList.length} active employee(s) celebrating on ${monthNames[month-1]} ${day} 🎉`;
+                statsDiv.innerHTML = `🎉 ${uniqueList.length} active employee(s) celebrating on ${monthNames[month-1]} ${day} 🎉`;
             }
 
             grid.innerHTML = '';
             
-            employeesList.forEach(emp => {
+            uniqueList.forEach(emp => {
                 const empCode = String(emp.code || emp.id).trim();
                 const fullData = fullEmpDataMap.get(empCode) || {};
                 const cloudPhotoUrl = fullData.photoUrl || null;
