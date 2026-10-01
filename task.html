@@ -74,6 +74,27 @@ body{background:#f0f4f8;padding-bottom:80px}
 .emp-meta{font-size:.75rem;color:#718096;margin-top:2px}
 .emp-id{background:#edf2f7;color:#4a5568;padding:.15rem .5rem;border-radius:.4rem;font-size:.72rem;font-weight:700;flex-shrink:0}
 
+/* Small photo button in employee list */
+.btn-photo-sm {
+  background: #805ad5;
+  color: #fff;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: .85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: .15s;
+  margin-left: .3rem;
+}
+.btn-photo-sm:hover {
+  background: #6b46c1;
+  transform: scale(1.1);
+}
 /* Match Highlight */
 .match-highlight{background:#fefcbf;color:#744210;font-weight:900;padding:0 2px;border-radius:3px;letter-spacing:.5px;border-bottom:2px solid #d69e2e}
 
@@ -227,6 +248,109 @@ tr.row-dont:hover{background:#fed7d7}
 .toast.info{background:#4299e1}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
+/* ===== Employee Photo Modal ===== */
+.photo-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 5000;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  animation: fadeIn .2s ease;
+}
+.photo-modal-overlay.active {
+  display: flex;
+}
+.photo-modal {
+  background: #fff;
+  border-radius: 1.2rem;
+  padding: 1.2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: popIn .25s ease;
+  position: relative;
+}
+.photo-modal img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: fill;
+  border-radius: 1rem;
+  border: 3px solid #e2e8f0;
+  background: #f7fafc;
+}
+.photo-modal .emp-photo-name {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #1e3a5f;
+  margin-top: .8rem;
+}
+.photo-modal .emp-photo-meta {
+  font-size: .82rem;
+  color: #718096;
+  margin-top: .25rem;
+}
+.photo-modal .close-btn {
+  position: absolute;
+  top: .6rem;
+  right: .6rem;
+  background: #e53e3e;
+  color: #fff;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: .15s;
+}
+.photo-modal .close-btn:hover {
+  background: #c53030;
+  transform: scale(1.05);
+}
+.photo-modal .no-photo {
+  padding: 3rem 1rem;
+  color: #a0aec0;
+  font-size: .9rem;
+  font-weight: 700;
+  background: #f7fafc;
+  border-radius: 1rem;
+  border: 3px dashed #e2e8f0;
+}
+.photo-modal .loading-photo {
+  padding: 3rem 1rem;
+  color: #4299e1;
+  font-size: .9rem;
+  font-weight: 700;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* Photo button in result row */
+.btn-photo {
+  background: #805ad5;
+  color: #fff;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: .95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: .15s;
+}
+.btn-photo:hover {
+  background: #6b46c1;
+  transform: scale(1.1);
+}
+
 /* Mobile */
 @media(max-width:768px){
   .container{padding:0 .7rem}
@@ -340,7 +464,6 @@ tr.row-dont:hover{background:#fed7d7}
     <div class="section" id="chartSection" style="display:none">
       <div class="section-title">
         <span>📈 Overall Performance</span>
-        <span class="badge" id="chartDate"></span>
       </div>
       <div class="chart-container">
         <canvas id="totalChart"></canvas>
@@ -400,7 +523,7 @@ tr.row-dont:hover{background:#fed7d7}
             <th data-ae-sort="name" style="text-align:left">Employee Name <span class="ae-sort-icon">↕</span></th>
             <th data-ae-sort="position" style="text-align:left">Position <span class="ae-sort-icon">↕</span></th>
             <th data-ae-sort="result">Result <span class="ae-sort-icon">↕</span></th>
-            <th style="width:200px">Actions</th>
+            <th style="width:230px">Actions</th>
           </tr>
         </thead>
         <tbody id="allEmpBody">
@@ -445,6 +568,16 @@ tr.row-dont:hover{background:#fed7d7}
 
 </div>
 
+<!-- Employee Photo Modal -->
+<div class="photo-modal-overlay" id="photoModal" onclick="closePhotoModal(event)">
+  <div class="photo-modal" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closePhotoModal()">✕</button>
+    <div id="photoModalContent"></div>
+    <div class="emp-photo-name" id="photoModalName"></div>
+    <div class="emp-photo-meta" id="photoModalMeta"></div>
+  </div>
+</div>
+
 <script type="module">
 import { auth, DB } from './database.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
@@ -469,9 +602,9 @@ let savedSpotChecks = [];
 let savedResults = [];
 
 // ✅ Sets و Map للبحث السريع ومنع التكرار
-let selectedEmployeeIds = new Set();   // الموظفين المعروضين حالياً في selectedEmployees
-let savedEmployeeIds = new Set();      // الموظفين الموجودين في DB لهذا القسم
-let savedResultsMap = new Map();       // resultId → result object
+let selectedEmployeeIds = new Set();
+let savedEmployeeIds = new Set();
+let savedResultsMap = new Map();
 
 // Exclude levels
 let excludedLevels = new Set();
@@ -491,7 +624,7 @@ let dkSortDir = 'asc';
 // Sort + Filter (All Employees Table)
 let aeSortKey = 'department';
 let aeSortDir = 'asc';
-let aeFilter = 'all';   // 'all' | 'KNOW' | 'DONT_KNOW'
+let aeFilter = 'all';
 
 // Chart
 let totalChartInstance = null;
@@ -630,11 +763,12 @@ async function loadAll() {
       .filter(e => (e.status || 'Active') === 'Active')
       .map(e => ({
         id: String(e.id),
-        name: e.fullName || '',
+        name: e.fullName || e.name || '',
         department: (e.department || '').trim(),
         position: (e.position || '').trim(),
         level: (e.level || '').trim(),
-        status: e.status || 'Active'
+        status: e.status || 'Active',
+        photoURL: e.photoURL || e.photoUrl || e.image || e.photo || e.avatar || e.picture || ''
       }));
 
     const set = new Set();
@@ -645,7 +779,6 @@ async function loadAll() {
     savedSpotChecks = await DB.getAll('spot_checks') || [];
     savedResults   = await DB.getAll('spot_check_results') || [];
 
-    // ✅ بناء Map للنتائج
     savedResultsMap = new Map();
     savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
 
@@ -770,7 +903,6 @@ document.getElementById('deptSelect').addEventListener('change', async (e) => {
   renderEmployeeList();
   renderResults();
   updateVisibility();
-  // Focus on search
   setTimeout(() => {
     const s = document.getElementById('empSearch');
     if (s) s.focus();
@@ -790,11 +922,9 @@ function resetSession() {
 
 /* ===================== refreshSavedForDate ===================== */
 async function refreshSavedForDate() {
-  // ✅ اقرأ من الكاش (DB.getAll) — مش من Firestore مباشرة
   savedSpotChecks = await DB.getAll('spot_checks') || [];
   savedResults   = await DB.getAll('spot_check_results') || [];
 
-  // ✅ بناء Map للبحث السريع
   savedResultsMap = new Map();
   savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
 
@@ -838,7 +968,6 @@ async function loadSavedForDept() {
     };
   });
 
-  // ✅ استخدم Set للبحث السريع
   selectedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
   savedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
 }
@@ -856,31 +985,25 @@ function renderEmployeeList() {
     return;
   }
 
-  // ✅ تقسيم البحث لكلمات (يدعم "ahmed mohamed ali")
   const queryParts = rawQuery.split(/\s+/).filter(Boolean);
-
   const selectedIds = selectedEmployeeIds;
 
   let filtered = employees.filter(e =>
     e.department === currentDept && !isLevelExcluded(e.level));
 
-  // ✅ فلترة متعددة الكلمات
   if (queryParts.length > 0) {
     filtered = filtered.filter(e => {
       const fullName = (e.name || '').toLowerCase();
-      // كل كلمة في البحث لازم تكون موجودة في الاسم الكامل
       return queryParts.every(part => fullName.includes(part));
     });
 
-    // ✅ ترتيب النتائج حسب جودة المطابقة
     filtered.sort((a, b) => {
       const aScore = getMatchScore(a.name, queryParts);
       const bScore = getMatchScore(b.name, queryParts);
-      if (aScore !== bScore) return bScore - aScore;  // الأعلى أولاً
+      if (aScore !== bScore) return bScore - aScore;
       return a.name.localeCompare(b.name, 'en');
     });
   } else {
-    // ترتيب عادي بدون بحث
     filtered.sort((a,b) => {
       const aS = selectedIds.has(String(a.id)) ? 1 : 0;
       const bS = selectedIds.has(String(b.id)) ? 1 : 0;
@@ -889,7 +1012,6 @@ function renderEmployeeList() {
     });
   }
 
-  // ✅ إذا فيه بحث، رتب المحددين أولاً
   if (queryParts.length > 0) {
     filtered.sort((a, b) => {
       const aS = selectedIds.has(String(a.id)) ? 1 : 0;
@@ -929,23 +1051,20 @@ function renderEmployeeList() {
     const nameHTML = highlightMatches(e.name, queryParts);
 
     return `
-      <label class="emp-item ${isSel?'selected':''}">
+      <div class="emp-item ${isSel?'selected':''}">
         <input type="checkbox" ${isSel?'checked':''} onchange="toggleEmployee('${e.id}')">
         <div class="emp-info">
           <div class="emp-name">${nameHTML}</div>
           <div class="emp-meta">${escapeHtml(e.position || '—')}${e.level?' • '+escapeHtml(e.level):''}</div>
         </div>
         <span class="emp-id">#${e.id}</span>
-      </label>
+        <button class="btn-photo-sm" onclick="event.preventDefault(); event.stopPropagation(); showEmployeePhoto('${e.id}')" title="View Photo">📷</button>
+      </div>
     `;
   }).join('');
 }
 
 /* ===================== ✅ حساب جودة المطابقة ===================== */
-/**
- * يحسب درجة تطابق الاسم مع كلمات البحث
- * الدرجة الأعلى = تطابق أفضل
- */
 function getMatchScore(fullName, queryParts) {
   if (!fullName || !queryParts.length) return 0;
 
@@ -955,26 +1074,22 @@ function getMatchScore(fullName, queryParts) {
   let score = 0;
 
   queryParts.forEach((part, idx) => {
-    // ✅ الاسم الأول يبدأ بالكلمة → أعلى درجة
     if (nameWords[0]?.startsWith(part)) {
       score += 1000 - idx * 10;
       return;
     }
 
-    // ✅ أي كلمة تبدأ بالبحث → درجة عالية
     const wordStarts = nameWords.findIndex(w => w.startsWith(part));
     if (wordStarts !== -1) {
       score += 500 - wordStarts * 5 - idx * 10;
       return;
     }
 
-    // ✅ الكلمة موجودة في أي مكان في الاسم → درجة متوسطة
     if (name.includes(part)) {
       score += 100 - idx * 5;
     }
   });
 
-  // ✅ مكافأة لو الاسم كامل يبدأ بالبحث كاملاً
   if (name.startsWith(queryParts.join(' '))) {
     score += 500;
   }
@@ -990,7 +1105,6 @@ function highlightMatches(fullName, queryParts) {
   const name = String(fullName);
   const lowerName = name.toLowerCase();
 
-  // ✅ جمع كل الفواصل الزمنية اللي فيها مطابقة
   const ranges = [];
 
   queryParts.forEach(part => {
@@ -1005,7 +1119,6 @@ function highlightMatches(fullName, queryParts) {
 
   if (ranges.length === 0) return escapeHtml(fullName);
 
-  // ✅ دمج الفواصل المتقاطعة
   ranges.sort((a, b) => a.start - b.start);
   const merged = [ranges[0]];
   for (let i = 1; i < ranges.length; i++) {
@@ -1017,7 +1130,6 @@ function highlightMatches(fullName, queryParts) {
     }
   }
 
-  // ✅ بناء HTML
   let result = '';
   let cursor = 0;
   merged.forEach(r => {
@@ -1038,7 +1150,6 @@ function highlightMatches(fullName, queryParts) {
 window.toggleEmployee = function(empId) {
   empId = String(empId);
 
-  // ✅ إذا كان موجود → احذفه
   if (selectedEmployeeIds.has(empId)) {
     selectedEmployeeIds.delete(empId);
     const idx = selectedEmployees.findIndex(s => String(s.employee_id) === empId);
@@ -1048,11 +1159,9 @@ window.toggleEmployee = function(empId) {
     return;
   }
 
-  // ✅ إذا مش موجود → ضيفه
   const emp = employees.find(e => String(e.id) === empId);
   if (!emp) return;
 
-  // لو موجود في DB (نفس القسم) → ضيفه بالنتيجة المحفوظة
   if (savedEmployeeIds.has(empId)) {
     const dbResult = savedResults.find(r =>
       String(r.employee_id) === empId &&
@@ -1078,7 +1187,6 @@ window.toggleEmployee = function(empId) {
     }
   }
 
-  // ✅ جديد → KNOW افتراضياً
   selectedEmployees.push({
     employee_id: empId,
     name: emp.name,
@@ -1149,7 +1257,6 @@ window.setAllKnow = function() {
 window.clearSelected = function() {
   if (!confirm('Clear unsaved employees? (Saved ones stay)')) return;
 
-  // ✅ احتفظ فقط بالموظفين المحفوظين في DB
   selectedEmployees = selectedEmployees.filter(s => s.fromDb);
   selectedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
 
@@ -1195,7 +1302,6 @@ window.saveDeptResults = async function() {
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '💾 Saving...'; }
 
   try {
-    // ✅ 1. قراءة واحدة فقط (refresh مرة واحدة، مش لكل موظف)
     try {
       await Promise.all([
         DB.refresh('spot_checks'),
@@ -1209,7 +1315,6 @@ window.saveDeptResults = async function() {
       console.warn('Refresh before save failed, using cache:', e);
     }
 
-    // ✅ 2. ID ثابت للـ spot_check: {date}_{taskId}
     const scId = `${spotDate}_${String(currentTask.id)}`;
 
     let sc = savedSpotChecks.find(s =>
@@ -1219,7 +1324,7 @@ window.saveDeptResults = async function() {
 
     if (!sc) {
       await DB.insert('spot_checks', {
-        id: scId,  // ← المفتاح
+        id: scId,
         date: spotDate,
         task_id: String(currentTask.id),
         task_name: currentTask.name,
@@ -1238,7 +1343,6 @@ window.saveDeptResults = async function() {
       savedSpotChecks.push(sc);
     }
 
-    // ✅ 3. بناء Map سريع للنتائج الحالية
     const existingMap = new Map();
     savedResults
       .filter(r => String(r.spot_check_id) === String(sc.id))
@@ -1247,7 +1351,6 @@ window.saveDeptResults = async function() {
         if (!existingMap.has(key)) existingMap.set(key, r);
       });
 
-    // ✅ 4. إزالة التكرار من selectedEmployees (احتياطي)
     const uniqueEmployees = [];
     const seenIds = new Set();
     for (const s of selectedEmployees) {
@@ -1257,7 +1360,6 @@ window.saveDeptResults = async function() {
       uniqueEmployees.push(s);
     }
 
-    // ✅ 5. حفظ النتائج
     let added = 0, updated = 0, skipped = 0;
 
     for (const s of uniqueEmployees) {
@@ -1265,7 +1367,6 @@ window.saveDeptResults = async function() {
       const existing = existingMap.get(empId);
 
       if (existing) {
-        // موجود → حدّث فقط لو النتيجة اتغيرت
         if (existing.result !== s.result) {
           existing.result = s.result;
           existing.updated_at = Date.now();
@@ -1275,7 +1376,6 @@ window.saveDeptResults = async function() {
           skipped++;
         }
       } else {
-        // ✅ جديد → ID ثابت لمنع التكرار
         const resultId = `${sc.id}_${empId}`;
         await DB.insert('spot_check_results', {
           id: resultId,
@@ -1291,7 +1391,6 @@ window.saveDeptResults = async function() {
       }
     }
 
-    // ✅ 6. reload مرة واحدة فقط
     try {
       savedSpotChecks = await DB.getAll('spot_checks') || [];
       savedResults    = await DB.getAll('spot_check_results') || [];
@@ -1299,7 +1398,6 @@ window.saveDeptResults = async function() {
       savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
     } catch (e) { console.warn('Reload failed:', e); }
 
-    // ✅ 7. إعادة رسم كامل
     await loadSavedForDept();
     renderEmployeeList();
     renderResults();
@@ -1308,7 +1406,6 @@ window.saveDeptResults = async function() {
     renderAllEmpTable();
     renderDontKnowTable();
 
-    // ✅ 8. رسالة نجاح
     const msg = `✅ Saved — Added: ${added}, Updated: ${updated}${skipped ? `, Skipped: ${skipped}` : ''}`;
     toast(msg);
   } catch (err) {
@@ -1518,6 +1615,7 @@ function renderAllEmpTable() {
             ? `<button class="btn-action toggle-d" onclick="changeResult('${item.resultId}', 'DONT_KNOW')" title="Mark as Don't Know">🔴</button>`
             : `<button class="btn-action toggle-k" onclick="changeResult('${item.resultId}', 'KNOW')" title="Mark as Know">🟢</button>`
           }
+          <button class="btn-action edit" onclick="showEmployeePhoto('${item.employee_id}')" title="View Photo">📷</button>
           <button class="btn-action edit" onclick="editResultRow('${item.resultId}')" title="Edit">✏️</button>
           <button class="btn-action delete" onclick="deleteResultRow('${item.resultId}', '${empEscaped}')" title="Delete">🗑️</button>
         </div>
@@ -1751,7 +1849,6 @@ function renderTotalChart() {
   }
 
   section.style.display = 'block';
-  document.getElementById('chartDate').textContent = spotDate ? fmtDate(spotDate) : '';
 
   const totalEmployees = stats.reduce((a,b) => a + b.total, 0);
   const totalKnow      = stats.reduce((a,b) => a + b.know, 0);
@@ -1839,6 +1936,96 @@ function renderTotalChart() {
     plugins: [valueLabelsPlugin]
   });
 }
+
+/* ===================== ✅ Employee Photo Modal (Cloudinary) ===================== */
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/so9u5deh/image/upload/';
+const PHOTO_EXTS = ['webp', 'jpg', 'jpeg', 'png', 'JPG', 'PNG', 'JPEG'];
+
+/**
+ * يحاول تحميل صورة الموظف من Cloudinary باستخدام رقم الموظف
+ * (نفس المنطق المستخدم في صفحة أعياد الميلاد)
+ */
+function findEmployeePhotoUrl(empCode) {
+  return new Promise((resolve) => {
+    const code = String(empCode).trim();
+    if (!code) { resolve(null); return; }
+
+    let i = 0;
+    function tryNext() {
+      if (i >= PHOTO_EXTS.length) { resolve(null); return; }
+      const url = `${CLOUDINARY_BASE}${code}.${PHOTO_EXTS[i]}`;
+      const testImg = new Image();
+      testImg.onload = () => resolve(url);
+      testImg.onerror = () => { i++; tryNext(); };
+      testImg.src = url;
+    }
+    tryNext();
+  });
+}
+
+window.showEmployeePhoto = async function(empId) {
+  const emp = employees.find(e => String(e.id) === String(empId));
+  if (!emp) {
+    toast('Employee not found', 'error');
+    return;
+  }
+
+  const modal = document.getElementById('photoModal');
+  const content = document.getElementById('photoModalContent');
+  const nameEl = document.getElementById('photoModalName');
+  const metaEl = document.getElementById('photoModalMeta');
+
+  // إظهار المودال مع رسالة تحميل
+  content.innerHTML = `<div class="loading-photo">⏳ Loading photo...</div>`;
+  nameEl.textContent = emp.name || '—';
+  metaEl.textContent = `${emp.position || '—'} • ${emp.department || '—'} • #${emp.id}`;
+  modal.classList.add('active');
+
+  try {
+    // 1. لو فيه photoURL محفوظ في الداتا بيز، استخدمه
+    let photoUrl = emp.photoURL || '';
+
+    // 2. لو مفيش، ابحث في Cloudinary برقم الموظف
+    if (!photoUrl) {
+      photoUrl = await findEmployeePhotoUrl(emp.id);
+    }
+
+    if (photoUrl) {
+      const img = new Image();
+      img.onload = () => {
+        content.innerHTML = '';
+        const imgEl = document.createElement('img');
+        imgEl.src = photoUrl;
+        imgEl.alt = emp.name;
+        content.appendChild(imgEl);
+      };
+      img.onerror = () => {
+        content.innerHTML = `<div class="no-photo">📷 No photo available for this employee</div>`;
+      };
+      img.src = photoUrl;
+    } else {
+      content.innerHTML = `<div class="no-photo">📷 No photo available for this employee</div>`;
+    }
+  } catch (err) {
+    console.error('Photo load error:', err);
+    content.innerHTML = `<div class="no-photo">⚠️ Failed to load photo</div>`;
+  }
+};
+
+window.closePhotoModal = function(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('photoModal').classList.remove('active');
+};
+
+// إغلاق بـ Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('photoModal');
+    if (modal && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+    }
+  }
+});
 
 /* ===================== Refresh ===================== */
 window.refreshData = async function() {
@@ -1961,7 +2148,7 @@ onAuthStateChanged(auth, async (user) => {
   initDontKnowSortHandlers();
   setAllEmpFilter('all');
 
-  console.log('✅ Spot Check ready (No duplicates + Low reads)');
+  console.log('✅ Spot Check ready (No duplicates + Low reads + Photo Modal)');
 });
 </script>
 </body>
