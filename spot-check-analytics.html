@@ -6,6 +6,7 @@
 <title>Spot Check Analytics - L&D System</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script type="module" src="auth-guard.js"></script>
 <script type="module" src="database.js"></script>
 <style>
@@ -39,12 +40,47 @@ body{background:#f0f4f8;padding-bottom:60px}
 .filter-bar .btn-primary{background:#2b7a4b;color:#fff}
 .filter-bar .btn-primary:hover{background:#1e5a38}
 .filter-bar .btn-secondary{background:#4299e1;color:#fff}
+.filter-bar .btn-secondary:hover{background:#3182ce}
 
 /* Range Buttons */
 .range-buttons{display:flex;gap:.3rem;flex-wrap:wrap}
 .range-btn{padding:.45rem .9rem;border:2px solid #e2e8f0;background:#fff;border-radius:2rem;font-size:.78rem;font-weight:700;cursor:pointer;color:#4a5568;transition:.15s}
 .range-btn:hover{background:#ebf8ff;border-color:#3182ce;color:#2c5282}
 .range-btn.active{background:#2b7a4b;border-color:#2b7a4b;color:#fff}
+
+/* ⭐ فلاتر السنة/الشهر/الأسبوع */
+.filter-bar .date-filter-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #f7fafc;
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.7rem;
+    border: 2px solid #e2e8f0;
+}
+.filter-bar .date-filter-group label {
+    font-size: 0.75rem;
+    color: #4a5568;
+    font-weight: 700;
+}
+.filter-bar .date-filter-group select {
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    background: #fff;
+    min-width: 110px;
+}
+.filter-bar .date-filter-group select:focus {
+    border-color: #2b7a4b;
+    outline: none;
+}
+.filter-bar .date-filter-group select:disabled {
+    background: #edf2f7;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
 
 /* Stats Overview */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.7rem;margin-bottom:1rem}
@@ -90,8 +126,9 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
 
 /* Chart */
 .chart-box{background:#fff;border-radius:1rem;padding:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05);margin-bottom:1rem}
-.chart-container{position:relative;height:300px;margin-top:.5rem}
-@media(max-width:768px){.chart-container{height:240px}}
+.chart-container{position:relative;height:340px;margin-top:.5rem}
+@media(max-width:768px){.chart-container{height:260px}}
+.chart-container canvas { font-family: 'Tajawal', sans-serif !important; }
 
 /* Toast */
 .toast{position:fixed;bottom:1.2rem;right:1.2rem;background:#2b7a4b;color:#fff;padding:.7rem 1.1rem;border-radius:2rem;z-index:3000;font-weight:700;font-size:.85rem;box-shadow:0 5px 20px rgba(0,0,0,.2);max-width:90%;animation:slideIn .3s}
@@ -115,8 +152,233 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
   .section{padding:.8rem}
 }
 
-.allEmpSection{
-    width: 800px;
+.allEmpSection{ width: 800px; }
+
+/* ⭐ قسم استعلام الموظف */
+.emp-lookup {
+    background: linear-gradient(135deg, #4c1d95, #6b21a8);
+    border-radius: 1rem;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    box-shadow: 0 5px 20px rgba(76, 29, 149, 0.25);
+}
+.emp-lookup h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.emp-lookup .lookup-form {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+.emp-lookup .lookup-form .input-group {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+}
+.emp-lookup .lookup-form label {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+}
+.emp-lookup .lookup-form input {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    border: none;
+    border-radius: 0.7rem;
+    font-size: 0.9rem;
+    font-family: 'Tajawal', sans-serif;
+    background: #fff;
+    color: #1e3a5f;
+    font-weight: 600;
+}
+.emp-lookup .lookup-form input:focus {
+    outline: 3px solid #fbbf24;
+}
+.emp-lookup .lookup-form .btn-lookup {
+    background: #fbbf24;
+    color: #4c1d95;
+    padding: 0.65rem 1.5rem;
+    border: none;
+    border-radius: 0.7rem;
+    font-weight: 900;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Tajawal', sans-serif;
+    transition: 0.2s;
+}
+.emp-lookup .lookup-form .btn-lookup:hover {
+    background: #f59e0b;
+    transform: translateY(-2px);
+}
+.emp-lookup .lookup-form .btn-clear {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 0.65rem 1rem;
+    border: none;
+    border-radius: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Tajawal', sans-serif;
+    transition: 0.2s;
+}
+.emp-lookup .lookup-form .btn-clear:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* ⭐ نتيجة الاستعلام */
+.lookup-result { margin-top: 1rem; }
+.lookup-emp-header {
+    background: rgba(255,255,255,0.15);
+    border-radius: 0.8rem;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+}
+.lookup-emp-header .emp-info {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+.lookup-emp-header .emp-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #fbbf24;
+    color: #4c1d95;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+.lookup-emp-header .emp-name {
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+.lookup-emp-header .emp-meta {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    margin-top: 0.15rem;
+}
+.lookup-emp-header .emp-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.lookup-emp-header .emp-stat { text-align: center; }
+.lookup-emp-header .emp-stat .val {
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
+}
+.lookup-emp-header .emp-stat .lbl {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    margin-top: 0.2rem;
+}
+.lookup-emp-header .emp-stat.know .val { color: #86efac; }
+.lookup-emp-header .emp-stat.dont .val { color: #fca5a5; }
+.lookup-emp-header .emp-stat.pct .val { color: #fde68a; }
+
+.lookup-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+}
+@media(max-width: 768px) {
+    .lookup-columns { grid-template-columns: 1fr; }
+}
+.lookup-col {
+    background: #fff;
+    border-radius: 0.8rem;
+    padding: 0.9rem;
+    color: #1e3a5f;
+}
+.lookup-col.know { border-top: 4px solid #38a169; }
+.lookup-col.dont { border-top: 4px solid #e53e3e; }
+.lookup-col h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #edf2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.lookup-col.know h4 { color: #22543d; }
+.lookup-col.dont h4 { color: #742a2a; }
+.lookup-col h4 .count {
+    background: #f0f4f8;
+    padding: 0.15rem 0.7rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 900;
+}
+.lookup-col.know h4 .count { background: #c6f6d5; color: #22543d; }
+.lookup-col.dont h4 .count { background: #fed7d7; color: #742a2a; }
+
+.lookup-topic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.3rem;
+}
+.lookup-topic {
+    background: #f7fafc;
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.82rem;
+    border-left: 3px solid #cbd5e0;
+}
+.lookup-topic.know { border-left-color: #38a169; }
+.lookup-topic.dont { border-left-color: #e53e3e; }
+.lookup-topic .topic-name {
+    font-weight: 700;
+    color: #1e3a5f;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+.lookup-topic .topic-meta {
+    font-size: 0.72rem;
+    color: #718096;
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+}
+.lookup-topic .topic-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+.lookup-empty {
+    text-align: center;
+    padding: 1.2rem;
+    color: #a0aec0;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.lookup-error {
+    background: rgba(255,255,255,0.95);
+    border-radius: 0.8rem;
+    padding: 1.2rem;
+    text-align: center;
+    color: #742a2a;
+    font-weight: 700;
 }
 </style>
 </head>
@@ -152,12 +414,37 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
     <label>📅 Quick Range:</label>
     <div class="range-buttons">
       <button class="range-btn" data-range="today" onclick="setQuickRange('today')">Today</button>
-      <button class="range-btn active" data-range="week" onclick="setQuickRange('week')">This Week</button>
+      <button class="range-btn" data-range="week" onclick="setQuickRange('week')">This Week</button>
       <button class="range-btn" data-range="month" onclick="setQuickRange('month')">This Month</button>
       <button class="range-btn" data-range="last30" onclick="setQuickRange('last30')">Last 30 Days</button>
       <button class="range-btn" data-range="all" onclick="setQuickRange('all')">All Time</button>
     </div>
-    <label style="margin-left:auto">📆 Custom:</label>
+    
+    <div style="flex-basis:100%; height:0;"></div>
+    
+    <!-- ⭐ فلاتر السنة / الشهر / الأسبوع -->
+    <div class="date-filter-group">
+        <label>🗓️ Year:</label>
+        <select id="filterYear" onchange="onYearChange()">
+            <option value="">-- All Years --</option>
+        </select>
+        
+        <label>📅 Month:</label>
+        <select id="filterMonth" onchange="onMonthChange()" disabled>
+            <option value="">-- All Months --</option>
+        </select>
+        
+        <label>📆 Week:</label>
+        <select id="filterWeek" onchange="onWeekChange()" disabled>
+            <option value="">-- All Weeks --</option>
+        </select>
+        
+        <button class="btn btn-secondary" onclick="clearDateFilters()" style="padding:0.4rem 0.8rem; font-size:0.75rem;">✖ Clear</button>
+    </div>
+    
+    <div style="flex-basis:100%; height:0;"></div>
+    
+    <label>📆 Custom:</label>
     <input type="date" id="dateFrom" onchange="applyCustomRange()">
     <span>→</span>
     <input type="date" id="dateTo" onchange="applyCustomRange()">
@@ -368,6 +655,21 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
     </div>
   </div>
 
+  <!-- ⭐ قسم استعلام عن موظف (في أسفل الصفحة) -->
+  <div class="emp-lookup">
+    <h3>🔍 استعلام عن موظف (بالرقم الوظيفي أو الاسم)</h3>
+    <div class="lookup-form">
+      <div class="input-group">
+        <label>👤 اكتب الرقم الوظيفي أو الاسم</label>
+        <input type="text" id="lookupInput" placeholder="مثال: 12230 أو أحمد محمد" autocomplete="off" list="lookupDatalist">
+        <datalist id="lookupDatalist"></datalist>
+      </div>
+      <button class="btn-lookup" onclick="lookupEmployee()">🔍 استعلام</button>
+      <button class="btn-clear" onclick="clearLookup()">✖ مسح</button>
+    </div>
+    <div id="lookupResult" class="lookup-result"></div>
+  </div>
+
 </div>
 
 <!-- Loading overlay -->
@@ -388,6 +690,10 @@ let savedSpotChecks = [];
 let savedResults = [];
 let currentRange = { from: null, to: null };
 let trendChartInstance = null;
+
+// ⭐ فلاتر السنة/الشهر/الأسبوع
+let dateFilter = { year: '', month: '', week: '' };
+let availableWeeks = [];
 
 /* ===================== Helpers ===================== */
 function toast(msg, type='') {
@@ -417,10 +723,66 @@ function toISO(date) {
   return `${y}-${m}-${day}`;
 }
 
+// ⭐ رقم الأسبوع داخل الشهر بناءً على اليوم (1-7 → 1, 8-14 → 2, إلخ)
+function getWeekNumInMonth(day) {
+    if (day >= 1 && day <= 7) return 1;
+    if (day >= 8 && day <= 14) return 2;
+    if (day >= 15 && day <= 21) return 3;
+    if (day >= 22 && day <= 28) return 4;
+    return 5;
+}
+
+// ⭐ بداية الأسبوع داخل الشهر (1, 8, 15, 22, 29)
+function getWeekStartDayInMonth(day) {
+    if (day >= 1 && day <= 7) return 1;
+    if (day >= 8 && day <= 14) return 8;
+    if (day >= 15 && day <= 21) return 15;
+    if (day >= 22 && day <= 28) return 22;
+    return 29;
+}
+
+// ⭐ نهاية الأسبوع داخل الشهر
+function getWeekEndDayInMonth(day, daysInMonth) {
+    if (day >= 1 && day <= 7) return 7;
+    if (day >= 8 && day <= 14) return 14;
+    if (day >= 15 && day <= 21) return 21;
+    if (day >= 22 && day <= 28) return 28;
+    return daysInMonth;
+}
+
+// ⭐ الحصول على بداية الأسبوع الحالي داخل الشهر
+function getWeekStartISO(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const weekStartDay = getWeekStartDayInMonth(day);
+    return `${year}-${String(month).padStart(2,'0')}-${String(weekStartDay).padStart(2,'0')}`;
+}
+
+// ⭐ الحصول على نهاية الأسبوع الحالي داخل الشهر
+function getWeekEndISO(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const weekEndDay = getWeekEndDayInMonth(day, daysInMonth);
+    return `${year}-${String(month).padStart(2,'0')}-${String(weekEndDay).padStart(2,'0')}`;
+}
+
 /* ===================== Range Filtering ===================== */
 function setQuickRange(range) {
   document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`.range-btn[data-range="${range}"]`)?.classList.add('active');
+
+  dateFilter = { year: '', month: '', week: '' };
+  const ySel = document.getElementById('filterYear');
+  const mSel = document.getElementById('filterMonth');
+  const wSel = document.getElementById('filterWeek');
+  if (ySel) ySel.value = '';
+  if (mSel) { mSel.innerHTML = '<option value="">-- All Months --</option>'; mSel.disabled = true; }
+  if (wSel) { wSel.innerHTML = '<option value="">-- All Weeks --</option>'; wSel.disabled = true; }
 
   const today = new Date();
   today.setHours(0,0,0,0);
@@ -428,10 +790,17 @@ function setQuickRange(range) {
   if (range === 'today') {
     currentRange = { from: toISO(today), to: toISO(today) };
   } else if (range === 'week') {
-    const day = today.getDay();
-    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(today.setDate(diff));
-    currentRange = { from: toISO(monday), to: toISO(new Date()) };
+    // ⭐ الأسبوع داخل الشهر (1-7, 8-14, إلخ)
+    const day = today.getDate();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const weekStartDay = getWeekStartDayInMonth(day);
+    const weekEndDay = getWeekEndDayInMonth(day, daysInMonth);
+    currentRange = {
+      from: `${year}-${String(month).padStart(2,'0')}-${String(weekStartDay).padStart(2,'0')}`,
+      to: `${year}-${String(month).padStart(2,'0')}-${String(weekEndDay).padStart(2,'0')}`
+    };
   } else if (range === 'month') {
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     currentRange = { from: toISO(firstDay), to: toISO(new Date()) };
@@ -455,6 +824,15 @@ function applyCustomRange() {
   if (!from || !to) return;
   currentRange = { from, to };
   document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  
+  dateFilter = { year: '', month: '', week: '' };
+  const ySel = document.getElementById('filterYear');
+  const mSel = document.getElementById('filterMonth');
+  const wSel = document.getElementById('filterWeek');
+  if (ySel) ySel.value = '';
+  if (mSel) { mSel.innerHTML = '<option value="">-- All Months --</option>'; mSel.disabled = true; }
+  if (wSel) { wSel.innerHTML = '<option value="">-- All Weeks --</option>'; wSel.disabled = true; }
+  
   loadAnalytics();
 }
 
@@ -465,14 +843,270 @@ function isDateInRange(iso) {
   return true;
 }
 
+/* ===================== Year / Month / Week Filters ===================== */
+function extractYears() {
+    const years = new Set();
+    savedSpotChecks.forEach(sc => {
+        if (sc.date) years.add(sc.date.substring(0, 4));
+    });
+    return [...years].sort().reverse();
+}
+
+function extractMonths(year) {
+    const months = new Set();
+    savedSpotChecks.forEach(sc => {
+        if (sc.date && sc.date.startsWith(year)) {
+            months.add(sc.date.substring(0, 7));
+        }
+    });
+    return [...months].sort().reverse();
+}
+
+// ⭐ استخراج الأسابيع داخل شهر معين (كل أسبوع مستقل بالشهر)
+function extractWeeks(month) {
+    const [yearStr, monthStr] = month.split('-');
+    const year = parseInt(yearStr);
+    const monthNum = parseInt(monthStr);
+    const daysInMonth = new Date(year, monthNum, 0).getDate();
+    
+    // الأسابيع الثابتة داخل الشهر: 1-7, 8-14, 15-21, 22-28, 29-آخر الشهر
+    const weekRanges = [
+        { weekNum: 1, from: 1, to: 7 },
+        { weekNum: 2, from: 8, to: 14 },
+        { weekNum: 3, from: 15, to: 21 },
+        { weekNum: 4, from: 22, to: 28 },
+    ];
+    
+    if (daysInMonth >= 29) {
+        weekRanges.push({ weekNum: 5, from: 29, to: daysInMonth });
+    }
+    
+    return weekRanges.map(r => {
+        const fromISO = `${yearStr}-${monthStr}-${String(r.from).padStart(2,'0')}`;
+        const toISO_ = `${yearStr}-${monthStr}-${String(r.to).padStart(2,'0')}`;
+        return {
+            start: fromISO,
+            end: toISO_,
+            weekNum: r.weekNum,
+            label: `Week ${r.weekNum} (${fmtDate(fromISO)} → ${fmtDate(toISO_)})`
+        };
+    }).reverse(); // الأحدث أولاً
+}
+
+function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function populateYearFilter() {
+    const select = document.getElementById('filterYear');
+    if (!select) return;
+    const years = extractYears();
+    select.innerHTML = '<option value="">-- All Years --</option>' + 
+        years.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
+function onYearChange() {
+    const year = document.getElementById('filterYear').value;
+    dateFilter.year = year;
+    dateFilter.month = '';
+    dateFilter.week = '';
+    
+    const monthSelect = document.getElementById('filterMonth');
+    const weekSelect = document.getElementById('filterWeek');
+    
+    if (year) {
+        const months = extractMonths(year);
+        monthSelect.innerHTML = '<option value="">-- All Months --</option>' +
+            months.map(m => {
+                const label = new Date(m + '-01T00:00:00').toLocaleDateString('en-GB', {month:'long', year:'numeric'});
+                return `<option value="${m}">${label}</option>`;
+            }).join('');
+        monthSelect.disabled = false;
+    } else {
+        monthSelect.innerHTML = '<option value="">-- All Months --</option>';
+        monthSelect.disabled = true;
+    }
+    
+    weekSelect.innerHTML = '<option value="">-- All Weeks --</option>';
+    weekSelect.disabled = true;
+    
+    applyDateFilters();
+}
+
+function onMonthChange() {
+    const month = document.getElementById('filterMonth').value;
+    dateFilter.month = month;
+    dateFilter.week = '';
+    
+    const weekSelect = document.getElementById('filterWeek');
+    
+    if (month) {
+        availableWeeks = extractWeeks(month);
+        weekSelect.innerHTML = '<option value="">-- All Weeks --</option>' +
+            availableWeeks.map(w => `<option value="${w.start}">${w.label}</option>`).join('');
+        weekSelect.disabled = false;
+    } else {
+        weekSelect.innerHTML = '<option value="">-- All Weeks --</option>';
+        weekSelect.disabled = true;
+    }
+    
+    applyDateFilters();
+}
+
+function onWeekChange() {
+    const weekStart = document.getElementById('filterWeek').value;
+    dateFilter.week = weekStart;
+    
+    if (weekStart) {
+        const week = availableWeeks.find(w => w.start === weekStart);
+        if (week) {
+            document.getElementById('dateFrom').value = week.start;
+            document.getElementById('dateTo').value = week.end;
+        }
+    }
+    
+    applyDateFilters();
+}
+
+function applyDateFilters() {
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    
+    let from = null, to = null;
+    
+    if (dateFilter.week) {
+        const week = availableWeeks.find(w => w.start === dateFilter.week);
+        if (week) {
+            from = week.start;
+            to = week.end;
+        }
+    } else if (dateFilter.month) {
+        const [y, m] = dateFilter.month.split('-');
+        const firstDay = `${y}-${m}-01`;
+        const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
+        const lastDayStr = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+        from = firstDay;
+        to = lastDayStr;
+    } else if (dateFilter.year) {
+        from = `${dateFilter.year}-01-01`;
+        to = `${dateFilter.year}-12-31`;
+    }
+    
+    currentRange = { from, to };
+    
+    document.getElementById('dateFrom').value = from || '';
+    document.getElementById('dateTo').value = to || '';
+    
+    loadAnalytics();
+}
+
+function clearDateFilters() {
+    dateFilter = { year: '', month: '', week: '' };
+    document.getElementById('filterYear').value = '';
+    document.getElementById('filterMonth').innerHTML = '<option value="">-- All Months --</option>';
+    document.getElementById('filterMonth').disabled = true;
+    document.getElementById('filterWeek').innerHTML = '<option value="">-- All Weeks --</option>';
+    document.getElementById('filterWeek').disabled = true;
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    currentRange = { from: null, to: null };
+    
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.range-btn[data-range="all"]')?.classList.add('active');
+    
+    loadAnalytics();
+}
+
+/* ⭐ تعيين الفلاتر على السنة/الشهر/الأسبوع الحالي */
+function setCurrentPeriodFilters() {
+    const now = new Date();
+    const currentYear = String(now.getFullYear());
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    // 1) تعيين السنة الحالية
+    const yearSelect = document.getElementById('filterYear');
+    if (!yearSelect) return;
+    
+    const yearExists = [...yearSelect.options].some(o => o.value === currentYear);
+    if (!yearExists) {
+        const opt = document.createElement('option');
+        opt.value = currentYear;
+        opt.textContent = currentYear;
+        yearSelect.appendChild(opt);
+        const opts = [...yearSelect.options].slice(1);
+        opts.sort((a, b) => b.value.localeCompare(a.value));
+        opts.forEach(o => yearSelect.appendChild(o));
+    }
+    
+    yearSelect.value = currentYear;
+    dateFilter.year = currentYear;
+    
+    // 2) تعبئة الشهور للسنة الحالية
+    const monthSelect = document.getElementById('filterMonth');
+    let months = extractMonths(currentYear);
+    
+    if (!months.includes(currentMonth)) {
+        months.push(currentMonth);
+        months.sort().reverse();
+    }
+    
+    monthSelect.innerHTML = '<option value="">-- All Months --</option>' +
+        months.map(m => {
+            const label = new Date(m + '-01T00:00:00').toLocaleDateString('en-GB', {month:'long', year:'numeric'});
+            return `<option value="${m}">${label}</option>`;
+        }).join('');
+    monthSelect.disabled = false;
+    monthSelect.value = currentMonth;
+    dateFilter.month = currentMonth;
+    
+    // 3) تعبئة الأسابيع للشهر الحالي (حساب داخل الشهر)
+    const weekSelect = document.getElementById('filterWeek');
+    availableWeeks = extractWeeks(currentMonth);
+    
+    const weekStart = getWeekStartISO(now);
+    const weekExists = availableWeeks.some(w => w.start === weekStart);
+    
+    if (!weekExists) {
+        const weekEnd = getWeekEndISO(now);
+        const weekNum = getWeekNumInMonth(now.getDate());
+        availableWeeks.unshift({
+            start: weekStart,
+            end: weekEnd,
+            weekNum: weekNum,
+            label: `Week ${weekNum} (${fmtDate(weekStart)} → ${fmtDate(weekEnd)})`
+        });
+        availableWeeks.sort((a, b) => b.start.localeCompare(a.start));
+    }
+    
+    weekSelect.innerHTML = '<option value="">-- All Weeks --</option>' +
+        availableWeeks.map(w => `<option value="${w.start}">${w.label}</option>`).join('');
+    weekSelect.disabled = false;
+    weekSelect.value = weekStart;
+    dateFilter.week = weekStart;
+    
+    // 4) تعيين currentRange على الأسبوع الحالي
+    const week = availableWeeks.find(w => w.start === weekStart);
+    if (week) {
+        currentRange = { from: week.start, to: week.end };
+        document.getElementById('dateFrom').value = week.start;
+        document.getElementById('dateTo').value = week.end;
+    }
+    
+    // 5) إزالة active من Quick Range buttons
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+}
+
 /* ===================== Load Data ===================== */
 async function loadData() {
   try {
     const emps = await DB.getAll('employees') || [];
     employees = emps.map(e => ({
       id: String(e.id),
-      name: e.fullName || '',
-      department: (e.department || '').trim(),
+      name: e.fullName || e.name || e.full_name || '',
+      department: (e.department || e.administration || e.admin || '').trim(),
       position: (e.position || '').trim()
     }));
 
@@ -484,6 +1118,9 @@ async function loadData() {
       spotChecks: savedSpotChecks.length,
       results: savedResults.length
     });
+
+    populateYearFilter();
+    populateLookupDatalist();
   } catch (err) {
     console.error('Load error:', err);
     toast('Failed to load data', 'error');
@@ -494,34 +1131,20 @@ async function loadData() {
 function loadAnalytics() {
   showLoading(true);
   try {
-    // Filter spot checks by date range
     const filteredChecks = savedSpotChecks.filter(sc => isDateInRange(sc.date));
     const filteredCheckIds = new Set(filteredChecks.map(sc => String(sc.id)));
     const filteredResults = savedResults.filter(r => filteredCheckIds.has(String(r.spot_check_id)));
 
-    // Update header
-    const rangeLabel = currentRange.from
-      ? `${fmtDate(currentRange.from)} → ${fmtDate(currentRange.to)}`
-      : 'All Time';
     document.getElementById('headerInfo').textContent =
       `${filteredChecks.length} spot checks • ${filteredResults.length} total results`;
     document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
 
-    // Overview stats
     renderOverview(filteredChecks, filteredResults);
-
-    // Trend chart
     renderTrendChart(filteredChecks, filteredResults);
-
-    // Top/Bottom Employees
     renderTopEmployees(filteredResults);
     renderBottomEmployees(filteredResults);
-
-    // Top/Bottom Departments
     renderTopDepartments(filteredResults);
     renderBottomDepartments(filteredResults);
-
-    // Weekly & Monthly
     renderWeeklyReport();
     renderMonthlyReport();
 
@@ -564,9 +1187,8 @@ function renderOverview(checks, results) {
     : 'All Time';
 }
 
-/* ===================== Trend Chart ===================== */
+/* ===================== Trend Chart (with numbers) ===================== */
 function renderTrendChart(checks, results) {
-  // Group by date
   const byDate = {};
   checks.forEach(sc => {
     if (!byDate[sc.date]) byDate[sc.date] = { know: 0, dont: 0, total: 0 };
@@ -590,6 +1212,12 @@ function renderTrendChart(checks, results) {
   const ctx = document.getElementById('trendChart').getContext('2d');
   if (trendChartInstance) trendChartInstance.destroy();
 
+  if (typeof ChartDataLabels !== 'undefined' && !Chart.registry.plugins.get('datalabels')) {
+    Chart.register(ChartDataLabels);
+  }
+
+  const maxCount = Math.max(...knowData, ...dontData, 1);
+
   trendChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -602,7 +1230,19 @@ function renderTrendChart(checks, results) {
           borderColor: '#2f855a',
           borderWidth: 1,
           order: 2,
-          yAxisID: 'y1'
+          yAxisID: 'y1',
+          datalabels: {
+            display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0,
+            anchor: 'end',
+            align: 'end',
+            offset: 2,
+            color: '#22543d',
+            backgroundColor: 'rgba(240, 255, 244, 0.9)',
+            borderRadius: 4,
+            padding: { top: 2, bottom: 2, left: 4, right: 4 },
+            font: { family: 'Tajawal', size: 11, weight: 'bold' },
+            formatter: (value) => value > 0 ? value : ''
+          }
         },
         {
           label: "Don't Know",
@@ -611,7 +1251,19 @@ function renderTrendChart(checks, results) {
           borderColor: '#c53030',
           borderWidth: 1,
           order: 2,
-          yAxisID: 'y1'
+          yAxisID: 'y1',
+          datalabels: {
+            display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0,
+            anchor: 'end',
+            align: 'end',
+            offset: 2,
+            color: '#742a2a',
+            backgroundColor: 'rgba(255, 245, 245, 0.9)',
+            borderRadius: 4,
+            padding: { top: 2, bottom: 2, left: 4, right: 4 },
+            font: { family: 'Tajawal', size: 11, weight: 'bold' },
+            formatter: (value) => value > 0 ? value : ''
+          }
         },
         {
           label: 'Percentage %',
@@ -626,21 +1278,68 @@ function renderTrendChart(checks, results) {
           pointBorderWidth: 2,
           tension: 0.3,
           order: 1,
-          yAxisID: 'y2'
+          yAxisID: 'y2',
+          datalabels: {
+            display: true,
+            anchor: 'top',
+            align: 'top',
+            offset: 6,
+            color: '#744210',
+            backgroundColor: 'rgba(254, 252, 191, 0.95)',
+            borderRadius: 4,
+            padding: { top: 2, bottom: 2, left: 4, right: 4 },
+            font: { family: 'Tajawal', size: 11, weight: 'bold' },
+            formatter: (value) => value.toFixed(1) + '%'
+          }
         }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 30, bottom: 5 } },
       plugins: {
-        legend: { position: 'bottom', labels: { font: { family: 'Tajawal', size: 12, weight: '700' }, usePointStyle: true, padding: 15 } },
-        tooltip: { backgroundColor: '#1e3a5f', titleFont: { family: 'Tajawal' }, bodyFont: { family: 'Tajawal' } }
+        legend: { 
+          position: 'bottom', 
+          labels: { 
+            font: { family: 'Tajawal', size: 12, weight: '700' }, 
+            usePointStyle: true, 
+            padding: 15 
+          } 
+        },
+        tooltip: { 
+          backgroundColor: '#1e3a5f', 
+          titleFont: { family: 'Tajawal' }, 
+          bodyFont: { family: 'Tajawal' } 
+        },
+        datalabels: { display: false }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 11 } } },
-        y1: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Count', font: { family: 'Tajawal', size: 11 } }, ticks: { font: { family: 'Tajawal', size: 11 }, precision: 0 } },
-        y2: { type: 'linear', position: 'right', beginAtZero: true, max: 100, title: { display: true, text: 'Percentage %', font: { family: 'Tajawal', size: 11 }, color: '#d69e2e' }, ticks: { font: { family: 'Tajawal', size: 11 }, color: '#d69e2e', callback: v => v + '%' }, grid: { drawOnChartArea: false } }
+        x: { 
+          grid: { display: false }, 
+          ticks: { 
+            font: { family: 'Tajawal', size: 11 },
+            maxRotation: 45,
+            minRotation: 0
+          } 
+        },
+        y1: { 
+          type: 'linear', 
+          position: 'left', 
+          beginAtZero: true, 
+          title: { display: true, text: 'Count', font: { family: 'Tajawal', size: 11 } }, 
+          ticks: { font: { family: 'Tajawal', size: 11 }, precision: 0 },
+          suggestedMax: maxCount * 1.2
+        },
+        y2: { 
+          type: 'linear', 
+          position: 'right', 
+          beginAtZero: true, 
+          max: 100, 
+          title: { display: true, text: 'Percentage %', font: { family: 'Tajawal', size: 11 }, color: '#d69e2e' }, 
+          ticks: { font: { family: 'Tajawal', size: 11 }, color: '#d69e2e', callback: v => v + '%' }, 
+          grid: { drawOnChartArea: false } 
+        }
       }
     }
   });
@@ -671,7 +1370,6 @@ function getEmployeeStats(results) {
 
 function renderTopEmployees(results) {
   const stats = getEmployeeStats(results);
-  // Only consider employees with at least 2 checks for meaningful top
   const filtered = stats.filter(s => s.total >= 1);
 
   const top = [...filtered]
@@ -704,7 +1402,6 @@ function renderTopEmployees(results) {
 
 function renderBottomEmployees(results) {
   const stats = getEmployeeStats(results);
-  // Only consider employees with at least 2 checks for meaningful bottom
   const filtered = stats.filter(s => s.total >= 1);
 
   const bottom = [...filtered]
@@ -797,22 +1494,26 @@ function renderBottomDepartments(results) {
   `).join('');
 }
 
-/* ===================== Weekly Report ===================== */
+/* ===================== Weekly Report (حساب داخل الشهر) ===================== */
 function renderWeeklyReport() {
-  // Group by ISO week
   const byWeek = {};
+  
   savedSpotChecks.forEach(sc => {
     if (!sc.date) return;
-    const d = new Date(sc.date + 'T00:00:00');
-    const weekStart = new Date(d);
-    const day = weekStart.getDay();
-    const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
-    weekStart.setDate(diff);
-    const weekKey = toISO(weekStart);
-
+    
+    const [yearStr, monthStr, dayStr] = sc.date.split('-');
+    const day = parseInt(dayStr);
+    const weekStartDay = getWeekStartDayInMonth(day);
+    const daysInMonth = new Date(parseInt(yearStr), parseInt(monthStr), 0).getDate();
+    const weekEndDay = getWeekEndDayInMonth(day, daysInMonth);
+    
+    const weekStart = `${yearStr}-${monthStr}-${String(weekStartDay).padStart(2,'0')}`;
+    const weekEnd = `${yearStr}-${monthStr}-${String(weekEndDay).padStart(2,'0')}`;
+    const weekKey = weekStart;
+    
     if (!byWeek[weekKey]) byWeek[weekKey] = {
-      start: weekKey,
-      end: toISO(new Date(weekStart.getTime() + 6*24*60*60*1000)),
+      start: weekStart,
+      end: weekEnd,
       spotCheckIds: new Set(),
       taskIds: new Set(),
       know: 0,
@@ -825,17 +1526,18 @@ function renderWeeklyReport() {
 
   savedResults.forEach(r => {
     const sc = savedSpotChecks.find(c => String(c.id) === String(r.spot_check_id));
-    if (!sc) return;
-    const d = new Date(sc.date + 'T00:00:00');
-    const weekStart = new Date(d);
-    const day = weekStart.getDay();
-    const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
-    weekStart.setDate(diff);
-    const weekKey = toISO(weekStart);
-    if (!byWeek[weekKey]) return;
-    if (r.result === 'KNOW') byWeek[weekKey].know++;
-    else byWeek[weekKey].dont++;
-    byWeek[weekKey].total++;
+    if (!sc || !sc.date) return;
+    
+    const [yearStr, monthStr, dayStr] = sc.date.split('-');
+    const day = parseInt(dayStr);
+    const weekStartDay = getWeekStartDayInMonth(day);
+    const weekStart = `${yearStr}-${monthStr}-${String(weekStartDay).padStart(2,'0')}`;
+    
+    if (!byWeek[weekStart]) return;
+    
+    if (r.result === 'KNOW') byWeek[weekStart].know++;
+    else byWeek[weekStart].dont++;
+    byWeek[weekStart].total++;
   });
 
   const weeks = Object.values(byWeek)
@@ -853,8 +1555,13 @@ function renderWeeklyReport() {
   body.innerHTML = weeks.map(w => {
     const pct = w.total ? (w.know / w.total * 100) : 0;
     const pctCls = pct >= 95 ? 'good' : pct >= 80 ? 'mid' : 'bad';
+    
+    const [y, m, d] = w.start.split('-');
+    const weekNum = getWeekNumInMonth(parseInt(d));
+    const monthLabel = new Date(w.start + 'T00:00:00').toLocaleDateString('en-GB', {month:'short', year:'numeric'});
+    
     return `<tr>
-      <td class="dept-cell">Week of ${fmtDate(w.start)}</td>
+      <td class="dept-cell">${monthLabel} — Week ${weekNum}</td>
       <td>${fmtDate(w.start)}</td>
       <td>${fmtDate(w.end)}</td>
       <td>${w.total}</td>
@@ -871,7 +1578,7 @@ function renderMonthlyReport() {
   const byMonth = {};
   savedSpotChecks.forEach(sc => {
     if (!sc.date) return;
-    const monthKey = sc.date.substring(0, 7); // YYYY-MM
+    const monthKey = sc.date.substring(0, 7);
     if (!byMonth[monthKey]) byMonth[monthKey] = {
       month: monthKey,
       spotCheckIds: new Set(),
@@ -924,6 +1631,154 @@ function renderMonthlyReport() {
   }).join('');
 }
 
+/* ===================== Employee Lookup ===================== */
+
+function populateLookupDatalist() {
+    const dl = document.getElementById('lookupDatalist');
+    if (!dl) return;
+    const slice = employees.slice(0, 800);
+    dl.innerHTML = 
+        slice.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.id)} — ${escapeHtml(e.department)}</option>`).join('') +
+        slice.map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} — ${escapeHtml(e.department)}</option>`).join('');
+}
+
+function findEmployee(input) {
+    if (!input) return null;
+    const trimmed = String(input).trim();
+    
+    if (/^\d+$/.test(trimmed)) {
+        return employees.find(e => String(e.id) === trimmed) || null;
+    }
+    
+    const lower = trimmed.toLowerCase();
+    let emp = employees.find(e => e.name.toLowerCase() === lower);
+    if (!emp) {
+        emp = employees.find(e => e.name.toLowerCase().includes(lower));
+    }
+    return emp || null;
+}
+
+function lookupEmployee() {
+    const input = document.getElementById('lookupInput').value.trim();
+    const resultDiv = document.getElementById('lookupResult');
+    
+    if (!input) {
+        resultDiv.innerHTML = `<div class="lookup-error">⚠️ الرجاء إدخال الرقم الوظيفي أو الاسم</div>`;
+        return;
+    }
+    
+    const emp = findEmployee(input);
+    if (!emp) {
+        resultDiv.innerHTML = `<div class="lookup-error">❌ لم يتم العثور على موظف مطابق: "${escapeHtml(input)}"</div>`;
+        return;
+    }
+    
+    const empResults = savedResults.filter(r => String(r.employee_id) === String(emp.id));
+    
+    const enriched = empResults.map(r => {
+        const sc = savedSpotChecks.find(c => String(c.id) === String(r.spot_check_id));
+        return {
+            ...r,
+            date: sc?.date || '',
+            task_id: sc?.task_id || '',
+            task_title: sc?.task_title || sc?.task_name || sc?.title || sc?.standard || `Task #${sc?.task_id || '—'}`,
+        };
+    });
+    
+    enriched.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    
+    const knowList = enriched.filter(r => r.result === 'KNOW');
+    const dontList = enriched.filter(r => r.result !== 'KNOW');
+    const total = enriched.length;
+    const pct = total ? (knowList.length / total * 100) : 0;
+    
+    const initials = (emp.name || '?').split(' ').map(w => w[0] || '').slice(0, 2).join('').toUpperCase();
+    
+    let html = `
+        <div class="lookup-emp-header">
+            <div class="emp-info">
+                <div class="emp-avatar">${escapeHtml(initials) || '👤'}</div>
+                <div>
+                    <div class="emp-name">${escapeHtml(emp.name) || 'بدون اسم'}</div>
+                    <div class="emp-meta">
+                        🆔 ${escapeHtml(emp.id)} • 🏢 ${escapeHtml(emp.department) || '—'}
+                        ${emp.position ? ` • 💼 ${escapeHtml(emp.position)}` : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="emp-stats">
+                <div class="emp-stat">
+                    <div class="val">${total}</div>
+                    <div class="lbl">إجمالي</div>
+                </div>
+                <div class="emp-stat know">
+                    <div class="val">${knowList.length}</div>
+                    <div class="lbl">✅ Know</div>
+                </div>
+                <div class="emp-stat dont">
+                    <div class="val">${dontList.length}</div>
+                    <div class="lbl">❌ Don't Know</div>
+                </div>
+                <div class="emp-stat pct">
+                    <div class="val">${pct.toFixed(1)}%</div>
+                    <div class="lbl">📊 النسبة</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="lookup-columns">
+            <div class="lookup-col know">
+                <h4>
+                    <span>✅Know </span>
+                    <span class="count">${knowList.length}</span>
+                </h4>
+                <div class="lookup-topic-list">
+                    ${knowList.length === 0 ? `<div class="lookup-empty">لا توجد مواضيع معروفة</div>` : 
+                        knowList.map(r => `
+                            <div class="lookup-topic know">
+                                <span class="topic-name">📚 ${escapeHtml(r.task_title)}</span>
+                                <div class="topic-meta">
+                                    <span>📅 ${r.date ? fmtDate(r.date) : '—'}</span>
+                                    <span>🎯 Task #${escapeHtml(r.task_id) || '—'}</span>
+                                    ${r.department ? `<span>🏢 ${escapeHtml(r.department)}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+            </div>
+            
+            <div class="lookup-col dont">
+                <h4>
+                    <span>❌ Don't Know</span>
+                    <span class="count">${dontList.length}</span>
+                </h4>
+                <div class="lookup-topic-list">
+                    ${dontList.length === 0 ? `<div class="lookup-empty">🎉 ممتاز! لا توجد مواضيع غير معروفة</div>` : 
+                        dontList.map(r => `
+                            <div class="lookup-topic dont">
+                                <span class="topic-name">📚 ${escapeHtml(r.task_title)}</span>
+                                <div class="topic-meta">
+                                    <span>📅 ${r.date ? fmtDate(r.date) : '—'}</span>
+                                    <span>🎯 Task #${escapeHtml(r.task_id) || '—'}</span>
+                                    ${r.department ? `<span>🏢 ${escapeHtml(r.department)}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+    
+    resultDiv.innerHTML = html;
+}
+
+function clearLookup() {
+    document.getElementById('lookupInput').value = '';
+    document.getElementById('lookupResult').innerHTML = '';
+}
+
 /* ===================== Refresh & Logout ===================== */
 window.refreshData = async function() {
   showLoading(true);
@@ -936,6 +1791,7 @@ window.refreshData = async function() {
       ]);
     }
     await loadData();
+    setCurrentPeriodFilters();
     loadAnalytics();
     toast('✅ Data refreshed');
   } catch (err) {
@@ -955,16 +1811,35 @@ window.logout = async function() {
 window.setQuickRange = setQuickRange;
 window.applyCustomRange = applyCustomRange;
 window.loadAnalytics = loadAnalytics;
+window.onYearChange = onYearChange;
+window.onMonthChange = onMonthChange;
+window.onWeekChange = onWeekChange;
+window.clearDateFilters = clearDateFilters;
+window.lookupEmployee = lookupEmployee;
+window.clearLookup = clearLookup;
+window.setCurrentPeriodFilters = setCurrentPeriodFilters;
+window.getWeekStartISO = getWeekStartISO;
+window.getWeekEndISO = getWeekEndISO;
+window.getWeekNumInMonth = getWeekNumInMonth;
 
 /* ===================== Init ===================== */
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('lookupInput');
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') lookupEmployee();
+        });
+    }
+});
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
 
   showLoading(true);
   await loadData();
 
-  // Default: this week
-  setQuickRange('week');
+  setCurrentPeriodFilters();
+  loadAnalytics();
 
   console.log('✅ Analytics ready');
 });
