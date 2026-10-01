@@ -266,6 +266,7 @@
             outline: none;
             transition: 0.2s;
             color: #1e3a5f;
+            background: white;
         }
         .form-group input:focus,
         .form-group select:focus { border-color: #2b7a4b; }
@@ -293,6 +294,66 @@
         .modal-actions .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
         .modal-actions .btn-cancel { background: #edf2f7; color: #4a5568; }
         .modal-actions .btn-cancel:hover { background: #e2e8f0; }
+
+        /* ===== Topic Selector ===== */
+        .topic-helper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .topic-hint {
+            font-size: 0.72rem;
+            color: #718096;
+        }
+        .topic-hint strong { color: #2b7a4b; }
+        .btn-new-topic {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 0.35rem 0.9rem;
+            border-radius: 1rem;
+            font-size: 0.72rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Tajawal', sans-serif;
+            transition: 0.2s;
+        }
+        .btn-new-topic:hover { background: #3182ce; transform: scale(0.97); }
+        .btn-new-topic.active { background: #e53e3e; }
+        .btn-new-topic.active:hover { background: #c53030; }
+
+        .new-topic-group {
+            display: none;
+            background: #f0fff4;
+            border: 2px dashed #38a169;
+            border-radius: 0.8rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            animation: fadeIn 0.25s ease;
+        }
+        .new-topic-group.show { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .new-topic-group .info-text {
+            font-size: 0.72rem;
+            color: #2b7a4b;
+            margin-top: 0.4rem;
+            font-weight: 500;
+        }
+
+        .topics-loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #2b7a4b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 0.4rem;
+            vertical-align: middle;
+        }
 
         @media (max-width: 768px) {
             .quick-filter-bar { flex-direction: column; align-items: stretch; }
@@ -324,9 +385,27 @@
             <form id="sessionForm" onsubmit="window.saveSession(event)">
                 <input type="hidden" id="sessionId" value="">
                 
+                <!-- ⭐ اختيار الموضوع من Off Job Courses -->
                 <div class="form-group">
-                    <label>📝 Topic <span class="req">*</span></label>
-                    <input type="text" id="f_topic" required placeholder="e.g. Fire Safety Training">
+                    <label>📚 Topic (from Off Job Courses) <span class="req">*</span></label>
+                    <select id="f_topic_select" onchange="window.handleTopicSelect()">
+                        <option value="">⏳ جاري تحميل المواضيع...</option>
+                    </select>
+                    <div class="topic-helper">
+                        <span class="topic-hint" id="topicsCountHint">📖 <strong>0</strong> topic(s) available from Off Job</span>
+                        <button type="button" class="btn-new-topic" id="btnNewTopic" onclick="window.toggleNewTopicInput()">
+                            ➕ إضافة موضوع جديد
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ⭐ حقل الموضوع اليدوي (يظهر فقط عند إضافة موضوع جديد) -->
+                <div class="new-topic-group" id="newTopicGroup">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>📝 New Topic Name <span class="req">*</span></label>
+                        <input type="text" id="f_topic" placeholder="e.g. Fire Safety Training">
+                        <div class="info-text">💡 سيتم إضافة هذا الموضوع إلى Off Job Courses تلقائياً</div>
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -376,9 +455,7 @@
             getDocs,
             getDoc,
             doc,
-            updateDoc,
-            setDoc,
-            addDoc
+            setDoc
         } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
         const firestoreDb = getFirestore(getApp());
@@ -406,6 +483,11 @@
         let isAdmin = false;
         let editingSessionId = null;
 
+        // ========== Off Job Topics (Courses) ==========
+        let offJobTopics = [];        // قائمة المواضيع من offjob_courses
+        let isLoadingTopics = false;
+        let showNewTopicInput = false;
+
         function showToast(message, type = 'success') {
             document.querySelector('.toast-msg')?.remove();
             const toast = document.createElement('div');
@@ -429,7 +511,6 @@
 
         // ========== Load data from Firestore ==========
         async function loadDataFromFirestore(forceRefresh = false) {
-            // التحقق من صلاحية الكاش
             if (isDataLoaded && !forceRefresh && cacheTimestamp) {
                 const elapsed = Date.now() - cacheTimestamp;
                 if (elapsed < CACHE_DURATION) {
@@ -473,7 +554,7 @@
                 lastLoadSource = "firebase";
                 cacheTimestamp = Date.now();
                 
-                console.log(`✅ تم جلب ${cachedSessions.length} جلسة تدريبية من Firestore وتخزينها في الكاش`);
+                console.log(`✅ تم جلب ${cachedSessions.length} جلسة تدريبية من Firestore`);
                 
             } catch (error) {
                 console.error('❌ Failed to load data from Firestore:', error);
@@ -483,6 +564,93 @@
             } finally {
                 showLoading(false);
                 isLoading = false;
+            }
+        }
+
+        // ========== Load Off Job Courses (Topics) ==========
+        async function loadOffJobTopics(forceRefresh = false) {
+            if (isLoadingTopics) return;
+            if (!forceRefresh && offJobTopics.length > 0) return;
+
+            isLoadingTopics = true;
+            try {
+                console.log('📚 جلب المواضيع من offjob_courses...');
+                
+                const colRef = collection(firestoreDb, 'offjob_courses');
+                const snap = await getDocs(colRef);
+                
+                const topics = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    // ✅ الحقول الفعلية: course_name و category و course_code
+                    const topicName = data.course_name || data.topic || data.name || '';
+                    if (topicName) {
+                        topics.push({
+                            id: docSnap.id,
+                            code: data.course_code || '',
+                            topic: topicName,
+                            category: data.category || 'General',
+                            targetAudience: data.target_audience || '',
+                            durationHours: data.duration_hours || '',
+                            trainingType: data.training_type || 'Off Job',
+                            description: data.description || ''
+                        });
+                    }
+                });
+                
+                // ترتيب حسب كود الكورس
+                topics.sort((a, b) => {
+                    const ca = parseInt(a.code) || 0;
+                    const cb = parseInt(b.code) || 0;
+                    return ca - cb;
+                });
+                
+                offJobTopics = topics;
+                console.log(`✅ تم جلب ${offJobTopics.length} موضوع من offjob_courses`);
+                
+            } catch (error) {
+                console.error('❌ فشل تحميل مواضيع Off Job:', error);
+                offJobTopics = [];
+            } finally {
+                isLoadingTopics = false;
+            }
+        }
+
+        // ========== Populate Topic Select ==========
+        function populateTopicSelect(selectedTopic = '') {
+            const select = document.getElementById('f_topic_select');
+            const hint = document.getElementById('topicsCountHint');
+            if (!select) return;
+            
+            select.innerHTML = '';
+            
+            if (offJobTopics.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = '⚠️ لا توجد كورسات في Off Job - أضف موضوعاً جديداً';
+                select.appendChild(opt);
+            } else {
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = '';
+                defaultOpt.textContent = `-- اختر موضوعاً من Off Job (${offJobTopics.length}) --`;
+                select.appendChild(defaultOpt);
+                
+                offJobTopics.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.topic;
+                    option.textContent = `${t.code ? '[' + t.code + '] ' : ''}${t.topic}${t.category ? ' — ' + t.category : ''}`;
+                    option.dataset.category = t.category || '';
+                    option.dataset.code = t.code || '';
+                    option.dataset.audience = t.targetAudience || '';
+                    if (selectedTopic && selectedTopic === t.topic) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+            }
+            
+            if (hint) {
+                hint.innerHTML = `📖 <strong>${offJobTopics.length}</strong> topic(s) available from Off Job`;
             }
         }
 
@@ -499,16 +667,6 @@
             if (isNaN(d.getTime())) return null;
             d.setHours(0, 0, 0, 0);
             return Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-        }
-
-        function getStatusText(dateStr) {
-            const diff = getDateDiff(dateStr);
-            if (diff === null) return { text: 'Upcoming', class: 'upcoming' };
-            if (diff < 0) return { text: 'Passed', class: 'passed' };
-            if (diff === 0) return { text: 'Today', class: 'today' };
-            if (diff === 1) return { text: 'Tomorrow', class: 'tomorrow' };
-            if (diff <= 7) return { text: 'This Week', class: 'week' };
-            return { text: 'Upcoming', class: 'upcoming' };
         }
 
         function getDayText(diff) {
@@ -659,6 +817,7 @@
         async function refreshPage(forceRefresh = true) {
             if (forceRefresh) {
                 await loadDataFromFirestore(true);
+                await loadOffJobTopics(true);
             }
             renderPage();
         }
@@ -700,7 +859,6 @@
                     `;
                 }
 
-                // ⭐ زر التعديل - للأدمن فقط
                 actionsHtml += `<button class="action-btn edit-btn admin-only" onclick="window.openEditSession('${s.id}')">✏️ Edit</button>`;
 
                 return `
@@ -914,18 +1072,31 @@
         window.logout = async () => { await signOut(auth); window.location.href = 'login.html'; };
 
         // ========== Admin Modal Controllers ==========
-        window.openAddSession = () => {
+        window.openAddSession = async () => {
             if (!isAdmin) { showToast('⛔ Admin only', 'error'); return; }
+            
             editingSessionId = null;
             document.getElementById('modalTitle').textContent = '➕ Add New Session';
             document.getElementById('sessionForm').reset();
             document.getElementById('sessionId').value = '';
             document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
             document.getElementById('f_status').value = 'scheduled';
+            showNewTopicInput = false;
+            document.getElementById('newTopicGroup').classList.remove('show');
+            document.getElementById('f_topic').value = '';
+            document.getElementById('btnNewTopic').classList.remove('active');
+            document.getElementById('btnNewTopic').innerHTML = '➕ إضافة موضوع جديد';
+            
+            // ⭐ تحميل المواضيع من offjob_courses
+            showLoading(true, '📚 جاري تحميل المواضيع من Off Job...');
+            await loadOffJobTopics(false);
+            populateTopicSelect();
+            showLoading(false);
+            
             document.getElementById('sessionModal').classList.add('show');
         };
 
-        window.openEditSession = (id) => {
+        window.openEditSession = async (id) => {
             if (!isAdmin) { showToast('⛔ Admin only', 'error'); return; }
             const session = cachedSessions.find(s => s.id === id);
             if (!session) { showToast('❌ Session not found', 'error'); return; }
@@ -933,29 +1104,121 @@
             editingSessionId = id;
             document.getElementById('modalTitle').textContent = '✏️ Edit Session';
             document.getElementById('sessionId').value = id;
-            document.getElementById('f_topic').value = session.topic || '';
             document.getElementById('f_date').value = session.date || '';
             document.getElementById('f_time').value = session.time || '';
             document.getElementById('f_category').value = session.requiredCategory || '';
             document.getElementById('f_status').value = session.status || 'scheduled';
+            
+            // ⭐ تحميل المواضيع من offjob_courses
+            showLoading(true, '📚 جاري تحميل المواضيع من Off Job...');
+            await loadOffJobTopics(false);
+            populateTopicSelect(session.topic);
+            showLoading(false);
+            
+            // التحقق إن كان الموضوع موجوداً في القائمة
+            const select = document.getElementById('f_topic_select');
+            let found = false;
+            for (let opt of select.options) {
+                if (opt.value === session.topic) {
+                    select.value = session.topic;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found && session.topic) {
+                // الموضوع غير موجود في Off Job → عرضه كموضوع جديد
+                showNewTopicInput = true;
+                document.getElementById('newTopicGroup').classList.add('show');
+                document.getElementById('f_topic').value = session.topic;
+                document.getElementById('btnNewTopic').classList.add('active');
+                document.getElementById('btnNewTopic').innerHTML = '↩ إلغاء الإضافة اليدوية';
+                select.value = '';
+            } else {
+                showNewTopicInput = false;
+                document.getElementById('newTopicGroup').classList.remove('show');
+                document.getElementById('btnNewTopic').classList.remove('active');
+                document.getElementById('btnNewTopic').innerHTML = '➕ إضافة موضوع جديد';
+            }
+            
             document.getElementById('sessionModal').classList.add('show');
         };
 
         window.closeSessionModal = () => {
             document.getElementById('sessionModal').classList.remove('show');
             editingSessionId = null;
+            showNewTopicInput = false;
+        };
+
+        // ⭐ عند اختيار موضوع من القائمة
+        window.handleTopicSelect = () => {
+            const select = document.getElementById('f_topic_select');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            // تعبئة الفئة والجمهور المستهدف تلقائياً من Off Job
+            if (selectedOption && selectedOption.value) {
+                const category = selectedOption.dataset.category || '';
+                const audience = selectedOption.dataset.audience || '';
+                
+                if (category && !document.getElementById('f_category').value) {
+                    document.getElementById('f_category').value = category;
+                }
+                if (audience && !document.getElementById('f_category').value) {
+                    document.getElementById('f_category').value = audience;
+                }
+            }
+        };
+
+        // ⭐ toggle إضافة موضوع جديد
+        window.toggleNewTopicInput = () => {
+            const group = document.getElementById('newTopicGroup');
+            const btn = document.getElementById('btnNewTopic');
+            const select = document.getElementById('f_topic_select');
+            
+            showNewTopicInput = !showNewTopicInput;
+            
+            if (showNewTopicInput) {
+                group.classList.add('show');
+                btn.classList.add('active');
+                btn.innerHTML = '↩ إلغاء الإضافة اليدوية';
+                select.value = '';
+                setTimeout(() => document.getElementById('f_topic').focus(), 100);
+            } else {
+                group.classList.remove('show');
+                btn.classList.remove('active');
+                btn.innerHTML = '➕ إضافة موضوع جديد';
+                document.getElementById('f_topic').value = '';
+            }
         };
 
         window.saveSession = async (e) => {
             e.preventDefault();
             if (!isAdmin) { showToast('⛔ Admin only', 'error'); return; }
 
+            // ⭐ تحديد الموضوع النهائي
+            const select = document.getElementById('f_topic_select');
+            let finalTopic = '';
+            
+            if (showNewTopicInput) {
+                finalTopic = document.getElementById('f_topic').value.trim();
+                if (!finalTopic) {
+                    showToast('❌ الرجاء إدخال اسم الموضوع', 'error');
+                    return;
+                }
+            } else {
+                finalTopic = select.value;
+                if (!finalTopic) {
+                    showToast('❌ الرجاء اختيار موضوع من القائمة أو إضافة موضوع جديد', 'error');
+                    return;
+                }
+            }
+
             const saveBtn = document.getElementById('saveBtn');
             saveBtn.disabled = true;
             saveBtn.textContent = '⏳ Saving...';
 
             const payload = {
-                topic: document.getElementById('f_topic').value.trim(),
+                topic: finalTopic,
                 date: document.getElementById('f_date').value,
                 time: document.getElementById('f_time').value.trim(),
                 required_category: document.getElementById('f_category').value.trim(),
@@ -971,7 +1234,6 @@
                     payload.imported_at = cachedSessions.find(s => s.id === id)?.importedAt || null;
                     await setDoc(doc(firestoreDb, 'training_schedule', id), payload, { merge: true });
                     
-                    // تحديث الكاش المحلي
                     const idx = cachedSessions.findIndex(s => s.id === id);
                     if (idx !== -1) {
                         cachedSessions[idx] = {
@@ -991,7 +1253,6 @@
                     const newDocRef = doc(collection(firestoreDb, 'training_schedule'));
                     await setDoc(newDocRef, payload);
                     
-                    // إضافة للكاش
                     cachedSessions.push({
                         id: newDocRef.id,
                         date: payload.date,
@@ -1002,6 +1263,12 @@
                         status: payload.status,
                         statusUpdatedAt: payload.statusUpdatedAt
                     });
+                    
+                    // ⭐ إذا كان موضوعاً جديداً، نضيفه إلى offjob_courses
+                    if (showNewTopicInput) {
+                        await addTopicToOffJob(finalTopic, payload.required_category);
+                    }
+                    
                     showToast('✅ Session added successfully', 'success');
                 }
 
@@ -1016,6 +1283,56 @@
             }
         };
 
+        // ⭐ إضافة موضوع جديد إلى offjob_courses
+        async function addTopicToOffJob(topic, category) {
+            try {
+                // توليد كود كورس جديد (أكبر كود + 1)
+                let maxCode = 0;
+                offJobTopics.forEach(t => {
+                    const c = parseInt(t.code);
+                    if (!isNaN(c) && c > maxCode) maxCode = c;
+                });
+                const newCode = maxCode > 0 ? maxCode + 1 : 1001;
+                
+                const colRef = collection(firestoreDb, 'offjob_courses');
+                const newDoc = doc(colRef, String(newCode));
+                
+                await setDoc(newDoc, {
+                    id: String(newCode),
+                    course_code: newCode,
+                    course_name: topic,
+                    category: category || 'General',
+                    target_audience: category || 'All Employees',
+                    duration_hours: 1,
+                    training_type: 'Off Job',
+                    status: 'Active',
+                    description: 'Added from Monthly Training Schedule',
+                    created_at: new Date().toISOString()
+                });
+                
+                // إضافته للكاش المحلي
+                offJobTopics.push({
+                    id: String(newCode),
+                    code: newCode,
+                    topic: topic,
+                    category: category || 'General',
+                    targetAudience: category || 'All Employees',
+                    durationHours: 1,
+                    trainingType: 'Off Job',
+                    description: 'Added from Monthly Training Schedule'
+                });
+                
+                // إعادة ترتيب
+                offJobTopics.sort((a, b) => (parseInt(a.code) || 0) - (parseInt(b.code) || 0));
+                
+                console.log(`✅ تم إضافة الكورس "${topic}" إلى offjob_courses بكود ${newCode}`);
+                showToast(`✅ تم إضافة الموضوع إلى Off Job Courses (كود: ${newCode})`, 'info');
+            } catch (e) {
+                console.warn('⚠️ لم نتمكن من إضافة الموضوع إلى Off Job:', e);
+                showToast('⚠️ تم حفظ الجلسة لكن لم نتمكن من إضافة الموضوع لـ Off Job', 'error');
+            }
+        }
+
         // إغلاق الـ modal عند الضغط على الخلفية
         document.getElementById('sessionModal')?.addEventListener('click', (e) => {
             if (e.target.id === 'sessionModal') window.closeSessionModal();
@@ -1029,7 +1346,6 @@
         // ========== Check Admin Role ==========
         async function checkAdminRole(user) {
             try {
-                // 1) محاولة القراءة من Firestore (users collection)
                 const userDocRef = doc(firestoreDb, 'users', user.uid);
                 const userSnap = await getDoc(userDocRef);
                 
@@ -1041,11 +1357,9 @@
                     }
                 }
                 
-                // 2) fallback: قراءة من localStorage (إذا auth-guard بيحفظ الدور)
                 const storedRole = (localStorage.getItem('userRole') || localStorage.getItem('role') || '').toLowerCase();
                 if (storedRole === 'admin' || storedRole === 'administrator') return true;
                 
-                // 3) fallback: قراءة من الـ custom claims
                 if (user.getIdTokenResult) {
                     const tokenResult = await user.getIdTokenResult();
                     if (tokenResult.claims.admin === true || tokenResult.claims.role === 'admin') return true;
@@ -1061,7 +1375,6 @@
         // ===== Init Auth =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // ⭐ التحقق من صلاحية الأدمن أولاً
                 isAdmin = await checkAdminRole(user);
                 if (isAdmin) {
                     document.body.classList.add('is-admin');
@@ -1072,6 +1385,7 @@
                 }
                 
                 await loadDataFromFirestore(false);
+                await loadOffJobTopics(false);  // ⭐ تحميل المواضيع مسبقاً
                 renderPage();
             } else {
                 window.location.href = 'login.html';
