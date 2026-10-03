@@ -270,8 +270,9 @@
 
         /* ===== نصوص الاسم والوظيفة والقسم ===== */
         .info-slot .name {
+            margin-top: 10px;
             font-weight: 700;
-            font-size: clamp(6px, 0.60vw, 11px);
+            font-size: clamp(6px, 1.6vw, 10px);
             color: #FFFFFF;
             line-height: 1.1;
             display: block;
@@ -279,11 +280,12 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            margin-bottom: 4px;
         }
 
-        .info-slot .position {
-            font-size: clamp(5px, 0.58vw, 9px);
-            color: #B8C5D6;
+        .info-slot .department {
+            font-size: clamp(5px, 10px, 11px);
+            color: #ffffff;
             font-weight: 500;
             line-height: 1.1;
             display: block;
@@ -294,9 +296,9 @@
         }
 
         /* ✅ القسم الجديد - أصغر من الوظيفة */
-        .info-slot .department {
-            font-size: clamp(5px, 8px, 8px);
-            color: #94A3B8;
+        .info-slot .position {
+            font-size: clamp(5px, 0.58vw, 9px);
+            color: #ffffff;
             font-weight: 500;
             line-height: 1.1;
             display: block;
@@ -304,8 +306,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            font-style: italic;
-
         }
 
         /* ===== التاريخ فوق القالب - أسفل العنوان ===== */
@@ -505,9 +505,21 @@
                         <select id="periodFilter">
                             <option value="month">Monthly</option>
                             <option value="week">Weekly</option>
+                            <option value="quarter">Quarterly</option>
                         </select>
                     </div>
-                    <div class="filter-group">
+                    
+                    <div class="filter-group" id="quarterFilterGroup" style="display:none;">
+                        <label><i class="fas fa-calendar-check"></i> Quarter:</label>
+                        <select id="quarterFilter">
+                            <option value="1">Q1 (Jan - Mar)</option>
+                            <option value="2">Q2 (Apr - Jun)</option>
+                            <option value="3">Q3 (Jul - Sep)</option>
+                            <option value="4">Q4 (Oct - Dec)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group" id="monthFilterGroup">
                         <label><i class="fas fa-calendar"></i> Month:</label>
                         <select id="monthFilter"></select>
                     </div>
@@ -522,6 +534,7 @@
                     </div>
                     <div class="filter-info" id="filterInfo">
                         Showing: <span id="periodDisplay">Monthly</span> - <span id="monthDisplay"></span>
+                        <span id="quarterDisplay"></span>
                         <span id="weekDisplay"></span>
                     </div>
                 </div>
@@ -606,10 +619,27 @@
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         const weekNames = ['1st', '2nd', '3rd', '4th'];
 
+        // ✅ جديد - أسماء الأرباع
+        const quarterNames = {
+            1: 'Q1 (Jan - Mar)',
+            2: 'Q2 (Apr - Jun)',
+            3: 'Q3 (Jul - Sep)',
+            4: 'Q4 (Oct - Dec)'
+        };
+
+        // ✅ جديد - نطاق الأشهر لكل ربع
+        const quarterMonths = {
+            1: [0, 1, 2],    // Jan, Feb, Mar
+            2: [3, 4, 5],    // Apr, May, Jun
+            3: [6, 7, 8],    // Jul, Aug, Sep
+            4: [9, 10, 11]   // Oct, Nov, Dec
+        };
+
         let currentPeriod = 'month';
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let currentWeek = 1;
+        let currentQuarter = Math.floor(new Date().getMonth() / 3) + 1;
 
         const CLOUDINARY_CLOUD_NAME = 'so9u5deh';
         const CLOUDINARY_EXTENSION = 'webp';
@@ -630,11 +660,15 @@
         
         const periodFilter = document.getElementById('periodFilter');
         const monthFilter = document.getElementById('monthFilter');
+        const monthFilterGroup = document.getElementById('monthFilterGroup');
         const weekFilter = document.getElementById('weekFilter');
         const weekFilterGroup = document.getElementById('weekFilterGroup');
+        const quarterFilter = document.getElementById('quarterFilter');
+        const quarterFilterGroup = document.getElementById('quarterFilterGroup');
         const periodDisplay = document.getElementById('periodDisplay');
         const monthDisplay = document.getElementById('monthDisplay');
         const weekDisplay = document.getElementById('weekDisplay');
+        const quarterDisplay = document.getElementById('quarterDisplay');
 
         // ============================================================
         // HELPERS
@@ -719,17 +753,44 @@
             const period = periodFilter.value;
             const month = parseInt(monthFilter.value);
             const week = parseInt(weekFilter.value);
+            const quarter = parseInt(quarterFilter.value);
+            
             currentPeriod = period;
             currentMonth = month;
             currentWeek = week;
-            periodDisplay.textContent = period === 'month' ? 'Monthly' : 'Weekly';
+            currentQuarter = quarter;
+            
+            // ✅ تحديث نص الفترة
+            if (period === 'month') {
+                periodDisplay.textContent = 'Monthly';
+            } else if (period === 'week') {
+                periodDisplay.textContent = 'Weekly';
+            } else {
+                periodDisplay.textContent = 'Quarterly';
+            }
+            
             monthDisplay.textContent = `${monthNames[month]} ${currentYear}`;
+            
+            // ✅ إظهار/إخفاء الفلاتر حسب الفترة
             if (period === 'week') {
                 weekFilterGroup.style.display = 'flex';
                 weekDisplay.textContent = ` - Week ${weekNames[week - 1]}`;
-            } else {
+                quarterFilterGroup.style.display = 'none';
+                quarterDisplay.textContent = '';
+                monthFilterGroup.style.display = 'flex';
+            } else if (period === 'quarter') {
+                quarterFilterGroup.style.display = 'flex';
+                quarterDisplay.textContent = ` - ${quarterNames[quarter]}`;
                 weekFilterGroup.style.display = 'none';
                 weekDisplay.textContent = '';
+                monthFilterGroup.style.display = 'none';
+            } else {
+                // Monthly
+                weekFilterGroup.style.display = 'none';
+                weekDisplay.textContent = '';
+                quarterFilterGroup.style.display = 'none';
+                quarterDisplay.textContent = '';
+                monthFilterGroup.style.display = 'flex';
             }
         }
 
@@ -853,7 +914,6 @@
                         isValid: !!emp,
                         name: emp ? emp.fullName || emp.name || 'Unknown' : 'Unknown',
                         position: emp ? emp.position || emp.jobTitle || emp.job || emp.role || 'N/A' : 'N/A',
-                        // ✅ القسم
                         department: emp ? emp.department || emp.dept || emp.section || 'N/A' : 'N/A',
                         employeeCode: emp ? emp.employeeCode || emp.id : d.employeeId,
                         photoUrl: getEmployeePhoto(emp, d.employeeId)
@@ -927,10 +987,8 @@
                 if (item) {
                     photosHtml += `<div class="photo-slot" data-rank="${rank}">${buildPhoto(item)}</div>`;
                     
-                    // ✅ أول اسمين بس
                     const displayName = getFirstTwoNames(item.name);
                     
-                    // ✅ القسم - بس لو موجود
                     const deptHtml = (item.department && item.department !== 'N/A') 
                         ? `<div class="department" title="${escapeHtml(item.department)}">${escapeHtml(item.department)}</div>` 
                         : '';
@@ -945,18 +1003,25 @@
                 }
             }
 
-            // ✅ حساب التاريخ
+            // ✅ حساب التاريخ مع دعم الربع السنوي
             const month = parseInt(monthFilter.value);
             const week = parseInt(weekFilter.value);
             const period = periodFilter.value;
+            const quarter = parseInt(quarterFilter.value);
             const monthName = monthNames[month];
             const year = currentYear;
             
             let dateText = '';
             if (period === 'month') {
                 dateText = `(${monthName} ${year})`;
-            } else {
+            } else if (period === 'week') {
                 dateText = `(${monthName} ${year} - Week ${weekNames[week - 1]})`;
+            } else {
+                // ✅ الربع السنوي
+                const qMonths = quarterMonths[quarter];
+                const startMonth = monthNames[qMonths[0]];
+                const endMonth = monthNames[qMonths[2]];
+                dateText = `(Q${quarter} ${year} - ${startMonth} to ${endMonth})`;
             }
 
             leaderboardContainer.innerHTML = `
@@ -1191,6 +1256,8 @@
             periodFilter.addEventListener('change', updateFilterDisplay);
             monthFilter.addEventListener('change', updateFilterDisplay);
             weekFilter.addEventListener('change', updateFilterDisplay);
+            quarterFilter.addEventListener('change', updateFilterDisplay);
+            
             generateBtn.addEventListener('click', generateLeaderboard);
             clearBtn.addEventListener('click', clearAll);
             fillSampleBtn.addEventListener('click', fillSample);
