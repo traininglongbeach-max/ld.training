@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 10 LobsterInk </title>
+    <title>Top 10 LobsterInk</title>
     <!-- تحميل الخط قبل كل شيء -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
     
     <script type="module" src="auth-guard.js"></script>
@@ -328,7 +327,6 @@
             letter-spacing: 0.5px;
             line-height: 1.8;
             font-family: 'Tajawal', 'Arial', sans-serif;
-            direction: rtl;
         }
 
         .leaderboard-header h1 span {
@@ -342,7 +340,6 @@
             font-size: 0.85rem;
             margin-top: 4px;
             font-family: 'Tajawal', 'Arial', sans-serif;
-            direction: rtl;
         }
 
         .leaderboard-header .sub-title .highlight {
@@ -366,17 +363,6 @@
             direction: ltr;
             unicode-bidi: isolate;
             display: inline;
-        }
-
-        .leaderboard-card .export-footer {
-            direction: ltr;
-            unicode-bidi: isolate;
-            text-align: center;
-        }
-
-        .leaderboard-card .export-ltr {
-            direction: ltr;
-            unicode-bidi: isolate;
         }
 
         /* Body - Grid Layout for 10 items */
@@ -470,11 +456,14 @@
         .leaderboard-item .avatar img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%;
         }
 
         .leaderboard-item .avatar .fallback {
-            font-weight: 700;
-            font-size: 1.8rem;
+            font-weight: 800;
+            font-size: 2.5rem;
             color: white;
             width: 100%;
             height: 100%;
@@ -482,6 +471,8 @@
             align-items: center;
             justify-content: center;
             font-family: 'Tajawal', 'Arial', sans-serif;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
 
         /* Gold/Silver/Bronze rings */
@@ -930,6 +921,10 @@
                 font-size: 1.1rem;
             }
             
+            .leaderboard-item .avatar .fallback {
+                font-size: 1.4rem;
+            }
+            
             .leaderboard-item .rank {
                 width: 28px;
                 height: 28px;
@@ -1092,10 +1087,29 @@
                 </div>
             </div>
         </div>
+    </div>
 
     <script type="module">
         import { auth, DB } from './database.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ============================================================
+        // CLOUDINARY CONFIG
+        // ============================================================
+        const CLOUDINARY_BASE = 'https://res.cloudinary.com/so9u5deh/image/upload/';
+        const CLOUDINARY_TRANSFORM = 'w_400,h_400,c_fill,f_auto,q_auto';
+        const CLOUDINARY_EXT = 'webp';
+
+        /**
+         * يبني رابط صورة Cloudinary من رقم الموظف
+         * مثال: https://res.cloudinary.com/so9u5deh/image/upload/w_400,h_400,c_fill,f_auto,q_auto/1001.webp
+         */
+        function buildPhotoUrl(employeeId) {
+            if (!employeeId && employeeId !== 0) return null;
+            const id = String(employeeId).trim();
+            if (!id) return null;
+            return `${CLOUDINARY_BASE}${CLOUDINARY_TRANSFORM}/${id}.${CLOUDINARY_EXT}`;
+        }
 
         // ============================================================
         // GLOBALS
@@ -1158,13 +1172,23 @@
         }
 
         function escapeHtml(text) {
-            if (!text) return '-';
-            return String(text);
+            if (text === null || text === undefined) return '-';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function escapeAttr(text) {
+            if (!text) return '';
+            return String(text).trim().replace(/"/g, '&quot;');
         }
 
         function getInitials(name) {
             if (!name) return '?';
-            const parts = name.trim().split(' ');
+            const parts = name.trim().split(' ').filter(p => p.length > 0);
             if (parts.length >= 2) {
                 return (parts[0][0] + parts[1][0]).toUpperCase();
             }
@@ -1178,8 +1202,9 @@
                 '#E11D48', '#D97706', '#059669', '#2563EB', '#7C3AED'
             ];
             let hash = 0;
-            for (let i = 0; i < name.length; i++) {
-                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            const safeName = name || '?';
+            for (let i = 0; i < safeName.length; i++) {
+                hash = safeName.charCodeAt(i) + ((hash << 5) - hash);
             }
             return colors[Math.abs(hash) % colors.length];
         }
@@ -1226,7 +1251,7 @@
         }
 
         // ============================================================
-        // LOAD EMPLOYEES (تم تحديثه ليدعم الكاش)
+        // LOAD EMPLOYEES
         // ============================================================
         async function loadEmployees(forceRefresh = false) {
             try {
@@ -1235,7 +1260,6 @@
                     const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
                     const now = new Date().getTime();
 
-                    // التحقق مما إذا كان الكاش موجوداً وصالحاً (لم يتجاوز 12 ساعة)
                     if (cachedData && cacheTime && (now - parseInt(cacheTime) < CACHE_DURATION_MS)) {
                         allEmployees = JSON.parse(cachedData);
                         console.log(`👥 تم تحميل ${allEmployees.length} موظف من الكاش (الذاكرة المؤقتة)`);
@@ -1243,12 +1267,10 @@
                     }
                 }
 
-                // إذا لم يكن هناك كاش، أو انتهت صلاحيته، أو تم طلب التحديث إجبارياً
                 console.log('🔄 جاري جلب البيانات من قاعدة البيانات (Firebase)...');
                 const result = await DB.getAll('employees');
                 allEmployees = result || [];
                 
-                // حفظ البيانات الجديدة في الكاش
                 localStorage.setItem(CACHE_KEY, JSON.stringify(allEmployees));
                 localStorage.setItem(CACHE_TIME_KEY, new Date().getTime().toString());
                 
@@ -1256,7 +1278,6 @@
             } catch (error) {
                 console.error('❌ فشل تحميل الموظفين:', error);
                 
-                // محاولة استرجاع البيانات من الكاش كحل بديل في حال انقطاع الإنترنت
                 const cachedFallback = localStorage.getItem(CACHE_KEY);
                 if (cachedFallback) {
                     allEmployees = JSON.parse(cachedFallback);
@@ -1268,7 +1289,7 @@
         }
 
         function findEmployeeById(empId) {
-            if (!empId) return null;
+            if (!empId && empId !== 0) return null;
             const idStr = String(empId).trim();
             return allEmployees.find(e => String(e.id).trim() === idStr) || null;
         }
@@ -1358,16 +1379,19 @@
 
                 currentLeaderboardData = inputData.map(d => {
                     const emp = d.employee;
+                    // 🖼️ رابط الصورة من Cloudinary بناءً على رقم الموظف
+                    const photoUrl = emp ? buildPhotoUrl(emp.id) : null;
+                    
                     return {
                         rank: d.rank,
                         employeeId: d.employeeId,
                         employee: emp,
                         isValid: !!emp,
-                        name: emp ? emp.fullName || emp.name || 'غير معروف' : 'غير معروف',
-                        department: emp ? emp.department || 'غير محدد' : 'غير محدد',
-                        position: emp ? emp.position || '-' : '-',
-                        employeeCode: emp ? emp.employeeCode || emp.id : d.employeeId,
-                        photoUrl: emp ? emp.photoUrl || emp.photo || null : null,
+                        name: emp ? (emp.fullName || emp.name || 'غير معروف') : 'غير معروف',
+                        department: emp ? (emp.department || 'غير محدد') : 'غير محدد',
+                        position: emp ? (emp.position || '-') : '-',
+                        employeeCode: emp ? (emp.employeeCode || emp.id) : d.employeeId,
+                        photoUrl: photoUrl,
                         email: emp ? emp.email : null
                     };
                 });
@@ -1415,11 +1439,27 @@
                 const initials = getInitials(d.name);
                 const avatarColor = getAvatarColor(d.name);
                 
+                // 🖼️ بناء الـ avatar: صورة Cloudinary مع fallback للأحرف الأولى
                 let avatarHtml = '';
-                if (d.photoUrl) {
-                    avatarHtml = `<img src="${escapeHtml(d.photoUrl)}" alt="${escapeHtml(d.name)}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'fallback\\' style=\\'background:${avatarColor};\\'>${initials}</span>'">`;
+                const imgSrc = d.photoUrl ? String(d.photoUrl).trim() : '';
+                
+                if (imgSrc) {
+                    avatarHtml = `
+                        <img 
+                            src="${escapeAttr(imgSrc)}" 
+                            alt="${escapeAttr(d.name)}" 
+                            crossorigin="anonymous"
+                            referrerpolicy="no-referrer"
+                            loading="eager"
+                            style="width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;"
+                            onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        />
+                        <span class="fallback" style="background:${avatarColor};display:none;">
+                            ${initials}
+                        </span>
+                    `;
                 } else {
-                    avatarHtml = `<span class="fallback" style="background:${avatarColor};">${initials}</span>`;
+                    avatarHtml = `<span class="fallback" style="background:${avatarColor};display:flex;">${initials}</span>`;
                 }
 
                 itemsHtml += `
@@ -1547,6 +1587,8 @@
                 const dataUrl = await htmlToImage.toPng(card, {
                     pixelRatio: 2,
                     backgroundColor: '#F8FAFC',
+                    cacheBust: true,
+                    useCORS: true,
                     style: {
                         direction: 'rtl'
                     }
@@ -1586,6 +1628,8 @@
                 const dataUrl = await htmlToImage.toPng(card, {
                     pixelRatio: 2,
                     backgroundColor: '#F8FAFC',
+                    cacheBust: true,
+                    useCORS: true,
                     style: {
                         direction: 'rtl'
                     }
@@ -1647,7 +1691,7 @@
         }
 
         // ============================================================
-        // NAVBAR (تم إضافة زر تحديث البيانات هنا)
+        // NAVBAR
         // ============================================================
         function renderNavbar() {
             navbarContainer.innerHTML = `
@@ -1659,7 +1703,6 @@
                         </div>
                     </div>
                     <div class="nav-actions">
-                        <!-- إضافة زر التحديث الجديد -->
                         <button id="refreshDataBtn" class="btn-nav btn-refresh">
                             <i class="fas fa-sync-alt"></i> تحديث البيانات
                         </button>
@@ -1673,12 +1716,10 @@
                 </nav>
             `;
 
-            // حدث الضغط على زر التحديث
             document.getElementById('refreshDataBtn')?.addEventListener('click', async () => {
                 setLoading(true);
-                await loadEmployees(true); // تمرير true لجلب بيانات جديدة قسرياً وتجاهل الكاش
+                await loadEmployees(true);
                 
-                // إعادة التحقق من المدخلات في حال كان هناك أرقام مكتوبة
                 document.querySelectorAll('.rank-input').forEach(input => {
                     input.dispatchEvent(new Event('input'));
                 });
@@ -1703,10 +1744,9 @@
             updateFilterDisplay();
 
             setLoading(true);
-            await loadEmployees(); // سيقوم بالتحميل من الكاش إذا كان متاحاً
+            await loadEmployees();
             setLoading(false);
 
-            // Filter events
             periodFilter.addEventListener('change', () => {
                 updateFilterDisplay();
             });
