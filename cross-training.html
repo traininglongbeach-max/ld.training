@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة التدريب الداخلي - Cross-Training</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0B3B82">
+
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; overflow-x: hidden; }
+
+        /* ====== Navbar ====== */
+        .navbar {
+            background: white; padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem;
+            position: sticky; top: 0; z-index: 999;
+        }
+        .logo h2 { color: #1e3a5f; }
+        .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button {
+            text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem;
+            font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem;
+        }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .refresh { background: #3182ce; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
+
+        /* ====== Layout ====== */
+        .container { max-width: 1600px; margin: 2rem auto; padding: 0 1.5rem; }
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { color: #1e3a5f; font-size: 2rem; }
+
+        /* ====== KPI Cards ====== */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; margin-bottom: 2rem;
+        }
+        .kpi-card {
+            border-radius: 1.2rem; padding: 1.3rem;
+            color: white; display: flex; flex-direction: column;
+            justify-content: space-between; min-height: 120px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: 0.3s;
+        }
+        .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .kpi-card .kpi-label { font-size: 0.9rem; opacity: 0.9;text-align: center; }
+        .kpi-card .kpi-value { font-size: 2.2rem; font-weight: bold; text-align: center;}
+        .kpi-card .kpi-icon { font-size: 1.8rem; text-align: center;}
+        .kpi-total       { background: linear-gradient(135deg, #1e3a5f, #2b7a4b); }
+        .kpi-planned     { background: linear-gradient(135deg, #3182ce, #63b3ed); }
+        .kpi-inprogress  { background: linear-gradient(135deg, #dd6b20, #ed8936); }
+        .kpi-completed   { background: linear-gradient(135deg, #2f855a, #48bb78); }
+        .kpi-hours       { background: linear-gradient(135deg, #6b46c1, #9f7aea); }
+        .kpi-days        { background: linear-gradient(135deg, #c53030, #e53e3e); }
+
+        /* ====== Buttons ====== */
+        .btn {
+            padding: 0.7rem 1.5rem; border: none; border-radius: 2rem;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn-primary { background: #2b7a4b; color: white; }
+        .btn-primary:hover { background: #1e5a38; transform: scale(1.02); }
+        .btn-secondary { background: #4299e1; color: white; }
+        .btn-secondary:hover { background: #3182ce; }
+
+        .admin-only { display: none; }
+        .admin-only.visible { display: inline-flex; }
+
+        /* ====== Action Bar ====== */
+        .action-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;
+        }
+
+        /* ====== Filter Bar ====== */
+        .filter-bar {
+            background: white; border-radius: 1rem; padding: 1rem 1.5rem;
+            margin-bottom: 2rem; display: flex; flex-wrap: wrap;
+            gap: 1rem; align-items: flex-end;
+        }
+        .search-box { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 250px; }
+        .search-box input {
+            flex: 1; padding: 0.8rem 1rem; border: 2px solid #e2e8f0;
+            border-radius: 2rem; font-size: 0.9rem; outline: none;
+        }
+        .search-box input:focus { border-color: #2b7a4b; }
+        .search-box button {
+            padding: 0.8rem 1.5rem; background: #2b7a4b; color: white;
+            border: none; border-radius: 2rem; cursor: pointer;
+        }
+        .filter-group {
+            display: flex; flex-direction: column; gap: 0.3rem;
+            min-width: 150px;
+        }
+        .filter-group label { font-weight: bold; color: #1e3a5f; font-size: 0.8rem; }
+        .filter-group select, .filter-group input[type="date"] {
+            padding: 0.7rem 1rem; border: 2px solid #e2e8f0;
+            border-radius: 2rem; background: white; cursor: pointer;
+            font-size: 0.85rem; outline: none;
+        }
+        .filter-group select:focus, .filter-group input:focus { border-color: #2b7a4b; }
+        .date-range-group { display: flex; gap: 0.3rem; }
+        .date-range-group input { flex: 1; min-width: 0; }
+        .hidden { display: none !important; }
+
+        /* ====== Table ====== */
+        .table-container {
+            background: white; border-radius: 1.5rem; padding: 1.5rem;
+            overflow-x: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            -webkit-overflow-scrolling: touch;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 1500px; }
+        th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid #e2e8f0; font-size: 0.83rem; }
+        th { background: #f7fafc; color: #1e3a5f; font-weight: bold; white-space: nowrap; }
+        tr:hover { background: #f7fafc; }
+        .action-buttons { display: flex; gap: 0.3rem; justify-content: center; flex-wrap: wrap; }
+        .icon-btn {
+            border: none; padding: 0.3rem 0.6rem; border-radius: 1rem;
+            cursor: pointer; font-size: 0.75rem; transition: 0.3s;
+        }
+        .btn-view    { background: #4299e1; color: white; }
+        .btn-edit    { background: #ed8936; color: white; }
+        .btn-delete  { background: #e53e3e; color: white; }
+        .btn-follow  { background: #805ad5; color: white; }
+        .icon-btn:hover { transform: scale(1.08); opacity: 0.9; }
+
+        /* ====== Status Badges ====== */
+        .status-badge {
+            display: inline-block; padding: 0.25rem 0.8rem;
+            border-radius: 2rem; font-weight: bold; font-size: 0.75rem;
+            white-space: nowrap;
+        }
+        .st-planned     { background: #bee3f8; color: #2c5282; }
+        .st-inprogress  { background: #feebc8; color: #7b341e; }
+        .st-completed   { background: #c6f6d5; color: #22543d; }
+        .st-cancelled   { background: #fed7d7; color: #822727; }
+
+        /* ====== Progress Bar ====== */
+        .progress-wrapper {
+            display: flex; flex-direction: column; gap: 0.2rem;
+            min-width: 80px;
+        }
+        .progress-bar {
+            width: 100%; height: 8px; background: #e2e8f0;
+            border-radius: 1rem; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, #2b7a4b, #48bb78);
+            border-radius: 1rem; transition: width 0.4s;
+        }
+        .progress-text { font-size: 0.75rem; font-weight: bold; color: #2b7a4b; }
+
+        /* ====== Modals ====== */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center; z-index: 1000;
+            padding: 1rem;
+        }
+        .modal-content {
+            background: white; border-radius: 1.5rem; padding: 2rem;
+            width: 100%; max-width: 750px; max-height: 92vh; overflow-y: auto;
+        }
+        .modal-content.lg { max-width: 950px; }
+        .modal-content h3 {
+            color: #1e3a5f; margin-bottom: 1.5rem;
+            border-right: 4px solid #2b7a4b; padding-right: 1rem;
+            font-size: 1.15rem;
+        }
+        .modal-section {
+            background: #f7fafc; border-radius: 1rem;
+            padding: 1rem 1.2rem; margin-bottom: 1.2rem;
+        }
+        .modal-section-title {
+            font-weight: bold; color: #1e3a5f; margin-bottom: 0.8rem;
+            font-size: 0.95rem; border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.4rem;
+        }
+        .form-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+        .form-grid.full { grid-template-columns: 1fr; }
+        .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+        .form-field label {
+            font-size: 0.8rem; font-weight: bold; color: #2d3748;
+        }
+        .form-field input, .form-field select, .form-field textarea {
+            padding: 0.7rem 0.9rem; border: 2px solid #e2e8f0;
+            border-radius: 0.8rem; font-size: 0.85rem;
+            font-family: 'Tajawal', sans-serif; outline: none;
+            transition: 0.2s;
+        }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+            border-color: #2b7a4b;
+        }
+        .form-field input[readonly] {
+            background: #edf2f7; cursor: not-allowed; color: #4a5568;
+        }
+        .form-field textarea { resize: vertical; min-height: 65px; }
+
+        .modal-buttons { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .modal-buttons button {
+            flex: 1; padding: 0.8rem; border-radius: 0.8rem;
+            font-weight: bold; cursor: pointer; border: none; font-size: 0.9rem;
+        }
+        .save-btn { background: #2b7a4b; color: white; }
+        .save-btn:hover { background: #1e5a38; }
+        .cancel-btn { background: #a0aec0; color: white; }
+        .cancel-btn:hover { background: #718096; }
+
+        /* ====== Searchable Selector ====== */
+        .selector-wrapper { position: relative; }
+        .selector-input {
+            width: 100%; padding: 0.7rem 0.9rem;
+            border: 2px solid #e2e8f0; border-radius: 0.8rem;
+            font-size: 0.85rem; font-family: 'Tajawal', sans-serif;
+            outline: none; cursor: pointer;
+        }
+        .selector-input:focus { border-color: #2b7a4b; }
+        .selector-dropdown {
+            display: none; position: absolute; top: calc(100% + 4px);
+            right: 0; left: 0; background: white;
+            border: 1px solid #e2e8f0; border-radius: 0.8rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 1500; max-height: 250px; overflow-y: auto;
+        }
+        .selector-dropdown.open { display: block; }
+        .selector-option {
+            padding: 0.6rem 0.9rem; cursor: pointer;
+            font-size: 0.85rem; border-bottom: 1px solid #f0f4f8;
+            transition: 0.2s;
+        }
+        .selector-option:hover { background: #f0f4f8; }
+        .selector-option.selected { background: #c6f6d5; font-weight: bold; }
+        .selector-option .opt-sub { font-size: 0.75rem; color: #718096; }
+        .selector-empty {
+            padding: 1rem; text-align: center;
+            color: #a0aec0; font-size: 0.85rem;
+        }
+
+        /* ====== Employee Profile Modal ====== */
+        .profile-header {
+            display: flex; align-items: center; gap: 1.2rem;
+            padding: 1rem; background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            border-radius: 1rem; color: white; margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .profile-avatar {
+            width: 90px; height: 90px; border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; flex-shrink: 0;
+            border: 3px solid rgba(255,255,255,0.5);
+        }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar .no-photo-icon { font-size: 2.5rem; }
+        .profile-info { flex: 1; min-width: 200px; }
+        .profile-info h3 { font-size: 1.2rem; margin-bottom: 0.3rem; border: none; padding: 0; color: white; }
+        .profile-info p { font-size: 0.85rem; opacity: 0.95; margin: 0.1rem 0; }
+
+        .detail-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.8rem;
+        }
+        .detail-item {
+            background: white; border-radius: 0.7rem;
+            padding: 0.7rem 0.9rem; border: 1px solid #e2e8f0;
+        }
+        .detail-item .lbl {
+            font-size: 0.72rem; color: #718096;
+            font-weight: bold; margin-bottom: 0.15rem;
+        }
+        .detail-item .val {
+            font-size: 0.9rem; color: #1e3a5f; font-weight: bold;
+            word-break: break-word;
+        }
+
+        .big-progress {
+            background: white; border-radius: 0.7rem;
+            padding: 1rem; border: 1px solid #e2e8f0;
+        }
+        .big-progress-bar {
+            width: 100%; height: 14px; background: #e2e8f0;
+            border-radius: 1rem; overflow: hidden; margin-top: 0.5rem;
+        }
+        .big-progress-fill {
+            height: 100%; background: linear-gradient(90deg, #2b7a4b, #48bb78);
+            border-radius: 1rem; transition: width 0.6s;
+        }
+
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.7rem;
+        }
+        .attendance-item {
+            background: white; border-radius: 0.7rem;
+            padding: 0.8rem; text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .attendance-item .num { font-size: 1.5rem; font-weight: bold; }
+        .attendance-item .lbl { font-size: 0.75rem; color: #718096; }
+        .att-completed .num { color: #2b7a4b; }
+        .att-missed .num { color: #e53e3e; }
+        .att-pending .num { color: #dd6b20; }
+        .att-hours .num { color: #6b46c1; }
+
+        /* ====== Toast ====== */
+        .toast-msg {
+            position: fixed; bottom: 2rem; right: 2rem;
+            background: #2b7a4b; color: white;
+            padding: 0.8rem 1.5rem; border-radius: 2rem;
+            z-index: 3000; animation: slideIn 0.3s ease;
+            max-width: 90vw; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+        }
+        .toast-msg.error { background: #e53e3e; }
+        .toast-msg.warning { background: #dd6b20; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+
+        .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
+
+        /* ====== Responsive ====== */
+        @media (max-width: 1600px) { .container { max-width: 95%; } }
+        @media (max-width: 1400px) { .container { max-width: 1140px; } }
+        @media (max-width: 1200px) { .container { max-width: 960px; } }
+        @media (max-width: 992px) {
+            .container { max-width: 720px; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .filter-group { min-width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; justify-content: center; text-align: center; padding: 1rem; }
+            .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
+            .container { max-width: 100%; padding: 0 1rem; }
+            .action-bar { flex-direction: column; align-items: stretch; }
+            .action-bar button { width: 100%; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .kpi-card .kpi-value { font-size: 1.8rem; }
+            table { min-width: 1100px; }
+            .profile-header { flex-direction: column; text-align: center; }
+        }
+        @media (max-width: 576px) {
+            .page-header h1 { font-size: 1.5rem; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 1.2rem; }
+            .modal-buttons { flex-direction: column; }
+            .search-box { flex-direction: column; }
+            .search-box input, .search-box button { width: 100%; }
+        }
+        @media (max-width: 425px) {
+            .nav-links a, .nav-links button { width: 100%; text-align: center; }
+            th, td { padding: 0.5rem; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== Navbar ====== -->
+    <div class="navbar">
+        <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
+        <div class="nav-links">
+            <a href="index.html" class="home">🏠 الرئيسية</a>
+            <button onclick="refreshData()" class="refresh">🔄 تحديث البيانات</button>
+            <button onclick="logout()" class="logout">🚪 تسجيل خروج</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🔄 إدارة التدريب الداخلي – Cross-Training</h1>
+        </div>
+
+        <!-- ====== KPI Cards ====== -->
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <!-- ====== Action Bar ====== -->
+        <div class="action-bar">
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button id="addPlanBtn" class="btn btn-primary admin-only" onclick="openAddModal()">➕ خطة Cross-Training جديدة</button>
+            </div>
+        </div>
+
+        <!-- ====== Filter Bar ====== -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 بحث بكود الموظف أو الاسم..." onkeypress="if(event.key==='Enter') applyFilters()">
+                <button onclick="applyFilters()">🔍 بحث</button>
+                <button id="clearSearchBtn" onclick="clearFilters()" style="background:#718096; display:none;">✖️ إلغاء</button>
+            </div>
+
+            <div class="filter-group">
+                <label>📂 القسم الأصلي</label>
+                <select id="homeDeptFilter" onchange="applyFilters()">
+                    <option value="all">كل الأقسام</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>🎯 قسم التدريب</label>
+                <select id="trainingDeptFilter" onchange="applyFilters()">
+                    <option value="all">كل الأقسام</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>📌 الحالة</label>
+                <select id="statusFilter" onchange="applyFilters()">
+                    <option value="all">الكل</option>
+                    <option value="Planned">Planned</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>📅 التاريخ</label>
+                <select id="dateFilter" onchange="onDateFilterChange()">
+                    <option value="all">الكل</option>
+                    <option value="current">الشهر الحالي</option>
+                    <option value="previous">الشهر السابق</option>
+                    <option value="custom">نطاق مخصص</option>
+                </select>
+            </div>
+
+            <div class="filter-group hidden" id="customDateGroup">
+                <label>من / إلى</label>
+                <div class="date-range-group">
+                    <input type="date" id="dateFrom" onchange="applyFilters()">
+                    <input type="date" id="dateTo" onchange="applyFilters()">
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== Table ====== -->
+        <div class="table-container">
+            <table id="plansTable">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Employee Name</th>
+                        <th>Home Dep</th>
+                        <th>Home Position</th>
+                        <th>Training Dep</th>
+                        <th>Training Position</th>
+                        <th>Trainer</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Planned Days</th>
+                        <th>Planned Hours</th>
+                        <th>Actual Days</th>
+                        <th>Actual Hours</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="16" style="text-align:center; padding:2rem;">⏳ جاري تحميل البيانات...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ====== Add / Edit Plan Modal ====== -->
+    <div id="planModal" class="modal">
+        <div class="modal-content lg">
+            <h3 id="planModalTitle">➕ خطة Cross-Training جديدة</h3>
+
+            <!-- Employee Info -->
+            <div class="modal-section">
+                <div class="modal-section-title">👤 بيانات الموظف</div>
+
+                <div class="form-field" style="margin-bottom:0.8rem;">
+                    <label>الموظف *</label>
+                    <div class="selector-wrapper">
+                        <input type="text" class="selector-input" id="empSelectorInput"
+                               placeholder="🔍 اكتب كود أو اسم الموظف..."
+                               autocomplete="off"
+                               onfocus="openEmpSelector()"
+                               oninput="filterEmpSelector(this.value)">
+                        <div class="selector-dropdown" id="empSelectorDropdown"></div>
+                    </div>
+                    <input type="hidden" id="planEmployeeId">
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Employee ID</label>
+                        <input type="text" id="empIdDisplay" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label>Full Name</label>
+                        <input type="text" id="empNameDisplay" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label>Home Department</label>
+                        <input type="text" id="empDeptDisplay" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label>Home Position</label>
+                        <input type="text" id="empPosDisplay" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label>Level</label>
+                        <input type="text" id="empLevelDisplay" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Info -->
+            <div class="modal-section">
+                <div class="modal-section-title">🎯 بيانات التدريب</div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Training Department *</label>
+                        <select id="trainingDeptSelect"></select>
+                    </div>
+                    <div class="form-field">
+                        <label>Training Position *</label>
+                        <div class="selector-wrapper">
+                            <input type="text" class="selector-input" id="trainingPosInput"
+                                   placeholder="اختر أو اكتب الوظيفة..."
+                                   autocomplete="off"
+                                   onfocus="openTrainingPosSelector()"
+                                   oninput="filterTrainingPosSelector(this.value)">
+                            <div class="selector-dropdown" id="trainingPosDropdown"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-top:0.8rem;">
+                    <label>Trainer *</label>
+                    <div class="selector-wrapper">
+                        <input type="text" class="selector-input" id="trainerSelectorInput"
+                               placeholder="🔍 ابحث عن المدرب..."
+                               autocomplete="off"
+                               onfocus="openTrainerSelector()"
+                               oninput="filterTrainerSelector(this.value)">
+                        <div class="selector-dropdown" id="trainerSelectorDropdown"></div>
+                    </div>
+                    <input type="hidden" id="planTrainerId">
+                    <div id="trainerInfoBox" style="margin-top:0.5rem; font-size:0.82rem; color:#4a5568; display:none; background:white; padding:0.6rem; border-radius:0.6rem; border:1px solid #e2e8f0;"></div>
+                </div>
+
+                <div class="form-field" style="margin-top:0.8rem;">
+                    <label>Training Objective</label>
+                    <textarea id="trainingObjective" placeholder="الهدف من التدريب..."></textarea>
+                </div>
+            </div>
+
+            <!-- Schedule Info -->
+            <div class="modal-section">
+                <div class="modal-section-title">📅 الجدول الزمني</div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Start Date *</label>
+                        <input type="date" id="startDate" onchange="calcPlannedDays()">
+                    </div>
+                    <div class="form-field">
+                        <label>End Date *</label>
+                        <input type="date" id="endDate" onchange="calcPlannedDays()">
+                    </div>
+                    <div class="form-field">
+                        <label>Planned Days *</label>
+                        <input type="number" id="plannedDays" min="1" value="1">
+                    </div>
+                    <div class="form-field">
+                        <label>Planned Hours *</label>
+                        <input type="number" id="plannedHours" min="1" value="1">
+                    </div>
+                    <div class="form-field">
+                        <label>Schedule</label>
+                        <input type="text" id="schedule" placeholder="مثال: 09:00 AM - 03:00 PM">
+                    </div>
+                    <div class="form-field">
+                        <label>Status</label>
+                        <select id="planStatus">
+                            <option value="Planned">Planned</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-field" style="margin-top:0.8rem;">
+                    <label>Notes</label>
+                    <textarea id="planNotes" placeholder="ملاحظات إضافية..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="save-btn" onclick="savePlan()">💾 حفظ</button>
+                <button class="cancel-btn" onclick="closeModal('planModal')">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== View Plan Modal ====== -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content lg">
+            <h3>👁️ تفاصيل خطة Cross-Training</h3>
+            <div id="viewModalBody"></div>
+            <div class="modal-buttons">
+                <button class="save-btn" onclick="goToFollowUpFromView()">📋 فتح المتابعة اليومية</button>
+                <button class="cancel-btn" onclick="closeModal('viewModal')">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer"><p>© 2026 Learning & Development Management System</p></div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ============================================================
+        //  Global State
+        // ============================================================
+        let plans = [];
+        let employees = [];
+        let followUps = [];
+        let currentUserRole = null;
+        let editingPlanId = null;
+        let currentViewPlan = null;
+
+        // Selectors state
+        let selectedEmployee = null;
+        let selectedTrainer = null;
+        let selectedTrainingPosition = '';
+
+        // ============================================================
+        //  Helpers
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            if (type === 'error')   toast.classList.add('error');
+            if (type === 'warning') toast.classList.add('warning');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        }
+
+        function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+        function formatDate(iso) {
+            if (!iso) return '-';
+            return iso;
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function getStatusBadge(status) {
+            const map = {
+                'Planned':     { cls: 'st-planned',    icon: '📋' },
+                'In Progress': { cls: 'st-inprogress', icon: '⚙️' },
+                'Completed':   { cls: 'st-completed',  icon: '✅' },
+                'Cancelled':   { cls: 'st-cancelled',  icon: '❌' }
+            };
+            const s = map[status] || map['Planned'];
+            return `<span class="status-badge ${s.cls}">${s.icon} ${escapeHtml(status || 'Planned')}</span>`;
+        }
+
+        function getProgress(plan) {
+            const planned = Number(plan.plannedHours) || 0;
+            const actual  = getActualHours(plan);
+            if (planned <= 0) return 0;
+            return Math.min(100, Math.round((actual / planned) * 100));
+        }
+
+        function getActualHours(plan) {
+            // Sum actual hours from follow-ups for this plan
+            let sum = 0;
+            followUps.forEach(f => {
+                const pid = f.planId || f.plan_id || f.crossTrainingPlanId;
+                if (String(pid) === String(plan.id)) {
+                    sum += Number(f.actualHours || f.hours || 0);
+                }
+            });
+            return sum;
+        }
+
+        function getActualDays(plan) {
+            let count = 0;
+            followUps.forEach(f => {
+                const pid = f.planId || f.plan_id || f.crossTrainingPlanId;
+                if (String(pid) === String(plan.id)) {
+                    const status = f.status || f.attendanceStatus || '';
+                    if (status === 'Present' || status === 'Completed' || status === 'present') count++;
+                }
+            });
+            return count;
+        }
+
+        function getAttendanceSummary(plan) {
+            let completed = 0, missed = 0, pending = 0, actualHours = 0;
+            followUps.forEach(f => {
+                const pid = f.planId || f.plan_id || f.crossTrainingPlanId;
+                if (String(pid) === String(plan.id)) {
+                    const st = f.status || f.attendanceStatus || '';
+                    if (st === 'Present' || st === 'Completed' || st === 'present') completed++;
+                    else if (st === 'Absent' || st === 'Missed' || st === 'absent') missed++;
+                    else pending++;
+                    actualHours += Number(f.actualHours || f.hours || 0);
+                }
+            });
+            const plannedDays = Number(plan.plannedDays) || 0;
+            const remaining = Math.max(0, plannedDays - completed - missed);
+            return { completed, missed, pending: pending || remaining, actualHours };
+        }
+
+        // ============================================================
+        //  Load Data
+        // ============================================================
+        async function loadPlans() {
+            try { return (await DB.getAll('cross_training_plans')) || []; }
+            catch (e) { console.error('Error loading plans:', e); return []; }
+        }
+
+        async function loadEmployees() {
+            try { return (await DB.getAll('employees')) || []; }
+            catch (e) { console.error('Error loading employees:', e); return []; }
+        }
+
+        async function loadFollowUps() {
+            // Try common collection names for daily follow-up
+            const names = ['cross_training_followups', 'cross_training_followup', 'cross_training_daily'];
+            for (const n of names) {
+                try {
+                    const data = await DB.getAll(n);
+                    if (Array.isArray(data)) return data;
+                } catch (e) { /* ignore */ }
+            }
+            return [];
+        }
+
+        async function refreshData() {
+            document.getElementById('tableBody').innerHTML =
+                '<tr><td colspan="16" style="text-align:center; padding:2rem;">⏳ جاري تحديث البيانات من السيرفر...</td></tr>';
+            showToast('⏳ جاري تحديث البيانات...');
+
+            try {
+                await DB.refresh('cross_training_plans');
+                await DB.refresh('employees');
+                try { await DB.refresh('cross_training_followups'); } catch (e) {}
+                await updateUI();
+                showToast('✅ تم تحديث البيانات بنجاح');
+            } catch (e) {
+                console.error(e);
+                showToast('❌ حدث خطأ أثناء التحديث', 'error');
+            }
+        }
+
+        // ============================================================
+        //  UI Update
+        // ============================================================
+        async function updateUI() {
+            [plans, employees, followUps] = await Promise.all([
+                loadPlans(), loadEmployees(), loadFollowUps()
+            ]);
+
+            renderKPIs();
+            populateFilters();
+            renderTable();
+        }
+
+        function renderKPIs() {
+            const total     = plans.length;
+            const planned   = plans.filter(p => p.status === 'Planned').length;
+            const inProg    = plans.filter(p => p.status === 'In Progress').length;
+            const completed = plans.filter(p => p.status === 'Completed').length;
+            const totalHours = plans.reduce((s, p) => s + (Number(p.plannedHours) || 0), 0);
+            const totalDays  = plans.reduce((s, p) => s + (Number(p.plannedDays)  || 0), 0);
+
+            document.getElementById('kpiGrid').innerHTML = `
+                <div class="kpi-card kpi-total">
+                    <div class="kpi-icon">🔄</div>
+                    <div>
+                        <div class="kpi-label">إجمالي خطط Cross-Training</div>
+                        <div class="kpi-value">${total}</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-planned">
+                    <div class="kpi-icon">📋</div>
+                    <div>
+                        <div class="kpi-label">Planned</div>
+                        <div class="kpi-value">${planned}</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-inprogress">
+                    <div class="kpi-icon">⚙️</div>
+                    <div>
+                        <div class="kpi-label">In Progress</div>
+                        <div class="kpi-value">${inProg}</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-completed">
+                    <div class="kpi-icon">✅</div>
+                    <div>
+                        <div class="kpi-label">Completed</div>
+                        <div class="kpi-value">${completed}</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-hours">
+                    <div class="kpi-icon">⏱️</div>
+                    <div>
+                        <div class="kpi-label">Total Training Hours</div>
+                        <div class="kpi-value">${totalHours}</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-days">
+                    <div class="kpi-icon">📅</div>
+                    <div>
+                        <div class="kpi-label">Total Training Days</div>
+                        <div class="kpi-value">${totalDays}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function uniqueValues(list, key) {
+            const s = new Set();
+            list.forEach(x => { if (x[key] && String(x[key]).trim()) s.add(String(x[key]).trim()); });
+            return Array.from(s).sort();
+        }
+
+        function populateFilters() {
+            const empDepts = uniqueValues(employees, 'department');
+            const trDepts  = uniqueValues(plans, 'trainingDepartment');
+
+            const homeSel = document.getElementById('homeDeptFilter');
+            const curHome = homeSel.value;
+            homeSel.innerHTML = '<option value="all">كل الأقسام</option>' +
+                empDepts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+            homeSel.value = curHome || 'all';
+
+            const trSel = document.getElementById('trainingDeptFilter');
+            const curTr = trSel.value;
+            trSel.innerHTML = '<option value="all">كل الأقسام</option>' +
+                trDepts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+            trSel.value = curTr || 'all';
+        }
+
+        // ============================================================
+        //  Filters
+        // ============================================================
+        function onDateFilterChange() {
+            const v = document.getElementById('dateFilter').value;
+            const grp = document.getElementById('customDateGroup');
+            if (v === 'custom') grp.classList.remove('hidden');
+            else grp.classList.add('hidden');
+            applyFilters();
+        }
+
+        function getFilteredPlans() {
+            const term = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+            const homeDept = document.getElementById('homeDeptFilter').value;
+            const trDept = document.getElementById('trainingDeptFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo   = document.getElementById('dateTo').value;
+
+            let list = [...plans];
+
+            if (term) {
+                list = list.filter(p =>
+                    String(p.employeeId || '').toLowerCase().includes(term) ||
+                    String(p.employeeName || '').toLowerCase().includes(term)
+                );
+            }
+            if (homeDept !== 'all') list = list.filter(p => p.homeDepartment === homeDept);
+            if (trDept !== 'all')   list = list.filter(p => p.trainingDepartment === trDept);
+            if (status !== 'all')   list = list.filter(p => p.status === status);
+
+            if (dateFilter === 'current') {
+                const now = new Date();
+                const y = now.getFullYear(), m = now.getMonth();
+                const start = new Date(y, m, 1);
+                const end   = new Date(y, m + 1, 0);
+                list = list.filter(p => inRange(p.startDate, p.endDate, start, end));
+            } else if (dateFilter === 'previous') {
+                const now = new Date();
+                const y = now.getFullYear(), m = now.getMonth() - 1;
+                const start = new Date(y, m, 1);
+                const end   = new Date(y, m + 1, 0);
+                list = list.filter(p => inRange(p.startDate, p.endDate, start, end));
+            } else if (dateFilter === 'custom') {
+                const s = dateFrom ? new Date(dateFrom) : null;
+                const e = dateTo   ? new Date(dateTo)   : null;
+                list = list.filter(p => inRange(p.startDate, p.endDate, s, e));
+            }
+
+            return list;
+        }
+
+        function inRange(startISO, endISO, rangeStart, rangeEnd) {
+            const ps = startISO ? new Date(startISO) : null;
+            const pe = endISO   ? new Date(endISO)   : null;
+            if (!ps && !pe) return true;
+            if (rangeStart && pe && pe < rangeStart) return false;
+            if (rangeEnd && ps && ps > rangeEnd) return false;
+            return true;
+        }
+
+        function applyFilters() {
+            const term = (document.getElementById('searchInput').value || '').trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (term) clearBtn.style.display = 'inline-block';
+            else clearBtn.style.display = 'none';
+            renderTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('homeDeptFilter').value = 'all';
+            document.getElementById('trainingDeptFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('dateFilter').value = 'all';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            document.getElementById('customDateGroup').classList.add('hidden');
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            renderTable();
+        }
+
+        // ============================================================
+        //  Table Render
+        // ============================================================
+        function renderTable() {
+            const list = getFilteredPlans();
+            const tbody = document.getElementById('tableBody');
+            const isAdmin = (currentUserRole === 'Admin' || currentUserRole === 'admin');
+
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="16" style="text-align:center; padding:2rem;">📭 لا توجد خطط مطابقة</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.map(p => {
+                const progress = getProgress(p);
+                const actualHours = getActualHours(p);
+                const actualDays  = getActualDays(p);
+
+                const adminBtns = isAdmin ? `
+                    <button class="icon-btn btn-edit" onclick="editPlan('${p.id}')">✏️ تعديل</button>
+                    <button class="icon-btn btn-delete" onclick="deletePlan('${p.id}')">🗑️ حذف</button>
+                ` : '';
+
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(p.employeeId)}</strong></td>
+                        <td>${escapeHtml(p.employeeName || '-')}</td>
+                        <td>${escapeHtml(p.homeDepartment || '-')}</td>
+                        <td>${escapeHtml(p.homePosition || '-')}</td>
+                        <td>${escapeHtml(p.trainingDepartment || '-')}</td>
+                        <td>${escapeHtml(p.trainingPosition || '-')}</td>
+                        <td>${escapeHtml(p.trainerName || '-')}</td>
+                        <td>${escapeHtml(p.startDate || '-')}</td>
+                        <td>${escapeHtml(p.endDate || '-')}</td>
+                        <td>${p.plannedDays || 0}</td>
+                        <td>${p.plannedHours || 0}</td>
+                        <td>${actualDays}</td>
+                        <td>${actualHours}</td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width:${progress}%;"></div>
+                                </div>
+                                <span class="progress-text">${progress}%</span>
+                            </div>
+                        </td>
+                        <td>${getStatusBadge(p.status)}</td>
+                        <td class="action-buttons">
+                            <button class="icon-btn btn-view" onclick="viewPlan('${p.id}')">👁️ عرض</button>
+                            ${adminBtns}
+                            <button class="icon-btn btn-follow" onclick="goToFollowUp('${p.id}')">📋 متابعة</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        //  Modal Helpers
+        // ============================================================
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            if (id === 'planModal') editingPlanId = null;
+        }
+
+        function openAddModal() {
+            editingPlanId = null;
+            selectedEmployee = null;
+            selectedTrainer = null;
+            selectedTrainingPosition = '';
+
+            document.getElementById('planModalTitle').textContent = '➕ خطة Cross-Training جديدة';
+            document.getElementById('empSelectorInput').value = '';
+            document.getElementById('planEmployeeId').value = '';
+            ['empIdDisplay','empNameDisplay','empDeptDisplay','empPosDisplay','empLevelDisplay']
+                .forEach(id => document.getElementById(id).value = '');
+            document.getElementById('trainingDeptSelect').value = '';
+            document.getElementById('trainingPosInput').value = '';
+            document.getElementById('trainerSelectorInput').value = '';
+            document.getElementById('planTrainerId').value = '';
+            document.getElementById('trainerInfoBox').style.display = 'none';
+            document.getElementById('trainingObjective').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('plannedDays').value = 1;
+            document.getElementById('plannedHours').value = 1;
+            document.getElementById('schedule').value = '';
+            document.getElementById('planStatus').value = 'Planned';
+            document.getElementById('planNotes').value = '';
+
+            populateTrainingDeptSelect();
+            document.getElementById('planModal').style.display = 'flex';
+        }
+
+        function populateTrainingDeptSelect() {
+            const depts = uniqueValues(employees, 'department');
+            const sel = document.getElementById('trainingDeptSelect');
+            sel.innerHTML = '<option value="">-- اختر القسم --</option>' +
+                depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+        }
+
+        // ============================================================
+        //  Employee Selector (Searchable)
+        // ============================================================
+        function openEmpSelector() {
+            const dd = document.getElementById('empSelectorDropdown');
+            renderEmpSelectorOptions(employees);
+            dd.classList.add('open');
+        }
+
+        function filterEmpSelector(term) {
+            const t = (term || '').toLowerCase().trim();
+            const filtered = employees.filter(e =>
+                !t ||
+                String(e.id).toLowerCase().includes(t) ||
+                String(e.fullName || '').toLowerCase().includes(t)
+            );
+            renderEmpSelectorOptions(filtered);
+            document.getElementById('empSelectorDropdown').classList.add('open');
+        }
+
+        function renderEmpSelectorOptions(list) {
+            const dd = document.getElementById('empSelectorDropdown');
+            if (!list.length) {
+                dd.innerHTML = '<div class="selector-empty">لا توجد نتائج</div>';
+                return;
+            }
+            dd.innerHTML = list.slice(0, 200).map(e => `
+                <div class="selector-option ${selectedEmployee && String(selectedEmployee.id) === String(e.id) ? 'selected' : ''}"
+                     onclick="pickEmployee('${e.id}')">
+                    <div><strong>${escapeHtml(e.id)}</strong> - ${escapeHtml(e.fullName || '')}</div>
+                    <div class="opt-sub">${escapeHtml(e.department || '')} • ${escapeHtml(e.position || '')}</div>
+                </div>
+            `).join('');
+        }
+
+        function pickEmployee(id) {
+            const emp = employees.find(e => String(e.id) === String(id));
+            if (!emp) return;
+            selectedEmployee = emp;
+            document.getElementById('planEmployeeId').value = emp.id;
+            document.getElementById('empSelectorInput').value = `${emp.id} - ${emp.fullName}`;
+            document.getElementById('empIdDisplay').value = emp.id;
+            document.getElementById('empNameDisplay').value = emp.fullName || '';
+            document.getElementById('empDeptDisplay').value = emp.department || '';
+            document.getElementById('empPosDisplay').value = emp.position || '';
+            document.getElementById('empLevelDisplay').value = emp.level || '';
+            document.getElementById('empSelectorDropdown').classList.remove('open');
+        }
+
+        // ============================================================
+        //  Training Position Selector
+        // ============================================================
+        function openTrainingPosSelector() {
+            const dept = document.getElementById('trainingDeptSelect').value;
+            const positions = uniqueValues(
+                employees.filter(e => !dept || e.department === dept),
+                'position'
+            );
+            renderTrainingPosOptions(positions);
+            document.getElementById('trainingPosDropdown').classList.add('open');
+        }
+
+        function filterTrainingPosSelector(term) {
+            const dept = document.getElementById('trainingDeptSelect').value;
+            const t = (term || '').toLowerCase().trim();
+            const positions = uniqueValues(
+                employees.filter(e => !dept || e.department === dept),
+                'position'
+            ).filter(p => !t || p.toLowerCase().includes(t));
+            renderTrainingPosOptions(positions);
+            document.getElementById('trainingPosDropdown').classList.add('open');
+        }
+
+        function renderTrainingPosOptions(list) {
+            const dd = document.getElementById('trainingPosDropdown');
+            if (!list.length) {
+                dd.innerHTML = '<div class="selector-empty">اكتب الوظيفة يدوياً</div>';
+                return;
+            }
+            dd.innerHTML = list.map(p => `
+                <div class="selector-option ${selectedTrainingPosition === p ? 'selected' : ''}"
+                     onclick="pickTrainingPosition('${p.replace(/'/g, "\\'")}')">
+                    ${escapeHtml(p)}
+                </div>
+            `).join('');
+        }
+
+        function pickTrainingPosition(pos) {
+            selectedTrainingPosition = pos;
+            document.getElementById('trainingPosInput').value = pos;
+            document.getElementById('trainingPosDropdown').classList.remove('open');
+        }
+
+        // ============================================================
+        //  Trainer Selector
+        // ============================================================
+        function openTrainerSelector() {
+            renderTrainerOptions(employees);
+            document.getElementById('trainerSelectorDropdown').classList.add('open');
+        }
+
+        function filterTrainerSelector(term) {
+            const t = (term || '').toLowerCase().trim();
+            const filtered = employees.filter(e =>
+                !t ||
+                String(e.id).toLowerCase().includes(t) ||
+                String(e.fullName || '').toLowerCase().includes(t)
+            );
+            renderTrainerOptions(filtered);
+            document.getElementById('trainerSelectorDropdown').classList.add('open');
+        }
+
+        function renderTrainerOptions(list) {
+            const dd = document.getElementById('trainerSelectorDropdown');
+            if (!list.length) {
+                dd.innerHTML = '<div class="selector-empty">لا توجد نتائج</div>';
+                return;
+            }
+            dd.innerHTML = list.slice(0, 200).map(e => `
+                <div class="selector-option ${selectedTrainer && String(selectedTrainer.id) === String(e.id) ? 'selected' : ''}"
+                     onclick="pickTrainer('${e.id}')">
+                    <div><strong>${escapeHtml(e.id)}</strong> - ${escapeHtml(e.fullName || '')}</div>
+                    <div class="opt-sub">${escapeHtml(e.department || '')} • ${escapeHtml(e.position || '')}</div>
+                </div>
+            `).join('');
+        }
+
+        function pickTrainer(id) {
+            const emp = employees.find(e => String(e.id) === String(id));
+            if (!emp) return;
+            selectedTrainer = emp;
+            document.getElementById('planTrainerId').value = emp.id;
+            document.getElementById('trainerSelectorInput').value = `${emp.id} - ${emp.fullName}`;
+            const box = document.getElementById('trainerInfoBox');
+            box.style.display = 'block';
+            box.innerHTML = `<strong>${escapeHtml(emp.fullName || '')}</strong> — ${escapeHtml(emp.department || '')} • ${escapeHtml(emp.position || '')}`;
+            document.getElementById('trainerSelectorDropdown').classList.remove('open');
+        }
+
+        // ============================================================
+        //  Auto-calc planned days
+        // ============================================================
+        function calcPlannedDays() {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            if (s && e) {
+                const sd = new Date(s), ed = new Date(e);
+                const diff = Math.floor((ed - sd) / (1000 * 60 * 60 * 24)) + 1;
+                if (diff > 0) document.getElementById('plannedDays').value = diff;
+            }
+        }
+
+        // ============================================================
+        //  Validation
+        // ============================================================
+        function validatePlan(data) {
+            if (!data.employeeId) return 'الرجاء اختيار الموظف';
+            if (!data.trainingDepartment) return 'الرجاء اختيار قسم التدريب';
+            if (!data.trainingPosition) return 'الرجاء تحديد الوظيفة التدريبية';
+            if (!data.trainerId) return 'الرجاء اختيار المدرب';
+            if (!data.startDate) return 'الرجاء إدخال تاريخ البداية';
+            if (!data.endDate) return 'الرجاء إدخال تاريخ النهاية';
+            if (new Date(data.endDate) < new Date(data.startDate)) return 'تاريخ النهاية لا يمكن أن يسبق تاريخ البداية';
+            if (!data.plannedDays || data.plannedDays <= 0) return 'عدد الأيام المخططة يجب أن يكون أكبر من 0';
+            if (!data.plannedHours || data.plannedHours <= 0) return 'عدد الساعات المخططة يجب أن يكون أكبر من 0';
+            return null;
+        }
+
+        function checkConflict(data) {
+            // Prevent new In Progress plan for same employee with overlapping period
+            const overlapping = plans.filter(p => {
+                if (editingPlanId && String(p.id) === String(editingPlanId)) return false;
+                if (String(p.employeeId) !== String(data.employeeId)) return false;
+                if (p.status !== 'In Progress') return false;
+                return !(new Date(data.endDate) < new Date(p.startDate) ||
+                         new Date(data.startDate) > new Date(p.endDate));
+            });
+            if (overlapping.length) {
+                return '⚠️ هذا الموظف لديه خطة Cross-Training أخرى "In Progress" في نفس الفترة الزمنية';
+            }
+            return null;
+        }
+
+        // ============================================================
+        //  Save Plan
+        // ============================================================
+        async function savePlan() {
+            const data = {
+                employeeId: document.getElementById('planEmployeeId').value || '',
+                employeeName: document.getElementById('empNameDisplay').value || '',
+                homeDepartment: document.getElementById('empDeptDisplay').value || '',
+                homePosition: document.getElementById('empPosDisplay').value || '',
+                employeeLevel: document.getElementById('empLevelDisplay').value || '',
+                trainingDepartment: document.getElementById('trainingDeptSelect').value || '',
+                trainingPosition: document.getElementById('trainingPosInput').value || '',
+                trainerId: document.getElementById('planTrainerId').value || '',
+                trainerName: document.getElementById('trainerSelectorInput').value || '',
+                trainingObjective: document.getElementById('trainingObjective').value || '',
+                startDate: document.getElementById('startDate').value || '',
+                endDate: document.getElementById('endDate').value || '',
+                plannedDays: Number(document.getElementById('plannedDays').value) || 0,
+                plannedHours: Number(document.getElementById('plannedHours').value) || 0,
+                schedule: document.getElementById('schedule').value || '',
+                status: document.getElementById('planStatus').value || 'Planned',
+                notes: document.getElementById('planNotes').value || '',
+                updatedAt: new Date().toISOString(),
+                createdBy: auth.currentUser ? auth.currentUser.uid : ''
+            };
+
+            const err = validatePlan(data);
+            if (err) { showToast(err, 'error'); return; }
+
+            // Conflict check only when status is In Progress
+            if (data.status === 'In Progress') {
+                const conflict = checkConflict(data);
+                if (conflict) { showToast(conflict, 'warning'); return; }
+            }
+
+            try {
+                if (editingPlanId) {
+                    const existing = plans.find(p => String(p.id) === String(editingPlanId));
+                    data.id = existing ? existing.id : editingPlanId;
+                    data.createdAt = existing ? existing.createdAt : new Date().toISOString();
+                    await DB.update('cross_training_plans', data);
+                    showToast('✅ تم تحديث الخطة بنجاح');
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await DB.insert('cross_training_plans', data);
+                    showToast('✅ تم إنشاء الخطة بنجاح');
+                }
+                closeModal('planModal');
+                await updateUI();
+            } catch (e) {
+                console.error(e);
+                showToast('❌ حدث خطأ أثناء الحفظ', 'error');
+            }
+        }
+
+        // ============================================================
+        //  Edit Plan
+        // ============================================================
+        function editPlan(id) {
+            const p = plans.find(x => String(x.id) === String(id));
+            if (!p) return;
+            if (!(currentUserRole === 'Admin' || currentUserRole === 'admin')) {
+                showToast('❌ ليس لديك صلاحية التعديل', 'error');
+                return;
+            }
+            editingPlanId = p.id;
+
+            document.getElementById('planModalTitle').textContent = '✏️ تعديل خطة Cross-Training';
+
+            // Employee
+            const emp = employees.find(e => String(e.id) === String(p.employeeId));
+            selectedEmployee = emp || { id: p.employeeId, fullName: p.employeeName };
+            document.getElementById('planEmployeeId').value = p.employeeId || '';
+            document.getElementById('empSelectorInput').value = `${p.employeeId} - ${p.employeeName || ''}`;
+            document.getElementById('empIdDisplay').value = p.employeeId || '';
+            document.getElementById('empNameDisplay').value = p.employeeName || '';
+            document.getElementById('empDeptDisplay').value = p.homeDepartment || '';
+            document.getElementById('empPosDisplay').value = p.homePosition || '';
+            document.getElementById('empLevelDisplay').value = p.employeeLevel || '';
+
+            // Training info
+            populateTrainingDeptSelect();
+            document.getElementById('trainingDeptSelect').value = p.trainingDepartment || '';
+            document.getElementById('trainingPosInput').value = p.trainingPosition || '';
+            selectedTrainingPosition = p.trainingPosition || '';
+
+            // Trainer
+            const tr = employees.find(e => String(e.id) === String(p.trainerId));
+            selectedTrainer = tr || { id: p.trainerId, fullName: p.trainerName };
+            document.getElementById('planTrainerId').value = p.trainerId || '';
+            document.getElementById('trainerSelectorInput').value = p.trainerName || (tr ? `${tr.id} - ${tr.fullName}` : '');
+            const box = document.getElementById('trainerInfoBox');
+            if (tr) {
+                box.style.display = 'block';
+                box.innerHTML = `<strong>${escapeHtml(tr.fullName || '')}</strong> — ${escapeHtml(tr.department || '')} • ${escapeHtml(tr.position || '')}`;
+            } else {
+                box.style.display = 'none';
+            }
+
+            document.getElementById('trainingObjective').value = p.trainingObjective || '';
+            document.getElementById('startDate').value = p.startDate || '';
+            document.getElementById('endDate').value = p.endDate || '';
+            document.getElementById('plannedDays').value = p.plannedDays || 1;
+            document.getElementById('plannedHours').value = p.plannedHours || 1;
+            document.getElementById('schedule').value = p.schedule || '';
+            document.getElementById('planStatus').value = p.status || 'Planned';
+            document.getElementById('planNotes').value = p.notes || '';
+
+            document.getElementById('planModal').style.display = 'flex';
+        }
+
+        // ============================================================
+        //  Delete Plan
+        // ============================================================
+        async function deletePlan(id) {
+            if (!(currentUserRole === 'Admin' || currentUserRole === 'admin')) {
+                showToast('❌ ليس لديك صلاحية الحذف', 'error');
+                return;
+            }
+            const p = plans.find(x => String(x.id) === String(id));
+            if (!p) return;
+            if (!confirm(`⚠️ هل أنت متأكد من حذف خطة Cross-Training للموظف: ${p.employeeName || p.employeeId}؟`)) return;
+            try {
+                await DB.delete('cross_training_plans', id);
+                showToast('🗑️ تم حذف الخطة بنجاح');
+                await updateUI();
+            } catch (e) {
+                console.error(e);
+                showToast('❌ حدث خطأ أثناء الحذف', 'error');
+            }
+        }
+
+        // ============================================================
+        //  View Plan
+        // ============================================================
+        function viewPlan(id) {
+            const p = plans.find(x => String(x.id) === String(id));
+            if (!p) return;
+            currentViewPlan = p;
+
+            const emp = employees.find(e => String(e.id) === String(p.employeeId));
+            const photoUrl = emp && emp.photoUrl ? emp.photoUrl : '';
+            const progress = getProgress(p);
+            const actualHours = getActualHours(p);
+            const actualDays  = getActualDays(p);
+            const summary = getAttendanceSummary(p);
+
+            const avatarHtml = photoUrl
+                ? `<img src="${escapeHtml(photoUrl)}" alt="photo" onerror="this.parentElement.innerHTML='<div class=\\'no-photo-icon\\'>👤</div>'">`
+                : `<div class="no-photo-icon">👤</div>`;
+
+            document.getElementById('viewModalBody').innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-avatar">${avatarHtml}</div>
+                    <div class="profile-info">
+                        <h3>${escapeHtml(p.employeeName || '-')}</h3>
+                        <p>🆔 ${escapeHtml(p.employeeId || '-')}</p>
+                        <p>🏢 ${escapeHtml(p.homeDepartment || '-')} • 💼 ${escapeHtml(p.homePosition || '-')}</p>
+                        <p>📊 ${escapeHtml(p.employeeLevel || '-')}</p>
+                    </div>
+                    <div>${getStatusBadge(p.status)}</div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">🎯 بيانات التدريب</div>
+                    <div class="detail-grid">
+                        <div class="detail-item"><div class="lbl">Training Department</div><div class="val">${escapeHtml(p.trainingDepartment || '-')}</div></div>
+                        <div class="detail-item"><div class="lbl">Training Position</div><div class="val">${escapeHtml(p.trainingPosition || '-')}</div></div>
+                        <div class="detail-item"><div class="lbl">Trainer</div><div class="val">${escapeHtml(p.trainerName || '-')}</div></div>
+                        <div class="detail-item"><div class="lbl">Start Date</div><div class="val">${escapeHtml(p.startDate || '-')}</div></div>
+                        <div class="detail-item"><div class="lbl">End Date</div><div class="val">${escapeHtml(p.endDate || '-')}</div></div>
+                        <div class="detail-item"><div class="lbl">Schedule</div><div class="val">${escapeHtml(p.schedule || '-')}</div></div>
+                        <div class="detail-item"><div class="lbl">Planned Days</div><div class="val">${p.plannedDays || 0}</div></div>
+                        <div class="detail-item"><div class="lbl">Planned Hours</div><div class="val">${p.plannedHours || 0}</div></div>
+                        <div class="detail-item"><div class="lbl">Actual Days</div><div class="val">${actualDays}</div></div>
+                        <div class="detail-item"><div class="lbl">Actual Hours</div><div class="val">${actualHours}</div></div>
+                    </div>
+                    ${p.trainingObjective ? `<div class="detail-item" style="margin-top:0.8rem;"><div class="lbl">Training Objective</div><div class="val">${escapeHtml(p.trainingObjective)}</div></div>` : ''}
+                    ${p.notes ? `<div class="detail-item" style="margin-top:0.8rem;"><div class="lbl">Notes</div><div class="val">${escapeHtml(p.notes)}</div></div>` : ''}
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">📊 Training Progress</div>
+                    <div class="big-progress">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; color:#1e3a5f;">
+                            <span>نسبة التقدم</span>
+                            <span>${progress}%</span>
+                        </div>
+                        <div class="big-progress-bar">
+                            <div class="big-progress-fill" style="width:${progress}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">📅 Daily Attendance Summary</div>
+                    <div class="attendance-grid">
+                        <div class="attendance-item att-completed">
+                            <div class="num">${summary.completed}</div>
+                            <div class="lbl">Completed Days</div>
+                        </div>
+                        <div class="attendance-item att-missed">
+                            <div class="num">${summary.missed}</div>
+                            <div class="lbl">Missed Days</div>
+                        </div>
+                        <div class="attendance-item att-pending">
+                            <div class="num">${summary.pending}</div>
+                            <div class="lbl">Pending Days</div>
+                        </div>
+                        <div class="attendance-item att-hours">
+                            <div class="num">${summary.actualHours}</div>
+                            <div class="lbl">Actual Hours</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('viewModal').style.display = 'flex';
+        }
+
+        // ============================================================
+        //  Follow-up Navigation
+        // ============================================================
+        function goToFollowUp(planId) {
+            const p = plans.find(x => String(x.id) === String(planId));
+            if (!p) return;
+            // Navigate to follow-up page with plan + employee info in query
+            const url = `cross-training-followup.html?planId=${encodeURIComponent(p.id)}` +
+                        `&employeeId=${encodeURIComponent(p.employeeId)}`;
+            window.location.href = url;
+        }
+
+        function goToFollowUpFromView() {
+            if (!currentViewPlan) return;
+            goToFollowUp(currentViewPlan.id);
+        }
+
+        // ============================================================
+        //  Role Check
+        // ============================================================
+        function checkAdminAndShowButtons() {
+            const isAdmin = (currentUserRole === 'Admin' || currentUserRole === 'admin');
+            document.querySelectorAll('.admin-only').forEach(el => {
+                if (isAdmin) el.classList.add('visible');
+                else el.classList.remove('visible');
+            });
+        }
+
+        // ============================================================
+        //  Logout
+        // ============================================================
+        async function logout() {
+            try { await signOut(auth); } catch (e) {}
+            window.location.href = 'login.html';
+        }
+
+        // ============================================================
+        //  Global Click (Close Dropdowns)
+        // ============================================================
+        document.addEventListener('click', (e) => {
+            const ids = ['empSelectorDropdown','trainingPosDropdown','trainerSelectorDropdown'];
+            ids.forEach(id => {
+                const dd = document.getElementById(id);
+                if (!dd) return;
+                const wrap = dd.parentElement;
+                if (wrap && !wrap.contains(e.target)) dd.classList.remove('open');
+            });
+        });
+
+        // ============================================================
+        //  Expose to window
+        // ============================================================
+        window.refreshData = refreshData;
+        window.logout = logout;
+        window.openAddModal = openAddModal;
+        window.closeModal = closeModal;
+        window.applyFilters = applyFilters;
+        window.clearFilters = clearFilters;
+        window.onDateFilterChange = onDateFilterChange;
+        window.savePlan = savePlan;
+        window.editPlan = editPlan;
+        window.deletePlan = deletePlan;
+        window.viewPlan = viewPlan;
+        window.goToFollowUp = goToFollowUp;
+        window.goToFollowUpFromView = goToFollowUpFromView;
+        window.openEmpSelector = openEmpSelector;
+        window.filterEmpSelector = filterEmpSelector;
+        window.pickEmployee = pickEmployee;
+        window.openTrainingPosSelector = openTrainingPosSelector;
+        window.filterTrainingPosSelector = filterTrainingPosSelector;
+        window.pickTrainingPosition = pickTrainingPosition;
+        window.openTrainerSelector = openTrainerSelector;
+        window.filterTrainerSelector = filterTrainerSelector;
+        window.pickTrainer = pickTrainer;
+        window.calcPlannedDays = calcPlannedDays;
+
+        // ============================================================
+        //  Init
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            try {
+                const userData = await DB.get('users', user.uid);
+                currentUserRole = userData ? userData.role : 'user';
+                checkAdminAndShowButtons();
+                await updateUI();
+            } catch (e) {
+                console.error('Auth error:', e);
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
