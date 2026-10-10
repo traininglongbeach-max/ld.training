@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Training Monthly Report - التقرير الشهري</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#0B3B82">
+
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #f0f4f8; overflow-x: hidden; }
+
+        /* ====== Navbar ====== */
+        .navbar {
+            background: white; padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem;
+            position: sticky; top: 0; z-index: 999;
+        }
+        .logo h2 { color: #1e3a5f; }
+        .logo span { color: #2b7a4b; }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-links a, .nav-links button {
+            text-decoration: none; padding: 0.5rem 1rem; border-radius: 2rem;
+            font-weight: 500; cursor: pointer; border: none; font-size: 0.85rem;
+        }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: #2b7a4b; color: white; }
+        .nav-links .refresh { background: #3182ce; color: white; }
+        .nav-links .logout { background: #e53e3e; color: white; }
+        .nav-links .back { background: #805ad5; color: white; }
+
+        /* ====== Layout ====== */
+        .container { max-width: 1800px; margin: 2rem auto; padding: 0 1.5rem; }
+
+        /* ====== Report Header (Print) ====== */
+        .report-header {
+            background: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+            color: white; border-radius: 1.3rem; padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 1.5rem;
+            box-shadow: 0 8px 25px rgba(30,58,95,0.15);
+        }
+        .report-header .header-left h1 {
+            font-size: 1.7rem; font-weight: 900;
+            margin-bottom: 0.3rem; letter-spacing: 0.3px;
+        }
+        .report-header .header-left p {
+            font-size: 0.9rem; opacity: 0.9; margin: 0.1rem 0;
+        }
+        .report-header .header-left .hotel-name {
+            font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;
+        }
+        .report-header .header-right {
+            text-align: left; display: flex;
+            flex-direction: column; gap: 0.3rem; font-size: 0.85rem;
+        }
+        .report-header .header-right .period-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1.2rem; border-radius: 2rem;
+            font-weight: bold; font-size: 1rem;
+            display: inline-block; margin-bottom: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* ====== Filters Bar ====== */
+        .filters-bar {
+            background: white; border-radius: 1.2rem;
+            padding: 1.2rem 1.5rem; margin-bottom: 1.5rem;
+            display: flex; gap: 1rem; flex-wrap: wrap;
+            align-items: flex-end;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+        }
+        .filter-group {
+            display: flex; flex-direction: column; gap: 0.3rem;
+            flex: 1; min-width: 140px;
+        }
+        .filter-group label {
+            font-weight: bold; color: #1e3a5f; font-size: 0.78rem;
+            display: flex; align-items: center; gap: 0.25rem;
+        }
+        .filter-group select {
+            padding: 0.65rem 1rem; border: 2px solid #e2e8f0;
+            border-radius: 2rem; font-size: 0.85rem; outline: none;
+            font-family: 'Tajawal', sans-serif; background: white;
+            cursor: pointer; font-weight: 500; color: #1e3a5f;
+            transition: 0.2s;
+        }
+        .filter-group select:focus {
+            border-color: #2b7a4b;
+            box-shadow: 0 0 0 3px rgba(43,122,75,0.1);
+        }
+
+        /* ====== Buttons ====== */
+        .btn {
+            padding: 0.7rem 1.3rem; border: none; border-radius: 2rem;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+            font-size: 0.85rem; font-family: 'Tajawal', sans-serif;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            white-space: nowrap;
+        }
+        .btn-primary { background: #2b7a4b; color: white; }
+        .btn-primary:hover { background: #1e5a38; transform: scale(1.02); }
+        .btn-refresh { background: #3182ce; color: white; }
+        .btn-refresh:hover { background: #2b6cb0; }
+        .btn-export { background: #dd6b20; color: white; }
+        .btn-export:hover { background: #c05621; }
+        .btn-print { background: #805ad5; color: white; }
+        .btn-print:hover { background: #6b46c1; }
+
+        /* ====== Section ====== */
+        .section {
+            background: white; border-radius: 1.3rem;
+            padding: 1.5rem; margin-bottom: 1.5rem;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            font-size: 1.15rem; font-weight: bold; color: #1e3a5f;
+            margin-bottom: 1.2rem; padding-right: 0.9rem;
+            border-right: 4px solid #2b7a4b;
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 0.5rem;
+        }
+        .section-title .count {
+            font-size: 0.85rem; color: #718096;
+            font-weight: 500;
+        }
+        .section-title.warning { border-right-color: #e53e3e; }
+        .section-title.warning-red { background: #fff5f5; padding: 0.8rem 1rem; border-radius: 0.8rem; }
+
+        /* ====== KPI Cards ====== */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+            gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .kpi-card {
+            border-radius: 1.3rem; padding: 1.3rem;
+            color: white; position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+            justify-content: space-between; min-height: 125px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+        .kpi-card::before {
+            content: ''; position: absolute;
+            top: -50%; right: -50%; width: 100%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .kpi-card:hover { transform: translateY(-4px); }
+        .kpi-card .kpi-icon {
+            font-size: 1.8rem;
+            position: static;
+            top: 1rem;
+            left: 1rem;
+            opacity: 0.45;
+            text-align: center;
+            align-items: center;
+        }
+        .kpi-card .kpi-label {
+            font-size: 0.82rem; opacity: 0.95;
+            margin-bottom: 0.3rem; line-height: 1.3;
+            text-align: center;
+        }
+        .kpi-card .kpi-value {
+            font-size: 2.1rem; font-weight: 900;
+            line-height: 1;
+            text-align: center;
+        }
+        .kpi-card .kpi-sub {
+            font-size: 0.72rem; opacity: 0.85;
+            margin-top: 0.35rem;
+            text-align: center;
+        }
+        .kpi-employees   { background: linear-gradient(135deg, #1e3a5f 0%, #2b7a4b 100%); }
+        .kpi-new         { background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); }
+        .kpi-active      { background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%); }
+        .kpi-completed   { background: linear-gradient(135deg, #2f855a 0%, #48bb78 100%); }
+        .kpi-hours       { background: linear-gradient(135deg, #6b46c1 0%, #9f7aea 100%); }
+        .kpi-rate        { background: linear-gradient(135deg, #c05621 0%, #ed8936 100%); }
+        .kpi-sessions    { background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%); }
+        .kpi-overdue     { background: linear-gradient(135deg, #c53030 0%, #e53e3e 100%); }
+
+        /* ====== Chart Cards ====== */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.3rem;
+        }
+        .chart-card {
+            background: white; border-radius: 1.2rem;
+            padding: 1.3rem; box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+        }
+        .chart-card h3 {
+            font-size: 1rem; color: #1e3a5f;
+            margin-bottom: 0.8rem; font-weight: bold;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .chart-wrap {
+            position: relative; height: 300px;
+        }
+
+        /* ====== Tables ====== */
+        .table-container {
+            overflow-x: auto; border-radius: 0.9rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%; border-collapse: collapse;
+            min-width: 800px;
+        }
+        th, td {
+            padding: 0.75rem 0.8rem; text-align: center;
+            border-bottom: 1px solid #e2e8f0; font-size: 0.83rem;
+        }
+        th {
+            background: #f7fafc; color: #1e3a5f;
+            font-weight: bold; white-space: nowrap;
+            font-size: 0.8rem;
+            cursor: pointer; user-select: none;
+            transition: background 0.2s;
+        }
+        th:hover { background: #edf2f7; }
+        th.sortable::after {
+            content: ' ⇅'; opacity: 0.4; font-size: 0.7rem;
+        }
+        th.sort-asc::after { content: ' ▲'; opacity: 1; color: #2b7a4b; }
+        th.sort-desc::after { content: ' ▼'; opacity: 1; color: #2b7a4b; }
+        tbody tr { transition: 0.2s; }
+        tbody tr:hover { background: #f7fafc; }
+        tbody tr.row-warning { background: #fffaf0; }
+        tbody tr.row-danger { background: #fff5f5; }
+
+        /* ====== Progress Bar ====== */
+        .progress-wrapper {
+            display: flex; flex-direction: column;
+            gap: 0.2rem; min-width: 90px;
+        }
+        .progress-bar {
+            width: 100%; height: 8px; background: #e2e8f0;
+            border-radius: 1rem; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, #2b7a4b, #48bb78);
+            border-radius: 1rem; transition: width 0.5s;
+        }
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #dd6b20, #ed8936);
+        }
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #c53030, #e53e3e);
+        }
+        .progress-text {
+            font-size: 0.75rem; font-weight: bold;
+            color: #2b7a4b; text-align: center;
+        }
+        .progress-text.warning { color: #dd6b20; }
+        .progress-text.danger { color: #e53e3e; }
+
+        /* ====== Status Badges ====== */
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.32rem 0.85rem; border-radius: 2rem;
+            font-weight: bold; font-size: 0.73rem; white-space: nowrap;
+        }
+        .st-planned     { background: #fefcbf; color: #744210; }
+        .st-active      { background: #bee3f8; color: #2c5282; }
+        .st-inprogress  { background: #bee3f8; color: #2c5282; }
+        .st-completed   { background: #c6f6d5; color: #22543d; }
+        .st-cancelled   { background: #fed7d7; color: #822727; }
+        .st-overdue     { background: #fed7d7; color: #9b2c2c; border: 1px solid #fc8181; }
+
+        /* ====== Flow Arrow ====== */
+        .flow-arrow {
+            font-size: 1rem; font-weight: bold;
+            color: #2b7a4b; margin: 0 0.4rem;
+        }
+
+        /* ====== Rank Badge ====== */
+        .rank-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 50%;
+            font-weight: bold; font-size: 0.85rem; color: white;
+        }
+        .rank-1 { background: linear-gradient(135deg, #d69e2e, #ecc94b); }
+        .rank-2 { background: linear-gradient(135deg, #718096, #a0aec0); }
+        .rank-3 { background: linear-gradient(135deg, #c05621, #dd6b20); }
+        .rank-n { background: #cbd5e0; color: #4a5568; }
+
+        /* ====== Info Panel ====== */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .info-box {
+            background: #f7fafc; border-radius: 0.8rem;
+            padding: 0.9rem 1rem; border-right: 3px solid #2b7a4b;
+        }
+        .info-box .lbl {
+            font-size: 0.75rem; color: #718096;
+            font-weight: bold; margin-bottom: 0.2rem;
+        }
+        .info-box .val {
+            font-size: 1.3rem; color: #1e3a5f;
+            font-weight: 900; line-height: 1.2;
+        }
+        .info-box .sub {
+            font-size: 0.72rem; color: #a0aec0;
+            margin-top: 0.15rem;
+        }
+
+        /* ====== Search & Pagination ====== */
+        .search-bar {
+            display: flex; gap: 0.7rem; margin-bottom: 1rem;
+            flex-wrap: wrap; align-items: center;
+        }
+        .search-bar input {
+            flex: 1; min-width: 200px;
+            padding: 0.65rem 1rem;
+            border: 2px solid #e2e8f0; border-radius: 2rem;
+            font-size: 0.88rem; outline: none;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .search-bar input:focus { border-color: #2b7a4b; }
+        .search-bar select {
+            padding: 0.65rem 1rem;
+            border: 2px solid #e2e8f0; border-radius: 2rem;
+            font-size: 0.85rem; outline: none;
+            font-family: 'Tajawal', sans-serif;
+            background: white; cursor: pointer;
+        }
+        .pagination {
+            display: flex; gap: 0.4rem; justify-content: center;
+            margin-top: 1rem; flex-wrap: wrap;
+        }
+        .pagination button {
+            padding: 0.5rem 0.9rem; border: 2px solid #e2e8f0;
+            background: white; border-radius: 0.6rem;
+            cursor: pointer; font-weight: bold; font-size: 0.82rem;
+            font-family: 'Tajawal', sans-serif; color: #1e3a5f;
+            transition: 0.2s;
+        }
+        .pagination button:hover:not(:disabled) {
+            border-color: #2b7a4b; background: #f0fff4;
+        }
+        .pagination button.active {
+            background: #2b7a4b; color: white; border-color: #2b7a4b;
+        }
+        .pagination button:disabled {
+            opacity: 0.4; cursor: not-allowed;
+        }
+
+        /* ====== Empty State ====== */
+        .empty-state {
+            text-align: center; padding: 2.5rem 1rem;
+            color: #718096;
+        }
+        .empty-state .icon {
+            font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.6;
+        }
+        .empty-state .msg {
+            font-size: 1rem; font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+        .empty-state .sub {
+            font-size: 0.85rem; opacity: 0.8;
+        }
+        .loading-state {
+            text-align: center; padding: 3rem 1rem;
+            color: #3182ce; font-weight: bold;
+        }
+
+        /* ====== Toast ====== */
+        .toast-msg {
+            position: fixed; bottom: 2rem; right: 2rem;
+            background: #2b7a4b; color: white;
+            padding: 0.9rem 1.6rem; border-radius: 2rem;
+            z-index: 3000; animation: slideIn 0.3s ease;
+            max-width: 90vw; box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+            font-size: 0.9rem; font-weight: 500;
+        }
+        .toast-msg.error { background: #e53e3e; }
+        .toast-msg.warning { background: #dd6b20; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+
+        /* ====== Footer ====== */
+        .footer {
+            text-align: center; padding: 2rem;
+            color: #718096; margin-top: 2rem;
+        }
+
+        /* ====== Responsive ====== */
+        @media (max-width: 1600px) { .container { max-width: 95%; } }
+        @media (max-width: 1200px) { .container { max-width: 960px; } }
+        @media (max-width: 992px) {
+            .container { max-width: 720px; }
+            .filters-bar { flex-direction: column; align-items: stretch; }
+            .filter-group { min-width: 100%; }
+            .chart-grid { grid-template-columns: 1fr; }
+            .report-header { flex-direction: column; text-align: center; }
+            .report-header .header-right { text-align: center; }
+        }
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; justify-content: center; text-align: center; padding: 1rem; }
+            .nav-links { justify-content: center; width: 100%; margin-top: 0.5rem; }
+            .container { max-width: 100%; padding: 0 1rem; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .kpi-card .kpi-value { font-size: 1.8rem; }
+            .kpi-card .kpi-icon { font-size: 1.4rem; }
+            .report-header { padding: 1.2rem; }
+            .report-header .header-left h1 { font-size: 1.3rem; }
+        }
+        @media (max-width: 576px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .section { padding: 1rem; }
+        }
+
+        /* ====== Print ====== */
+        @media print {
+            body { background: white; }
+            .navbar, .filters-bar, .btn, .search-bar, .pagination {
+                display: none !important;
+            }
+            .container { max-width: 100%; padding: 0; margin: 0; }
+            .report-header {
+                background: white !important;
+                color: #1e3a5f !important;
+                border: 2px solid #1e3a5f;
+                box-shadow: none !important;
+                page-break-after: avoid;
+            }
+            .report-header .period-badge {
+                background: #1e3a5f !important; color: white !important;
+            }
+            .kpi-card {
+                color: #1e3a5f !important;
+                background: white !important;
+                border: 2px solid #e2e8f0;
+                box-shadow: none !important;
+            }
+            .kpi-card .kpi-icon { color: #1e3a5f; opacity: 0.4; }
+            .section, .chart-card, .table-container {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0;
+                break-inside: avoid;
+            }
+            .section { page-break-inside: avoid; margin-bottom: 1rem; }
+            table { font-size: 0.72rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== Navbar ====== -->
+    <div class="navbar">
+        <div class="logo"><h2>🎓 <span>نظام</span> إدارة التعليم والتطوير</h2></div>
+        <div class="nav-links">
+            <a href="index.html" class="home">🏠 الرئيسية</a>
+            <a href="cross-training.html" class="back">🔄 Cross-Training</a>
+            <a href="cross-training-followup.html" class="back">📅 Daily Follow-up</a>
+            <button onclick="refreshData()" class="refresh">🔄 تحديث البيانات</button>
+            <button onclick="logout()" class="logout">🚪 تسجيل خروج</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ====== Report Header ====== -->
+        <div class="report-header">
+            <div class="header-left">
+                <h1>📊 Cross-Training Monthly Report</h1>
+            </div>
+            <div class="header-right">
+                <div class="period-badge" id="periodBadge">📅 جاري التحميل...</div>
+                <div style="font-size:0.78rem; opacity:0.9;">
+                    Generated: <span id="genDate">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== Filters Bar ====== -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>📅 السنة (Year)</label>
+                <select id="yearFilter" onchange="onFilterChange()"></select>
+            </div>
+            <div class="filter-group">
+                <label>🗓️ الشهر (Month)</label>
+                <select id="monthFilter" onchange="onFilterChange()">
+                    <option value="all">كل الشهور (سنوي)</option>
+                    <option value="01">يناير</option>
+                    <option value="02">فبراير</option>
+                    <option value="03">مارس</option>
+                    <option value="04">أبريل</option>
+                    <option value="05">مايو</option>
+                    <option value="06">يونيو</option>
+                    <option value="07">يوليو</option>
+                    <option value="08">أغسطس</option>
+                    <option value="09">سبتمبر</option>
+                    <option value="10">أكتوبر</option>
+                    <option value="11">نوفمبر</option>
+                    <option value="12">ديسمبر</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📂 Department</label>
+                <select id="deptFilter" onchange="onFilterChange()">
+                    <option value="all">كل الأقسام</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>🎯 Training Department</label>
+                <select id="trainingDeptFilter" onchange="onFilterChange()">
+                    <option value="all">كل الأقسام</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📌 Status</label>
+                <select id="statusFilter" onchange="onFilterChange()">
+                    <option value="all">الكل</option>
+                    <option value="Planned">Planned</option>
+                    <option value="Active">Active</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="Overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>👤 Trainer</label>
+                <select id="trainerFilter" onchange="onFilterChange()">
+                    <option value="all">كل المدربين</option>
+                </select>
+            </div>
+            <button class="btn btn-refresh" onclick="refreshData()">🔄 تحديث</button>
+            <button class="btn btn-export" onclick="exportExcel()">📥 Excel</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ طباعة</button>
+        </div>
+
+        <!-- ====== KPI Cards ====== -->
+        <div class="kpi-grid" id="kpiGrid">
+            <div class="loading-state">⏳ جاري التحميل...</div>
+        </div>
+
+        <!-- ====== Monthly Trend ====== -->
+        <div class="section">
+            <div class="section-title">
+                📈 Cross-Training Monthly Trend
+                <span class="count" id="trendYear"></span>
+            </div>
+            <div class="chart-wrap" style="height:320px;">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ====== Department Analysis ====== -->
+        <div class="section">
+            <div class="section-title">
+                🏢 Department Analysis
+                <span class="count" id="deptCount"></span>
+            </div>
+            <div class="table-container">
+                <table id="deptTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortDeptTable('department')">Department</th>
+                            <th class="sortable" onclick="sortDeptTable('employees')">Employees</th>
+                            <th class="sortable" onclick="sortDeptTable('active')">Active</th>
+                            <th class="sortable" onclick="sortDeptTable('completed')">Completed</th>
+                            <th class="sortable" onclick="sortDeptTable('hours')">Training Hours</th>
+                            <th class="sortable" onclick="sortDeptTable('rate')">Completion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deptTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ====== Cross-Training Flow ====== -->
+        <div class="section">
+            <div class="section-title">
+                🔄 Cross-Training Flow Analysis
+                <span class="count" id="flowCount"></span>
+            </div>
+            <div class="table-container">
+                <table id="flowTable">
+                    <thead>
+                        <tr>
+                            <th>From Department</th>
+                            <th></th>
+                            <th>To Department</th>
+                            <th>Employees</th>
+                            <th>Active</th>
+                            <th>Completed</th>
+                            <th>Training Hours</th>
+                            <th>Completion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="flowTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ====== Charts Row: Status + Hours by Dept ====== -->
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>📊 Cross-Training Status</h3>
+                <div class="chart-wrap">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>⏱️ Training Hours by Department</h3>
+                <div class="chart-wrap">
+                    <canvas id="hoursByDeptChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== Training Hours Analysis ====== -->
+        <div class="section" style="margin-top:1.5rem;">
+            <div class="section-title">⏱️ Training Hours Analysis</div>
+            <div class="info-grid" id="hoursInfoGrid"></div>
+        </div>
+
+        <!-- ====== Attendance Analysis (conditional) ====== -->
+        <div class="section" id="attendanceSection" style="display:none;">
+            <div class="section-title">📋 Attendance Analysis</div>
+            <div class="info-grid" id="attendanceInfoGrid"></div>
+        </div>
+
+        <!-- ====== Overdue Cross-Training ====== -->
+        <div class="section" id="overdueSection">
+            <div class="section-title warning">
+                ⚠️ Overdue Cross-Training
+                <span class="count" id="overdueCount"></span>
+            </div>
+            <div class="table-container">
+                <table id="overdueTable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Employee ID</th>
+                            <th>Home Department</th>
+                            <th>Training Department</th>
+                            <th>Trainer</th>
+                            <th>Start Date</th>
+                            <th>Planned End Date</th>
+                            <th>Days Overdue</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overdueTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ====== Top Performing Departments ====== -->
+        <div class="section">
+            <div class="section-title">🏆 Top Performing Departments</div>
+            <div class="table-container">
+                <table id="topPerfTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Department</th>
+                            <th>Participants</th>
+                            <th>Completed</th>
+                            <th>Completion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topPerfTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ====== Departments Requiring Attention ====== -->
+        <div class="section">
+            <div class="section-title warning">⚠️ Departments Requiring Attention</div>
+            <div class="table-container">
+                <table id="attentionTable">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th>Completion Rate</th>
+                            <th>Overdue</th>
+                            <th>Absence Rate</th>
+                            <th>Issue</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attentionTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ====== Employee Details ====== -->
+        <div class="section">
+            <div class="section-title">
+                👥 Employee Cross-Training Details
+                <span class="count" id="empDetailsCount"></span>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="empSearch" placeholder="🔍 بحث باسم الموظف أو الكود..." oninput="onEmpSearchChange()">
+                <select id="empDeptFilterDetail" onchange="onEmpSearchChange()">
+                    <option value="all">كل الأقسام</option>
+                </select>
+                <select id="empStatusFilterDetail" onchange="onEmpSearchChange()">
+                    <option value="all">كل الحالات</option>
+                    <option value="Planned">Planned</option>
+                    <option value="Active">Active</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <button class="btn btn-export" onclick="exportEmployeeDetails()">📥 تصدير الجدول</button>
+            </div>
+            <div class="table-container">
+                <table id="empDetailsTable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Employee ID</th>
+                            <th>Home Department</th>
+                            <th>Training Department</th>
+                            <th>Position</th>
+                            <th>Trainer</th>
+                            <th>Start Date</th>
+                            <th>Planned End</th>
+                            <th>Actual End</th>
+                            <th>Planned Hours</th>
+                            <th>Actual Hours</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="empDetailsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="empPagination"></div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>© 2026 Learning & Development Management System — Long Beach Resort Hurghada</p>
+    </div>
+
+    <script type="module">
+        import { auth, DB } from './database.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        // ============================================================
+        //  Global State
+        // ============================================================
+        let plans = [];
+        let employees = [];
+        let dailyRecords = [];
+        let filteredPlans = [];
+        let currentUserRole = null;
+        let charts = {};
+
+        // Dept table sort state
+        let deptSortKey = 'rate';
+        let deptSortDir = 'desc';
+
+        // Employee details pagination
+        let empCurrentPage = 1;
+        const EMP_PER_PAGE = 15;
+        let empDetailsFiltered = [];
+
+        const MONTH_NAMES_AR = [
+            'يناير','فبراير','مارس','أبريل','مايو','يونيو',
+            'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'
+        ];
+
+        // ============================================================
+        //  Helpers
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            if (type === 'error')   toast.classList.add('error');
+            if (type === 'warning') toast.classList.add('warning');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+        function daysBetween(d1, d2) {
+            const t1 = new Date(d1); const t2 = new Date(d2);
+            return Math.floor((t2 - t1) / (1000 * 60 * 60 * 24));
+        }
+
+        function getStatusBadge(status, isOverdue = false) {
+            if (isOverdue && status !== 'Completed' && status !== 'Cancelled') {
+                return `<span class="status-badge st-overdue">⚠️ Overdue</span>`;
+            }
+            const map = {
+                'Planned':     { cls: 'st-planned',    icon: '🟡' },
+                'Active':      { cls: 'st-active',     icon: '🔵' },
+                'In Progress': { cls: 'st-active',     icon: '🔵' },
+                'Completed':   { cls: 'st-completed',  icon: '🟢' },
+                'Cancelled':   { cls: 'st-cancelled',  icon: '🔴' }
+            };
+            const s = map[status] || map['Planned'];
+            return `<span class="status-badge ${s.cls}">${s.icon} ${escapeHtml(status || 'Planned')}</span>`;
+        }
+
+        function getProgressClass(pct) {
+            if (pct >= 75) return '';
+            if (pct >= 40) return 'warning';
+            return 'danger';
+        }
+
+        // ============================================================
+        //  Data Loaders
+        // ============================================================
+        async function loadEmployees() {
+            try { return (await DB.getAll('employees')) || []; }
+            catch (e) { console.error('Error loading employees:', e); return []; }
+        }
+
+        async function loadPlans() {
+            try { return (await DB.getAll('cross_training_plans')) || []; }
+            catch (e) { console.error('Error loading plans:', e); return []; }
+        }
+
+        async function loadDaily() {
+            const names = ['cross_training_daily', 'cross_training_followups', 'cross_training_followup'];
+            for (const n of names) {
+                try {
+                    const data = await DB.getAll(n);
+                    if (Array.isArray(data) && data.length) return data;
+                } catch (e) { /* ignore */ }
+            }
+            return [];
+        }
+
+        async function refreshData() {
+            document.getElementById('kpiGrid').innerHTML =
+                '<div class="loading-state">⏳ جاري التحديث من السيرفر...</div>';
+            showToast('⏳ جاري تحديث البيانات...');
+            try {
+                await Promise.all([
+                    DB.refresh('employees'),
+                    DB.refresh('cross_training_plans')
+                ]);
+                try { await DB.refresh('cross_training_daily'); } catch (e) {}
+                await updateAll();
+                showToast('✅ تم تحديث البيانات بنجاح');
+            } catch (e) {
+                console.error(e);
+                showToast('❌ حدث خطأ أثناء التحديث', 'error');
+            }
+        }
+
+        // ============================================================
+        //  Calculations
+        // ============================================================
+        function getActualHours(plan) {
+            let sum = 0;
+            dailyRecords.forEach(f => {
+                if (String(f.planId) === String(plan.id) &&
+                    f.attendanceStatus === 'Completed') {
+                    sum += Number(f.actualHours) || 0;
+                }
+            });
+            return sum;
+        }
+
+        function getActualDays(plan) {
+            let count = 0;
+            dailyRecords.forEach(f => {
+                if (String(f.planId) === String(plan.id) &&
+                    f.attendanceStatus === 'Completed') {
+                    count++;
+                }
+            });
+            return count;
+        }
+
+        function getAbsentDays(plan) {
+            let count = 0;
+            dailyRecords.forEach(f => {
+                if (String(f.planId) === String(plan.id) &&
+                    f.attendanceStatus === 'Not Completed') {
+                    count++;
+                }
+            });
+            return count;
+        }
+
+        function getProgress(plan) {
+            const plannedDays = Number(plan.plannedDays) || 0;
+            const actualDays = getActualDays(plan);
+            if (plannedDays <= 0) return 0;
+            return Math.min(100, Math.round((actualDays / plannedDays) * 100));
+        }
+
+        function isOverdue(plan) {
+            if (!plan.endDate) return false;
+            if (plan.status === 'Completed' || plan.status === 'Cancelled') return false;
+            return plan.endDate < todayISO();
+        }
+
+        function normalizeStatus(status) {
+            // Treat 'In Progress' as 'Active' for reporting consistency
+            if (status === 'In Progress') return 'Active';
+            return status || 'Planned';
+        }
+
+        // ============================================================
+        //  Filters
+        // ============================================================
+        function uniqueValues(list, key) {
+            const s = new Set();
+            list.forEach(x => { if (x && x[key] && String(x[key]).trim()) s.add(String(x[key]).trim()); });
+            return Array.from(s).sort();
+        }
+
+        function getAvailableYears() {
+            const years = new Set();
+            plans.forEach(p => {
+                if (p.startDate && p.startDate.length >= 4) years.add(p.startDate.slice(0, 4));
+                if (p.endDate && p.endDate.length >= 4) years.add(p.endDate.slice(0, 4));
+            });
+            dailyRecords.forEach(r => {
+                if (r.trainingDate && r.trainingDate.length >= 4) years.add(r.trainingDate.slice(0, 4));
+            });
+            years.add(String(new Date().getFullYear()));
+            return Array.from(years).sort((a, b) => b.localeCompare(a));
+        }
+
+        function populateYearFilter() {
+            const sel = document.getElementById('yearFilter');
+            const years = getAvailableYears();
+            const cur = sel.value;
+            sel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+            sel.value = cur && years.includes(cur) ? cur : String(new Date().getFullYear());
+        }
+
+        function populateDepartmentFilters() {
+            // Home department from employees
+            const homeSel = document.getElementById('deptFilter');
+            const curHome = homeSel.value;
+            const homeDepts = uniqueValues(employees, 'department');
+            homeSel.innerHTML = '<option value="all">كل الأقسام</option>' +
+                homeDepts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+            homeSel.value = curHome && homeDepts.includes(curHome) ? curHome : 'all';
+
+            // Training department from plans
+            const trSel = document.getElementById('trainingDeptFilter');
+            const curTr = trSel.value;
+            const trDepts = uniqueValues(plans, 'trainingDepartment');
+            trSel.innerHTML = '<option value="all">كل الأقسام</option>' +
+                trDepts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+            trSel.value = curTr && trDepts.includes(curTr) ? curTr : 'all';
+
+            // Trainers from plans
+            const tnSel = document.getElementById('trainerFilter');
+            const curTn = tnSel.value;
+            const trainers = uniqueValues(plans, 'trainerName');
+            tnSel.innerHTML = '<option value="all">كل المدربين</option>' +
+                trainers.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+            tnSel.value = curTn && trainers.includes(curTn) ? curTn : 'all';
+
+            // Detail dept filter
+            const dSel = document.getElementById('empDeptFilterDetail');
+            const curD = dSel.value;
+            dSel.innerHTML = '<option value="all">كل الأقسام</option>' +
+                homeDepts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+            dSel.value = curD && homeDepts.includes(curD) ? curD : 'all';
+        }
+
+        // ============================================================
+        //  Plan Filtering (month/year overlap)
+        // ============================================================
+        function planOverlapsPeriod(plan, year, month) {
+            if (!plan.startDate || !plan.endDate) return false;
+            const y = parseInt(year);
+            if (month === 'all') {
+                const startY = parseInt(plan.startDate.slice(0, 4));
+                const endY = parseInt(plan.endDate.slice(0, 4));
+                return y >= startY && y <= endY;
+            }
+            const m = parseInt(month);
+            const monthStart = `${year}-${month}-01`;
+            const lastDay = new Date(y, m, 0).getDate();
+            const monthEnd = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+            return plan.startDate <= monthEnd && plan.endDate >= monthStart;
+        }
+
+        function getFilteredPlans() {
+            const year = document.getElementById('yearFilter').value;
+            const month = document.getElementById('monthFilter').value;
+            const homeDept = document.getElementById('deptFilter').value;
+            const trDept = document.getElementById('trainingDeptFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const trainer = document.getElementById('trainerFilter').value;
+
+            let list = plans.filter(p => planOverlapsPeriod(p, year, month));
+
+            if (homeDept !== 'all') list = list.filter(p => p.homeDepartment === homeDept);
+            if (trDept !== 'all')   list = list.filter(p => p.trainingDepartment === trDept);
+            if (trainer !== 'all')  list = list.filter(p => p.trainerName === trainer);
+
+            // Status filter (with Overdue special handling)
+            if (status === 'Overdue') {
+                list = list.filter(p => isOverdue(p));
+            } else if (status !== 'all') {
+                list = list.filter(p => normalizeStatus(p.status) === status);
+            }
+
+            return list;
+        }
+
+        // ============================================================
+        //  Period Label
+        // ============================================================
+        function updatePeriodLabel() {
+            const year = document.getElementById('yearFilter').value;
+            const month = document.getElementById('monthFilter').value;
+            let label;
+            if (month === 'all') {
+                label = `📅 التقرير السنوي — ${year}`;
+            } else {
+                const mIdx = parseInt(month) - 1;
+                label = `📅 ${MONTH_NAMES_AR[mIdx]} ${year}`;
+            }
+            document.getElementById('periodBadge').textContent = label;
+            document.getElementById('trendYear').textContent = `— السنة: ${year}`;
+            document.getElementById('genDate').textContent = todayISO();
+        }
+
+        // ============================================================
+        //  KPI Cards
+        // ============================================================
+        function renderKPIs() {
+            const list = filteredPlans;
+            const year = document.getElementById('yearFilter').value;
+            const month = document.getElementById('monthFilter').value;
+
+            // Unique employees
+            const uniqueEmps = new Set(list.map(p => String(p.employeeId)));
+            const totalEmployees = uniqueEmps.size;
+
+            // New participants (plans whose startDate falls in selected month)
+            let newParticipants = 0;
+            if (month !== 'all') {
+                const prefix = `${year}-${month}`;
+                newParticipants = list.filter(p => p.startDate && p.startDate.startsWith(prefix)).length;
+            } else {
+                newParticipants = list.filter(p => p.startDate && p.startDate.startsWith(year)).length;
+            }
+
+            // Active / Completed
+            const active = list.filter(p => normalizeStatus(p.status) === 'Active').length;
+            const completed = list.filter(p => p.status === 'Completed').length;
+
+            // Training hours
+            const totalActualHours = list.reduce((s, p) => s + getActualHours(p), 0);
+
+            // Completion rate
+            const completionRate = list.length > 0
+                ? Math.round((completed / list.length) * 100) : 0;
+
+            // Planned sessions
+            const plannedSessions = list.length;
+
+            // Overdue
+            const overdue = list.filter(p => isOverdue(p)).length;
+
+            document.getElementById('kpiGrid').innerHTML = `
+                <div class="kpi-card kpi-employees">
+                    <div class="kpi-icon">👥</div>
+                    <div>
+                        <div class="kpi-label">Total Employees</div>
+                        <div class="kpi-value">${totalEmployees}</div>
+                        <div class="kpi-sub">موظف فريد</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-new">
+                    <div class="kpi-icon">🆕</div>
+                    <div>
+                        <div class="kpi-label">New Participants</div>
+                        <div class="kpi-value">${newParticipants}</div>
+                        <div class="kpi-sub">بدأوا التدريب هذه الفترة</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-active">
+                    <div class="kpi-icon">🔄</div>
+                    <div>
+                        <div class="kpi-label">Active</div>
+                        <div class="kpi-value">${active}</div>
+                        <div class="kpi-sub">تدريب جاري</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-completed">
+                    <div class="kpi-icon">✅</div>
+                    <div>
+                        <div class="kpi-label">Completed</div>
+                        <div class="kpi-value">${completed}</div>
+                        <div class="kpi-sub">مكتمل</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-hours">
+                    <div class="kpi-icon">⏱️</div>
+                    <div>
+                        <div class="kpi-label">Training Hours</div>
+                        <div class="kpi-value">${totalActualHours}</div>
+                        <div class="kpi-sub">ساعة فعلية</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-rate">
+                    <div class="kpi-icon">🎯</div>
+                    <div>
+                        <div class="kpi-label">Completion Rate</div>
+                        <div class="kpi-value">${completionRate}%</div>
+                        <div class="kpi-sub">${completed}/${list.length} خطة</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-sessions">
+                    <div class="kpi-icon">📅</div>
+                    <div>
+                        <div class="kpi-label">Planned Sessions</div>
+                        <div class="kpi-value">${plannedSessions}</div>
+                        <div class="kpi-sub">خطة في الفترة</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-overdue">
+                    <div class="kpi-icon">⚠️</div>
+                    <div>
+                        <div class="kpi-label">Overdue</div>
+                        <div class="kpi-value">${overdue}</div>
+                        <div class="kpi-sub">متأخر عن الموعد</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        //  Charts
+        // ============================================================
+        function destroyChart(key) {
+            if (charts[key]) { charts[key].destroy(); delete charts[key]; }
+        }
+
+        const COLORS = {
+            blue: '#3182ce', green: '#48bb78', orange: '#ed8936',
+            red: '#e53e3e', purple: '#9f7aea', teal: '#14b8a6',
+            yellow: '#ecc94b', gray: '#a0aec0', navy: '#1e3a5f'
+        };
+
+        const PALETTE = [
+            '#3182ce', '#48bb78', '#ed8936', '#e53e3e',
+            '#9f7aea', '#14b8a6', '#ecc94b', '#dd6b20',
+            '#38b2ac', '#805ad5', '#d69e2e', '#c53030'
+        ];
+
+        // -------- Trend Chart --------
+        function renderTrendChart() {
+            destroyChart('trend');
+            const ctx = document.getElementById('trendChart');
+            if (!ctx) return;
+
+            const year = document.getElementById('yearFilter').value;
+            const monthLabels = MONTH_NAMES_AR;
+
+            const participants = new Array(12).fill(0);
+            const completed = new Array(12).fill(0);
+            const active = new Array(12).fill(0);
+            const hours = new Array(12).fill(0);
+
+            // For each month of the year, filter plans (independent of month filter)
+            for (let m = 0; m < 12; m++) {
+                const mm = String(m + 1).padStart(2, '0');
+                const monthPlans = plans.filter(p => planOverlapsPeriod(p, year, mm));
+
+                const uniqueEmps = new Set(monthPlans.map(p => String(p.employeeId)));
+                participants[m] = uniqueEmps.size;
+                completed[m] = monthPlans.filter(p => p.status === 'Completed').length;
+                active[m] = monthPlans.filter(p => normalizeStatus(p.status) === 'Active').length;
+                hours[m] = monthPlans.reduce((s, p) => s + getActualHours(p), 0);
+            }
+
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [
+                        {
+                            label: 'Total Participants',
+                            data: participants,
+                            borderColor: COLORS.navy,
+                            backgroundColor: 'rgba(30,58,95,0.1)',
+                            tension: 0.35, fill: false,
+                            borderWidth: 3, pointRadius: 4
+                        },
+                        {
+                            label: 'Completed',
+                            data: completed,
+                            borderColor: COLORS.green,
+                            backgroundColor: 'rgba(72,187,120,0.1)',
+                            tension: 0.35, fill: false,
+                            borderWidth: 2, pointRadius: 4
+                        },
+                        {
+                            label: 'Active',
+                            data: active,
+                            borderColor: COLORS.blue,
+                            backgroundColor: 'rgba(49,130,206,0.1)',
+                            tension: 0.35, fill: false,
+                            borderWidth: 2, pointRadius: 4
+                        },
+                        {
+                            label: 'Training Hours',
+                            data: hours,
+                            borderColor: COLORS.purple,
+                            backgroundColor: 'rgba(159,122,234,0.1)',
+                            tension: 0.35, fill: false,
+                            borderWidth: 2, pointRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Tajawal', size: 12 }, padding: 15 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true, position: 'right',
+                            title: { display: true, text: 'عدد', font: { family: 'Tajawal' } }
+                        },
+                        y1: {
+                            beginAtZero: true, position: 'left',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'ساعات', font: { family: 'Tajawal' } }
+                        },
+                        x: { ticks: { font: { family: 'Tajawal' } } }
+                    }
+                }
+            });
+        }
+
+        // -------- Status Chart --------
+        function renderStatusChart() {
+            destroyChart('status');
+            const ctx = document.getElementById('statusChart');
+            if (!ctx) return;
+
+            const counts = { 'Planned': 0, 'Active': 0, 'Completed': 0, 'Cancelled': 0, 'Overdue': 0 };
+            filteredPlans.forEach(p => {
+                if (isOverdue(p)) counts['Overdue']++;
+                else counts[normalizeStatus(p.status)]++;
+            });
+
+            charts.status = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['🟡 Planned', '🔵 Active', '🟢 Completed', '🔴 Cancelled', '⚠️ Overdue'],
+                    datasets: [{
+                        data: [counts['Planned'], counts['Active'], counts['Completed'], counts['Cancelled'], counts['Overdue']],
+                        backgroundColor: [
+                            COLORS.yellow, COLORS.blue, COLORS.green,
+                            COLORS.red, '#c53030'
+                        ],
+                        borderWidth: 2, borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Tajawal', size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // -------- Hours by Dept Chart --------
+        function renderHoursByDeptChart() {
+            destroyChart('hoursByDept');
+            const ctx = document.getElementById('hoursByDeptChart');
+            if (!ctx) return;
+
+            const map = {};
+            filteredPlans.forEach(p => {
+                const d = p.trainingDepartment || 'غير محدد';
+                if (!map[d]) map[d] = { planned: 0, actual: 0 };
+                map[d].planned += Number(p.plannedHours) || 0;
+                map[d].actual += getActualHours(p);
+            });
+
+            const labels = Object.keys(map).sort((a, b) => map[b].actual - map[a].actual);
+            const plannedData = labels.map(l => map[l].planned);
+            const actualData = labels.map(l => map[l].actual);
+
+            charts.hoursByDept = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Planned Hours',
+                            data: plannedData,
+                            backgroundColor: COLORS.blue,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Actual Hours',
+                            data: actualData,
+                            backgroundColor: COLORS.green,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Tajawal', size: 11 } }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { ticks: { font: { family: 'Tajawal', size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        //  Department Analysis Table
+        // ============================================================
+        function buildDeptStats() {
+            const map = {};
+            filteredPlans.forEach(p => {
+                const d = p.homeDepartment || 'غير محدد';
+                if (!map[d]) map[d] = {
+                    department: d, employees: new Set(),
+                    active: 0, completed: 0, hours: 0, total: 0
+                };
+                map[d].employees.add(String(p.employeeId));
+                if (normalizeStatus(p.status) === 'Active') map[d].active++;
+                if (p.status === 'Completed') map[d].completed++;
+                map[d].hours += getActualHours(p);
+                map[d].total++;
+            });
+
+            return Object.values(map).map(d => ({
+                department: d.department,
+                employees: d.employees.size,
+                active: d.active,
+                completed: d.completed,
+                hours: d.hours,
+                rate: d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0
+            }));
+        }
+
+        function renderDeptTable() {
+            const stats = buildDeptStats();
+            stats.sort((a, b) => {
+                let va = a[deptSortKey], vb = b[deptSortKey];
+                if (typeof va === 'string') return deptSortDir === 'asc'
+                    ? va.localeCompare(vb) : vb.localeCompare(va);
+                return deptSortDir === 'asc' ? va - vb : vb - va;
+            });
+
+            document.getElementById('deptCount').textContent =
+                stats.length ? `— ${stats.length} قسم` : '';
+
+            const tbody = document.getElementById('deptTableBody');
+
+            if (!stats.length) {
+                tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+                    <div class="icon">📭</div>
+                    <div class="msg">No Cross-Training data available for the selected period.</div>
+                </div></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = stats.map(d => {
+                const rateCls = d.rate >= 75 ? '' : d.rate >= 40 ? 'warning' : 'danger';
+                const rowCls = d.rate < 40 ? 'row-danger' : d.rate < 75 ? 'row-warning' : '';
+                return `
+                    <tr class="${rowCls}">
+                        <td><strong>${escapeHtml(d.department)}</strong></td>
+                        <td>${d.employees}</td>
+                        <td style="color:#3182ce; font-weight:bold;">${d.active}</td>
+                        <td style="color:#2b7a4b; font-weight:bold;">${d.completed}</td>
+                        <td>${d.hours}</td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${rateCls}" style="width:${d.rate}%;"></div>
+                                </div>
+                                <span class="progress-text ${rateCls}">${d.rate}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update sort indicators
+            document.querySelectorAll('#deptTable th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            const headers = document.querySelectorAll('#deptTable th');
+            const keyMap = {
+                'department': 0, 'employees': 1, 'active': 2,
+                'completed': 3, 'hours': 4, 'rate': 5
+            };
+            const idx = keyMap[deptSortKey];
+            if (headers[idx]) {
+                headers[idx].classList.add(deptSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+        }
+
+        function sortDeptTable(key) {
+            if (deptSortKey === key) {
+                deptSortDir = deptSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                deptSortKey = key;
+                deptSortDir = 'desc';
+            }
+            renderDeptTable();
+        }
+
+        // ============================================================
+        //  Cross-Training Flow Analysis
+        // ============================================================
+        function renderFlowTable() {
+            const map = {};
+            filteredPlans.forEach(p => {
+                const from = p.homeDepartment || 'غير محدد';
+                const to = p.trainingDepartment || 'غير محدد';
+                const key = `${from}__${to}`;
+                if (!map[key]) map[key] = {
+                    from, to, employees: new Set(),
+                    active: 0, completed: 0, hours: 0, total: 0
+                };
+                map[key].employees.add(String(p.employeeId));
+                if (normalizeStatus(p.status) === 'Active') map[key].active++;
+                if (p.status === 'Completed') map[key].completed++;
+                map[key].hours += getActualHours(p);
+                map[key].total++;
+            });
+
+            const list = Object.values(map).map(f => ({
+                from: f.from, to: f.to,
+                employees: f.employees.size,
+                active: f.active, completed: f.completed,
+                hours: f.hours,
+                rate: f.total > 0 ? Math.round((f.completed / f.total) * 100) : 0
+            })).sort((a, b) => b.employees - a.employees);
+
+            document.getElementById('flowCount').textContent =
+                list.length ? `— ${list.length} مسار تدريب` : '';
+
+            const tbody = document.getElementById('flowTableBody');
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+                    <div class="icon">📭</div>
+                    <div class="msg">No Cross-Training movement data available.</div>
+                </div></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(f => {
+                const rateCls = f.rate >= 75 ? '' : f.rate >= 40 ? 'warning' : 'danger';
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(f.from)}</strong></td>
+                        <td><span class="flow-arrow">→</span></td>
+                        <td><strong style="color:#2b7a4b;">${escapeHtml(f.to)}</strong></td>
+                        <td>${f.employees}</td>
+                        <td style="color:#3182ce;">${f.active}</td>
+                        <td style="color:#2b7a4b;">${f.completed}</td>
+                        <td>${f.hours}</td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${rateCls}" style="width:${f.rate}%;"></div>
+                                </div>
+                                <span class="progress-text ${rateCls}">${f.rate}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        //  Training Hours Analysis
+        // ============================================================
+        function renderHoursInfo() {
+            const list = filteredPlans;
+            const totalPlanned = list.reduce((s, p) => s + (Number(p.plannedHours) || 0), 0);
+            const totalActual  = list.reduce((s, p) => s + getActualHours(p), 0);
+
+            const uniqueEmps = new Set(list.map(p => String(p.employeeId))).size;
+            const avgPerEmp = uniqueEmps > 0 ? (totalActual / uniqueEmps).toFixed(1) : 0;
+            const avgPerSession = list.length > 0 ? (totalActual / list.length).toFixed(1) : 0;
+
+            // Hours by department
+            const deptMap = {};
+            list.forEach(p => {
+                const d = p.trainingDepartment || 'غير محدد';
+                deptMap[d] = (deptMap[d] || 0) + getActualHours(p);
+            });
+            const topDept = Object.entries(deptMap).sort((a, b) => b[1] - a[1])[0];
+
+            document.getElementById('hoursInfoGrid').innerHTML = `
+                <div class="info-box">
+                    <div class="lbl">Total Planned Hours</div>
+                    <div class="val">${totalPlanned}</div>
+                    <div class="sub">الساعات المخططة</div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Total Actual Hours</div>
+                    <div class="val" style="color:#2b7a4b;">${totalActual}</div>
+                    <div class="sub">الساعات الفعلية</div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Avg Hours / Employee</div>
+                    <div class="val">${avgPerEmp}</div>
+                    <div class="sub">متوسط لكل موظف</div>
+                </div>
+                <div class="info-box">
+                    <div class="lbl">Avg Hours / Session</div>
+                    <div class="val">${avgPerSession}</div>
+                    <div class="sub">متوسط لكل خطة</div>
+                </div>
+                ${topDept ? `
+                <div class="info-box" style="border-right-color:#9f7aea;">
+                    <div class="lbl">Top Training Dept</div>
+                    <div class="val" style="font-size:1rem;">${escapeHtml(topDept[0])}</div>
+                    <div class="sub">${topDept[1]} ساعة</div>
+                </div>` : ''}
+            `;
+        }
+
+        // ============================================================
+        //  Attendance Analysis (conditional)
+        // ============================================================
+        function renderAttendanceAnalysis() {
+            const section = document.getElementById('attendanceSection');
+            const grid = document.getElementById('attendanceInfoGrid');
+
+            // Only show if we have daily attendance records for filtered plans
+            const filteredPlanIds = new Set(filteredPlans.map(p => String(p.id)));
+            const relevantDaily = dailyRecords.filter(r =>
+                filteredPlanIds.has(String(r.planId))
+            );
+
+            if (!relevantDaily.length) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+
+            const totalPlannedDays = filteredPlans.reduce((s, p) => s + (Number(p.plannedDays) || 0), 0);
+            const attended = relevantDaily.filter(r => r.attendanceStatus === 'Completed').length;
+            const absent = relevantDaily.filter(r => r.attendanceStatus === 'Not Completed').length;
+            const attendanceRate = totalPlannedDays > 0
+                ? Math.round((attended / totalPlannedDays) * 100) : 0;
+
+            grid.innerHTML = `
+                <div class="info-box">
+                    <div class="lbl">Planned Training Days</div>
+                    <div class="val">${totalPlannedDays}</div>
+                    <div class="sub">إجمالي الأيام المخططة</div>
+                </div>
+                <div class="info-box" style="border-right-color:#48bb78;">
+                    <div class="lbl">Attended Days</div>
+                    <div class="val" style="color:#2b7a4b;">${attended}</div>
+                    <div class="sub">أيام حضور</div>
+                </div>
+                <div class="info-box" style="border-right-color:#e53e3e;">
+                    <div class="lbl">Absent Days</div>
+                    <div class="val" style="color:#e53e3e;">${absent}</div>
+                    <div class="sub">أيام غياب</div>
+                </div>
+                <div class="info-box" style="border-right-color:#3182ce;">
+                    <div class="lbl">Attendance Rate</div>
+                    <div class="val" style="color:#3182ce;">${attendanceRate}%</div>
+                    <div class="sub">نسبة الحضور</div>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        //  Overdue Cross-Training
+        // ============================================================
+        function renderOverdueTable() {
+            const list = filteredPlans
+                .filter(p => isOverdue(p))
+                .map(p => ({
+                    ...p,
+                    daysOverdue: daysBetween(p.endDate, todayISO())
+                }))
+                .sort((a, b) => b.daysOverdue - a.daysOverdue);
+
+            document.getElementById('overdueCount').textContent =
+                list.length ? `— ${list.length} حالة متأخرة` : '';
+
+            const tbody = document.getElementById('overdueTableBody');
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state">
+                    <div class="icon">✅</div>
+                    <div class="msg">لا توجد حالات متأخرة</div>
+                    <div class="sub">كل الخطط في موعدها</div>
+                </div></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(p => {
+                const progress = getProgress(p);
+                const pCls = getProgressClass(progress);
+                return `
+                    <tr class="row-danger">
+                        <td><strong>${escapeHtml(p.employeeName || '-')}</strong></td>
+                        <td>${escapeHtml(p.employeeId)}</td>
+                        <td>${escapeHtml(p.homeDepartment || '-')}</td>
+                        <td>${escapeHtml(p.trainingDepartment || '-')}</td>
+                        <td>${escapeHtml(p.trainerName || '-')}</td>
+                        <td>${escapeHtml(p.startDate || '-')}</td>
+                        <td>${escapeHtml(p.endDate || '-')}</td>
+                        <td><strong style="color:#e53e3e;">${p.daysOverdue}</strong></td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${pCls}" style="width:${progress}%;"></div>
+                                </div>
+                                <span class="progress-text ${pCls}">${progress}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" style="padding:0.4rem 0.9rem; font-size:0.75rem;"
+                                onclick="openPlanDetails('${p.id}')">👁️ View Details</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        //  Top Performing Departments
+        // ============================================================
+        function renderTopPerformers() {
+            const stats = buildDeptStats()
+                .filter(d => d.employees > 0)
+                .sort((a, b) => {
+                    if (b.rate !== a.rate) return b.rate - a.rate;
+                    if (b.completed !== a.completed) return b.completed - a.completed;
+                    return b.hours - a.hours;
+                })
+                .slice(0, 5);
+
+            const tbody = document.getElementById('topPerfTableBody');
+            if (!stats.length) {
+                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+                    <div class="icon">📭</div>
+                    <div class="msg">No data available</div>
+                </div></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = stats.map((d, i) => {
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+                const rankCls = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-n';
+                return `
+                    <tr>
+                        <td>
+                            <span class="rank-badge ${rankCls}">${medal || (i + 1)}</span>
+                        </td>
+                        <td><strong>${escapeHtml(d.department)}</strong></td>
+                        <td>${d.employees}</td>
+                        <td>${d.completed}</td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width:${d.rate}%;"></div>
+                                </div>
+                                <span class="progress-text">${d.rate}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        //  Departments Requiring Attention
+        // ============================================================
+        function renderAttentionTable() {
+            const stats = buildDeptStats();
+            const attention = [];
+
+            stats.forEach(d => {
+                const deptPlans = filteredPlans.filter(p => (p.homeDepartment || 'غير محدد') === d.department);
+                const overdue = deptPlans.filter(p => isOverdue(p)).length;
+
+                const deptPlanIds = new Set(deptPlans.map(p => String(p.id)));
+                const deptDaily = dailyRecords.filter(r => deptPlanIds.has(String(r.planId)));
+                const attended = deptDaily.filter(r => r.attendanceStatus === 'Completed').length;
+                const absent = deptDaily.filter(r => r.attendanceStatus === 'Not Completed').length;
+                const totalDays = attended + absent;
+                const absenceRate = totalDays > 0 ? Math.round((absent / totalDays) * 100) : 0;
+
+                const issues = [];
+                if (d.rate < 50) issues.push('معدل إنجاز منخفض');
+                if (overdue > 0) issues.push('تدريب متأخر');
+                if (absenceRate > 20) issues.push('نسبة غياب مرتفعة');
+                if (d.hours < 10 && d.employees > 0) issues.push('ساعات تدريب منخفضة');
+                if (d.active > 3) issues.push('تدريبات نشطة كثيرة');
+
+                if (issues.length > 0) {
+                    attention.push({
+                        department: d.department,
+                        rate: d.rate,
+                        overdue,
+                        absenceRate,
+                        issue: issues[0]
+                    });
+                }
+            });
+
+            attention.sort((a, b) => a.rate - b.rate);
+
+            const tbody = document.getElementById('attentionTableBody');
+            if (!attention.length) {
+                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+                    <div class="icon">✅</div>
+                    <div class="msg">كل الأقسام بحالة جيدة</div>
+                    <div class="sub">لا توجد أقسام تحتاج انتباه</div>
+                </div></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = attention.map(a => {
+                const rateCls = a.rate >= 75 ? '' : a.rate >= 40 ? 'warning' : 'danger';
+                return `
+                    <tr class="row-warning">
+                        <td><strong>${escapeHtml(a.department)}</strong></td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${rateCls}" style="width:${a.rate}%;"></div>
+                                </div>
+                                <span class="progress-text ${rateCls}">${a.rate}%</span>
+                            </div>
+                        </td>
+                        <td>${a.overdue > 0 ? `<span style="color:#e53e3e; font-weight:bold;">${a.overdue}</span>` : '0'}</td>
+                        <td>${a.absenceRate}%</td>
+                        <td><span class="status-badge st-planned">⚠️ ${escapeHtml(a.issue)}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        //  Employee Details Table
+        // ============================================================
+        function buildEmployeeRows() {
+            const search = (document.getElementById('empSearch').value || '').toLowerCase().trim();
+            const dept = document.getElementById('empDeptFilterDetail').value;
+            const status = document.getElementById('empStatusFilterDetail').value;
+
+            let list = [...filteredPlans];
+
+            if (search) {
+                list = list.filter(p =>
+                    String(p.employeeId || '').toLowerCase().includes(search) ||
+                    String(p.employeeName || '').toLowerCase().includes(search)
+                );
+            }
+            if (dept !== 'all') list = list.filter(p => p.homeDepartment === dept);
+            if (status !== 'all') list = list.filter(p => normalizeStatus(p.status) === status);
+
+            list.sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
+            return list;
+        }
+
+        function renderEmployeeDetails() {
+            empDetailsFiltered = buildEmployeeRows();
+            const total = empDetailsFiltered.length;
+            const totalPages = Math.max(1, Math.ceil(total / EMP_PER_PAGE));
+
+            if (empCurrentPage > totalPages) empCurrentPage = 1;
+
+            const start = (empCurrentPage - 1) * EMP_PER_PAGE;
+            const pageRows = empDetailsFiltered.slice(start, start + EMP_PER_PAGE);
+
+            document.getElementById('empDetailsCount').textContent =
+                total ? `— ${total} سجل` : '';
+
+            const tbody = document.getElementById('empDetailsTableBody');
+            if (!pageRows.length) {
+                tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state">
+                    <div class="icon">📭</div>
+                    <div class="msg">No Cross-Training data available for the selected period.</div>
+                </div></td></tr>`;
+                document.getElementById('empPagination').innerHTML = '';
+                return;
+            }
+
+            tbody.innerHTML = pageRows.map(p => {
+                const progress = getProgress(p);
+                const pCls = getProgressClass(progress);
+                const actualHours = getActualHours(p);
+                const isOv = isOverdue(p);
+
+                return `
+                    <tr>
+                        <td>
+                            <a href="#" onclick="event.preventDefault(); openPlanDetails('${p.id}')"
+                               style="color:#3182ce; font-weight:bold; text-decoration:none;">
+                                ${escapeHtml(p.employeeName || '-')}
+                            </a>
+                        </td>
+                        <td>${escapeHtml(p.employeeId)}</td>
+                        <td>${escapeHtml(p.homeDepartment || '-')}</td>
+                        <td>${escapeHtml(p.trainingDepartment || '-')}</td>
+                        <td>${escapeHtml(p.trainingPosition || '-')}</td>
+                        <td>${escapeHtml(p.trainerName || '-')}</td>
+                        <td>${escapeHtml(p.startDate || '-')}</td>
+                        <td>${escapeHtml(p.endDate || '-')}</td>
+                        <td>${escapeHtml(p.actualEndDate || '-')}</td>
+                        <td>${p.plannedHours || 0}</td>
+                        <td>${actualHours}</td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${pCls}" style="width:${progress}%;"></div>
+                                </div>
+                                <span class="progress-text ${pCls}">${progress}%</span>
+                            </div>
+                        </td>
+                        <td>${getStatusBadge(p.status, isOv)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const container = document.getElementById('empPagination');
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = `<button ${empCurrentPage === 1 ? 'disabled' : ''}
+                            onclick="goToPage(${empCurrentPage - 1})">◀ السابق</button>`;
+
+            const maxBtns = 7;
+            let startP = Math.max(1, empCurrentPage - Math.floor(maxBtns / 2));
+            let endP = Math.min(totalPages, startP + maxBtns - 1);
+            if (endP - startP < maxBtns - 1) startP = Math.max(1, endP - maxBtns + 1);
+
+            for (let i = startP; i <= endP; i++) {
+                html += `<button class="${i === empCurrentPage ? 'active' : ''}"
+                                onclick="goToPage(${i})">${i}</button>`;
+            }
+
+            html += `<button ${empCurrentPage === totalPages ? 'disabled' : ''}
+                            onclick="goToPage(${empCurrentPage + 1})">التالي ▶</button>`;
+
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            empCurrentPage = page;
+            renderEmployeeDetails();
+        }
+
+        function onEmpSearchChange() {
+            empCurrentPage = 1;
+            renderEmployeeDetails();
+        }
+
+        // ============================================================
+        //  Open Plan Details (redirects to follow-up page)
+        // ============================================================
+        function openPlanDetails(planId) {
+            const plan = plans.find(p => String(p.id) === String(planId));
+            if (!plan) return;
+            const url = `cross-training-followup.html?planId=${encodeURIComponent(plan.id)}&employeeId=${encodeURIComponent(plan.employeeId)}`;
+            window.open(url, '_blank');
+        }
+
+        // ============================================================
+        //  Main Update All
+        // ============================================================
+        async function updateAll() {
+            [employees, plans, dailyRecords] = await Promise.all([
+                loadEmployees(), loadPlans(), loadDaily()
+            ]);
+
+            populateYearFilter();
+            populateDepartmentFilters();
+            updatePeriodLabel();
+
+            onFilterChange();
+        }
+
+        function onFilterChange() {
+            updatePeriodLabel();
+            filteredPlans = getFilteredPlans();
+
+            // If no data, show empty state in KPIs
+            if (!filteredPlans.length && plans.length === 0) {
+                renderEmptyEverything();
+                return;
+            }
+
+            renderKPIs();
+            renderTrendChart();
+            renderStatusChart();
+            renderHoursByDeptChart();
+            renderDeptTable();
+            renderFlowTable();
+            renderHoursInfo();
+            renderAttendanceAnalysis();
+            renderOverdueTable();
+            renderTopPerformers();
+            renderAttentionTable();
+            renderEmployeeDetails();
+        }
+
+        function renderEmptyEverything() {
+            document.getElementById('kpiGrid').innerHTML = `
+                <div class="empty-state" style="grid-column:1/-1;">
+                    <div class="icon">📭</div>
+                    <div class="msg">No Cross-Training data available for the selected period.</div>
+                </div>`;
+            // Clear tables
+            ['deptTableBody','flowTableBody','overdueTableBody',
+             'topPerfTableBody','attentionTableBody','empDetailsTableBody'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = `<tr><td colspan="15"><div class="empty-state">
+                    <div class="icon">📭</div>
+                    <div class="msg">No Cross-Training data available for the selected period.</div>
+                </div></td></tr>`;
+            });
+            document.getElementById('hoursInfoGrid').innerHTML =
+                '<div class="empty-state"><div class="msg">No data available</div></div>';
+            document.getElementById('attendanceSection').style.display = 'none';
+        }
+
+        // ============================================================
+        //  Export Excel (5 Sheets)
+        // ============================================================
+        function exportExcel() {
+            if (!filteredPlans.length) {
+                showToast('⚠️ لا توجد بيانات للتصدير', 'error');
+                return;
+            }
+
+            const year = document.getElementById('yearFilter').value;
+            const month = document.getElementById('monthFilter').value;
+            const periodLabel = month === 'all' ? `${year}` : `${year}-${month}`;
+
+            const wb = XLSX.utils.book_new();
+
+            // === Sheet 1: Summary ===
+            const total = filteredPlans.length;
+            const uniqueEmps = new Set(filteredPlans.map(p => String(p.employeeId))).size;
+            const planned = filteredPlans.filter(p => normalizeStatus(p.status) === 'Planned').length;
+            const active = filteredPlans.filter(p => normalizeStatus(p.status) === 'Active').length;
+            const completed = filteredPlans.filter(p => p.status === 'Completed').length;
+            const overdue = filteredPlans.filter(p => isOverdue(p)).length;
+            const totalPlannedHours = filteredPlans.reduce((s, p) => s + (Number(p.plannedHours) || 0), 0);
+            const totalActualHours = filteredPlans.reduce((s, p) => s + getActualHours(p), 0);
+
+            const summaryData = [
+                { 'البند': 'Hotel', 'القيمة': 'Long Beach Resort Hurghada' },
+                { 'البند': 'Department', 'القيمة': 'Learning & Development Department' },
+                { 'البند': 'Report', 'القيمة': 'Cross-Training Monthly Report' },
+                { 'البند': 'Reporting Period', 'القيمة': periodLabel },
+                { 'البند': 'Generated Date', 'القيمة': todayISO() },
+                { 'البند': '---', 'القيمة': '---' },
+                { 'البند': 'إجمالي الموظفين', 'القيمة': uniqueEmps },
+                { 'البند': 'إجمالي الخطط', 'القيمة': total },
+                { 'البند': 'Planned', 'القيمة': planned },
+                { 'البند': 'Active', 'القيمة': active },
+                { 'البند': 'Completed', 'القيمة': completed },
+                { 'البند': 'Overdue', 'القيمة': overdue },
+                { 'البند': 'Planned Hours', 'القيمة': totalPlannedHours },
+                { 'البند': 'Actual Hours', 'القيمة': totalActualHours },
+                { 'البند': 'Completion Rate %', 'القيمة': total > 0 ? Math.round((completed / total) * 100) : 0 }
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryData), 'Summary');
+
+            // === Sheet 2: Department Analysis ===
+            const deptStats = buildDeptStats();
+            const deptData = deptStats.map(d => ({
+                'Department': d.department,
+                'Employees': d.employees,
+                'Active': d.active,
+                'Completed': d.completed,
+                'Training Hours': d.hours,
+                'Completion Rate %': d.rate
+            }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(deptData), 'Department Analysis');
+
+            // === Sheet 3: Cross-Training Flow ===
+            const flowMap = {};
+            filteredPlans.forEach(p => {
+                const from = p.homeDepartment || 'غير محدد';
+                const to = p.trainingDepartment || 'غير محدد';
+                const key = `${from}__${to}`;
+                if (!flowMap[key]) flowMap[key] = {
+                    from, to, employees: new Set(),
+                    active: 0, completed: 0, hours: 0, total: 0
+                };
+                flowMap[key].employees.add(String(p.employeeId));
+                if (normalizeStatus(p.status) === 'Active') flowMap[key].active++;
+                if (p.status === 'Completed') flowMap[key].completed++;
+                flowMap[key].hours += getActualHours(p);
+                flowMap[key].total++;
+            });
+            const flowData = Object.values(flowMap).map(f => ({
+                'From Department': f.from,
+                'To Department': f.to,
+                'Employees': f.employees.size,
+                'Active': f.active,
+                'Completed': f.completed,
+                'Training Hours': f.hours,
+                'Completion Rate %': f.total > 0 ? Math.round((f.completed / f.total) * 100) : 0
+            }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(flowData), 'Cross-Training Flow');
+
+            // === Sheet 4: Overdue Training ===
+            const overdueData = filteredPlans
+                .filter(p => isOverdue(p))
+                .map(p => ({
+                    'Employee': p.employeeName || '',
+                    'Employee ID': p.employeeId,
+                    'Home Department': p.homeDepartment || '',
+                    'Training Department': p.trainingDepartment || '',
+                    'Trainer': p.trainerName || '',
+                    'Start Date': p.startDate || '',
+                    'Planned End Date': p.endDate || '',
+                    'Days Overdue': daysBetween(p.endDate, todayISO()),
+                    'Progress %': getProgress(p),
+                    'Status': p.status || ''
+                }));
+            XLSX.utils.book_append_sheet(wb,
+                XLSX.utils.json_to_sheet(overdueData.length ? overdueData : [{ 'Info': 'No overdue records' }]),
+                'Overdue Training');
+
+            // === Sheet 5: Employee Details ===
+            const empData = filteredPlans.map(p => ({
+                'Employee': p.employeeName || '',
+                'Employee ID': p.employeeId,
+                'Home Department': p.homeDepartment || '',
+                'Training Department': p.trainingDepartment || '',
+                'Position': p.trainingPosition || '',
+                'Trainer': p.trainerName || '',
+                'Start Date': p.startDate || '',
+                'Planned End Date': p.endDate || '',
+                'Actual End Date': p.actualEndDate || '',
+                'Planned Hours': p.plannedHours || 0,
+                'Actual Hours': getActualHours(p),
+                'Progress %': getProgress(p),
+                'Status': p.status || ''
+            }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empData), 'Employee Details');
+
+            // Save
+            XLSX.writeFile(wb, `cross_training_report_${periodLabel}.xlsx`);
+            showToast('📥 تم تصدير التقرير بنجاح');
+        }
+
+        function exportEmployeeDetails() {
+            if (!empDetailsFiltered.length) {
+                showToast('⚠️ لا توجد بيانات للتصدير', 'error');
+                return;
+            }
+
+            const empData = empDetailsFiltered.map(p => ({
+                'Employee': p.employeeName || '',
+                'Employee ID': p.employeeId,
+                'Home Department': p.homeDepartment || '',
+                'Training Department': p.trainingDepartment || '',
+                'Position': p.trainingPosition || '',
+                'Trainer': p.trainerName || '',
+                'Start Date': p.startDate || '',
+                'Planned End Date': p.endDate || '',
+                'Actual End Date': p.actualEndDate || '',
+                'Planned Hours': p.plannedHours || 0,
+                'Actual Hours': getActualHours(p),
+                'Progress %': getProgress(p),
+                'Status': p.status || ''
+            }));
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(empData), 'Employee Details');
+            XLSX.writeFile(wb, `cross_training_employees_${todayISO()}.xlsx`);
+            showToast('📥 تم تصدير جدول الموظفين');
+        }
+
+        // ============================================================
+        //  Logout
+        // ============================================================
+        async function logout() {
+            try { await signOut(auth); } catch (e) {}
+            window.location.href = 'login.html';
+        }
+
+        // ============================================================
+        //  Expose
+        // ============================================================
+        window.refreshData = refreshData;
+        window.logout = logout;
+        window.onFilterChange = onFilterChange;
+        window.onEmpSearchChange = onEmpSearchChange;
+        window.sortDeptTable = sortDeptTable;
+        window.goToPage = goToPage;
+        window.openPlanDetails = openPlanDetails;
+        window.exportExcel = exportExcel;
+        window.exportEmployeeDetails = exportEmployeeDetails;
+
+        // ============================================================
+        //  Init
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            try {
+                const userData = await DB.get('users', user.uid);
+                currentUserRole = userData ? userData.role : 'user';
+
+                // Default: current month
+                const now = new Date();
+                document.getElementById('monthFilter').value =
+                    String(now.getMonth() + 1).padStart(2, '0');
+
+                await updateAll();
+            } catch (e) {
+                console.error('Auth error:', e);
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
