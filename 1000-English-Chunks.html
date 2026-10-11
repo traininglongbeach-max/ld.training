@@ -1,0 +1,2742 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1000 English Chunks – Daily Use</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --navy: #1e3a5f;
+    --navy-dark: #152b47;
+    --green: #2b7a4b;
+    --green-dark: #1e5a38;
+    --green-light: #f0fdf4;
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --border2: #cbd5e0;
+    --text: #1e3a5f;
+    --muted: #718096;
+    --gold: #ed8936;
+    --red: #e53e3e;
+    --shadow: 0 2px 10px rgba(0,0,0,0.06);
+    --shadow-lg: 0 12px 40px rgba(30,58,95,0.15);
+    --grad: linear-gradient(135deg, #1e3a5f, #2b7a4b);
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.7;
+    direction: ltr;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--border); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--grad); border-radius: 10px; }
+
+  /* ===== Navbar ===== */
+  .navbar {
+    background: #fff;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 46px; height: 46px; border-radius: 14px;
+    background: var(--grad);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; color: white;
+    box-shadow: 0 6px 20px rgba(43,122,75,0.3);
+  }
+  .logo h1 {
+    font-size: 1.25rem; font-weight: 800; color: var(--navy);
+    letter-spacing: -.3px;
+  }
+  .logo h1 span { color: var(--green); }
+  .logo p { font-size: 11.5px; color: var(--muted); letter-spacing: .3px; }
+
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 7px 14px; text-align: center;
+    min-width: 74px; transition: .25s;
+  }
+  .stat:hover { border-color: var(--green); transform: translateY(-2px); }
+  .stat b { display: block; font-size: 18px; color: var(--navy); font-weight: 800; }
+  .stat.green b { color: var(--green); }
+  .stat.gold b { color: var(--gold); }
+  .stat.red b { color: var(--red); }
+  .stat span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+  .icon-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: #fff; border: 2px solid var(--border);
+    color: var(--navy); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: .25s;
+  }
+  .icon-btn:hover { border-color: var(--green); transform: translateY(-2px); color: var(--green); }
+  .icon-btn.green { background: var(--grad); color: white; border: none; }
+  .icon-btn.green:hover { box-shadow: 0 8px 20px rgba(43,122,75,0.3); color: white; }
+
+  .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+
+  /* ===== Controls ===== */
+  .controls {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .search-box { flex: 1; min-width: 240px; position: relative; }
+  .search-box input {
+    width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem;
+    background: #fff; border: 2px solid var(--border);
+    border-radius: 3rem; color: var(--text); font-size: 0.95rem;
+    outline: none; transition: .25s; font-family: inherit;
+  }
+  .search-box input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(43,122,75,0.1);
+  }
+  .search-box::before {
+    content: "🔍"; position: absolute; left: 1rem; top: 50%;
+    transform: translateY(-50%); font-size: 15px; opacity: .6;
+  }
+  select {
+    padding: 0.9rem 1.1rem; background: #fff; border: 2px solid var(--border);
+    border-radius: 3rem; color: var(--text); font-size: 0.9rem; outline: none;
+    cursor: pointer; min-width: 180px; transition: .25s;
+    font-family: inherit; font-weight: 600;
+  }
+  select:focus { border-color: var(--green); box-shadow: 0 0 0 4px rgba(43,122,75,0.1); }
+  .btn {
+    padding: 0.85rem 1.4rem; border: none; border-radius: 3rem;
+    font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: .25s;
+    background: var(--grad); color: #fff;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: inherit;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(43,122,75,0.3); }
+  .btn.ghost {
+    background: #fff; color: var(--navy);
+    border: 2px solid var(--border);
+  }
+  .btn.ghost:hover { border-color: var(--green); color: var(--green); box-shadow: 0 4px 14px rgba(43,122,75,0.15); }
+  .btn.danger { background: linear-gradient(135deg, #e53e3e, #c53030); }
+  .btn.danger:hover { box-shadow: 0 8px 20px rgba(229,62,62,0.3); }
+
+  /* ===== Dashboard ===== */
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+  }
+  .dash-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 1.2rem;
+    padding: 1.2rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+    transition: .3s;
+    box-shadow: var(--shadow);
+  }
+  .dash-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .dash-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--grad);
+  }
+  .dash-card.gold::before { background: linear-gradient(90deg, #ed8936, #f6ad55); }
+  .dash-card.green::before { background: linear-gradient(90deg, #38a169, #68d391); }
+  .dash-card.red::before { background: linear-gradient(90deg, #e53e3e, #fc8181); }
+  .dash-card .label {
+    font-size: 0.75rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .8px; font-weight: 700; margin-bottom: 6px;
+  }
+  .dash-card .value {
+    font-size: 1.9rem; font-weight: 900; color: var(--navy);
+    line-height: 1.2; margin-bottom: 4px;
+  }
+  .dash-card .value small { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+  .dash-card .sub { font-size: 0.78rem; color: var(--muted); }
+  .progress-bar {
+    height: 8px; background: var(--bg); border-radius: 10px;
+    overflow: hidden; margin-top: 10px;
+  }
+  .progress-bar > div {
+    height: 100%; background: var(--grad);
+    border-radius: 10px; transition: width .6s ease;
+  }
+  .progress-bar.green > div { background: linear-gradient(90deg, #38a169, #68d391); }
+  .progress-bar.gold > div { background: linear-gradient(90deg, #ed8936, #f6ad55); }
+  .progress-bar.red > div { background: linear-gradient(90deg, #e53e3e, #fc8181); }
+
+  /* ===== Result Info ===== */
+  .result-info {
+    font-size: 0.85rem; color: var(--muted); margin-bottom: 1.2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .result-info b { color: var(--green); }
+  .reset-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); padding: 6px 12px; border-radius: 8px;
+    font-size: 11px; cursor: pointer; transition: .2s;
+    font-family: inherit; font-weight: 600;
+  }
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* ===== Category ===== */
+  .category {
+    margin-bottom: 14px; border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden; background: #fff;
+    box-shadow: var(--shadow); transition: .3s;
+  }
+  .category:hover { border-color: var(--border2); }
+  .category.completed { border-color: rgba(43,122,75,0.4); }
+  .cat-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; cursor: pointer;
+    background: linear-gradient(90deg, #f7fafc, #fff);
+    user-select: none; transition: .2s;
+  }
+  .cat-header:hover { background: linear-gradient(90deg, #edf2f7, #f7fafc); }
+  .cat-num {
+    width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+    background: var(--grad);
+    color: #fff; font-weight: 800; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 10px rgba(43,122,75,0.3);
+  }
+  .category.completed .cat-num {
+    background: linear-gradient(135deg, #38a169, #68d391);
+  }
+  .cat-info { flex: 1; min-width: 0; }
+  .cat-header h2 { font-size: 15.5px; font-weight: 800; color: var(--navy); text-align: left; }
+  .cat-progress-mini {
+    font-size: 11px; color: var(--muted); margin-top: 3px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cat-progress-mini .mini-bar {
+    width: 80px; height: 4px; background: var(--bg);
+    border-radius: 4px; overflow: hidden;
+  }
+  .cat-progress-mini .mini-bar > div {
+    height: 100%; background: var(--green);
+    border-radius: 4px; transition: width .4s;
+  }
+  .cat-count {
+    font-size: 11.5px; color: var(--green); font-weight: 700;
+    background: var(--green-light); padding: 4px 11px; border-radius: 20px;
+  }
+  .cat-toggle {
+    font-size: 18px; color: var(--muted); transition: transform .3s;
+    flex-shrink: 0;
+  }
+  .category.open .cat-toggle { transform: rotate(180deg); }
+  .cat-body { display: none; }
+  .category.open .cat-body { display: block; animation: slideDown .3s ease; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Chunk ===== */
+  .chunk {
+    display: grid;
+    grid-template-columns: 40px 1fr 1.2fr;
+    gap: 4px 14px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    transition: background .2s;
+    position: relative;
+  }
+  .chunk:hover { background: rgba(43,122,75,0.04); }
+  .chunk.done { background: rgba(56,161,105,0.06); }
+  .chunk.done .chunk-en { color: var(--green); }
+
+  .chunk-check {
+    display: flex; align-items: center; justify-content: center;
+    padding-top: 2px;
+  }
+  .check-btn {
+    width: 26px; height: 26px; border-radius: 8px;
+    border: 2px solid var(--border2); background: #fff;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: transparent; font-size: 13px; font-weight: 800;
+    transition: .25s; flex-shrink: 0;
+  }
+  .check-btn:hover {
+    border-color: var(--green);
+    background: var(--green-light);
+    transform: scale(1.1);
+  }
+  .check-btn.checked {
+    background: var(--grad);
+    border-color: var(--green);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(43,122,75,0.35);
+  }
+
+  .chunk-en {
+    font-weight: 700; font-size: 14.5px; color: var(--navy);
+    display: flex; align-items: baseline; gap: 8px;
+    direction: ltr; text-align: left;
+    grid-column: 2;
+  }
+  .chunk-en .num {
+    font-size: 11px; color: var(--green); font-weight: 800;
+    min-width: 30px; opacity: .9;
+  }
+  .chunk-ar {
+    font-size: 14px; color: var(--green);
+    direction: rtl; text-align: right;
+    font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+    font-weight: 700;
+    grid-column: 3;
+  }
+  .chunk-ex {
+    grid-column: 2 / -1;
+    font-size: 12.5px; color: var(--muted);
+    padding-left: 38px;
+    font-style: italic;
+    direction: ltr; text-align: left;
+  }
+  .chunk-ex::before { content: "↳ "; color: var(--gold); }
+
+  .chunk-actions {
+    position: absolute; top: 10px; right: 12px;
+    display: flex; gap: 4px; opacity: 0; transition: .2s;
+  }
+  .chunk:hover .chunk-actions { opacity: 1; }
+  .action-btn {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: #fff; border: 1px solid var(--border);
+    color: var(--navy); cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: .2s;
+  }
+  .action-btn:hover {
+    background: var(--green); color: #fff; border-color: var(--green);
+    transform: translateY(-2px);
+  }
+  .action-btn.speaking {
+    background: var(--green); color: #fff; border-color: var(--green);
+    animation: speaking 1s ease-in-out infinite;
+  }
+  @keyframes speaking {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(43,122,75,0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(43,122,75,0); }
+  }
+
+  /* ===== Modals ===== */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(30,58,95,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    opacity: 0; pointer-events: none; transition: .3s;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: #fff;
+    border-radius: 1.5rem;
+    width: 100%; max-width: 620px;
+    max-height: 92vh; overflow-y: auto;
+    padding: 2rem;
+    box-shadow: 0 30px 80px rgba(30,58,95,0.4);
+    position: relative;
+    transform: scale(.95); transition: .3s;
+  }
+  .modal-overlay.active .modal { transform: scale(1); }
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 38px; height: 38px; border-radius: 10px;
+    border: none; background: var(--bg); color: var(--navy);
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: .2s;
+  }
+  .modal-close:hover { background: var(--red); color: white; }
+  .modal-header { text-align: center; margin-bottom: 1.5rem; }
+  .modal-header h2 {
+    font-size: 1.4rem; font-weight: 900; color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .modal-header h2::before { content: ""; }
+  .modal-header p { color: var(--muted); font-size: 0.85rem; }
+
+  .form-group { margin-bottom: 1.1rem; }
+  .form-group label {
+    display: block; font-size: 0.75rem; font-weight: 800;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 6px;
+  }
+  .form-group select { width: 100%; min-width: unset; }
+
+  .range-wrap { display: flex; align-items: center; gap: 12px; }
+  .range-wrap input[type="range"] { flex: 1; accent-color: var(--green); }
+  .range-value {
+    min-width: 56px; text-align: center;
+    font-weight: 800; color: var(--green); font-size: 0.85rem;
+    background: var(--green-light); padding: 4px 10px;
+    border-radius: 8px; border: 1px solid rgba(43,122,75,0.2);
+  }
+
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    padding: 0.55rem 1rem; border-radius: 2rem;
+    border: 2px solid var(--border); background: #fff;
+    color: var(--navy); font-weight: 700; font-size: 0.82rem;
+    cursor: pointer; transition: .2s; font-family: inherit;
+  }
+  .chip:hover { border-color: var(--green); color: var(--green); }
+  .chip.active {
+    background: var(--grad); color: #fff; border-color: transparent;
+    box-shadow: 0 4px 12px rgba(43,122,75,0.25);
+  }
+
+  .full-btn {
+    width: 100%; justify-content: center; padding: 1rem;
+    font-size: 1rem; border-radius: 3rem;
+  }
+
+  /* ===== Quiz ===== */
+  .quiz-progress {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 1.3rem;
+  }
+  .quiz-progress-bar {
+    flex: 1; height: 8px; background: var(--bg);
+    border-radius: 10px; overflow: hidden;
+  }
+  .quiz-progress-bar > div {
+    height: 100%; background: var(--grad);
+    border-radius: 10px; transition: width .4s ease;
+  }
+  .quiz-progress span {
+    font-weight: 800; color: var(--green); font-size: 0.85rem;
+    min-width: 60px; text-align: center;
+  }
+  .quiz-question {
+    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+    border-radius: 1rem;
+    padding: 1.5rem 1.2rem;
+    margin-bottom: 1.2rem;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .quiz-question .q-label {
+    font-size: 0.7rem; color: var(--muted); font-weight: 800;
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .quiz-question .q-text {
+    font-size: 1.6rem; font-weight: 900; color: var(--navy);
+    direction: ltr; word-break: break-word; line-height: 1.4;
+  }
+  .quiz-question.arabic-q .q-text {
+    direction: rtl; font-family: 'Tajawal', sans-serif;
+    color: var(--green); font-size: 1.7rem;
+  }
+
+  .quiz-options { display: grid; gap: 8px; margin-bottom: 10px; }
+  .quiz-option {
+    padding: 0.9rem 1.1rem; border: 2px solid var(--border);
+    border-radius: 1rem; background: #fff;
+    color: var(--navy); font-weight: 700; font-size: 0.95rem;
+    cursor: pointer; transition: .2s; font-family: inherit;
+    text-align: left; direction: ltr;
+  }
+  .quiz-option.arabic-opt {
+    direction: rtl; text-align: right;
+    font-family: 'Tajawal', sans-serif;
+  }
+  .quiz-option:hover:not(:disabled) {
+    border-color: var(--green); transform: translateY(-2px);
+    background: var(--green-light);
+  }
+  .quiz-option.correct {
+    background: linear-gradient(135deg, #38a169, #68d391);
+    color: #fff; border-color: #38a169;
+  }
+  .quiz-option.wrong {
+    background: linear-gradient(135deg, #e53e3e, #fc8181);
+    color: #fff; border-color: #e53e3e;
+    animation: shake .4s;
+  }
+  .quiz-option:disabled { cursor: not-allowed; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .quiz-feedback {
+    text-align: center; margin: 12px 0 0;
+    min-height: 30px; font-weight: 800; font-size: 0.95rem;
+  }
+  .quiz-feedback.good { color: var(--green); }
+  .quiz-feedback.bad { color: var(--red); }
+
+  .quiz-result { text-align: center; padding: 10px; }
+  .score-circle {
+    width: 150px; height: 150px; border-radius: 50%;
+    background: var(--grad);
+    margin: 0 auto 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 2.4rem; font-weight: 900;
+    box-shadow: 0 15px 40px rgba(43,122,75,0.35);
+    animation: pop 0.5s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  .quiz-result h3 {
+    font-size: 1.4rem; font-weight: 900; color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .quiz-result p { color: var(--muted); margin-bottom: 1.2rem; font-size: 0.9rem; }
+  .quiz-result p strong { color: var(--green); font-size: 1.15rem; }
+  .quiz-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--navy); color: #fff;
+    padding: 0.85rem 1.4rem; border-radius: 1rem;
+    box-shadow: 0 12px 40px rgba(30,58,95,0.4);
+    font-size: 0.9rem; font-weight: 700;
+    opacity: 0; transition: .35s; z-index: 2000;
+    display: flex; align-items: center; gap: 8px;
+    pointer-events: none; font-family: inherit;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.green { background: linear-gradient(135deg, #38a169, #2b7a4b); }
+  .toast.gold { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+  .toast.red { background: linear-gradient(135deg, #e53e3e, #c53030); }
+
+  /* ===== Empty ===== */
+  .empty { text-align: center; padding: 4rem 2rem; color: var(--muted); background: #fff; border-radius: 1.5rem; }
+  .empty span { font-size: 3rem; display: block; margin-bottom: 12px; }
+
+  /* ===== Back to top ===== */
+  #topBtn {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--grad); color: #fff;
+    font-size: 1.2rem; border: none; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(43,122,75,0.4);
+    opacity: 0; pointer-events: none; transition: .3s; z-index: 99;
+  }
+  #topBtn.show { opacity: 1; pointer-events: auto; }
+  #topBtn:hover { transform: translateY(-4px) scale(1.05); }
+
+  mark {
+    background: rgba(237,137,54,0.3); color: var(--navy);
+    border-radius: 3px; padding: 0 3px;
+  }
+
+  .confetti {
+    position: fixed; width: 10px; height: 10px;
+    pointer-events: none; z-index: 3000;
+    animation: confettiFall 1.6s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 800px) {
+    .navbar { padding: 0.8rem 1rem; }
+    .logo h1 { font-size: 1rem; }
+    .logo p { display: none; }
+    .stats { width: 100%; justify-content: center; }
+    .stat { padding: 5px 10px; min-width: 60px; }
+    .stat b { font-size: 15px; }
+    .container { padding: 0 1rem; }
+    .chunk {
+      grid-template-columns: 36px 1fr;
+      gap: 6px 10px;
+    }
+    .chunk-en { grid-column: 2; }
+    .chunk-ar { grid-column: 2; text-align: right; }
+    .chunk-ex { grid-column: 2; padding-left: 0; }
+    .chunk-actions { position: static; opacity: 1; margin-top: 6px; grid-column: 2; }
+    .quiz-question .q-text { font-size: 1.3rem; }
+    .quiz-question.arabic-q .q-text { font-size: 1.4rem; }
+  }
+  @media (max-width: 500px) {
+    .logo-icon { width: 38px; height: 38px; font-size: 18px; }
+    .btn span { display: none; }
+    .dash-card .value { font-size: 1.5rem; }
+    .icon-btn { width: 38px; height: 38px; font-size: 14px; }
+    .modal { padding: 1.2rem; }
+    .score-circle { width: 120px; height: 120px; font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="navbar">
+  <div class="logo">
+    <div class="logo-icon">E</div>
+    <div>
+      <h1><span>1000</span> English Chunks</h1>
+      <p>Master daily English phrases — one chunk at a time</p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="statCats">100</b><span>Categories</span></div>
+    <div class="stat green"><b id="statDone">0</b><span>Done</span></div>
+    <div class="stat gold"><b id="statStreak">0</b><span>Streak</span></div>
+    <div class="stat red"><b id="statPercent">0%</b><span>Progress</span></div>
+  </div>
+  <div class="icon-actions">
+    <button class="icon-btn" id="voiceBtn" title="Voice Settings">🎙️</button>
+    <button class="icon-btn green" id="quizBtn" title="Quiz">🧠</button>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Search in English or Arabic...">
+    </div>
+    <select id="catSelect">
+      <option value="">All Categories</option>
+    </select>
+    <select id="filterSelect">
+      <option value="all">All Chunks</option>
+      <option value="done">✓ Completed</option>
+      <option value="undone">○ Not Completed</option>
+    </select>
+    <button class="btn ghost" id="expandAll">📂 <span>Expand All</span></button>
+    <button class="btn ghost" id="collapseAll">📁 <span>Collapse All</span></button>
+    <button class="btn danger" id="resetAll">🗑️ <span>Reset</span></button>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dashboard">
+    <div class="dash-card">
+      <div class="label">📚 Total Progress</div>
+      <div class="value"><span id="dashDone">0</span> <small>/ 1000</small></div>
+      <div class="sub" id="dashSub">Keep going! You're doing great.</div>
+      <div class="progress-bar"><div id="dashBar" style="width:0%"></div></div>
+    </div>
+    <div class="dash-card gold">
+      <div class="label">🔥 Daily Streak</div>
+      <div class="value"><span id="dashStreak">0</span> <small>days</small></div>
+      <div class="sub" id="dashStreakSub">Study today to start your streak!</div>
+      <div class="progress-bar gold"><div id="dashStreakBar" style="width:0%"></div></div>
+    </div>
+    <div class="dash-card green">
+      <div class="label">📅 Today's Goal</div>
+      <div class="value"><span id="dashToday">0</span> <small>/ 10</small></div>
+      <div class="sub" id="dashTodaySub">Learn 10 chunks today</div>
+      <div class="progress-bar green"><div id="dashTodayBar" style="width:0%"></div></div>
+    </div>
+    <div class="dash-card red">
+      <div class="label">🧠 Quiz Stats</div>
+      <div class="value"><span id="dashQuizTotal">0</span> <small>taken</small></div>
+      <div class="sub" id="dashQuizSub">Best: 0%</div>
+      <div class="progress-bar red"><div id="dashQuizBar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="result-info">
+    <span id="resultInfo"></span>
+    <button class="reset-btn" id="resetToday">Reset today's count</button>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<button id="topBtn" title="Back to top">↑</button>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   STORAGE KEYS
+   ============================================================ */
+const KEY_PROGRESS = 'chunks_progress_v3';
+const KEY_STREAK = 'chunks_streak_v3';
+const KEY_DAILY = 'chunks_daily_v3';
+const KEY_VOICE = 'chunks_voice_v3';
+const KEY_QUIZ = 'chunks_quiz_v3';
+
+/* ============================================================
+   DATA — 100 categories × 10 chunks = 1000 chunks
+   ============================================================ */
+const categories = [
+["Greetings & Introductions", [
+["How are you doing?", "كيف حالك؟", "Hi, how are you doing today?"],
+["How's everything going?", "كيف تسير الأمور؟", "Hey, how's everything going?"],
+["Nice to meet you.", "سعيد بلقائك.", "Hi, I'm Mina. Nice to meet you."],
+["Good to see you.", "سعيد برؤيتك.", "Good to see you again."],
+["Long time no see.", "لم أرك منذ وقت طويل.", "Hey! Long time no see."],
+["How have you been?", "كيف كانت أحوالك؟", "How have you been lately?"],
+["What have you been up to?", "ماذا كنت تفعل مؤخرًا؟", "What have you been up to these days?"],
+["It's nice to see you again.", "من الجميل أن أراك مرة أخرى.", "It's nice to see you again."],
+["How's your day going?", "كيف يسير يومك؟", "How's your day going so far?"],
+["I hope you're doing well.", "أتمنى أن تكون بخير.", "I hope you're doing well."]
+]],
+["Polite Everyday Expressions", [
+["Excuse me for a moment.", "عذرًا للحظة.", "Excuse me for a moment, please."],
+["Sorry to bother you.", "آسف لإزعاجك.", "Sorry to bother you, but can I ask something?"],
+["Would you mind helping me?", "هل تمانع في مساعدتي؟", "Would you mind helping me with this?"],
+["If you don't mind.", "إذا كنت لا تمانع.", "I'll sit here, if you don't mind."],
+["I really appreciate it.", "أنا أقدر ذلك حقًا.", "I really appreciate it. Thank you."],
+["That's very kind of you.", "هذا لطف كبير منك.", "That's very kind of you to say."],
+["Thanks for letting me know.", "شكرًا لإخباري.", "Thanks for letting me know."],
+["Thanks for your time.", "شكرًا لوقتك.", "Thanks for your time today."],
+["I apologize for the inconvenience.", "أعتذر عن الإزعاج.", "I apologize for the inconvenience."],
+["Please bear with me.", "يرجى التحلي بالصبر معي.", "Please bear with me while I check."]
+]],
+["Understanding & Clarifying", [
+["What do you mean by that?", "ماذا تقصد بذلك؟", "What do you mean by that exactly?"],
+["Could you explain that?", "هل يمكنك شرح ذلك؟", "Could you explain that one more time?"],
+["Could you give me an example?", "هل يمكنك إعطائي مثالًا؟", "Could you give me an example?"],
+["Could you be more specific?", "هل يمكنك أن تكون أكثر تحديدًا؟", "Could you be more specific about the issue?"],
+["What exactly do you mean?", "ماذا تقصد تحديدًا؟", "What exactly do you mean by that?"],
+["I'm not quite sure I understand.", "لست متأكدًا تمامًا أنني أفهم.", "I'm not quite sure I understand the point."],
+["Let me make sure I understand.", "دعني أتأكد أنني أفهم.", "Let me make sure I understand correctly."],
+["So, what you're saying is...", "إذن، ما تقوله هو...", "So, what you're saying is that we need more time."],
+["If I understand correctly...", "إذا كنت أفهم بشكل صحيح...", "If I understand correctly, we're meeting at ten."],
+["Could you say that again?", "هل يمكنك قول ذلك مرة أخرى؟", "Sorry, could you say that again?"]
+]],
+["Opinions & Reactions", [
+["I think you're right.", "أعتقد أنك على حق.", "I think you're right about this."],
+["I don't think that's a good idea.", "لا أعتقد أن هذه فكرة جيدة.", "I don't think that's a good idea."],
+["In my opinion...", "في رأيي...", "In my opinion, we should wait."],
+["As far as I know...", "على حد علمي...", "As far as I know, the meeting starts at nine."],
+["The way I see it...", "من وجهة نظري...", "The way I see it, we have two options."],
+["That makes sense.", "هذا منطقي.", "Yes, that makes sense."],
+["That doesn't make sense.", "هذا غير منطقي.", "I'm sorry, but that doesn't make sense."],
+["I'm not convinced.", "لست مقتنعًا.", "I'm not convinced that this will work."],
+["I'm totally with you.", "أنا متفق معك تمامًا.", "I'm totally with you on this."],
+["I see your point.", "أفهم وجهة نظرك.", "I see your point, but I disagree."]
+]],
+["Agreement & Disagreement", [
+["I completely agree.", "أوافق تمامًا.", "I completely agree with you."],
+["I couldn't agree more.", "لا يمكنني أن أوافق أكثر من ذلك.", "I couldn't agree more with your suggestion."],
+["You're absolutely right.", "أنت على حق تمامًا.", "You're absolutely right about that."],
+["Exactly what I mean.", "هذا بالضبط ما أقصده.", "Yes, that's exactly what I mean."],
+["I'm afraid I disagree.", "أخشى أنني لا أوافق.", "I'm afraid I disagree with that point."],
+["I see it differently.", "أنا أرى الأمر بشكل مختلف.", "I see it differently."],
+["I agree up to a point.", "أوافق إلى حد ما.", "I agree up to a point, but there's another issue."],
+["That's not necessarily true.", "هذا ليس صحيحًا بالضرورة.", "That's not necessarily true in every case."],
+["You have a point.", "لديك وجهة نظر صحيحة.", "You have a point there."],
+["Let's agree to disagree.", "لنتفق على أننا مختلفون.", "We see this differently, so let's agree to disagree."]
+]],
+["Time & Scheduling", [
+["What time works for you?", "ما الوقت المناسب لك؟", "What time works for you tomorrow?"],
+["Are you free this afternoon?", "هل أنت متاح بعد ظهر اليوم؟", "Are you free this afternoon?"],
+["I'll be available after lunch.", "سأكون متاحًا بعد الغداء.", "I'll be available after lunch."],
+["I'm running a little late.", "أنا متأخر قليلًا.", "Sorry, I'm running a little late."],
+["I'll be there in a few minutes.", "سأكون هناك خلال بضع دقائق.", "I'll be there in a few minutes."],
+["Let's meet around noon.", "دعنا نلتقي حوالي الظهر.", "Let's meet around noon."],
+["Can we reschedule?", "هل يمكننا إعادة تحديد الموعد؟", "Can we reschedule the meeting?"],
+["Does tomorrow work for you?", "هل يناسبك غدًا؟", "Does tomorrow work for you?"],
+["I'll let you know the time.", "سأخبرك بالوقت.", "I'll let you know the exact time."],
+["We're right on time.", "نحن في الموعد تمامًا.", "Don't worry, we're right on time."]
+]],
+["Daily Routine", [
+["I'm getting ready.", "أنا أستعد.", "I'm getting ready for work."],
+["I'm heading to work.", "أنا متجه إلى العمل.", "I'm heading to work now."],
+["I usually wake up early.", "عادةً أستيقظ مبكرًا.", "I usually wake up early on weekdays."],
+["I need to get going.", "يجب أن أتحرك / أذهب.", "I need to get going now."],
+["I'm on my way.", "أنا في الطريق.", "I'm on my way to the hotel."],
+["I'll be back soon.", "سأعود قريبًا.", "I'll be back soon."],
+["I'm taking a short break.", "آخذ استراحة قصيرة.", "I'm taking a short break."],
+["I'm almost done.", "أوشكت على الانتهاء.", "I'm almost done with this task."],
+["I just got back.", "لقد عدت للتو.", "I just got back from work."],
+["I'm calling it a day.", "سأنهي العمل لهذا اليوم.", "It's late, so I'm calling it a day."]
+]],
+["Workplace Basics", [
+["I'm working on it.", "أنا أعمل عليه.", "I'm working on it right now."],
+["I'll take care of it.", "سأتولى الأمر.", "Don't worry, I'll take care of it."],
+["I'll handle it.", "سأتولى الأمر.", "I'll handle it from here."],
+["Let me check.", "دعني أتحقق.", "Let me check the schedule."],
+["I'll get back to you.", "سأعود إليك / سأرد عليك.", "I'll get back to you this afternoon."],
+["Keep me updated.", "أبقني على اطلاع.", "Keep me updated on the situation."],
+["I'll keep you posted.", "سأبقيك على اطلاع.", "I'll keep you posted."],
+["I'll look into it.", "سأتحقق من الأمر.", "I'll look into it and let you know."],
+["I'll follow up on that.", "سأتابع ذلك.", "I'll follow up on that tomorrow."],
+["I'll take a look.", "سألقي نظرة.", "I'll take a look and call you back."]
+]],
+["Meetings", [
+["Let's get started.", "لنبدأ.", "Okay, let's get started."],
+["Let's move on.", "دعونا ننتقل.", "Let's move on to the next point."],
+["Let's go over this.", "دعونا نراجع هذا.", "Let's go over this together."],
+["I'd like to add something.", "أود إضافة شيء.", "I'd like to add something here."],
+["Can I make a suggestion?", "هل يمكنني تقديم اقتراح؟", "Can I make a suggestion?"],
+["Let's come back to that.", "دعونا نعود إلى ذلك.", "Let's come back to that later."],
+["That's a good point.", "هذه نقطة جيدة.", "That's a good point."],
+["Let's keep this brief.", "دعونا نجعل هذا مختصرًا.", "Let's keep this brief today."],
+["Are there any questions?", "هل هناك أي أسئلة؟", "Are there any questions before we continue?"],
+["Let's wrap things up.", "دعونا ننهي الأمور.", "Let's wrap things up for today."]
+]],
+["Requests", [
+["Can you help me with this?", "هل يمكنك مساعدتي في هذا؟", "Can you help me with this report?"],
+["Could you send it to me?", "هل يمكنك إرساله لي؟", "Could you send it to me today?"],
+["Can you take a look?", "هل يمكنك إلقاء نظرة؟", "Can you take a look at this?"],
+["Could you check this for me?", "هل يمكنك التحقق من هذا لي؟", "Could you check this for me?"],
+["Would you mind checking?", "هل تمانع في التحقق؟", "Would you mind checking the details?"],
+["Could you give me a hand?", "هل يمكنك مساعدتي؟", "Could you give me a hand with this?"],
+["Can I ask you a favor?", "هل يمكنني أن أطلب منك خدمة؟", "Can I ask you a favor?"],
+["Would it be possible to...?", "هل سيكون من الممكن أن...؟", "Would it be possible to change the date?"],
+["Could you please confirm?", "هل يمكنك التأكيد من فضلك؟", "Could you please confirm the booking?"],
+["Please let me know.", "يرجى إخباري.", "Please let me know if anything changes."]
+]],
+["Offers & Help", [
+["How can I help?", "كيف يمكنني المساعدة؟", "Hello, how can I help?"],
+["What can I do for you?", "ماذا يمكنني أن أفعل من أجلك؟", "What can I do for you today?"],
+["Let me help you.", "دعني أساعدك.", "Let me help you with that."],
+["Would you like some help?", "هل ترغب في بعض المساعدة؟", "Would you like some help with your bags?"],
+["Do you need anything?", "هل تحتاج إلى أي شيء؟", "Do you need anything before I leave?"],
+["Is there anything else?", "هل هناك أي شيء آخر؟", "Is there anything else I can help with?"],
+["I'm happy to help.", "يسعدني أن أساعدك.", "I'm happy to help."],
+["I'll be happy to assist you.", "يسعدني مساعدتك.", "I'll be happy to assist you."],
+["Let me take care of that.", "دعني أتولى ذلك.", "Let me take care of that for you."],
+["Please feel free to ask.", "لا تتردد في السؤال.", "Please feel free to ask if you need anything."]
+]],
+["Problems & Issues", [
+["What's the problem?", "ما المشكلة؟", "What's the problem here?"],
+["What's going on?", "ماذا يحدث؟", "What's going on with the system?"],
+["Something went wrong.", "حدث خطأ ما.", "Something went wrong with the booking."],
+["There's a problem with...", "هناك مشكلة في...", "There's a problem with the printer."],
+["It's not working.", "إنه لا يعمل.", "Sorry, it's not working right now."],
+["It doesn't seem to work.", "يبدو أنه لا يعمل.", "The machine doesn't seem to work."],
+["I'm having trouble with...", "أواجه مشكلة مع...", "I'm having trouble with the computer."],
+["We need to fix this.", "نحتاج إلى إصلاح هذا.", "We need to fix this quickly."],
+["Let's find out what happened.", "دعونا نعرف ما حدث.", "Let's find out what happened."],
+["I'll see what I can do.", "سأرى ما يمكنني فعله.", "I'll see what I can do about it."]
+]],
+["Apologies & Mistakes", [
+["I'm sorry about that.", "أنا آسف بشأن ذلك.", "I'm sorry about that mistake."],
+["I apologize for the delay.", "أعتذر عن التأخير.", "I apologize for the delay."],
+["Sorry, my mistake.", "آسف، خطئي.", "Sorry, my mistake."],
+["I didn't mean to...", "لم أقصد أن...", "I didn't mean to interrupt you."],
+["It won't happen again.", "لن يحدث ذلك مرة أخرى.", "I'm sorry. It won't happen again."],
+["That's my fault.", "هذا خطئي.", "That's my fault. I should have checked."],
+["I take full responsibility.", "أتحمل المسؤولية كاملة.", "I take full responsibility for the mistake."],
+["Thanks for your patience.", "شكرًا على صبرك.", "Thanks for your patience."],
+["I understand your frustration.", "أتفهم إحباطك.", "I understand your frustration."],
+["Let me make it right.", "دعني أصلح الأمر.", "Let me make it right for you."]
+]],
+["Customer Service", [
+["How may I assist you?", "كيف يمكنني مساعدتك؟", "Good morning. How may I assist you?"],
+["May I have your name?", "هل يمكنني معرفة اسمك؟", "May I have your name, please?"],
+["How was your stay?", "كيف كانت إقامتك؟", "How was your stay with us?"],
+["Did you enjoy your stay?", "هل استمتعت بإقامتك؟", "Did you enjoy your stay?"],
+["Is everything to your satisfaction?", "هل كل شيء يرضيك؟", "Is everything to your satisfaction?"],
+["I'll be right with you.", "سأكون معك حالًا.", "I'll be right with you."],
+["Thank you for bringing this to our attention.", "شكرًا لإبلاغنا بهذا الأمر.", "Thank you for bringing this to our attention."],
+["We appreciate your feedback.", "نقدر ملاحظاتك.", "We appreciate your feedback."],
+["We'll do our best to help.", "سنبذل قصارى جهدنا للمساعدة.", "We'll do our best to help."],
+["Thank you for your understanding.", "شكرًا لتفهمك.", "Thank you for your understanding."]
+]],
+["Hotel Front Desk", [
+["Do you have a reservation?", "هل لديك حجز؟", "Good evening. Do you have a reservation?"],
+["May I see your passport?", "هل يمكنني رؤية جواز سفرك؟", "May I see your passport, please?"],
+["Could you fill this out?", "هل يمكنك ملء هذا؟", "Could you fill this out, please?"],
+["Your room is ready.", "غرفتك جاهزة.", "Your room is ready now."],
+["Here is your room key.", "هذا مفتاح غرفتك.", "Here is your room key."],
+["Your room is on the third floor.", "غرفتك في الطابق الثالث.", "Your room is on the third floor."],
+["Breakfast is included.", "الإفطار مشمول.", "Breakfast is included in your rate."],
+["Check-out is at noon.", "تسجيل المغادرة الساعة 12 ظهرًا.", "Check-out is at noon."],
+["I'll arrange that for you.", "سأرتب ذلك لك.", "I'll arrange that for you."],
+["Enjoy your stay.", "استمتع بإقامتك.", "Thank you, and enjoy your stay."]
+]],
+["Restaurant & Food", [
+["Are you ready to order?", "هل أنت مستعد للطلب؟", "Are you ready to order?"],
+["What would you like?", "ماذا تود؟", "What would you like to have?"],
+["Would you like anything to drink?", "هل ترغب في شيء للشرب؟", "Would you like anything to drink?"],
+["I'll have the same.", "سآخذ نفس الشيء.", "I'll have the same, please."],
+["Could I have the menu?", "هل يمكنني الحصول على القائمة؟", "Could I have the menu, please?"],
+["What's your recommendation?", "ما توصيتك؟", "What's your recommendation?"],
+["Is this spicy?", "هل هذا حار؟", "Is this spicy?"],
+["Could we have the bill?", "هل يمكننا الحصول على الفاتورة؟", "Could we have the bill, please?"],
+["Everything was delicious.", "كل شيء كان لذيذًا.", "Everything was delicious."],
+["Could I have some more water?", "هل يمكنني الحصول على المزيد من الماء؟", "Could I have some more water?"]
+]],
+["Housekeeping", [
+["Your room has been cleaned.", "تم تنظيف غرفتك.", "Your room has been cleaned."],
+["Would you like housekeeping now?", "هل ترغب في خدمة تنظيف الغرفة الآن؟", "Would you like housekeeping now?"],
+["I'll send someone up.", "سأرسل شخصًا إليك.", "I'll send someone up right away."],
+["We'll take care of it.", "سنتولى الأمر.", "We'll take care of it immediately."],
+["Do you need fresh towels?", "هل تحتاج إلى مناشف نظيفة؟", "Do you need fresh towels?"],
+["I'll bring them right away.", "سأحضرها فورًا.", "I'll bring them right away."],
+["The room is being serviced.", "يتم تنظيف الغرفة.", "The room is being serviced at the moment."],
+["Please let us know.", "يرجى إبلاغنا.", "Please let us know if you need anything."],
+["I'll check with housekeeping.", "سأتحقق مع قسم التدبير الفندقي.", "I'll check with housekeeping."],
+["Everything is ready.", "كل شيء جاهز.", "Everything is ready for your arrival."]
+]],
+["Directions", [
+["It's just around the corner.", "إنه على بُعد خطوات من هنا.", "The pharmacy is just around the corner."],
+["It's right over there.", "إنه هناك بالضبط.", "The elevator is right over there."],
+["Go straight ahead.", "اذهب مباشرة إلى الأمام.", "Go straight ahead and turn left."],
+["Turn left here.", "انعطف يسارًا هنا.", "Turn left here."],
+["Turn right at the end.", "انعطف يمينًا في النهاية.", "Turn right at the end of the hallway."],
+["It's on your left.", "إنه على يسارك.", "The restaurant is on your left."],
+["It's on your right.", "إنه على يمينك.", "The entrance is on your right."],
+["It's next to...", "إنه بجوار...", "It's next to the lobby."],
+["It's across from...", "إنه مقابل...", "It's across from the reception desk."],
+["Follow me, please.", "اتبعني من فضلك.", "Follow me, please. I'll show you."]
+]],
+["Transportation", [
+["Where can I catch a taxi?", "أين يمكنني ركوب سيارة أجرة؟", "Where can I catch a taxi?"],
+["Could you call a taxi for me?", "هل يمكنك طلب سيارة أجرة لي؟", "Could you call a taxi for me?"],
+["How long will it take?", "كم سيستغرق الأمر؟", "How long will it take to get there?"],
+["How much is the fare?", "كم الأجرة؟", "How much is the fare to the airport?"],
+["I'm on my way.", "أنا في الطريق.", "Don't worry, I'm on my way."],
+["The traffic is heavy.", "حركة المرور مزدحمة.", "The traffic is heavy today."],
+["We might be late.", "قد نتأخر.", "We might be late because of traffic."],
+["Please drop me off here.", "من فضلك أنزلني هنا.", "Please drop me off here."],
+["Where should I get off?", "أين يجب أن أنزل؟", "Where should I get off?"],
+["Is this the right bus?", "هل هذه الحافلة الصحيحة؟", "Is this the right bus for downtown?"]
+]],
+["Shopping", [
+["How much is this?", "بكم هذا؟", "How much is this shirt?"],
+["Do you have this in another size?", "هل لديك هذا بمقاس آخر؟", "Do you have this in another size?"],
+["Do you have anything cheaper?", "هل لديك شيء أرخص؟", "Do you have anything cheaper?"],
+["I'm just looking.", "أنا فقط أتصفح.", "Thanks, I'm just looking."],
+["Can I try this on?", "هل يمكنني تجربة هذا؟", "Can I try this on?"],
+["I'll take it.", "سآخذه.", "It looks good. I'll take it."],
+["Can I pay by card?", "هل يمكنني الدفع بالبطاقة؟", "Can I pay by card?"],
+["Do you have change?", "هل لديك فكة؟", "Do you have change for this?"],
+["Can I get a receipt?", "هل يمكنني الحصول على إيصال؟", "Can I get a receipt, please?"],
+["That's a bit expensive.", "هذا غالٍ قليلًا.", "That's a bit expensive for me."]
+]],
+["Phone Calls", [
+["Can I call you back?", "هل يمكنني الاتصال بك لاحقًا؟", "Can I call you back in ten minutes?"],
+["I'll call you later.", "سأتصل بك لاحقًا.", "I'll call you later."],
+["Can you hear me?", "هل تسمعني؟", "Can you hear me clearly?"],
+["The connection is bad.", "الاتصال سيئ.", "Sorry, the connection is bad."],
+["You're breaking up.", "صوتك يتقطع.", "Sorry, you're breaking up."],
+["I'll put you through.", "سأحولك.", "I'll put you through to the manager."],
+["Could you hold, please?", "هل يمكنك الانتظار على الخط من فضلك؟", "Could you hold, please?"],
+["Who's calling, please?", "من المتصل من فضلك؟", "Who's calling, please?"],
+["I'll pass on the message.", "سأنقل الرسالة.", "I'll pass on the message."],
+["I'll get back to you shortly.", "سأعود إليك بعد قليل.", "I'll get back to you shortly."]
+]],
+["Email & Messages", [
+["Please find attached...", "يرجى العثور مرفقًا...", "Please find attached the requested report."],
+["I'm writing to ask about...", "أكتب للاستفسار عن...", "I'm writing to ask about the training schedule."],
+["Just a quick reminder...", "مجرد تذكير سريع...", "Just a quick reminder about tomorrow's meeting."],
+["Please confirm receipt.", "يرجى تأكيد الاستلام.", "Please confirm receipt of this email."],
+["For your information...", "للعلم...", "For your information, the schedule has changed."],
+["As discussed...", "كما تمت مناقشته...", "As discussed, we'll start at nine."],
+["Please let me know if...", "يرجى إخباري إذا...", "Please let me know if you have any questions."],
+["Looking forward to hearing from you.", "أتطلع إلى ردك.", "I'm looking forward to hearing from you."],
+["Best regards.", "مع أطيب التحيات.", "Best regards, Mina."],
+["Thank you in advance.", "شكرًا مقدمًا.", "Thank you in advance for your help."]
+]],
+["Work Communication", [
+["Just to clarify...", "فقط للتوضيح...", "Just to clarify, we're meeting at ten."],
+["As I mentioned...", "كما ذكرت...", "As I mentioned, the deadline is Friday."],
+["According to the schedule...", "وفقًا للجدول...", "According to the schedule, the session starts at nine."],
+["From my side...", "من جانبي...", "From my side, everything is ready."],
+["On my end...", "من جهتي...", "On my end, everything is complete."],
+["I'll keep you informed.", "سأبقيك على اطلاع.", "I'll keep you informed of any changes."],
+["We need to make sure...", "نحتاج إلى التأكد من...", "We need to make sure everything is ready."],
+["Let's make sure...", "دعونا نتأكد من...", "Let's make sure everyone is informed."],
+["As soon as possible.", "في أقرب وقت ممكن.", "Please send it as soon as possible."],
+["By the end of the day.", "بحلول نهاية اليوم.", "Please finish this by the end of the day."]
+]],
+["Deadlines & Priorities", [
+["What's the deadline?", "ما الموعد النهائي؟", "What's the deadline for this report?"],
+["It's due tomorrow.", "موعده النهائي غدًا.", "It's due tomorrow morning."],
+["This is a priority.", "هذا أولوية.", "This is a priority right now."],
+["It's not urgent.", "الأمر ليس عاجلًا.", "It's important, but it's not urgent."],
+["We need this today.", "نحتاج هذا اليوم.", "We need this today."],
+["Let's do this first.", "دعونا نفعل هذا أولًا.", "Let's do this first."],
+["I'll prioritize it.", "سأعطيه الأولوية.", "I'll prioritize it and finish it today."],
+["We're short on time.", "ليس لدينا وقت كافٍ.", "We're short on time."],
+["We have plenty of time.", "لدينا وقت كافٍ جدًا.", "Don't rush. We have plenty of time."],
+["We're almost out of time.", "أوشك الوقت على الانتهاء.", "We're almost out of time."]
+]],
+["Problem Solving", [
+["Let's see what we can do.", "دعونا نرى ما يمكننا فعله.", "Let's see what we can do."],
+["Let's find another way.", "دعونا نجد طريقة أخرى.", "Let's find another way to solve it."],
+["What's causing the problem?", "ما سبب المشكلة؟", "What's causing the problem?"],
+["What's the best solution?", "ما أفضل حل؟", "What's the best solution here?"],
+["We need to figure this out.", "نحتاج إلى إيجاد حل لهذا.", "We need to figure this out quickly."],
+["Let's start from the beginning.", "دعونا نبدأ من البداية.", "Let's start from the beginning."],
+["Let's look at the options.", "دعونا نراجع الخيارات.", "Let's look at the options."],
+["That should solve the problem.", "من المفترض أن يحل ذلك المشكلة.", "That should solve the problem."],
+["It worked.", "لقد نجح الأمر.", "Great, it worked."],
+["Let's try again.", "دعونا نحاول مرة أخرى.", "It didn't work. Let's try again."]
+]],
+["Decisions", [
+["Let's go with this option.", "دعونا نختار هذا الخيار.", "Let's go with this option."],
+["I think we should...", "أعتقد أنه يجب علينا...", "I think we should wait."],
+["We need to decide.", "نحتاج إلى اتخاذ قرار.", "We need to decide today."],
+["It's up to you.", "الأمر متروك لك.", "It's up to you where we go."],
+["I'll leave it up to you.", "سأترك القرار لك.", "I'll leave it up to you."],
+["Let's think about it.", "دعونا نفكر في الأمر.", "Let's think about it first."],
+["Let me think.", "دعني أفكر.", "Let me think for a moment."],
+["I'm leaning toward...", "أميل إلى...", "I'm leaning toward the second option."],
+["That sounds like the best option.", "يبدو أن هذا أفضل خيار.", "That sounds like the best option."],
+["We've made a decision.", "لقد اتخذنا قرارًا.", "We've made a decision."]
+]],
+["Plans", [
+["What are your plans?", "ما خططك؟", "What are your plans for the weekend?"],
+["I'm planning to...", "أخطط لـ...", "I'm planning to visit my family."],
+["We're thinking of...", "نفكر في...", "We're thinking of going out tonight."],
+["I haven't decided yet.", "لم أقرر بعد.", "I haven't decided yet."],
+["Let's make a plan.", "دعونا نضع خطة.", "Let's make a plan for tomorrow."],
+["What's the plan?", "ما الخطة؟", "So, what's the plan?"],
+["The plan has changed.", "تغيرت الخطة.", "Sorry, the plan has changed."],
+["Let's stick to the plan.", "دعونا نلتزم بالخطة.", "Let's stick to the plan."],
+["We need a backup plan.", "نحتاج إلى خطة بديلة.", "We need a backup plan."],
+["I'll let you know our plans.", "سأخبرك بخططنا.", "I'll let you know our plans later."]
+]],
+["Social Conversations", [
+["What do you do?", "ماذا تعمل؟", "So, what do you do?"],
+["Where are you from?", "من أين أنت؟", "Where are you from originally?"],
+["How do you know him?", "كيف تعرفه؟", "How do you know him?"],
+["What brings you here?", "ما الذي أتى بك إلى هنا؟", "What brings you here today?"],
+["How was your weekend?", "كيف كانت عطلة نهاية أسبوعك؟", "How was your weekend?"],
+["What did you do yesterday?", "ماذا فعلت أمس؟", "What did you do yesterday?"],
+["Have you been here before?", "هل جئت إلى هنا من قبل؟", "Have you been here before?"],
+["What do you usually do?", "ماذا تفعل عادةً؟", "What do you usually do after work?"],
+["That sounds interesting.", "هذا يبدو ممتعًا.", "That sounds interesting. Tell me more."],
+["Tell me more about it.", "أخبرني المزيد عنه.", "Tell me more about it."]
+]],
+["Preferences", [
+["I really like...", "أنا أحب حقًا...", "I really like this place."],
+["I'm not a big fan of...", "لست من محبي...", "I'm not a big fan of spicy food."],
+["I'd rather...", "أفضل أن...", "I'd rather stay here."],
+["I'd prefer...", "أفضل...", "I'd prefer a quiet room."],
+["I don't mind.", "لا أمانع.", "Where should we sit? I don't mind."],
+["It doesn't matter to me.", "لا يهمني.", "It doesn't matter to me."],
+["Whatever works for you.", "أي شيء يناسبك.", "Whatever works for you."],
+["I'm okay with that.", "أنا موافق على ذلك.", "I'm okay with that."],
+["That works for me.", "هذا مناسب لي.", "Three o'clock works for me."],
+["I'm not comfortable with that.", "لست مرتاحًا لذلك.", "I'm not comfortable with that idea."]
+]],
+["Feelings", [
+["I'm really happy about it.", "أنا سعيد جدًا بشأن ذلك.", "I'm really happy about it."],
+["I'm a little worried.", "أنا قلق قليلًا.", "I'm a little worried about the result."],
+["I'm not feeling well.", "لا أشعر أنني بخير.", "I'm not feeling well today."],
+["I'm feeling much better.", "أشعر بتحسن كبير.", "I'm feeling much better now."],
+["I'm really tired.", "أنا متعب جدًا.", "I'm really tired after work."],
+["I'm exhausted.", "أنا مرهق.", "I'm exhausted. I need some rest."],
+["I'm a bit stressed.", "أنا متوتر قليلًا.", "I'm a bit stressed today."],
+["I'm excited about...", "أنا متحمس بشأن...", "I'm excited about the new project."],
+["I'm disappointed.", "أنا محبط.", "I'm disappointed with the result."],
+["I'm proud of you.", "أنا فخور بك.", "I'm really proud of you."]
+]],
+["Advice", [
+["You should try...", "يجب أن تجرب...", "You should try this restaurant."],
+["You might want to...", "قد ترغب في أن...", "You might want to check the time."],
+["If I were you...", "لو كنت مكانك...", "If I were you, I'd wait."],
+["Why don't you...?", "لماذا لا...؟", "Why don't you ask your manager?"],
+["I'd recommend...", "أوصي بـ...", "I'd recommend booking in advance."],
+["It's worth trying.", "يستحق التجربة.", "It's worth trying."],
+["Take my advice.", "خذ بنصيحتي.", "Take my advice and check it first."],
+["Be careful with...", "كن حذرًا مع...", "Be careful with that machine."],
+["Don't forget to...", "لا تنسَ أن...", "Don't forget to call him."],
+["Make sure you...", "تأكد من أن...", "Make sure you lock the door."]
+]],
+["Possibility", [
+["It might be...", "قد يكون...", "It might be a technical issue."],
+["It could be...", "يمكن أن يكون...", "It could be the wrong file."],
+["There's a chance that...", "هناك احتمال أن...", "There's a chance that we'll be late."],
+["It's possible that...", "من الممكن أن...", "It's possible that the meeting will change."],
+["I wouldn't be surprised if...", "لن أتفاجأ إذا...", "I wouldn't be surprised if he calls."],
+["It looks like...", "يبدو أن...", "It looks like it's going to rain."],
+["It seems like...", "يبدو أن...", "It seems like we're ready."],
+["I have a feeling that...", "لدي شعور بأن...", "I have a feeling that he'll agree."],
+["There's no way...", "لا توجد طريقة / مستحيل...", "There's no way we can finish today."],
+["It depends on...", "هذا يعتمد على...", "It depends on the weather."]
+]],
+["Frequency", [
+["I usually...", "عادةً ما...", "I usually arrive early."],
+["I normally...", "عادةً ما...", "I normally have coffee in the morning."],
+["I often...", "غالبًا ما...", "I often work late."],
+["I sometimes...", "أحيانًا...", "I sometimes eat at work."],
+["I rarely...", "نادرًا ما...", "I rarely watch TV."],
+["I hardly ever...", "نادرًا جدًا ما...", "I hardly ever go out on weekdays."],
+["I always...", "دائمًا...", "I always check my email."],
+["I never...", "لا أفعل أبدًا...", "I never skip breakfast."],
+["Every now and then...", "من وقت لآخر...", "Every now and then, I work from home."],
+["Once in a while...", "من حين لآخر...", "Once in a while, I go out with friends."]
+]],
+["Past Events", [
+["It happened yesterday.", "حدث ذلك أمس.", "It happened yesterday."],
+["I saw him earlier.", "رأيته في وقت سابق.", "I saw him earlier today."],
+["I just finished.", "انتهيت للتو.", "I just finished the report."],
+["I already did it.", "لقد فعلت ذلك بالفعل.", "I already did it."],
+["I forgot to...", "نسيت أن...", "I forgot to call him."],
+["I didn't realize...", "لم أدرك...", "I didn't realize the time."],
+["I wasn't aware of that.", "لم أكن على علم بذلك.", "I wasn't aware of that change."],
+["I used to...", "كنت معتادًا على...", "I used to work nights."],
+["I had no idea.", "لم تكن لدي أي فكرة.", "I had no idea about the change."],
+["It turned out that...", "اتضح أن...", "It turned out that we had the wrong date."]
+]],
+["Future", [
+["I'll do it later.", "سأفعل ذلك لاحقًا.", "I'll do it later today."],
+["I'll let you know.", "سأخبرك.", "I'll let you know tomorrow."],
+["I'll see what happens.", "سأرى ماذا سيحدث.", "I'll see what happens."],
+["I'm going to...", "سوف / سأقوم بـ...", "I'm going to call him."],
+["I'm about to...", "أنا على وشك أن...", "I'm about to leave."],
+["I'll be there soon.", "سأكون هناك قريبًا.", "I'll be there soon."],
+["I'll get it done.", "سأنجزه.", "Don't worry, I'll get it done."],
+["I'll make sure...", "سأتأكد من...", "I'll make sure it's ready."],
+["I'll try my best.", "سأبذل قصارى جهدي.", "I'll try my best."],
+["I'll keep that in mind.", "سأضع ذلك في اعتباري.", "Thanks, I'll keep that in mind."]
+]],
+["Telephone & Reception", [
+["Who would you like to speak to?", "مع من ترغب في التحدث؟", "Who would you like to speak to?"],
+["I'll transfer your call.", "سأحول مكالمتك.", "I'll transfer your call now."],
+["The line is busy.", "الخط مشغول.", "I'm sorry, the line is busy."],
+["There's no answer.", "لا يوجد رد.", "There's no answer at the moment."],
+["Would you like to leave a message?", "هل ترغب في ترك رسالة؟", "Would you like to leave a message?"],
+["Can I take a message?", "هل يمكنني أخذ رسالة؟", "Can I take a message?"],
+["May I ask who's calling?", "هل يمكنني معرفة من المتصل؟", "May I ask who's calling?"],
+["I'll ask him to call you back.", "سأطلب منه الاتصال بك.", "I'll ask him to call you back."],
+["Please stay on the line.", "يرجى البقاء على الخط.", "Please stay on the line."],
+["Thank you for calling.", "شكرًا لاتصالك.", "Thank you for calling."]
+]],
+["Safety", [
+["Please be careful.", "يرجى توخي الحذر.", "Please be careful on the stairs."],
+["Watch your step.", "انتبه لخطوتك.", "Watch your step here."],
+["Please stay calm.", "يرجى التزام الهدوء.", "Please stay calm and follow me."],
+["Follow the instructions.", "اتبع التعليمات.", "Please follow the instructions."],
+["This area is restricted.", "هذه المنطقة محظورة.", "This area is restricted."],
+["Keep away from...", "ابتعد عن...", "Please keep away from the equipment."],
+["In case of emergency...", "في حالة الطوارئ...", "In case of emergency, call this number."],
+["Where is the emergency exit?", "أين مخرج الطوارئ؟", "Where is the emergency exit?"],
+["Call for help.", "اطلب المساعدة.", "If you need help, call for help."],
+["Everything is under control.", "كل شيء تحت السيطرة.", "Don't worry, everything is under control."]
+]],
+["Learning & Training", [
+["I'm learning how to...", "أتعلم كيفية...", "I'm learning how to use the system."],
+["Could you show me how?", "هل يمكنك أن تريني كيف؟", "Could you show me how to do this?"],
+["Let me try.", "دعني أجرب.", "Let me try it myself."],
+["I need more practice.", "أحتاج إلى مزيد من التدريب.", "I need more practice."],
+["I understand the basics.", "أفهم الأساسيات.", "I understand the basics now."],
+["Could you explain the process?", "هل يمكنك شرح العملية؟", "Could you explain the process?"],
+["What's the best way to learn?", "ما أفضل طريقة للتعلم؟", "What's the best way to learn this?"],
+["Let's practice together.", "دعونا نتدرب معًا.", "Let's practice together."],
+["I made a mistake.", "لقد ارتكبت خطأ.", "I made a mistake, but I learned from it."],
+["I'm getting better.", "أتحسن.", "I'm getting better every day."]
+]],
+["Feedback", [
+["Good job.", "عمل جيد.", "Good job on the presentation."],
+["Well done.", "أحسنت.", "Well done, everyone."],
+["Keep it up.", "استمر على هذا النحو.", "You're doing great. Keep it up."],
+["That's a great improvement.", "هذا تحسن رائع.", "That's a great improvement."],
+["There's room for improvement.", "هناك مجال للتحسين.", "There's still room for improvement."],
+["Here's what I suggest.", "إليك ما أقترحه.", "Here's what I suggest."],
+["One thing to improve is...", "شيء واحد يحتاج إلى تحسين هو...", "One thing to improve is your timing."],
+["You did a great job with...", "لقد أديت بشكل رائع في...", "You did a great job with the presentation."],
+["Let's work on...", "دعونا نعمل على...", "Let's work on your communication skills."],
+["I appreciate your effort.", "أقدر مجهودك.", "I appreciate your effort."]
+]],
+["Leadership", [
+["Let's work together.", "دعونا نعمل معًا.", "Let's work together on this."],
+["I need you to...", "أحتاج منك أن...", "I need you to check this."],
+["I'd like you to...", "أود منك أن...", "I'd like you to prepare the report."],
+["Please keep me informed.", "يرجى إبقائي على اطلاع.", "Please keep me informed."],
+["Let's make sure everyone knows.", "دعونا نتأكد أن الجميع يعرف.", "Let's make sure everyone knows."],
+["I trust your judgment.", "أثق بحكمك.", "I trust your judgment on this."],
+["Take the lead on this.", "تولَّ قيادة هذا الأمر.", "Take the lead on this project."],
+["Let's focus on the priority.", "دعونا نركز على الأولوية.", "Let's focus on the priority."],
+["I need your support.", "أحتاج إلى دعمك.", "I need your support on this."],
+["Let's find a solution together.", "دعونا نجد حلًا معًا.", "Let's find a solution together."]
+]],
+["Teamwork", [
+["We're all on the same page.", "نحن جميعًا متفقون / نفهم الأمر نفسه.", "Let's make sure we're all on the same page."],
+["Let's divide the work.", "دعونا نقسم العمل.", "Let's divide the work between us."],
+["I'll take this part.", "سأتولى هذا الجزء.", "I'll take this part."],
+["Can you take care of this?", "هل يمكنك تولي هذا؟", "Can you take care of this part?"],
+["Let's help each other.", "دعونا نساعد بعضنا.", "Let's help each other."],
+["We need to communicate better.", "نحتاج إلى التواصل بشكل أفضل.", "We need to communicate better."],
+["Let's keep each other updated.", "دعونا نبقي بعضنا على اطلاع.", "Let's keep each other updated."],
+["We're working toward the same goal.", "نعمل لتحقيق الهدف نفسه.", "We're working toward the same goal."],
+["Thanks for your support.", "شكرًا لدعمك.", "Thanks for your support."],
+["Great teamwork.", "عمل جماعي رائع.", "Great teamwork, everyone."]
+]],
+["Confidence", [
+["I can handle it.", "أستطيع التعامل معه.", "Don't worry, I can handle it."],
+["I've got this.", "سأتولى الأمر / أنا قادر على ذلك.", "I've got this. Don't worry."],
+["I'm confident that...", "أنا واثق من أن...", "I'm confident that we can do it."],
+["I know what I'm doing.", "أعرف ما أفعله.", "Don't worry, I know what I'm doing."],
+["I can manage.", "أستطيع تدبر الأمر.", "Thanks, but I can manage."],
+["I'll give it a try.", "سأجرب.", "I'll give it a try."],
+["I'm ready for it.", "أنا مستعد لذلك.", "I'm ready for it."],
+["I can take care of this.", "يمكنني تولي هذا.", "I can take care of this."],
+["I'm getting the hang of it.", "بدأت أفهم كيفية القيام به.", "I'm getting the hang of it."],
+["I've got everything under control.", "كل شيء تحت سيطرتي.", "I've got everything under control."]
+]],
+["Conversation Fillers", [
+["Well, actually...", "حسنًا، في الواقع...", "Well, actually, I have another idea."],
+["Let me think...", "دعني أفكر...", "Let me think for a second."],
+["You know what?", "أتعرف ماذا؟", "You know what? Let's go."],
+["The thing is...", "المشكلة / الأمر هو...", "The thing is, we're out of time."],
+["To be honest...", "بصراحة...", "To be honest, I don't know."],
+["By the way...", "بالمناسبة...", "By the way, did you call him?"],
+["Anyway...", "على أي حال...", "Anyway, let's continue."],
+["I mean...", "أعني...", "I mean, that's not what I said."],
+["Actually, now that I think about it...", "في الواقع، الآن بعد أن فكرت في الأمر...", "Actually, now that I think about it, you're right."],
+["Let me put it this way...", "دعني أضع الأمر بهذه الطريقة...", "Let me put it this way: we need more time."]
+]],
+["Common Short Chunks", [
+["Sounds good.", "يبدو جيدًا / اتفقنا.", "Sounds good. Let's do it."],
+["Sounds great.", "يبدو رائعًا.", "Sounds great. See you tomorrow."],
+["No worries.", "لا تقلق / لا مشكلة.", "No worries, it happens."],
+["Of course.", "بالطبع.", "Of course, I can help."],
+["Sure thing.", "بالتأكيد.", "Sure thing, I'll do it."],
+["Absolutely.", "بالتأكيد.", "Absolutely, I agree."],
+["Not really.", "ليس حقًا.", "Do you like it? Not really."],
+["Not yet.", "ليس بعد.", "Have you finished? Not yet."],
+["Not anymore.", "لم يعد كذلك.", "Do you work there? Not anymore."],
+["Not at all.", "على الإطلاق.", "Are you tired? Not at all."]
+]],
+["Agreeing Quickly", [
+["Exactly.", "بالضبط.", "Exactly. That's the problem."],
+["That's right.", "هذا صحيح.", "That's right."],
+["Absolutely right.", "صحيح تمامًا.", "You're absolutely right."],
+["True.", "صحيح.", "True, I hadn't thought of that."],
+["Fair enough.", "مقبول / وجهة نظر منطقية.", "Fair enough. I understand."],
+["I agree.", "أوافق.", "I agree with you."],
+["That's a good point.", "هذه نقطة جيدة.", "That's a good point."],
+["You're right about that.", "أنت محق بشأن ذلك.", "You're right about that."],
+["I feel the same way.", "أشعر بنفس الطريقة.", "I feel the same way."],
+["Couldn't agree more.", "لا يمكنني أن أوافق أكثر.", "Couldn't agree more."]
+]],
+["Disagreeing Politely", [
+["I'm not sure about that.", "لست متأكدًا من ذلك.", "I'm not sure about that."],
+["I'm not so sure.", "لست متأكدًا تمامًا.", "I'm not so sure that's the best idea."],
+["I don't quite agree.", "لا أوافق تمامًا.", "I don't quite agree with that."],
+["I'm afraid not.", "أخشى أن الأمر ليس كذلك.", "I'm afraid not."],
+["I see it differently.", "أراه بشكل مختلف.", "I see it differently."],
+["I'm not convinced.", "لست مقتنعًا.", "I'm not convinced yet."],
+["That's one way to look at it.", "هذه إحدى طرق النظر إلى الأمر.", "That's one way to look at it."],
+["I wouldn't put it that way.", "لن أصف الأمر بهذه الطريقة.", "I wouldn't put it that way."],
+["There may be another way.", "قد تكون هناك طريقة أخرى.", "There may be another way to solve it."],
+["Let's look at it another way.", "دعونا ننظر إليه بطريقة أخرى.", "Let's look at it another way."]
+]],
+["Requests for Repetition", [
+["Sorry, I missed that.", "آسف، لم أسمع ذلك.", "Sorry, I missed that."],
+["I didn't catch that.", "لم ألتقط ما قيل.", "Sorry, I didn't catch that."],
+["Could you repeat that?", "هل يمكنك تكرار ذلك؟", "Could you repeat that, please?"],
+["Could you say that more slowly?", "هل يمكنك قول ذلك ببطء أكثر؟", "Could you say that more slowly?"],
+["Can you speak a little louder?", "هل يمكنك التحدث بصوت أعلى قليلًا؟", "Can you speak a little louder?"],
+["What was that?", "ماذا قلت؟", "Sorry, what was that?"],
+["Could you go over that again?", "هل يمكنك مراجعة ذلك مرة أخرى؟", "Could you go over that again?"],
+["Can you clarify that?", "هل يمكنك توضيح ذلك؟", "Can you clarify that point?"],
+["Did you say...?", "هل قلت...؟", "Did you say the meeting is tomorrow?"],
+["Could you spell that?", "هل يمكنك تهجئة ذلك؟", "Could you spell your name?"]
+]],
+["Money & Payment", [
+["How much does it cost?", "كم تكلفته؟", "How much does it cost?"],
+["How much is the total?", "كم الإجمالي؟", "How much is the total?"],
+["Can I pay in cash?", "هل يمكنني الدفع نقدًا؟", "Can I pay in cash?"],
+["Can I pay by card?", "هل يمكنني الدفع بالبطاقة؟", "Can I pay by card?"],
+["Do you accept credit cards?", "هل تقبلون بطاقات الائتمان؟", "Do you accept credit cards?"],
+["Is there an extra charge?", "هل هناك رسوم إضافية؟", "Is there an extra charge?"],
+["Is tax included?", "هل الضريبة مشمولة؟", "Is tax included in the price?"],
+["Keep the change.", "احتفظ بالباقي.", "Keep the change, please."],
+["Can I get a receipt?", "هل يمكنني الحصول على إيصال؟", "Can I get a receipt?"],
+["I'll pay for it.", "سأدفع ثمنه.", "Don't worry, I'll pay for it."]
+]],
+["Travel", [
+["Where are you staying?", "أين تقيم؟", "Where are you staying in Hurghada?"],
+["How long are you staying?", "كم ستقيم؟", "How long are you staying?"],
+["I'm here on vacation.", "أنا هنا في إجازة.", "I'm here on vacation."],
+["I'm here for work.", "أنا هنا من أجل العمل.", "I'm here for work."],
+["What time is check-in?", "ما وقت تسجيل الوصول؟", "What time is check-in?"],
+["What time is check-out?", "ما وقت تسجيل المغادرة؟", "What time is check-out?"],
+["Where is the nearest...?", "أين أقرب...؟", "Where is the nearest pharmacy?"],
+["How far is it from here?", "كم يبعد عن هنا؟", "How far is it from here?"],
+["Is it within walking distance?", "هل يمكن الوصول إليه سيرًا؟", "Is it within walking distance?"],
+["Do you recommend it?", "هل توصي به؟", "Do you recommend it?"]
+]],
+["Weather", [
+["What's the weather like?", "كيف حالة الطقس؟", "What's the weather like today?"],
+["It's really hot today.", "الجو حار جدًا اليوم.", "It's really hot today."],
+["It's getting colder.", "الجو يصبح أكثر برودة.", "It's getting colder outside."],
+["It looks like rain.", "يبدو أن المطر قادم.", "It looks like rain."],
+["It's raining heavily.", "المطر يهطل بغزارة.", "It's raining heavily now."],
+["It's nice out today.", "الجو جميل اليوم.", "It's really nice out today."],
+["It's a bit windy.", "الجو عاصف قليلًا.", "It's a bit windy today."],
+["The weather is perfect.", "الطقس مثالي.", "The weather is perfect for the beach."],
+["It's too hot for me.", "الجو حار جدًا بالنسبة لي.", "It's too hot for me."],
+["Hopefully, it'll stay sunny.", "نأمل أن يظل الجو مشمسًا.", "Hopefully, it'll stay sunny."]
+]],
+["Health & Wellbeing", [
+["Are you feeling okay?", "هل تشعر أنك بخير؟", "Are you feeling okay now?"],
+["I don't feel well.", "لا أشعر أنني بخير.", "I don't feel well today."],
+["I need some rest.", "أحتاج إلى بعض الراحة.", "I need some rest."],
+["I have a headache.", "لدي صداع.", "I have a headache."],
+["I feel better now.", "أشعر بتحسن الآن.", "I feel better now."],
+["Take care of yourself.", "اعتنِ بنفسك.", "Take care of yourself."],
+["Get some rest.", "خذ قسطًا من الراحة.", "You should get some rest."],
+["Drink plenty of water.", "اشرب الكثير من الماء.", "Make sure you drink plenty of water."],
+["I need to see a doctor.", "أحتاج إلى زيارة طبيب.", "I think I need to see a doctor."],
+["I hope you feel better soon.", "أتمنى أن تشعر بتحسن قريبًا.", "I hope you feel better soon."]
+]],
+["Food Preferences", [
+["I'm hungry.", "أنا جائع.", "I'm hungry. Let's eat."],
+["I'm thirsty.", "أنا عطشان.", "I'm thirsty. Can I have some water?"],
+["I'm full.", "أنا شبعان.", "Thanks, I'm full."],
+["I'm not hungry.", "لست جائعًا.", "I'm not hungry right now."],
+["I'm vegetarian.", "أنا نباتي.", "I'm vegetarian, so I don't eat meat."],
+["I don't eat seafood.", "لا آكل المأكولات البحرية.", "I don't eat seafood."],
+["I'm allergic to...", "لدي حساسية من...", "I'm allergic to nuts."],
+["I can't eat...", "لا أستطيع تناول...", "I can't eat spicy food."],
+["I'd like something light.", "أرغب في شيء خفيف.", "I'd like something light."],
+["I'll have whatever you recommend.", "سآخذ ما توصي به.", "I'll have whatever you recommend."]
+]],
+["Home", [
+["I'm at home.", "أنا في المنزل.", "I'm at home right now."],
+["I'll be home soon.", "سأكون في المنزل قريبًا.", "I'll be home soon."],
+["Make yourself at home.", "اعتبر نفسك في منزلك.", "Come in and make yourself at home."],
+["I'll open the door.", "سأفتح الباب.", "Wait, I'll open the door."],
+["The door is locked.", "الباب مغلق.", "The door is locked."],
+["Turn on the light.", "شغّل الضوء.", "Can you turn on the light?"],
+["Turn it off.", "أطفئه.", "Please turn it off."],
+["It's too noisy.", "الأمر صاخب جدًا.", "It's too noisy outside."],
+["I need to clean up.", "أحتاج إلى التنظيف.", "I need to clean up the room."],
+["I'll do it later.", "سأفعل ذلك لاحقًا.", "I'll do it later."]
+]],
+["Technology", [
+["It's not connected.", "إنه غير متصل.", "The printer is not connected."],
+["The Wi-Fi isn't working.", "الواي فاي لا يعمل.", "The Wi-Fi isn't working."],
+["What's the password?", "ما كلمة المرور؟", "What's the Wi-Fi password?"],
+["Can you send me the link?", "هل يمكنك إرسال الرابط لي؟", "Can you send me the link?"],
+["I can't open the file.", "لا أستطيع فتح الملف.", "I can't open the file."],
+["The system is down.", "النظام متوقف.", "The system is down right now."],
+["Try restarting it.", "حاول إعادة تشغيله.", "Try restarting it first."],
+["It's working now.", "إنه يعمل الآن.", "Great, it's working now."],
+["I need to update it.", "أحتاج إلى تحديثه.", "I need to update the software."],
+["Let me check the settings.", "دعني أتحقق من الإعدادات.", "Let me check the settings."]
+]],
+["Office & Documents", [
+["Where is the file?", "أين الملف؟", "Where is the file I sent you?"],
+["I can't find the document.", "لا أستطيع العثور على المستند.", "I can't find the document."],
+["Please sign here.", "يرجى التوقيع هنا.", "Please sign here."],
+["Please fill this in.", "يرجى ملء هذا.", "Please fill this in."],
+["I need a copy.", "أحتاج إلى نسخة.", "I need a copy of this document."],
+["Make a copy.", "اعمل نسخة.", "Please make a copy."],
+["Print this for me.", "اطبع هذا لي.", "Could you print this for me?"],
+["Send me the final version.", "أرسل لي النسخة النهائية.", "Please send me the final version."],
+["Check the details.", "تحقق من التفاصيل.", "Please check the details."],
+["Keep a copy for your records.", "احتفظ بنسخة لسجلاتك.", "Keep a copy for your records."]
+]],
+["Reports & Data", [
+["Here's the latest update.", "إليك آخر تحديث.", "Here's the latest update."],
+["The numbers have changed.", "الأرقام تغيرت.", "The numbers have changed."],
+["According to the report...", "وفقًا للتقرير...", "According to the report, we're improving."],
+["The results show that...", "تظهر النتائج أن...", "The results show that we're on track."],
+["We need more information.", "نحتاج إلى مزيد من المعلومات.", "We need more information."],
+["The data is incomplete.", "البيانات غير مكتملة.", "The data is incomplete."],
+["Let's check the figures.", "دعونا نتحقق من الأرقام.", "Let's check the figures."],
+["The report is ready.", "التقرير جاهز.", "The report is ready."],
+["I'll send the report today.", "سأرسل التقرير اليوم.", "I'll send the report today."],
+["Please review the report.", "يرجى مراجعة التقرير.", "Please review the report."]
+]],
+["Presentations", [
+["Let's start with...", "لنبدأ بـ...", "Let's start with the main points."],
+["Today I'd like to talk about...", "اليوم أود التحدث عن...", "Today I'd like to talk about training."],
+["As you can see...", "كما ترون...", "As you can see, the results improved."],
+["Let's move to the next slide.", "دعونا ننتقل إلى الشريحة التالية.", "Let's move to the next slide."],
+["This brings us to...", "هذا يقودنا إلى...", "This brings us to the next topic."],
+["The key point is...", "النقطة الأساسية هي...", "The key point is consistency."],
+["To sum up...", "باختصار...", "To sum up, we need more practice."],
+["Before I finish...", "قبل أن أنهي...", "Before I finish, I'd like to add one thing."],
+["Thank you for listening.", "شكرًا لاستماعكم.", "Thank you for listening."],
+["Any questions?", "هل هناك أي أسئلة؟", "Any questions before we finish?"]
+]],
+["Negotiation", [
+["Let's find a middle ground.", "دعونا نجد حلًا وسطًا.", "Let's find a middle ground."],
+["Can we meet halfway?", "هل يمكننا الوصول إلى حل وسط؟", "Can we meet halfway on this?"],
+["What are you offering?", "ماذا تقدم؟", "What are you offering?"],
+["Is that your best offer?", "هل هذا أفضل عرض لديك؟", "Is that your best offer?"],
+["We can work with that.", "يمكننا التعامل مع ذلك.", "We can work with that."],
+["That's not enough for us.", "هذا غير كافٍ بالنسبة لنا.", "I'm afraid that's not enough for us."],
+["Can you do any better?", "هل يمكنك تقديم عرض أفضل؟", "Can you do any better on the price?"],
+["Let's discuss the details.", "دعونا نناقش التفاصيل.", "Let's discuss the details."],
+["We have a deal.", "اتفقنا.", "Okay, we have a deal."],
+["Let me think about your offer.", "دعني أفكر في عرضك.", "Let me think about your offer."]
+]],
+["Customer Complaints", [
+["I'm sorry you feel that way.", "آسف لأنك تشعر بهذه الطريقة.", "I'm sorry you feel that way."],
+["I understand the issue.", "أتفهم المشكلة.", "I understand the issue."],
+["Let me look into this.", "دعني أتحقق من هذا.", "Let me look into this for you."],
+["I'll speak to my manager.", "سأتحدث إلى مديري.", "I'll speak to my manager."],
+["We take this seriously.", "نحن نأخذ هذا الأمر بجدية.", "We take this seriously."],
+["We'll do everything we can.", "سنفعل كل ما بوسعنا.", "We'll do everything we can to help."],
+["I understand your concern.", "أتفهم قلقك.", "I understand your concern."],
+["Thank you for telling us.", "شكرًا لإخبارنا.", "Thank you for telling us about this."],
+["We'll make sure it doesn't happen again.", "سنتأكد من ألا يحدث ذلك مرة أخرى.", "We'll make sure it doesn't happen again."],
+["Is there anything else we can do?", "هل هناك أي شيء آخر يمكننا فعله؟", "Is there anything else we can do for you?"]
+]],
+["Closing Conversations", [
+["It was nice talking to you.", "كان من الجميل التحدث معك.", "It was nice talking to you."],
+["I'll talk to you later.", "سأتحدث معك لاحقًا.", "I'll talk to you later."],
+["I'll see you tomorrow.", "أراك غدًا.", "I'll see you tomorrow."],
+["Have a great day.", "أتمنى لك يومًا رائعًا.", "Have a great day."],
+["Have a safe trip.", "أتمنى لك رحلة آمنة.", "Have a safe trip."],
+["Take care.", "اعتنِ بنفسك.", "Take care and see you soon."],
+["Speak to you soon.", "سأتحدث معك قريبًا.", "Speak to you soon."],
+["Keep in touch.", "ابقَ على تواصل.", "Keep in touch."],
+["See you around.", "أراك لاحقًا.", "See you around."],
+["Until next time.", "إلى المرة القادمة.", "Until next time."]
+]]
+];
+
+/* ============================================================
+   EXTRA — 50 more categories
+   ============================================================ */
+const extraCategories = [
+["Morning & Evening", [
+["Good morning.", "صباح الخير.", "Good morning, everyone."],
+["Did you sleep well?", "هل نمت جيدًا؟", "Good morning, did you sleep well?"],
+["I'm still half asleep.", "ما زلت نصف نائم.", "I'm still half asleep."],
+["I need a cup of coffee.", "أحتاج إلى كوب من القهوة.", "I need a cup of coffee first."],
+["I'm ready for the day.", "أنا مستعد لليوم.", "I'm ready for the day."],
+["What time did you get up?", "في أي وقت استيقظت؟", "What time did you get up today?"],
+["I'm going to bed.", "سأذهب إلى النوم.", "It's late. I'm going to bed."],
+["I'm tired tonight.", "أنا متعب الليلة.", "I'm tired tonight."],
+["See you in the morning.", "أراك في الصباح.", "Good night, see you in the morning."],
+["Have a good night's sleep.", "أتمنى لك نومًا هنيئًا.", "Have a good night's sleep."]
+]],
+["Getting Attention", [
+["Excuse me.", "عذرًا.", "Excuse me, can I ask you something?"],
+["Can I have your attention?", "هل يمكنني الحصول على انتباهكم؟", "Can I have your attention, please?"],
+["Could I have a word?", "هل يمكنني التحدث معك قليلًا؟", "Could I have a word with you?"],
+["Can I ask you something?", "هل يمكنني أن أسألك شيئًا؟", "Can I ask you something?"],
+["Do you have a minute?", "هل لديك دقيقة؟", "Do you have a minute?"],
+["Are you listening?", "هل تستمع؟", "Are you listening to me?"],
+["Can I interrupt for a second?", "هل يمكنني المقاطعة لثانية؟", "Can I interrupt for a second?"],
+["Just a quick question.", "مجرد سؤال سريع.", "Just a quick question."],
+["One more thing.", "شيء آخر.", "One more thing before you go."],
+["Before you go...", "قبل أن تذهب...", "Before you go, can you check this?"]
+]],
+["Waiting", [
+["I'm waiting for...", "أنا أنتظر...", "I'm waiting for the manager."],
+["How long do I have to wait?", "كم يجب أن أنتظر؟", "How long do I have to wait?"],
+["I'll wait here.", "سأنتظر هنا.", "I'll wait here."],
+["Please wait here.", "يرجى الانتظار هنا.", "Please wait here for a moment."],
+["It's worth the wait.", "الأمر يستحق الانتظار.", "It's worth the wait."],
+["Thanks for waiting.", "شكرًا على الانتظار.", "Thanks for waiting."],
+["Sorry to keep you waiting.", "آسف لإبقائك تنتظر.", "Sorry to keep you waiting."],
+["We're still waiting.", "ما زلنا ننتظر.", "We're still waiting for a response."],
+["I'm waiting for a response.", "أنا أنتظر ردًا.", "I'm waiting for a response."],
+["I'll wait for your confirmation.", "سأنتظر تأكيدك.", "I'll wait for your confirmation."]
+]],
+["Availability", [
+["Are you available?", "هل أنت متاح؟", "Are you available tomorrow?"],
+["I'm available now.", "أنا متاح الآن.", "I'm available now."],
+["I'm not available right now.", "لست متاحًا الآن.", "I'm not available right now."],
+["When are you available?", "متى تكون متاحًا؟", "When are you available?"],
+["I'm free after three.", "أنا متاح بعد الثالثة.", "I'm free after three."],
+["I'm tied up right now.", "أنا مشغول الآن.", "I'm tied up right now."],
+["I'm available all day.", "أنا متاح طوال اليوم.", "I'm available all day."],
+["I'll be available tomorrow.", "سأكون متاحًا غدًا.", "I'll be available tomorrow."],
+["Let me check my availability.", "دعني أتحقق من مواعيدي.", "Let me check my availability."],
+["That time isn't convenient for me.", "هذا الوقت غير مناسب لي.", "That time isn't convenient for me."]
+]],
+["Location", [
+["Where is it?", "أين هو؟", "Where is it located?"],
+["Where are we?", "أين نحن؟", "Where are we now?"],
+["I'm here.", "أنا هنا.", "I'm here at the entrance."],
+["I'm over there.", "أنا هناك.", "I'm over there by the door."],
+["It's nearby.", "إنه قريب.", "It's nearby, just five minutes away."],
+["It's quite far.", "إنه بعيد نوعًا ما.", "It's quite far from here."],
+["It's close to here.", "إنه قريب من هنا.", "It's close to here."],
+["It's on the first floor.", "إنه في الطابق الأول.", "It's on the first floor."],
+["It's downstairs.", "إنه في الطابق السفلي.", "It's downstairs."],
+["It's upstairs.", "إنه في الطابق العلوي.", "It's upstairs."]
+]],
+["Quantity", [
+["How many do we need?", "كم عدد ما نحتاجه؟", "How many do we need?"],
+["How much do we need?", "كم نحتاج؟", "How much do we need?"],
+["We need a little more.", "نحتاج المزيد قليلًا.", "We need a little more."],
+["We need some more.", "نحتاج المزيد.", "We need some more."],
+["That's more than enough.", "هذا أكثر من كافٍ.", "That's more than enough."],
+["That's not enough.", "هذا غير كافٍ.", "That's not enough."],
+["There's too much.", "هناك الكثير جدًا.", "There's too much here."],
+["There's not enough.", "لا يوجد ما يكفي.", "There's not enough for everyone."],
+["Just a little.", "قليلًا فقط.", "Just a little, please."],
+["A lot of them.", "الكثير منها.", "A lot of them are missing."]
+]],
+["Comparison", [
+["It's better than...", "إنه أفضل من...", "It's better than the old one."],
+["It's worse than...", "إنه أسوأ من...", "It's worse than I expected."],
+["It's the same as...", "إنه نفس...", "It's the same as before."],
+["It's different from...", "إنه مختلف عن...", "It's different from what I thought."],
+["It's similar to...", "إنه مشابه لـ...", "It's similar to the other model."],
+["This one is cheaper.", "هذا أرخص.", "This one is cheaper."],
+["This one is more expensive.", "هذا أغلى.", "This one is more expensive."],
+["That's the best option.", "هذا أفضل خيار.", "That's the best option."],
+["That's the easiest way.", "هذه أسهل طريقة.", "That's the easiest way."],
+["That's the quickest way.", "هذه أسرع طريقة.", "That's the quickest way."]
+]],
+["Reason & Cause", [
+["That's why...", "لهذا السبب...", "That's why I called you."],
+["That's because...", "هذا لأن...", "That's because we were late."],
+["The reason is...", "السبب هو...", "The reason is simple."],
+["Because of that...", "بسبب ذلك...", "Because of that, we changed the plan."],
+["Due to the delay...", "بسبب التأخير...", "Due to the delay, we're behind."],
+["That's the main reason.", "هذا هو السبب الرئيسي.", "That's the main reason."],
+["There's a reason for that.", "هناك سبب لذلك.", "There's a reason for that."],
+["It happened because...", "حدث لأن...", "It happened because of a mistake."],
+["This is caused by...", "هذا ناتج عن...", "This is caused by a technical issue."],
+["That's what caused it.", "هذا ما تسبب فيه.", "That's what caused it."]
+]],
+["Result & Consequence", [
+["As a result...", "نتيجة لذلك...", "As a result, we need more time."],
+["Because of this...", "بسبب هذا...", "Because of this, we'll change the plan."],
+["That means...", "هذا يعني...", "That means we have to wait."],
+["So we need to...", "لذا نحتاج إلى...", "So we need to act quickly."],
+["This led to...", "هذا أدى إلى...", "This led to a bigger problem."],
+["It turned out well.", "اتضح أنه جيد.", "It turned out well in the end."],
+["It didn't work out.", "لم ينجح الأمر.", "It didn't work out as planned."],
+["Everything worked out.", "كل شيء سار على ما يرام.", "Everything worked out fine."],
+["That's what happened.", "هذا ما حدث.", "That's what happened."],
+["In the end...", "في النهاية...", "In the end, we agreed."]
+]],
+["Starting & Ending Tasks", [
+["Let's begin.", "لنبدأ.", "Let's begin the meeting."],
+["Let's get started.", "لنبدأ.", "Let's get started right away."],
+["I'm starting now.", "أنا أبدأ الآن.", "I'm starting now."],
+["I'm almost finished.", "أوشكت على الانتهاء.", "I'm almost finished."],
+["I'm nearly done.", "أنا على وشك الانتهاء.", "I'm nearly done."],
+["I've finished it.", "لقد انتهيت منه.", "I've finished it."],
+["It's ready.", "إنه جاهز.", "It's ready for you."],
+["We're done.", "انتهينا.", "We're done for today."],
+["That's all for now.", "هذا كل شيء الآن.", "That's all for now."],
+["Let's call it a day.", "لننهِ العمل لهذا اليوم.", "Let's call it a day."]
+]],
+["Checking", [
+["Let me check.", "دعني أتحقق.", "Let me check the details."],
+["I'll double-check.", "سأتحقق مرتين.", "I'll double-check everything."],
+["Can you check this?", "هل يمكنك التحقق من هذا؟", "Can you check this for me?"],
+["Please check again.", "يرجى التحقق مرة أخرى.", "Please check again."],
+["Did you check it?", "هل تحققت منه؟", "Did you check it?"],
+["I've checked it.", "لقد تحققت منه.", "I've checked it already."],
+["Everything has been checked.", "تم التحقق من كل شيء.", "Everything has been checked."],
+["Let's check the details.", "دعونا نتحقق من التفاصيل.", "Let's check the details."],
+["Check it one more time.", "تحقق منه مرة أخرى.", "Check it one more time."],
+["I'll make sure.", "سأتأكد.", "I'll make sure everything is fine."]
+]],
+["Confirming", [
+["Can you confirm?", "هل يمكنك التأكيد؟", "Can you confirm the booking?"],
+["Please confirm.", "يرجى التأكيد.", "Please confirm by tomorrow."],
+["I can confirm that.", "يمكنني تأكيد ذلك.", "I can confirm that."],
+["That's confirmed.", "هذا مؤكد.", "That's confirmed."],
+["It's confirmed for tomorrow.", "مؤكد للغد.", "It's confirmed for tomorrow."],
+["Let me confirm that.", "دعني أؤكد ذلك.", "Let me confirm that with the team."],
+["Just to confirm...", "فقط للتأكيد...", "Just to confirm, the meeting is at ten."],
+["Can you confirm the time?", "هل يمكنك تأكيد الوقت؟", "Can you confirm the time?"],
+["Can you confirm the date?", "هل يمكنك تأكيد التاريخ؟", "Can you confirm the date?"],
+["Thanks for confirming.", "شكرًا للتأكيد.", "Thanks for confirming."]
+]],
+["Cancelling & Changing", [
+["I need to cancel.", "أحتاج إلى الإلغاء.", "I need to cancel my reservation."],
+["Can we cancel it?", "هل يمكننا إلغاؤه؟", "Can we cancel it?"],
+["Can we change the time?", "هل يمكننا تغيير الوقت؟", "Can we change the time?"],
+["Can we change the date?", "هل يمكننا تغيير التاريخ؟", "Can we change the date?"],
+["Something has come up.", "حدث شيء طارئ.", "Something has come up."],
+["I need to reschedule.", "أحتاج إلى إعادة الجدولة.", "I need to reschedule."],
+["The plan has changed.", "تغيرت الخطة.", "The plan has changed."],
+["The booking has been cancelled.", "تم إلغاء الحجز.", "The booking has been cancelled."],
+["Let's move it to tomorrow.", "لننقله إلى الغد.", "Let's move it to tomorrow."],
+["I'll let you know if anything changes.", "سأخبرك إذا تغير أي شيء.", "I'll let you know if anything changes."]
+]],
+["Remembering", [
+["I remember.", "أنا أتذكر.", "I remember that day."],
+["I don't remember.", "لا أتذكر.", "I don't remember his name."],
+["I forgot.", "لقد نسيت.", "I forgot to call him."],
+["I almost forgot.", "كدت أنسى.", "I almost forgot."],
+["Don't forget.", "لا تنسَ.", "Don't forget to lock the door."],
+["Remember to...", "تذكر أن...", "Remember to send the email."],
+["I just remembered.", "تذكرت للتو.", "I just remembered."],
+["That reminds me...", "هذا يذكرني...", "That reminds me, I need to call her."],
+["As far as I remember...", "على حد ما أتذكر...", "As far as I remember, it starts at nine."],
+["If I remember correctly...", "إذا كنت أتذكر بشكل صحيح...", "If I remember correctly, we met last year."]
+]],
+["Understanding People", [
+["I know what you mean.", "أعرف ما تعني.", "I know what you mean."],
+["I understand you.", "أنا أفهمك.", "I understand you completely."],
+["I get what you're saying.", "أفهم ما تقوله.", "I get what you're saying."],
+["I see what you mean.", "أرى ما تعني.", "I see what you mean now."],
+["I know how you feel.", "أعرف كيف تشعر.", "I know how you feel."],
+["I can relate to that.", "أستطيع أن أتفهم ذلك.", "I can relate to that."],
+["That makes sense to me.", "هذا منطقي بالنسبة لي.", "That makes sense to me."],
+["I understand your point.", "أفهم وجهة نظرك.", "I understand your point."],
+["I see where you're coming from.", "أفهم من أين تأتي.", "I see where you're coming from."],
+["I know what you're talking about.", "أعرف ما تتحدث عنه.", "I know what you're talking about."]
+]],
+["Expressing Surprise", [
+["Really?", "حقًا؟", "Really? I didn't know that."],
+["Are you serious?", "هل أنت جاد؟", "Are you serious?"],
+["You must be joking.", "لا بد أنك تمزح.", "You must be joking."],
+["I can't believe it.", "لا أستطيع تصديق ذلك.", "I can't believe it."],
+["That's surprising.", "هذا مفاجئ.", "That's surprising."],
+["I didn't expect that.", "لم أتوقع ذلك.", "I didn't expect that."],
+["What a surprise!", "يا لها من مفاجأة!", "What a surprise!"],
+["No way!", "مستحيل!", "No way! That's amazing."],
+["You're kidding!", "أنت تمزح!", "You're kidding!"],
+["I had no idea!", "لم تكن لدي أي فكرة!", "I had no idea!"]
+]],
+["Expressing Thanks", [
+["Thanks a lot.", "شكرًا جزيلًا.", "Thanks a lot for your help."],
+["Thanks so much.", "شكرًا كثيرًا.", "Thanks so much."],
+["Thanks for your help.", "شكرًا لمساعدتك.", "Thanks for your help."],
+["Thanks for everything.", "شكرًا على كل شيء.", "Thanks for everything."],
+["I really appreciate it.", "أنا أقدر ذلك حقًا.", "I really appreciate it."],
+["That's very helpful.", "هذا مفيد جدًا.", "That's very helpful."],
+["You've been very helpful.", "لقد كنت مفيدًا جدًا.", "You've been very helpful."],
+["I owe you one.", "أنا مدين لك.", "I owe you one."],
+["Thanks again.", "شكرًا مرة أخرى.", "Thanks again."],
+["I can't thank you enough.", "لا أستطيع شكرك بما يكفي.", "I can't thank you enough."]
+]],
+["Encouragement", [
+["You can do it.", "يمكنك فعلها.", "You can do it. I believe in you."],
+["Keep going.", "استمر.", "Keep going, you're almost there."],
+["Don't give up.", "لا تستسلم.", "Don't give up."],
+["You've got this.", "أنت قادر على ذلك.", "You've got this."],
+["Keep trying.", "استمر في المحاولة.", "Keep trying."],
+["You're doing well.", "أنت تبلي حسنًا.", "You're doing well."],
+["You're getting better.", "أنت تتحسن.", "You're getting better."],
+["Don't worry about it.", "لا تقلق بشأن ذلك.", "Don't worry about it."],
+["Just do your best.", "فقط ابذل قصارى جهدك.", "Just do your best."],
+["I'm sure you'll do fine.", "أنا واثق أنك ستبلي حسنًا.", "I'm sure you'll do fine."]
+]],
+["Applause & Praise", [
+["Great job.", "عمل رائع.", "Great job on the project."],
+["Well done.", "أحسنت.", "Well done, everyone."],
+["Excellent work.", "عمل ممتاز.", "Excellent work."],
+["That's impressive.", "هذا مثير للإعجاب.", "That's impressive."],
+["That's fantastic.", "هذا رائع.", "That's fantastic news."],
+["You did really well.", "لقد أبليت حسنًا.", "You did really well."],
+["I'm impressed.", "أنا معجب.", "I'm impressed."],
+["That's exactly right.", "هذا صحيح تمامًا.", "That's exactly right."],
+["Keep up the good work.", "استمر في العمل الجيد.", "Keep up the good work."],
+["You should be proud of yourself.", "يجب أن تفتخر بنفسك.", "You should be proud of yourself."]
+]],
+["Availability of Items", [
+["Do you have...?", "هل لديك...؟", "Do you have this in stock?"],
+["Is there any...?", "هل هناك أي...؟", "Is there any water left?"],
+["Are there any...?", "هل هناك أي...؟", "Are there any tickets available?"],
+["We have plenty.", "لدينا الكثير.", "We have plenty."],
+["We're out of...", "نفد لدينا...", "We're out of milk."],
+["We need more...", "نحتاج المزيد من...", "We need more chairs."],
+["There's some left.", "هناك بعض المتبقي.", "There's some left."],
+["There's nothing left.", "لم يتبق شيء.", "There's nothing left."],
+["It's available.", "إنه متاح.", "It's available."],
+["It's currently unavailable.", "إنه غير متاح حاليًا.", "It's currently unavailable."]
+]],
+["Ordering & Requests", [
+["I'd like...", "أود...", "I'd like a coffee, please."],
+["I'd like to order...", "أود أن أطلب...", "I'd like to order now."],
+["Can I have...?", "هل يمكنني الحصول على...؟", "Can I have the menu?"],
+["Could I get...?", "هل يمكنني الحصول على...؟", "Could I get some water?"],
+["I'll have...", "سآخذ...", "I'll have the chicken."],
+["I'd like one of these.", "أود واحدًا من هؤلاء.", "I'd like one of these."],
+["Can I get another one?", "هل يمكنني الحصول على آخر؟", "Can I get another one?"],
+["Could you bring me...?", "هل يمكنك إحضار...؟", "Could you bring me a fork?"],
+["Please add...", "يرجى إضافة...", "Please add some sugar."],
+["Please remove...", "يرجى إزالة...", "Please remove the onions."]
+]],
+["Reservations", [
+["I'd like to make a reservation.", "أود إجراء حجز.", "I'd like to make a reservation for two."],
+["I'd like to book a room.", "أود حجز غرفة.", "I'd like to book a room for tonight."],
+["Do you have any availability?", "هل لديكم أي توفر؟", "Do you have any availability?"],
+["What dates are available?", "ما التواريخ المتاحة؟", "What dates are available?"],
+["I'd like to change my reservation.", "أود تغيير حجزي.", "I'd like to change my reservation."],
+["I'd like to cancel my reservation.", "أود إلغاء حجزي.", "I'd like to cancel my reservation."],
+["Can I book for two people?", "هل يمكنني الحجز لشخصين؟", "Can I book for two people?"],
+["What time is available?", "ما الوقت المتاح؟", "What time is available?"],
+["Could you confirm my reservation?", "هل يمكنك تأكيد حجزي؟", "Could you confirm my reservation?"],
+["Here's my reservation number.", "هذا رقم حجزي.", "Here's my reservation number."]
+]],
+["Hotel Amenities", [
+["Where is the pool?", "أين المسبح؟", "Where is the pool?"],
+["Where is the gym?", "أين الصالة الرياضية؟", "Where is the gym?"],
+["What time does breakfast start?", "متى يبدأ الإفطار؟", "What time does breakfast start?"],
+["What time does breakfast finish?", "متى ينتهي الإفطار؟", "What time does breakfast finish?"],
+["Where is the restaurant?", "أين المطعم؟", "Where is the restaurant?"],
+["Is Wi-Fi free?", "هل الواي فاي مجاني؟", "Is Wi-Fi free?"],
+["Where can I get a towel?", "أين يمكنني الحصول على منشفة؟", "Where can I get a towel?"],
+["What time does the bar open?", "متى يفتح البار؟", "What time does the bar open?"],
+["Is there a shuttle service?", "هل هناك خدمة نقل؟", "Is there a shuttle service?"],
+["Where is the beach?", "أين الشاطئ؟", "Where is the beach?"]
+]],
+["Household Items", [
+["Where are the keys?", "أين المفاتيح؟", "Where are the keys?"],
+["Where is the charger?", "أين الشاحن؟", "Where is the charger?"],
+["I need a towel.", "أحتاج إلى منشفة.", "I need a towel."],
+["I need a blanket.", "أحتاج إلى بطانية.", "I need a blanket."],
+["The air conditioning isn't working.", "المكيف لا يعمل.", "The air conditioning isn't working."],
+["The room is too cold.", "الغرفة باردة جدًا.", "The room is too cold."],
+["The room is too hot.", "الغرفة حارة جدًا.", "The room is too hot."],
+["Can you bring a pillow?", "هل يمكنك إحضار وسادة؟", "Can you bring a pillow?"],
+["I need some tissues.", "أحتاج إلى بعض المناديل.", "I need some tissues."],
+["Where can I find it?", "أين يمكنني العثور عليه؟", "Where can I find it?"]
+]],
+["Workplace Courtesy", [
+["After you.", "بعدك.", "After you."],
+["Go ahead.", "تفضل.", "Go ahead, I'm listening."],
+["Please, have a seat.", "تفضل، اجلس.", "Please, have a seat."],
+["Take a seat.", "اجلس.", "Take a seat, please."],
+["Please come in.", "تفضل بالدخول.", "Please come in."],
+["Thank you for coming.", "شكرًا لحضورك.", "Thank you for coming."],
+["Thanks for coming.", "شكرًا لحضورك.", "Thanks for coming."],
+["Please wait here.", "يرجى الانتظار هنا.", "Please wait here."],
+["I'll be with you shortly.", "سأكون معك قريبًا.", "I'll be with you shortly."],
+["Have a seat, please.", "اجلس من فضلك.", "Have a seat, please."]
+]],
+["Delegation", [
+["Can you handle this?", "هل يمكنك التعامل مع هذا؟", "Can you handle this?"],
+["I need you to check this.", "أحتاج منك التحقق من هذا.", "I need you to check this."],
+["Please take care of this.", "يرجى تولي هذا.", "Please take care of this."],
+["Can you follow up?", "هل يمكنك المتابعة؟", "Can you follow up on this?"],
+["Please send this today.", "يرجى إرسال هذا اليوم.", "Please send this today."],
+["Please finish this by noon.", "يرجى إنهاء هذا بحلول الظهر.", "Please finish this by noon."],
+["Keep me updated.", "أبقني على اطلاع.", "Keep me updated."],
+["Let me know when it's done.", "أخبرني عندما ينتهي.", "Let me know when it's done."],
+["Please coordinate with...", "يرجى التنسيق مع...", "Please coordinate with the team."],
+["Please make sure this is done.", "يرجى التأكد من إنجاز هذا.", "Please make sure this is done."]
+]],
+["Performance", [
+["You're doing well.", "أنت تبلي حسنًا.", "You're doing well."],
+["You need to improve.", "تحتاج إلى التحسن.", "You need to improve."],
+["Let's focus on this.", "دعونا نركز على هذا.", "Let's focus on this."],
+["That's much better.", "هذا أفضل بكثير.", "That's much better."],
+["You're making progress.", "أنت تحرز تقدمًا.", "You're making progress."],
+["The results are improving.", "النتائج تتحسن.", "The results are improving."],
+["We need better results.", "نحتاج إلى نتائج أفضل.", "We need better results."],
+["Let's set a target.", "دعونا نضع هدفًا.", "Let's set a target."],
+["Let's review your progress.", "دعونا نراجع تقدمك.", "Let's review your progress."],
+["Keep working on it.", "استمر في العمل عليه.", "Keep working on it."]
+]],
+["Conflict Management", [
+["Let's stay calm.", "لنبق هادئين.", "Let's stay calm."],
+["Let's talk about it.", "دعونا نتحدث عنه.", "Let's talk about it."],
+["Let's hear both sides.", "دعونا نسمع الطرفين.", "Let's hear both sides."],
+["I understand both points.", "أفهم كلا وجهتي النظر.", "I understand both points."],
+["Let's find a solution.", "دعونا نجد حلًا.", "Let's find a solution."],
+["There's no need to argue.", "لا حاجة للجدال.", "There's no need to argue."],
+["Let's focus on the issue.", "دعونا نركز على المشكلة.", "Let's focus on the issue."],
+["We need to resolve this.", "نحتاج إلى حل هذا.", "We need to resolve this."],
+["Let's discuss this privately.", "دعونا نناقش هذا على انفراد.", "Let's discuss this privately."],
+["Let's move forward.", "دعونا نمضي قدمًا.", "Let's move forward."]
+]],
+["Motivation", [
+["Let's do our best.", "لنبذل قصارى جهدنا.", "Let's do our best."],
+["We can do this.", "يمكننا فعل هذا.", "We can do this."],
+["Let's keep going.", "لنستمر.", "Let's keep going."],
+["Don't lose focus.", "لا تفقد التركيز.", "Don't lose focus."],
+["Stay focused.", "ابقَ مركزًا.", "Stay focused."],
+["Keep pushing.", "استمر في الدفع.", "Keep pushing."],
+["We're making progress.", "نحرز تقدمًا.", "We're making progress."],
+["Every step counts.", "كل خطوة مهمة.", "Every step counts."],
+["Let's finish strong.", "لننهِ بقوة.", "Let's finish strong."],
+["Let's make it happen.", "لنجعلها تحدث.", "Let's make it happen."]
+]],
+["Instructions", [
+["Please follow these steps.", "يرجى اتباع هذه الخطوات.", "Please follow these steps."],
+["First, you need to...", "أولًا، تحتاج إلى...", "First, you need to log in."],
+["Next, you should...", "بعد ذلك، يجب عليك...", "Next, you should click save."],
+["After that...", "بعد ذلك...", "After that, close the window."],
+["Once you're done...", "بمجرد انتهائك...", "Once you're done, let me know."],
+["Make sure you...", "تأكد من أن...", "Make sure you sign it."],
+["Don't forget to...", "لا تنسَ أن...", "Don't forget to attach the file."],
+["Be sure to...", "احرص على...", "Be sure to check the dates."],
+["Follow the procedure.", "اتبع الإجراء.", "Follow the procedure."],
+["Ask if you're not sure.", "اسأل إذا لم تكن متأكدًا.", "Ask if you're not sure."]
+]],
+["Procedures", [
+["What's the procedure?", "ما الإجراء؟", "What's the procedure for this?"],
+["What's the process?", "ما العملية؟", "What's the process?"],
+["Follow the standard procedure.", "اتبع الإجراء المعياري.", "Follow the standard procedure."],
+["This is how we do it.", "هذه هي طريقتنا.", "This is how we do it."],
+["The process is simple.", "العملية بسيطة.", "The process is simple."],
+["Start with this step.", "ابدأ بهذه الخطوة.", "Start with this step."],
+["Complete this section.", "أكمل هذا القسم.", "Complete this section."],
+["Check it before you submit it.", "تحقق منه قبل تقديمه.", "Check it before you submit it."],
+["Follow the instructions carefully.", "اتبع التعليمات بعناية.", "Follow the instructions carefully."],
+["Report any problems.", "أبلغ عن أي مشاكل.", "Report any problems."]
+]],
+["Quality", [
+["Check the quality.", "تحقق من الجودة.", "Check the quality."],
+["Make sure it's correct.", "تأكد من صحته.", "Make sure it's correct."],
+["It needs to be accurate.", "يجب أن يكون دقيقًا.", "It needs to be accurate."],
+["This isn't good enough.", "هذا ليس جيدًا بما يكفي.", "This isn't good enough."],
+["We need better quality.", "نحتاج إلى جودة أفضل.", "We need better quality."],
+["Let's improve this.", "دعونا نحسن هذا.", "Let's improve this."],
+["Check it carefully.", "تحقق منه بعناية.", "Check it carefully."],
+["Pay attention to the details.", "انتبه للتفاصيل.", "Pay attention to the details."],
+["Quality comes first.", "الجودة تأتي أولًا.", "Quality comes first."],
+["Let's maintain the standard.", "لنحافظ على المعيار.", "Let's maintain the standard."]
+]],
+["Cleanliness", [
+["Please keep it clean.", "يرجى إبقائه نظيفًا.", "Please keep it clean."],
+["Clean this area.", "نظف هذه المنطقة.", "Clean this area."],
+["The area needs cleaning.", "المنطقة تحتاج إلى تنظيف.", "The area needs cleaning."],
+["It's already clean.", "إنه نظيف بالفعل.", "It's already clean."],
+["Make sure everything is clean.", "تأكد من أن كل شيء نظيف.", "Make sure everything is clean."],
+["Please tidy up.", "يرجى الترتيب.", "Please tidy up."],
+["Keep the workspace organized.", "حافظ على تنظيم مساحة العمل.", "Keep the workspace organized."],
+["Dispose of this properly.", "تخلص من هذا بشكل صحيح.", "Dispose of this properly."],
+["Wash your hands.", "اغسل يديك.", "Wash your hands."],
+["Keep the equipment clean.", "حافظ على نظافة المعدات.", "Keep the equipment clean."]
+]],
+["Food Safety", [
+["Keep it refrigerated.", "احفظه في الثلاجة.", "Keep it refrigerated."],
+["Check the temperature.", "تحقق من درجة الحرارة.", "Check the temperature."],
+["Wash your hands first.", "اغسل يديك أولًا.", "Wash your hands first."],
+["Use clean equipment.", "استخدم معدات نظيفة.", "Use clean equipment."],
+["Keep raw and cooked food separate.", "افصل بين الطعام النيء والمطبوخ.", "Keep raw and cooked food separate."],
+["Check the expiry date.", "تحقق من تاريخ الانتهاء.", "Check the expiry date."],
+["Store it properly.", "خزنه بشكل صحيح.", "Store it properly."],
+["Don't leave it out.", "لا تتركه بالخارج.", "Don't leave it out."],
+["Follow food safety procedures.", "اتبع إجراءات سلامة الغذاء.", "Follow food safety procedures."],
+["Report any contamination.", "أبلغ عن أي تلوث.", "Report any contamination."]
+]],
+["Kitchen Communication", [
+["Behind you.", "خلفك.", "Behind you!"],
+["Coming through.", "قادم من هنا.", "Coming through!"],
+["Hot behind.", "خلفك ساخن.", "Hot behind!"],
+["Corner.", "زاوية.", "Corner!"],
+["Sharp object.", "أداة حادة.", "Sharp object!"],
+["Order up.", "الطلب جاهز.", "Order up!"],
+["Fire!", "النار!", "Fire! Watch out!"],
+["Hands.", "أيدي.", "Hands, please."],
+["I need a clean knife.", "أحتاج إلى سكين نظيف.", "I need a clean knife."],
+["We're ready to serve.", "نحن مستعدون للتقديم.", "We're ready to serve."]
+]],
+["Restaurant Service", [
+["May I take your order?", "هل يمكنني أخذ طلبك؟", "May I take your order?"],
+["Are you enjoying your meal?", "هل تستمتع بوجبتك؟", "Are you enjoying your meal?"],
+["Can I get you anything else?", "هل يمكنني إحضار أي شيء آخر؟", "Can I get you anything else?"],
+["I'll be right back.", "سأعود حالًا.", "I'll be right back."],
+["I'll bring that right away.", "سأحضر ذلك فورًا.", "I'll bring that right away."],
+["Enjoy your meal.", "استمتع بوجبتك.", "Enjoy your meal."],
+["Is everything okay?", "هل كل شيء بخير؟", "Is everything okay?"],
+["Would you like dessert?", "هل ترغب في حلوى؟", "Would you like dessert?"],
+["Would you like coffee?", "هل ترغب في قهوة؟", "Would you like coffee?"],
+["Thank you for dining with us.", "شكرًا لتناولك الطعام معنا.", "Thank you for dining with us."]
+]],
+["Bar Service", [
+["What would you like to drink?", "ماذا تود أن تشرب؟", "What would you like to drink?"],
+["Would you like ice?", "هل ترغب في ثلج؟", "Would you like ice?"],
+["Still or sparkling?", "عادي أم فوار؟", "Still or sparkling?"],
+["Anything else?", "أي شيء آخر؟", "Anything else?"],
+["I'll make that for you.", "سأحضر ذلك لك.", "I'll make that for you."],
+["Here you are.", "تفضل.", "Here you are."],
+["Enjoy your drink.", "استمتع بشرابك.", "Enjoy your drink."],
+["Would you like another one?", "هل ترغب في آخر؟", "Would you like another one?"],
+["Last order, please.", "آخر طلب من فضلك.", "Last order, please."],
+["Thank you.", "شكرًا.", "Thank you."]
+]],
+["Guest Requests", [
+["Certainly.", "بالتأكيد.", "Certainly, I'll arrange that."],
+["Of course, I'll arrange that.", "بالطبع، سأرتب ذلك.", "Of course, I'll arrange that."],
+["I'll send someone right away.", "سأرسل شخصًا فورًا.", "I'll send someone right away."],
+["Let me check for you.", "دعني أتحقق لك.", "Let me check for you."],
+["I'll see what I can do.", "سأرى ما يمكنني فعله.", "I'll see what I can do."],
+["I'll arrange it for you.", "سأرتبه لك.", "I'll arrange it for you."],
+["Consider it done.", "اعتبره منجزًا.", "Consider it done."],
+["We'll take care of it.", "سنتولى الأمر.", "We'll take care of it."],
+["I'll make the necessary arrangements.", "سأقوم بالترتيبات اللازمة.", "I'll make the necessary arrangements."],
+["I'll keep you updated.", "سأبقيك على اطلاع.", "I'll keep you updated."]
+]],
+["Lost & Found", [
+["Did you lose something?", "هل فقدت شيئًا؟", "Did you lose something?"],
+["What does it look like?", "كيف يبدو؟", "What does it look like?"],
+["Where did you last see it?", "أين رأيته آخر مرة؟", "Where did you last see it?"],
+["When did you notice it missing?", "متى لاحظت فقدانه؟", "When did you notice it missing?"],
+["We'll check for it.", "سنتحقق منه.", "We'll check for it."],
+["I'll contact lost and found.", "سأتصل بقسم المفقودات.", "I'll contact lost and found."],
+["We found your item.", "وجدنا غرضك.", "We found your item."],
+["Please describe the item.", "يرجى وصف الغرض.", "Please describe the item."],
+["Please provide your contact details.", "يرجى تقديم بيانات الاتصال بك.", "Please provide your contact details."],
+["We'll let you know if we find it.", "سنخبرك إذا وجدناه.", "We'll let you know if we find it."]
+]],
+["Maintenance", [
+["There's a maintenance issue.", "هناك مشكلة صيانة.", "There's a maintenance issue."],
+["Something isn't working.", "شيء لا يعمل.", "Something isn't working."],
+["The light is broken.", "الضوء مكسور.", "The light is broken."],
+["The air conditioner isn't working.", "المكيف لا يعمل.", "The air conditioner isn't working."],
+["The water isn't hot.", "الماء ليس ساخنًا.", "The water isn't hot."],
+["The door won't lock.", "الباب لا يُغلق.", "The door won't lock."],
+["The TV isn't working.", "التلفاز لا يعمل.", "The TV isn't working."],
+["I'll call maintenance.", "سأتصل بالصيانة.", "I'll call maintenance."],
+["Maintenance is on the way.", "الصيانة في الطريق.", "Maintenance is on the way."],
+["It's been fixed.", "تم إصلاحه.", "It's been fixed."]
+]],
+["Transportation at Hotel", [
+["Where is the pickup point?", "أين نقطة الالتقاء؟", "Where is the pickup point?"],
+["What time is the shuttle?", "متى الحافلة المكوكية؟", "What time is the shuttle?"],
+["Is the shuttle available?", "هل الحافلة المكوكية متاحة؟", "Is the shuttle available?"],
+["I'll arrange a transfer.", "سأرتب نقلًا.", "I'll arrange a transfer."],
+["Your driver is waiting.", "سائقك ينتظر.", "Your driver is waiting."],
+["The car is outside.", "السيارة بالخارج.", "The car is outside."],
+["The bus is ready.", "الحافلة جاهزة.", "The bus is ready."],
+["Please wait in the lobby.", "يرجى الانتظار في اللوبي.", "Please wait in the lobby."],
+["Your transfer is confirmed.", "تم تأكيد نقلك.", "Your transfer is confirmed."],
+["Have a safe journey.", "أتمنى لك رحلة آمنة.", "Have a safe journey."]
+]],
+["Meet & Greet", [
+["Welcome.", "أهلًا.", "Welcome to our hotel."],
+["Welcome to our hotel.", "أهلًا بك في فندقنا.", "Welcome to our hotel."],
+["It's a pleasure to have you here.", "يسعدنا وجودك هنا.", "It's a pleasure to have you here."],
+["How was your journey?", "كيف كانت رحلتك؟", "How was your journey?"],
+["Did you have a good trip?", "هل كانت رحلتك جيدة؟", "Did you have a good trip?"],
+["Can I help with your luggage?", "هل يمكنني المساعدة في أمتعتك؟", "Can I help with your luggage?"],
+["Please follow me.", "يرجى اتباعي.", "Please follow me."],
+["This way, please.", "من هنا، من فضلك.", "This way, please."],
+["Let me show you around.", "دعني أريك المكان.", "Let me show you around."],
+["I hope you enjoy your stay.", "أتمنى أن تستمتع بإقامتك.", "I hope you enjoy your stay."]
+]],
+["Small Talk at Work", [
+["How's work going?", "كيف يسير العمل؟", "How's work going?"],
+["How was your shift?", "كيف كانت ورديتك؟", "How was your shift?"],
+["Are you busy today?", "هل أنت مشغول اليوم؟", "Are you busy today?"],
+["How's everything at your department?", "كيف الأمور في قسمك؟", "How's everything at your department?"],
+["Have you had lunch?", "هل تناولت الغداء؟", "Have you had lunch?"],
+["Did you get some rest?", "هل حصلت على بعض الراحة؟", "Did you get some rest?"],
+["How was your day off?", "كيف كانت إجازتك؟", "How was your day off?"],
+["Are you working tomorrow?", "هل تعمل غدًا؟", "Are you working tomorrow?"],
+["What time do you finish?", "متى تنتهي؟", "What time do you finish?"],
+["See you on the next shift.", "أراك في الوردية القادمة.", "See you on the next shift."]
+]],
+["Ending Work", [
+["I'm finished for today.", "انتهيت لهذا اليوم.", "I'm finished for today."],
+["I'm heading home.", "أنا متجه إلى المنزل.", "I'm heading home."],
+["See you tomorrow.", "أراك غدًا.", "See you tomorrow."],
+["Have a good evening.", "أتمنى لك مساءً سعيدًا.", "Have a good evening."],
+["Enjoy your evening.", "استمتع بمسائك.", "Enjoy your evening."],
+["Have a good night.", "أتمنى لك ليلة سعيدة.", "Have a good night."],
+["See you on the next shift.", "أراك في الوردية القادمة.", "See you on the next shift."],
+["I'll finish the rest tomorrow.", "سأكمل الباقي غدًا.", "I'll finish the rest tomorrow."],
+["Everything is done.", "كل شيء منجز.", "Everything is done."],
+["I'm signing off.", "أنا أنهي العمل.", "I'm signing off."]
+]],
+["Common Verbs as Chunks", [
+["Let me know.", "أخبرني.", "Let me know when you're ready."],
+["Give me a call.", "اتصل بي.", "Give me a call later."],
+["Take a look.", "ألقِ نظرة.", "Take a look at this."],
+["Have a look.", "ألقِ نظرة.", "Have a look at the report."],
+["Give it a try.", "جربه.", "Give it a try."],
+["Take your time.", "خذ وقتك.", "Take your time."],
+["Keep it up.", "استمر.", "Keep it up."],
+["Carry on.", "واصل.", "Carry on with your work."],
+["Go ahead.", "تفضل.", "Go ahead, I'm listening."],
+["Come back later.", "عد لاحقًا.", "Come back later."]
+]],
+["Common Phrasal Chunks", [
+["Find out.", "اكتشف.", "Find out what happened."],
+["Figure it out.", "اكتشف الحل.", "Figure it out."],
+["Work it out.", "حله.", "Work it out together."],
+["Sort it out.", "رتبه.", "Sort it out."],
+["Look it up.", "ابحث عنه.", "Look it up online."],
+["Check it out.", "تحقق منه.", "Check it out."],
+["Fill it out.", "املأه.", "Fill it out, please."],
+["Write it down.", "اكتبه.", "Write it down."],
+["Pick it up.", "التقطه.", "Pick it up."],
+["Put it away.", "ضعه جانبًا.", "Put it away."]
+]],
+["More Phrasal Chunks", [
+["Set it up.", "جهزه.", "Set it up."],
+["Turn it on.", "شغله.", "Turn it on."],
+["Turn it off.", "أطفئه.", "Turn it off."],
+["Pick up the phone.", "ارفع الهاتف.", "Pick up the phone."],
+["Hang up.", "أغلق الخط.", "Hang up, please."],
+["Call back.", "أعد الاتصال.", "Call back later."],
+["Get back to me.", "رد علي.", "Get back to me."],
+["Come back to me.", "عد إلي.", "Come back to me on this."],
+["Follow up.", "تابع.", "Follow up with them."],
+["Carry on with it.", "واصل.", "Carry on with it."]
+]],
+["Everyday Questions", [
+["What happened?", "ماذا حدث؟", "What happened here?"],
+["What's going on?", "ماذا يحدث؟", "What's going on?"],
+["What's the matter?", "ما الأمر؟", "What's the matter?"],
+["What's the problem?", "ما المشكلة؟", "What's the problem?"],
+["What's the point?", "ما الهدف؟", "What's the point?"],
+["What's the difference?", "ما الفرق؟", "What's the difference?"],
+["What's the best option?", "ما أفضل خيار؟", "What's the best option?"],
+["What's next?", "ما التالي؟", "What's next?"],
+["What's the reason?", "ما السبب؟", "What's the reason?"],
+["What's the plan?", "ما الخطة؟", "What's the plan?"]
+]],
+["Everyday Answers", [
+["I don't know.", "لا أعرف.", "I don't know."],
+["I'm not sure.", "لست متأكدًا.", "I'm not sure."],
+["I think so.", "أعتقد ذلك.", "I think so."],
+["I don't think so.", "لا أعتقد ذلك.", "I don't think so."],
+["Probably.", "ربما.", "Probably."],
+["Maybe.", "ربما.", "Maybe."],
+["Of course.", "بالطبع.", "Of course."],
+["Definitely.", "بالتأكيد.", "Definitely."],
+["Not yet.", "ليس بعد.", "Not yet."],
+["We'll see.", "سنرى.", "We'll see."]
+]],
+["Useful Time Chunks", [
+["Right now.", "الآن.", "I need it right now."],
+["At the moment.", "في الوقت الحالي.", "At the moment, I'm busy."],
+["For now.", "في الوقت الحالي.", "For now, this is fine."],
+["So far.", "حتى الآن.", "So far, so good."],
+["From now on.", "من الآن فصاعدًا.", "From now on, we'll be careful."],
+["At the same time.", "في نفس الوقت.", "At the same time, we need to be careful."],
+["In the meantime.", "في هذه الأثناء.", "In the meantime, let's wait."],
+["For the time being.", "في الوقت الحالي.", "For the time being, we'll wait."],
+["As soon as possible.", "في أقرب وقت ممكن.", "As soon as possible, please."],
+["From time to time.", "من وقت لآخر.", "From time to time, I check it."]
+]],
+["Useful Linking Chunks", [
+["First of all...", "أولًا...", "First of all, let's review."],
+["For example...", "على سبيل المثال...", "For example, this one."],
+["In addition...", "بالإضافة إلى ذلك...", "In addition, we need more time."],
+["On the other hand...", "من ناحية أخرى...", "On the other hand, it's cheaper."],
+["At the same time...", "في نفس الوقت...", "At the same time, it's risky."],
+["Because of this...", "بسبب هذا...", "Because of this, we changed the plan."],
+["As a result...", "نتيجة لذلك...", "As a result, we're behind."],
+["In other words...", "بعبارة أخرى...", "In other words, we need help."],
+["In the end...", "في النهاية...", "In the end, we agreed."],
+["For that reason...", "لهذا السبب...", "For that reason, we waited."]
+]],
+["Natural Conversation Chunks", [
+["You know what I mean?", "أتفهم ما أعنيه؟", "You know what I mean?"],
+["You know what?", "أتعرف ماذا؟", "You know what? Let's go."],
+["Guess what?", "خمن ماذا؟", "Guess what happened!"],
+["Believe it or not...", "صدق أو لا تصدق...", "Believe it or not, he agreed."],
+["To be honest...", "بصراحة...", "To be honest, I'm not sure."],
+["To tell you the truth...", "لأخبرك الحقيقة...", "To tell you the truth, I forgot."],
+["As far as I know...", "على حد علمي...", "As far as I know, it's fine."],
+["As far as I can tell...", "على حد ما أستطيع قوله...", "As far as I can tell, it's working."],
+["If you ask me...", "إذا سألتني...", "If you ask me, we should wait."],
+["From what I understand...", "من ما أفهمه...", "From what I understand, it's done."]
+]],
+["Final Essentials", [
+["That's all.", "هذا كل شيء.", "That's all for now."],
+["That's it.", "هذا هو.", "That's it."],
+["That's enough.", "هذا كافٍ.", "That's enough."],
+["That's fine.", "لا بأس.", "That's fine with me."],
+["That's okay.", "لا بأس.", "That's okay."],
+["No problem.", "لا مشكلة.", "No problem."],
+["No worries.", "لا تقلق.", "No worries."],
+["Never mind.", "لا يهم.", "Never mind."],
+["Forget about it.", "انسَ الأمر.", "Forget about it."],
+["See you soon.", "أراك قريبًا.", "See you soon."]
+]]
+];
+
+const allCategories = categories.concat(extraCategories);
+
+/* Flat index */
+const allChunks = [];
+let chunkId = 0;
+allCategories.forEach(([cat, items], ci) => {
+  items.forEach(([en, ar, ex]) => {
+    allChunks.push({ id: chunkId++, catIndex: ci, cat, en, ar, ex });
+  });
+});
+const TOTAL_CHUNKS = allChunks.length;
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+function loadJSON(k, def) {
+  try { return JSON.parse(localStorage.getItem(k)) || def; }
+  catch { return def; }
+}
+function saveJSON(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+let progress = loadJSON(KEY_PROGRESS, {});
+let streak = loadJSON(KEY_STREAK, { current: 0, best: 0, lastDate: null });
+let daily = loadJSON(KEY_DAILY, { date: null, count: 0 });
+let voiceSettings = loadJSON(KEY_VOICE, {
+  rate: 0.92, pitch: 1, voiceURIEn: null, voiceURIAr: null
+});
+let quizStats = loadJSON(KEY_QUIZ, { total: 0, correct: 0, best: 0 });
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function ensureDaily() {
+  const t = todayStr();
+  if (daily.date !== t) { daily = { date: t, count: 0 }; saveJSON(KEY_DAILY, daily); }
+}
+function updateStreak() {
+  const t = todayStr();
+  if (streak.lastDate === t) return;
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  const yStr = y.getFullYear() + '-' + String(y.getMonth()+1).padStart(2,'0') + '-' + String(y.getDate()).padStart(2,'0');
+  if (streak.lastDate === yStr) streak.current += 1;
+  else streak.current = 1;
+  streak.lastDate = t;
+  if (streak.current > streak.best) streak.best = streak.current;
+  saveJSON(KEY_STREAK, streak);
+}
+
+/* ============================================================
+   SPEECH
+   ============================================================ */
+let currentSpeakingBtn = null;
+function speak(text, btn, lang) {
+  if (!('speechSynthesis' in window)) { showToast('Speech not supported', 'red'); return; }
+  if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+  if (currentSpeakingBtn) currentSpeakingBtn.classList.remove('speaking');
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang || 'en-US';
+  u.rate = voiceSettings.rate;
+  u.pitch = voiceSettings.pitch;
+
+  const voices = window.speechSynthesis.getVoices();
+  const wantURI = (lang === 'ar-SA' || lang === 'ar') ? voiceSettings.voiceURIAr : voiceSettings.voiceURIEn;
+  if (wantURI) {
+    const v = voices.find(x => x.voiceURI === wantURI);
+    if (v) u.voice = v;
+  } else {
+    const pref = voices.find(v => v.lang === u.lang)
+      || voices.find(v => v.lang.startsWith(u.lang.slice(0,2)))
+      || voices.find(v => v.lang.startsWith('en'));
+    if (pref) u.voice = pref;
+  }
+
+  if (btn) { btn.classList.add('speaking'); currentSpeakingBtn = btn; }
+  u.onend = u.onerror = () => {
+    if (btn) btn.classList.remove('speaking');
+    if (currentSpeakingBtn === btn) currentSpeakingBtn = null;
+  };
+  window.speechSynthesis.speak(u);
+}
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+  setTimeout(() => window.speechSynthesis.getVoices(), 100);
+}
+
+/* ============================================================
+   TOAST + CONFETTI
+   ============================================================ */
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function showToast(msg, type = '') {
+  clearTimeout(toastTimer);
+  toastEl.textContent = msg;
+  toastEl.className = 'toast show ' + type;
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+}
+function fireConfetti() {
+  const colors = ['#2b7a4b', '#38a169', '#68d391', '#ed8936', '#1e3a5f', '#4299e1'];
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDelay = Math.random() * 0.3 + 's';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2200);
+  }
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function updateDashboard() {
+  ensureDaily();
+  const done = Object.keys(progress).length;
+  const percent = Math.round((done / TOTAL_CHUNKS) * 100);
+
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statPercent').textContent = percent + '%';
+  document.getElementById('statStreak').textContent = streak.current;
+  document.getElementById('dashDone').textContent = done;
+  document.getElementById('dashBar').style.width = percent + '%';
+
+  let sub = 'Keep going! You\'re doing great.';
+  if (percent === 0) sub = 'Start learning your first chunk today!';
+  else if (percent < 25) sub = 'Great start! Keep the momentum.';
+  else if (percent < 50) sub = 'You\'re making solid progress!';
+  else if (percent < 75) sub = 'Halfway there — impressive!';
+  else if (percent < 100) sub = 'Almost done! Final push!';
+  else sub = '🎉 Amazing! You completed all 1000 chunks!';
+  document.getElementById('dashSub').textContent = sub;
+
+  document.getElementById('dashStreak').textContent = streak.current;
+  document.getElementById('dashStreakBar').style.width = Math.min(streak.current * 10, 100) + '%';
+  document.getElementById('dashStreakSub').textContent = streak.current === 0
+    ? 'Study today to start your streak!'
+    : `🔥 ${streak.current} day${streak.current > 1 ? 's' : ''} in a row!`;
+
+  const goal = 10;
+  const dailyPct = Math.min((daily.count / goal) * 100, 100);
+  document.getElementById('dashToday').textContent = daily.count;
+  document.getElementById('dashTodayBar').style.width = dailyPct + '%';
+  document.getElementById('dashTodaySub').textContent = daily.count >= goal
+    ? '🎯 Daily goal achieved!'
+    : `Learn ${goal - daily.count} more chunk${(goal - daily.count) > 1 ? 's' : ''} today`;
+
+  document.getElementById('dashQuizTotal').textContent = quizStats.total || 0;
+  document.getElementById('dashQuizSub').textContent = `Best: ${quizStats.best || 0}%`;
+  document.getElementById('dashQuizBar').style.width = (quizStats.best || 0) + '%';
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const content = document.getElementById('content');
+const searchInput = document.getElementById('search');
+const catSelect = document.getElementById('catSelect');
+const filterSelect = document.getElementById('filterSelect');
+const resultInfo = document.getElementById('resultInfo');
+
+document.getElementById('statCats').textContent = allCategories.length;
+allCategories.forEach(([cat], i) => {
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = `${i+1}. ${cat}`;
+  catSelect.appendChild(opt);
+});
+
+let globalNum = 0;
+function escapeHtml(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function highlight(text, q) {
+  const safe = escapeHtml(text);
+  if (!q) return safe;
+  try {
+    const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return safe.replace(re, '<mark>$1</mark>');
+  } catch { return safe; }
+}
+
+function render(fq = '', fc = '', fs = 'all') {
+  content.innerHTML = '';
+  globalNum = 0;
+  let shownChunks = 0, shownCats = 0;
+  const q = fq.trim().toLowerCase();
+
+  allCategories.forEach(([cat, items], ci) => {
+    if (fc !== '' && parseInt(fc) !== ci) return;
+
+    let visibleItems = items.map(item => {
+      const flatId = allChunks.findIndex(c =>
+        c.catIndex === ci && c.en === item[0] && c.ar === item[1] && c.ex === item[2]
+      );
+      return { item, flatId };
+    });
+
+    if (q) {
+      visibleItems = visibleItems.filter(({ item }) =>
+        item[0].toLowerCase().includes(q) || item[1].includes(q) || item[2].toLowerCase().includes(q)
+      );
+    }
+    if (fs === 'done') visibleItems = visibleItems.filter(({ flatId }) => progress[flatId]);
+    else if (fs === 'undone') visibleItems = visibleItems.filter(({ flatId }) => !progress[flatId]);
+
+    if (visibleItems.length === 0) return;
+    shownCats++;
+    shownChunks += visibleItems.length;
+
+    const catDoneCount = items.filter((it) => {
+      const fid = allChunks.findIndex(c =>
+        c.catIndex === ci && c.en === it[0] && c.ar === it[1] && c.ex === it[2]
+      );
+      return progress[fid];
+    }).length;
+
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category';
+    if (catDoneCount === items.length) catDiv.classList.add('completed');
+    if (q || fc !== '' || fs !== 'all') catDiv.classList.add('open');
+
+    const header = document.createElement('div');
+    header.className = 'cat-header';
+    header.innerHTML = `
+      <div class="cat-num">${ci+1}</div>
+      <div class="cat-info">
+        <h2>${escapeHtml(cat)}</h2>
+        <div class="cat-progress-mini">
+          <div class="mini-bar"><div style="width:${(catDoneCount/items.length)*100}%"></div></div>
+          <span>${catDoneCount}/${items.length} done</span>
+        </div>
+      </div>
+      <span class="cat-count">${visibleItems.length} shown</span>
+      <span class="cat-toggle">▾</span>
+    `;
+    header.addEventListener('click', () => catDiv.classList.toggle('open'));
+    catDiv.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'cat-body';
+
+    visibleItems.forEach(({ item, flatId }) => {
+      const [en, ar, ex] = item;
+      globalNum++;
+      const isDone = !!progress[flatId];
+      const chunk = document.createElement('div');
+      chunk.className = 'chunk' + (isDone ? ' done' : '');
+      chunk.dataset.flatId = flatId;
+      chunk.innerHTML = `
+        <div class="chunk-check">
+          <button class="check-btn ${isDone ? 'checked' : ''}" data-action="toggle" data-id="${flatId}" title="Mark as learned">✓</button>
+        </div>
+        <div class="chunk-en"><span class="num">${globalNum}</span>${highlight(en, q)}</div>
+        <div class="chunk-ar">${highlight(ar, q)}</div>
+        <div class="chunk-ex">${highlight(ex, q)}</div>
+        <div class="chunk-actions">
+          <button class="action-btn" data-action="speak-en" data-id="${flatId}" title="Speak English">🔊</button>
+          <button class="action-btn" data-action="speak-ex" data-id="${flatId}" title="Speak Example">💬</button>
+          <button class="action-btn" data-action="speak-ar" data-id="${flatId}" title="Speak Arabic">🗣️</button>
+        </div>
+      `;
+      body.appendChild(chunk);
+    });
+
+    catDiv.appendChild(body);
+    content.appendChild(catDiv);
+  });
+
+  if (shownCats === 0) {
+    content.innerHTML = `<div class="empty"><span>🔍</span>No results found for your search.</div>`;
+  }
+
+  resultInfo.innerHTML = (q || fc !== '' || fs !== 'all')
+    ? `Showing <b>${shownChunks}</b> chunks in <b>${shownCats}</b> categories`
+    : `Total <b>${shownChunks}</b> chunks in <b>${shownCats}</b> categories — click any category to expand`;
+}
+
+/* ============================================================
+   CHUNK EVENTS
+   ============================================================ */
+content.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action = btn.dataset.action;
+  const id = parseInt(btn.dataset.id);
+  const chunk = allChunks[id];
+
+  if (action === 'toggle') {
+    if (progress[id]) {
+      delete progress[id];
+      btn.classList.remove('checked');
+      btn.closest('.chunk').classList.remove('done');
+      showToast('Unmarked', 'gold');
+    } else {
+      progress[id] = { ts: Date.now() };
+      btn.classList.add('checked');
+      btn.closest('.chunk').classList.add('done');
+      showToast('✓ Marked as learned!', 'green');
+      ensureDaily();
+      daily.count += 1;
+      saveJSON(KEY_DAILY, daily);
+      updateStreak();
+      if (daily.count === 10) fireConfetti();
+      if (Object.keys(progress).length === TOTAL_CHUNKS) {
+        fireConfetti();
+        setTimeout(fireConfetti, 300);
+        setTimeout(fireConfetti, 600);
+        showToast('🏆 All 1000 chunks completed!', 'green');
+      }
+    }
+    saveJSON(KEY_PROGRESS, progress);
+    updateDashboard();
+  } else if (action === 'speak-en') speak(chunk.en, btn, 'en-US');
+  else if (action === 'speak-ex') speak(chunk.ex, btn, 'en-US');
+  else if (action === 'speak-ar') speak(chunk.ar, btn, 'ar-SA');
+});
+
+/* ============================================================
+   FILTER EVENTS
+   ============================================================ */
+let searchTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => render(searchInput.value, catSelect.value, filterSelect.value), 180);
+});
+catSelect.addEventListener('change', () => render(searchInput.value, catSelect.value, filterSelect.value));
+filterSelect.addEventListener('change', () => render(searchInput.value, catSelect.value, filterSelect.value));
+
+document.getElementById('expandAll').addEventListener('click', () => {
+  document.querySelectorAll('.category').forEach(c => c.classList.add('open'));
+});
+document.getElementById('collapseAll').addEventListener('click', () => {
+  document.querySelectorAll('.category').forEach(c => c.classList.remove('open'));
+});
+document.getElementById('resetAll').addEventListener('click', () => {
+  if (!confirm('Reset ALL progress? This cannot be undone.')) return;
+  progress = {};
+  saveJSON(KEY_PROGRESS, progress);
+  streak = { current: 0, best: 0, lastDate: null };
+  saveJSON(KEY_STREAK, streak);
+  daily = { date: todayStr(), count: 0 };
+  saveJSON(KEY_DAILY, daily);
+  quizStats = { total: 0, correct: 0, best: 0 };
+  saveJSON(KEY_QUIZ, quizStats);
+  updateDashboard();
+  render(searchInput.value, catSelect.value, filterSelect.value);
+  showToast('All progress reset', 'gold');
+});
+document.getElementById('resetToday').addEventListener('click', () => {
+  daily = { date: todayStr(), count: 0 };
+  saveJSON(KEY_DAILY, daily);
+  updateDashboard();
+  showToast("Today's count reset", 'gold');
+});
+
+/* ============================================================
+   VOICE SETTINGS
+   ============================================================ */
+function openVoiceSettings() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  const enVoices = voices.filter(v => v.lang.startsWith('en'));
+  const arVoices = voices.filter(v => v.lang.startsWith('ar'));
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay active';
+  overlay.innerHTML = `
+    <div class="modal">
+      <button class="modal-close" data-close>✕</button>
+      <div class="modal-header">
+        <h2>🎙️ Voice Settings</h2>
+        <p>Customize speech pronunciation</p>
+      </div>
+      <div class="form-group">
+        <label>English Voice</label>
+        <select id="vEn">
+          <option value="">Auto (browser default)</option>
+          ${enVoices.map(v => `<option value="${v.voiceURI}" ${voiceSettings.voiceURIEn === v.voiceURI ? 'selected' : ''}>${escapeHtml(v.name)} (${v.lang})</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Arabic Voice</label>
+        <select id="vAr">
+          <option value="">Auto (browser default)</option>
+          ${arVoices.map(v => `<option value="${v.voiceURI}" ${voiceSettings.voiceURIAr === v.voiceURI ? 'selected' : ''}>${escapeHtml(v.name)} (${v.lang})</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Speed</label>
+        <div class="range-wrap">
+          <input type="range" id="rR" min="0.5" max="1.5" step="0.05" value="${voiceSettings.rate}">
+          <span class="range-value" id="rV">${voiceSettings.rate.toFixed(2)}x</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Pitch</label>
+        <div class="range-wrap">
+          <input type="range" id="pR" min="0.5" max="1.5" step="0.05" value="${voiceSettings.pitch}">
+          <span class="range-value" id="pV">${voiceSettings.pitch.toFixed(2)}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn ghost" id="tV" style="flex:1;justify-content:center;">🔊 Test</button>
+        <button class="btn ghost" id="reV" style="flex:1;justify-content:center;">↺ Reset</button>
+        <button class="btn" id="sV" style="flex:1;justify-content:center;">💾 Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector('[data-close]').onclick = close;
+  overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+  const rR = overlay.querySelector('#rR'), pR = overlay.querySelector('#pR');
+  rR.oninput = () => overlay.querySelector('#rV').textContent = parseFloat(rR.value).toFixed(2) + 'x';
+  pR.oninput = () => overlay.querySelector('#pV').textContent = parseFloat(pR.value).toFixed(2);
+
+  overlay.querySelector('#tV').onclick = (e) => {
+    const old = { ...voiceSettings };
+    voiceSettings.rate = parseFloat(rR.value);
+    voiceSettings.pitch = parseFloat(pR.value);
+    voiceSettings.voiceURIEn = overlay.querySelector('#vEn').value || null;
+    speak('Welcome to the English chunks library. This is a test.', e.currentTarget, 'en-US');
+    voiceSettings = old;
+  };
+  overlay.querySelector('#sV').onclick = () => {
+    voiceSettings.rate = parseFloat(rR.value);
+    voiceSettings.pitch = parseFloat(pR.value);
+    voiceSettings.voiceURIEn = overlay.querySelector('#vEn').value || null;
+    voiceSettings.voiceURIAr = overlay.querySelector('#vAr').value || null;
+    saveJSON(KEY_VOICE, voiceSettings);
+    showToast('✓ Voice settings saved', 'green');
+    close();
+  };
+  overlay.querySelector('#reV').onclick = () => {
+    voiceSettings = { rate: 0.92, pitch: 1, voiceURIEn: null, voiceURIAr: null };
+    saveJSON(KEY_VOICE, voiceSettings);
+    showToast('Settings reset', 'gold');
+    close();
+    openVoiceSettings();
+  };
+}
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+let quizState = null;
+
+function openQuiz() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay active';
+  overlay.innerHTML = `
+    <div class="modal">
+      <button class="modal-close" data-close>✕</button>
+      <div class="modal-header">
+        <h2>🧠 Quiz Mode</h2>
+        <p>Test your knowledge of the chunks</p>
+      </div>
+      <div class="form-group">
+        <label>Number of Questions</label>
+        <div class="chip-row" id="numChips">
+          <button class="chip active" data-num="5">5</button>
+          <button class="chip" data-num="10">10</button>
+          <button class="chip" data-num="15">15</button>
+          <button class="chip" data-num="20">20</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Question Type</label>
+        <div class="chip-row" id="typeChips">
+          <button class="chip active" data-type="en2ar">English → Arabic</button>
+          <button class="chip" data-type="ar2en">Arabic → English</button>
+          <button class="chip" data-type="mix">Mixed</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="quizCat">
+          <option value="">All categories</option>
+          ${allCategories.map(([c], i) => `<option value="${i}">${i+1}. ${escapeHtml(c)}</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn full-btn" id="startQuiz">▶ Start Quiz</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = () => { quizState = null; overlay.remove(); };
+  overlay.querySelector('[data-close]').onclick = close;
+  overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+  let selNum = 5, selType = 'en2ar';
+  overlay.querySelectorAll('#numChips .chip').forEach(c => {
+    c.onclick = () => {
+      selNum = parseInt(c.dataset.num, 10);
+      overlay.querySelectorAll('#numChips .chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+    };
+  });
+  overlay.querySelectorAll('#typeChips .chip').forEach(c => {
+    c.onclick = () => {
+      selType = c.dataset.type;
+      overlay.querySelectorAll('#typeChips .chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+    };
+  });
+  overlay.querySelector('#startQuiz').onclick = () => {
+    const catIdx = overlay.querySelector('#quizCat').value;
+    startQuiz(overlay, selNum, selType, catIdx);
+  };
+}
+
+function startQuiz(overlay, numQ, type, catIdx) {
+  let pool = allChunks;
+  if (catIdx !== '') pool = allChunks.filter(c => c.catIndex === parseInt(catIdx, 10));
+  if (pool.length < 4) { showToast('Not enough chunks for a quiz', 'red'); return; }
+
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, Math.min(numQ, pool.length));
+
+  const questions = selected.map(word => {
+    const isEn2Ar = type === 'en2ar' || (type === 'mix' && Math.random() > 0.5);
+    const wrongs = pool.filter(w => w.id !== word.id).sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [word, ...wrongs].sort(() => Math.random() - 0.5);
+    return {
+      word, isEn2Ar,
+      questionText: isEn2Ar ? word.en : word.ar,
+      correctAnswer: isEn2Ar ? word.ar : word.en,
+      options: options.map(o => isEn2Ar ? o.ar : o.en)
+    };
+  });
+
+  quizState = { questions, current: 0, correct: 0, answered: false };
+  renderQuizQ(overlay);
+}
+
+function renderQuizQ(overlay) {
+  const q = quizState.questions[quizState.current];
+  const total = quizState.questions.length;
+  const pct = (quizState.current / total) * 100;
+  const isEn2Ar = q.isEn2Ar;
+
+  overlay.querySelector('.modal').innerHTML = `
+    <button class="modal-close" data-close>✕</button>
+    <div class="modal-header">
+      <h2>Question ${quizState.current + 1}</h2>
+      <p>${isEn2Ar ? 'What does this mean?' : 'How do you say this in English?'}</p>
+    </div>
+    <div class="quiz-progress">
+      <div class="quiz-progress-bar"><div style="width:${pct}%"></div></div>
+      <span>${quizState.current + 1} / ${total}</span>
+    </div>
+    <div class="quiz-question ${isEn2Ar ? '' : 'arabic-q'}">
+      <div class="q-text">${escapeHtml(q.questionText)}</div>
+    </div>
+    <div class="quiz-options" id="opts">
+      ${q.options.map((opt, i) => `
+        <button class="quiz-option ${isEn2Ar ? 'arabic-opt' : ''}" data-i="${i}">${escapeHtml(opt)}</button>
+      `).join('')}
+    </div>
+    <div class="quiz-feedback" id="fb"></div>
+  `;
+
+  overlay.querySelector('[data-close]').onclick = () => { quizState = null; overlay.remove(); };
+
+  overlay.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.onclick = () => {
+      if (quizState.answered) return;
+      quizState.answered = true;
+      const idx = parseInt(btn.dataset.i, 10);
+      const chosen = q.options[idx];
+      const isCorrect = chosen === q.correctAnswer;
+      const correctIdx = q.options.indexOf(q.correctAnswer);
+
+      overlay.querySelectorAll('.quiz-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === correctIdx) b.classList.add('correct');
+        else if (i === idx && !isCorrect) b.classList.add('wrong');
+      });
+
+      const fb = overlay.querySelector('#fb');
+      if (isCorrect) {
+        quizState.correct++;
+        fb.textContent = '✓ Correct!';
+        fb.className = 'quiz-feedback good';
+        speak(q.correctAnswer, null, isEn2Ar ? 'ar-SA' : 'en-US');
+      } else {
+        fb.textContent = `✗ Correct: ${q.correctAnswer}`;
+        fb.className = 'quiz-feedback bad';
+      }
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn full-btn';
+      nextBtn.style.marginTop = '14px';
+      nextBtn.innerHTML = quizState.current + 1 < total ? 'Next Question →' : '🏆 See Results';
+      nextBtn.onclick = () => {
+        quizState.answered = false;
+        if (quizState.current + 1 < total) {
+          quizState.current++;
+          renderQuizQ(overlay);
+        } else showQuizResult(overlay);
+      };
+      overlay.querySelector('.modal').appendChild(nextBtn);
+    };
+  });
+}
+
+function showQuizResult(overlay) {
+  const total = quizState.questions.length;
+  const correct = quizState.correct;
+  const pct = Math.round((correct / total) * 100);
+
+  quizStats.total = (quizStats.total || 0) + 1;
+  quizStats.correct = (quizStats.correct || 0) + correct;
+  if (pct > (quizStats.best || 0)) quizStats.best = pct;
+  saveJSON(KEY_QUIZ, quizStats);
+
+  const msg = pct === 100 ? '🏆 Perfect!' :
+              pct >= 80 ? '🌟 Excellent!' :
+              pct >= 60 ? '👍 Good job!' :
+              '💪 Keep practicing!';
+
+  overlay.querySelector('.modal').innerHTML = `
+    <button class="modal-close" data-close>✕</button>
+    <div class="quiz-result">
+      <div class="score-circle">${pct}%</div>
+      <h3>${msg}</h3>
+      <p>You got <strong>${correct}</strong> out of <strong>${total}</strong> correct</p>
+      <div class="quiz-actions">
+        <button class="btn" id="retry">↻ Retry</button>
+        <button class="btn ghost" id="newQ">🎯 New Quiz</button>
+        <button class="btn ghost" id="closeR">Close</button>
+      </div>
+    </div>
+  `;
+  if (pct >= 80) fireConfetti();
+  updateDashboard();
+
+  overlay.querySelector('[data-close]').onclick = () => { quizState = null; overlay.remove(); };
+  overlay.querySelector('#retry').onclick = () => {
+    quizState.current = 0; quizState.correct = 0; quizState.answered = false;
+    renderQuizQ(overlay);
+  };
+  overlay.querySelector('#newQ').onclick = () => {
+    overlay.remove(); quizState = null; openQuiz();
+  };
+  overlay.querySelector('#closeR').onclick = () => { quizState = null; overlay.remove(); };
+}
+
+document.getElementById('voiceBtn').onclick = openVoiceSettings;
+document.getElementById('quizBtn').onclick = openQuiz;
+
+/* ============================================================
+   BACK TO TOP + KEYBOARD
+   ============================================================ */
+const topBtn = document.getElementById('topBtn');
+window.addEventListener('scroll', () => topBtn.classList.toggle('show', window.scrollY > 400));
+topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) {
+    if (window.speechSynthesis.speaking) {
+      e.preventDefault();
+      window.speechSynthesis.cancel();
+      if (currentSpeakingBtn) currentSpeakingBtn.classList.remove('speaking');
+    }
+  }
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+ensureDaily();
+updateStreak();
+updateDashboard();
+render();
+
+setTimeout(() => {
+  const first = document.querySelector('.category');
+  if (first && !searchInput.value && !catSelect.value) first.classList.add('open');
+}, 100);
+
+console.log(`✅ Loaded ${allCategories.length} categories, ${TOTAL_CHUNKS} chunks`);
+</script>
+</body>
+</html>
