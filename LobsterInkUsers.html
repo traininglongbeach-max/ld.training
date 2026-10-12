@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inactive Lobster Ink Users</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --primary:#1e40af; --primary-light:#3b82f6; --accent:#0ea5e9;
+    --bg:#f1f5f9; --card:#ffffff; --danger:#dc2626; --success:#16a34a;
+  }
+  *{font-family:'Segoe UI', Tahoma, sans-serif;}
+  body{background:linear-gradient(135deg,#eef2ff 0%, #f1f5f9 100%); min-height:100vh; margin:0;}
+  .header{
+    background:linear-gradient(135deg,#1e40af 0%, #0ea5e9 100%);
+    color:#fff; padding:2rem 0; box-shadow:0 4px 20px rgba(30,64,175,.25);
+  }
+  .header h1{font-weight:700; margin:0; font-size:1.8rem;text-align: center;}
+  .header p{margin:.3rem 0 0; opacity:.9;}
+  .main-container{max-width:1400px; margin:auto; padding:2rem 1rem;}
+  .card{border:none; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.06);}
+  .upload-zone{
+    border:2.5px dashed #93c5fd; border-radius:16px; background:#f8fafc;
+    padding:3rem 1rem; text-align:center; cursor:pointer; transition:.3s;
+  }
+  .upload-zone:hover, .upload-zone.dragover{background:#eff6ff; border-color:var(--primary-light);}
+  .upload-zone i{font-size:3.5rem; color:var(--primary-light);}
+  .upload-zone h5{margin-top:1rem; color:#334155; font-weight:600;}
+  .upload-zone p{color:#64748b; margin:.3rem 0;}
+  .stat-card{
+    background:#fff; border-radius:14px; padding:1.2rem; text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.05); border-right:4px solid var(--primary);
+  }
+  .stat-card .num{font-size:2rem; font-weight:800; color:var(--primary); line-height:1;}
+  .stat-card .lbl{color:#64748b; font-size:.85rem; margin-top:.4rem;}
+  .stat-card.danger{border-right-color:var(--danger);}
+  .stat-card.danger .num{color:var(--danger);}
+  .stat-card.success{border-right-color:var(--success);}
+  .stat-card.success .num{color:var(--success);}
+  .filter-box{background:#fff; border-radius:16px; padding:1.2rem; box-shadow:0 4px 20px rgba(0,0,0,.06);}
+  .table thead th{
+    background:#1e40af; color:#fff; font-weight:600; white-space:nowrap;
+    position:sticky; top:0; z-index:5;
+  }
+  .table tbody tr:hover{background:#eff6ff;}
+  .table td{vertical-align:middle; font-size:.9rem;}
+  .badge-dept{background:#dbeafe; color:#1e40af; padding:.3rem .7rem; border-radius:20px; font-weight:600; font-size:.78rem;}
+  .no-activity{color:var(--danger); font-weight:600;}
+  .btn-copy{background:var(--primary); color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-copy:hover{background:#1e3a8a; color:#fff;}
+  .btn-export{background:var(--success); color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-export:hover{background:#15803d; color:#fff;}
+  .table-wrapper{max-height:600px; overflow:auto; border-radius:12px;}
+  .toast-msg{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#1e293b; color:#fff; padding:.8rem 1.5rem; border-radius:10px;
+    opacity:0; transition:.3s; z-index:999; font-weight:600;
+  }
+  .toast-msg.show{opacity:1;}
+  .empty-state{text-align:center; padding:3rem 1rem; color:#94a3b8;}
+  .empty-state i{font-size:4rem;}
+  .badge-manager{background:#fef3c7; color:#92400e; padding:.2rem .6rem; border-radius:8px; font-size:.72rem; font-weight:600;}
+  .status-active{background:#dcfce7; color:#166534; padding:.35rem .8rem; border-radius:20px; font-weight:700; font-size:.8rem;}
+  .status-inactive{background:#fee2e2; color:#991b1b; padding:.35rem .8rem; border-radius:20px; font-weight:700; font-size:.8rem;}
+  .btn-delete{
+    background:#fee2e2; color:#991b1b; border:none; border-radius:8px;
+    padding:.35rem .6rem; font-weight:600; transition:.2s;
+  }
+  .btn-delete:hover{background:#dc2626; color:#fff;}
+  .btn-restore{
+    background:#fef3c7; color:#92400e; border:1px solid #fbbf24; border-radius:10px;
+    padding:.5rem 1rem; font-weight:600;
+  }
+  .btn-restore:hover{background:#fbbf24; color:#78350f;}
+  .deleted-info{
+    background:#fef3c7; border:1px solid #fbbf24; color:#78350f;
+    padding:.6rem 1rem; border-radius:10px; font-weight:600; font-size:.9rem;
+  }
+  .info-message{
+    background:#eff6ff; border:1px solid #93c5fd; color:#1e40af;
+    padding:.8rem 1rem; border-radius:10px; font-size:.9rem; margin-bottom:1rem;
+  }
+  .info-message i{font-size:1.1rem; margin-left:.4rem;}
+
+  /* ==== Print Header ==== */
+  .print-header{
+    display:none; padding:1.5rem 0; border-bottom:3px double #1e40af;
+    margin-bottom:1.5rem; text-align:center;
+  }
+  .print-header h2{
+    margin:0; color:#1e40af; font-size:1.8rem; font-weight:800;
+    text-align:center; letter-spacing:.5px;
+  }
+  .print-header .info{
+    margin-top:.8rem; color:#334155; font-size:1rem;
+    text-align:center; line-height:1.7;
+  }
+  .print-header .count-badge{
+    display:inline-block; background:#1e40af; color:#fff;
+    padding:.5rem 1.5rem; border-radius:25px; font-weight:700;
+    margin-top:1rem; font-size:1rem;
+  }
+  .print-header .explain{
+    margin-top:1rem; padding:.8rem 1rem; background:#f1f5f9;
+    border-right:4px solid #1e40af; border-radius:8px;
+    font-size:.9rem; color:#334155; text-align:right; line-height:1.8;
+  }
+  .print-header .explain strong{color:#1e40af;}
+
+  /* ==== إعدادات الطباعة ==== */
+  @media print{
+    @page {
+      size: A4 landscape;
+      margin: 12mm 10mm;
+    }
+
+    body{
+      background:#fff !important;
+      font-size:11px !important;
+    }
+
+    /* إخفاء كل ما لا يجب طباعته */
+    .no-print, .header, .filter-box, .upload-zone,
+    .actions-bar, #uploadSection, .stat-card.danger,
+    .stat-card.success, .row.g-3.mb-4, .btn-delete,
+    .deleted-info, .info-message,
+    th.col-delete, td.col-delete {display:none !important;}
+
+    .main-container{
+      padding:0 !important;
+      max-width:100% !important;
+      margin:0 !important;
+    }
+
+    /* إزالة أي قيود على الكارد */
+    .card{
+      box-shadow:none !important;
+      border-radius:0 !important;
+      border:none !important;
+      overflow:visible !important;
+    }
+
+    /* إلغاء overflow و max-height تماماً */
+    .table-wrapper{
+      max-height:none !important;
+      height:auto !important;
+      overflow:visible !important;
+      border-radius:0 !important;
+    }
+
+    /* الجدول نفسه */
+    table.table{
+      width:100% !important;
+      table-layout:auto !important;
+      border-collapse:collapse !important;
+      page-break-inside:auto !important;
+    }
+
+    /* الهيدر: إلغاء sticky + تكرار في كل صفحة */
+    .table thead{
+      display:table-header-group !important;
+    }
+    .table thead th{
+      background:#1e40af !important;
+      color:#fff !important;
+      position:static !important;
+      top:auto !important;
+      -webkit-print-color-adjust:exact !important;
+      print-color-adjust:exact !important;
+      padding:6px 8px !important;
+      font-size:11px !important;
+      border:none !important;
+    }
+
+    /* الصفوف: منع القطع في نص الصف */
+    .table tbody tr{
+      page-break-inside:avoid !important;
+      break-inside:avoid !important;
+    }
+    .table tbody td{
+      padding:5px 8px !important;
+      font-size:11px !important;
+      border-bottom:1px solid #e2e8f0 !important;
+    }
+    .table tbody tr:hover{background:transparent !important;}
+
+    /* الشارات */
+    .badge-dept, .status-active, .status-inactive, .badge-manager{
+      -webkit-print-color-adjust:exact !important;
+      print-color-adjust:exact !important;
+      font-size:10px !important;
+      padding:2px 6px !important;
+    }
+
+    /* الهيدر الخاص بالطباعة */
+    .print-header{
+      display:block !important;
+      text-align:center !important;
+      page-break-after:avoid !important;
+      break-after:avoid !important;
+    }
+    .print-header h2,
+    .print-header .info,
+    .print-header .count-badge{
+      text-align:center !important;
+    }
+
+    /* منع قطع العناصر المهمة */
+    .print-header,
+    .print-header *{ page-break-inside:avoid !important; break-inside:avoid !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header no-print">
+  <div class="main-container" style="padding-top:0;padding-bottom:0;">
+    <h1><i class="bi bi-person-x-fill"></i> Inactive Lobster Ink Users</h1>
+  </div>
+</div>
+
+<div class="main-container">
+
+  <!-- Upload -->
+  <div id="uploadSection">
+    <div class="upload-zone" id="uploadZone">
+      <i class="bi bi-cloud-arrow-up-fill"></i>
+      <h5>اسحب ملف Excel هنا أو اضغط للاختيار</h5>
+      <p>يدعم ملفات ‎.xlsx‎ و ‎.xls‎ و ‎.csv‎</p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" style="display:none;">
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="num" id="statTotal">0</div>
+          <div class="lbl">إجمالي الموظفين</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card success">
+          <div class="num" id="statDepts">0</div>
+          <div class="lbl">عدد الإدارات</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card danger">
+          <div class="num" id="statInactive">0</div>
+          <div class="lbl">غير نشطين خلال الفترة</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="num" id="statFiltered">0</div>
+          <div class="lbl">النتائج المعروضة</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-box mb-4 no-print">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-bold"><i class="bi bi-diagram-3"></i> الإدارة</label>
+          <select class="form-select" id="deptFilter">
+            <option value="">كل الإدارات</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold"><i class="bi bi-calendar-month"></i> الشهر</label>
+          <input type="month" class="form-control" id="monthFilter">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold"><i class="bi bi-funnel"></i> نوع العرض</label>
+          <select class="form-select" id="viewMode">
+            <option value="inactive">لم يدخلوا خلال الشهر</option>
+            <option value="active">دخلوا خلال الشهر</option>
+            <option value="never">لم يدخلوا مطلقاً (بدون تاريخ)</option>
+            <option value="all">الكل</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-outline-secondary" onclick="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i> إعادة تعيين
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info message -->
+    <div class="info-message no-print" id="infoMsg">
+      <i class="bi bi-info-circle-fill"></i>
+      <span id="infoText"></span>
+    </div>
+
+    <!-- Deleted warning -->
+    <div id="deletedInfo" class="deleted-info mb-3 no-print" style="display:none;">
+      <i class="bi bi-trash"></i>
+      <span id="deletedCount">0</span> موظف تم حذفهم من الجدول
+      <button class="btn btn-sm btn-restore ms-2" onclick="restoreAll()">
+        <i class="bi bi-arrow-counterclockwise"></i> استعادة الكل
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-bar d-flex flex-wrap gap-2 mb-3 no-print">
+      <button class="btn btn-copy" onclick="copyList()">
+        <i class="bi bi-clipboard-check"></i> نسخ القائمة
+      </button>
+      <button class="btn btn-export" onclick="exportExcel()">
+        <i class="bi bi-file-earmark-excel"></i> تصدير Excel
+      </button>
+      <button class="btn btn-outline-primary" onclick="window.print()">
+        <i class="bi bi-printer"></i> طباعة
+      </button>
+      <button class="btn btn-outline-secondary ms-auto" onclick="changeFile()">
+        <i class="bi bi-upload"></i> رفع ملف جديد
+      </button>
+    </div>
+
+    <!-- Print Header -->
+    <div class="print-header">
+      <h2>Inactive Lobster Ink Users</h2>
+      <div class="info" id="printInfo"></div>
+      <div class="count-badge" id="printCount">عدد الموظفين: 0</div>
+      <div class="explain" id="printExplain"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th style="width:50px;">#</th>
+              <th>الاسم</th>
+              <th>الإدارة</th>
+              <th>آخر دخول</th>
+              <th>آخر نشاط</th>
+              <th>الحالة</th>
+              <th class="col-delete no-print" style="width:60px;">حذف</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <i class="bi bi-inbox"></i>
+        <h5 class="mt-3">لا توجد نتائج مطابقة</h5>
+        <p>جرّب تغيير الفلاتر</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<script>
+let allData = [];
+let filteredData = [];
+let deletedIds = new Set();
+let rowCounter = 0;
+
+// ==== رفع الملف ====
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+function changeFile(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('uploadSection').style.display='block';
+  fileInput.value='';
+  deletedIds.clear();
+  updateDeletedInfo();
+}
+
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = new Uint8Array(e.target.result);
+    const wb = XLSX.read(data, { type:'array', cellDates:false });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
+    processRows(rows);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ==== تحويل التواريخ ====
+function parseDate(val){
+  if (!val || val === '') return null;
+  if (val instanceof Date) return isNaN(val) ? null : val;
+  if (typeof val === 'number'){
+    const d = XLSX.SSF.parse_date_code(val);
+    if (!d) return null;
+    return new Date(d.y, d.m-1, d.d);
+  }
+  const s = String(val).trim();
+  if (!s) return null;
+  let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+// ==== معالجة الصفوف ====
+function processRows(rows){
+  deletedIds.clear();
+  rowCounter = 0;
+
+  allData = rows.map(r => {
+    const first = String(r['First Name'] || '').trim();
+    const last  = String(r['Last Name'] || '').trim();
+    let name = (first + ' ' + last).trim();
+    if (!name) name = String(r['Username'] || '').trim();
+
+    const lastActivity = parseDate(r['Last Activity Date']);
+    const lastLogin    = parseDate(r['Last Login Date']);
+
+    return {
+      _id: rowCounter++,
+      name: name || '—',
+      dept: String(r['Learner Group Name'] || 'غير محدد').trim() || 'غير محدد',
+      isManager: String(r['Is Manager'] || '').trim().toUpperCase() === 'Y',
+      status: String(r['Platform Status'] || '').trim(),
+      lastActivity: lastActivity,
+      lastLogin: lastLogin,
+    };
+  }).filter(x => x.name && x.name !== '—');
+
+  const depts = [...new Set(allData.map(x => x.dept))].sort((a,b)=>a.localeCompare(b,'ar'));
+  const deptSel = document.getElementById('deptFilter');
+  deptSel.innerHTML = '<option value="">كل الإدارات</option>' +
+    depts.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  const now = new Date();
+  document.getElementById('monthFilter').value =
+    now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+
+  document.getElementById('statTotal').textContent = allData.length;
+  document.getElementById('statDepts').textContent = depts.length;
+
+  document.getElementById('uploadSection').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  updateDeletedInfo();
+  applyFilters();
+}
+
+// ==== الفلاتر ====
+document.getElementById('deptFilter').addEventListener('change', applyFilters);
+document.getElementById('monthFilter').addEventListener('change', applyFilters);
+document.getElementById('viewMode').addEventListener('change', applyFilters);
+
+function resetFilters(){
+  document.getElementById('deptFilter').value = '';
+  const now = new Date();
+  document.getElementById('monthFilter').value =
+    now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('viewMode').value = 'inactive';
+  applyFilters();
+}
+
+// ==== المنطق الصحيح للحالة ====
+function getStatus(row, monthVal){
+  if (!row.lastActivity) return 'inactive';
+  if (!monthVal) return 'active';
+  const [y,m] = monthVal.split('-').map(Number);
+  const periodStart = new Date(y, m-1, 1);
+  return row.lastActivity < periodStart ? 'inactive' : 'active';
+}
+
+function applyFilters(){
+  const dept = document.getElementById('deptFilter').value;
+  const monthVal = document.getElementById('monthFilter').value;
+  const mode = document.getElementById('viewMode').value;
+
+  filteredData = allData.filter(row => {
+    if (deletedIds.has(row._id)) return false;
+    if (dept && row.dept !== dept) return false;
+
+    const st = getStatus(row, monthVal);
+
+    switch(mode){
+      case 'inactive': return st === 'inactive';
+      case 'active':   return st === 'active';
+      case 'never':    return !row.lastActivity;
+      case 'all':      return true;
+    }
+    return true;
+  });
+
+  filteredData.sort((a,b)=>{
+    const ta = a.lastActivity ? a.lastActivity.getTime() : 0;
+    const tb = b.lastActivity ? b.lastActivity.getTime() : 0;
+    return ta - tb;
+  });
+
+  document.getElementById('statFiltered').textContent = filteredData.length;
+  document.getElementById('statInactive').textContent =
+    allData.filter(r => {
+      if (deletedIds.has(r._id)) return false;
+      return getStatus(r, monthVal) === 'inactive';
+    }).length;
+
+  renderTable();
+  updatePrintHeader();
+  updateInfoMessage();
+}
+
+function fmtDate(d){
+  if (!d) return '<span class="no-activity">لا يوجد</span>';
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function renderTable(){
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (!filteredData.length){
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const monthVal = document.getElementById('monthFilter').value;
+
+  tbody.innerHTML = filteredData.map((r,i) => {
+    const st = getStatus(r, monthVal);
+    const statusHtml = st === 'active'
+      ? '<span class="status-active">Active</span>'
+      : '<span class="status-inactive">Inactive</span>';
+
+    return `
+    <tr>
+      <td>${i+1}</td>
+      <td>
+        ${escapeHtml(r.name)}
+        ${r.isManager ? '<span class="badge-manager">مدير</span>' : ''}
+      </td>
+      <td><span class="badge-dept">${escapeHtml(r.dept)}</span></td>
+      <td>${fmtDate(r.lastLogin)}</td>
+      <td>${fmtDate(r.lastActivity)}</td>
+      <td>${statusHtml}</td>
+      <td class="col-delete no-print">
+        <button class="btn-delete" title="حذف من الجدول"
+          onclick="deleteRow(${r._id}, '${escapeAttr(r.name)}')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    </tr>
+    `;
+  }).join('');
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return String(s||'').replace(/'/g,"\\'"); }
+
+// ==== الحذف والاستعادة ====
+function deleteRow(id, name){
+  if (!confirm(`هل تريد حذف "${name}" من الجدول؟`)) return;
+  deletedIds.add(id);
+  updateDeletedInfo();
+  applyFilters();
+  toast(`تم حذف "${name}" ✅`);
+}
+
+function restoreAll(){
+  if (!deletedIds.size) return;
+  if (!confirm(`استعادة ${deletedIds.size} موظف محذوف؟`)) return;
+  deletedIds.clear();
+  updateDeletedInfo();
+  applyFilters();
+  toast('تم استعادة جميع الموظفين ✅');
+}
+
+function updateDeletedInfo(){
+  const info = document.getElementById('deletedInfo');
+  const cnt = document.getElementById('deletedCount');
+  if (deletedIds.size > 0){
+    info.style.display = 'block';
+    cnt.textContent = deletedIds.size;
+  } else {
+    info.style.display = 'none';
+  }
+}
+
+// ==== رسالة توضيحية ====
+function updateInfoMessage(){
+  const monthVal = document.getElementById('monthFilter').value;
+  const mode = document.getElementById('viewMode').value;
+  const infoText = document.getElementById('infoText');
+
+  if (!monthVal){
+    infoText.textContent = 'اختر شهراً لعرض الحالة بشكل دقيق.';
+    return;
+  }
+  const [y,m] = monthVal.split('-');
+  const monthName = getMonthName(m) + ' ' + y;
+
+  const msg = {
+    inactive: `يتم عرض الموظفين الذين <b>لم يدخلوا المنصة خلال ${monthName}</b> (آخر نشاط لهم قبل هذا الشهر أو ليس لهم نشاط مطلقاً). الموظفون الذين دخلوا بعد ${monthName} يُعتبرون <b>Active</b> لأنهم نشطون على المنصة.`,
+    active: `يتم عرض الموظفين الذين <b>دخلوا المنصة خلال ${monthName}</b> أو بعدها.`,
+    never: `يتم عرض الموظفين الذين <b>لم يدخلوا المنصة مطلقاً</b> (لا يوجد تاريخ آخر نشاط).`,
+    all: `يتم عرض <b>كل الموظفين</b> بغض النظر عن حالة النشاط.`
+  }[mode];
+
+  infoText.innerHTML = msg;
+}
+
+function getMonthName(m){
+  const names = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return names[parseInt(m,10)-1] || m;
+}
+
+// ==== نسخ ====
+function copyList(){
+  if (!filteredData.length){ toast('لا توجد بيانات للنسخ'); return; }
+  const dept = document.getElementById('deptFilter').value || 'كل الإدارات';
+  const monthVal = document.getElementById('monthFilter').value;
+  let monthTxt = '';
+  if (monthVal){
+    const [y,m] = monthVal.split('-');
+    monthTxt = getMonthName(m) + ' ' + y;
+  }
+  const mode = document.getElementById('viewMode').value;
+  const modeTxt = {
+    inactive:'لم يدخلوا المنصة خلال',
+    active:'دخلوا المنصة خلال',
+    never:'لم يدخلوا مطلقاً',
+    all:'كل الموظفين'
+  }[mode];
+
+  let txt = `📊 Inactive Lobster Ink Users\n`;
+  txt += `🏢 الإدارة: ${dept}\n`;
+  if (monthVal && mode !== 'never' && mode !== 'all') txt += `📅 الفترة: ${monthTxt}\n`;
+  txt += `📌 النوع: ${modeTxt}\n`;
+  txt += `👥 العدد: ${filteredData.length}\n`;
+  txt += `${'─'.repeat(40)}\n\n`;
+
+  filteredData.forEach((r,i)=>{
+    const st = getStatus(r, monthVal);
+    txt += `${i+1}. ${r.name}\n`;
+    txt += `   🏢 ${r.dept}\n`;
+    txt += `   📅 آخر نشاط: ${r.lastActivity ? fmtDatePlain(r.lastActivity) : 'لا يوجد'}\n`;
+    txt += `   🔖 الحالة: ${st === 'active' ? 'Active' : 'Inactive'}\n\n`;
+  });
+
+  navigator.clipboard.writeText(txt).then(()=>toast('تم نسخ القائمة ✅'));
+}
+
+function fmtDatePlain(d){
+  if (!d) return 'لا يوجد';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ==== تصدير Excel ====
+function exportExcel(){
+  if (!filteredData.length){ toast('لا توجد بيانات للتصدير'); return; }
+  const monthVal = document.getElementById('monthFilter').value;
+  const exportRows = filteredData.map((r,i)=>{
+    const st = getStatus(r, monthVal);
+    return {
+      '#': i+1,
+      'الاسم': r.name,
+      'الإدارة': r.dept,
+      'مدير؟': r.isManager ? 'نعم' : 'لا',
+      'آخر دخول': r.lastLogin ? fmtDatePlain(r.lastLogin) : 'لا يوجد',
+      'آخر نشاط': r.lastActivity ? fmtDatePlain(r.lastActivity) : 'لا يوجد',
+      'الحالة': st === 'active' ? 'Active' : 'Inactive'
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(exportRows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'التقرير');
+  const dept = document.getElementById('deptFilter').value || 'All';
+  const month = monthVal || '';
+  XLSX.writeFile(wb, `Inactive_LobsterInk_${dept}_${month}.xlsx`);
+  toast('تم تصدير الملف ✅');
+}
+
+// ==== Print Header ====
+function updatePrintHeader(){
+  const dept = document.getElementById('deptFilter').value || 'كل الإدارات';
+  const monthVal = document.getElementById('monthFilter').value;
+  const mode = document.getElementById('viewMode').value;
+  const modeTxt = {
+    inactive:'لم يدخلوا خلال الفترة',
+    active:'دخلوا خلال الفترة',
+    never:'لم يدخلوا مطلقاً',
+    all:'كل الموظفين'
+  }[mode];
+
+  let infoTxt = `الإدارة: ${dept}`;
+  if (monthVal && mode !== 'never' && mode !== 'all'){
+    const [y,m] = monthVal.split('-');
+    infoTxt += ` &nbsp;|&nbsp; الفترة: ${getMonthName(m)} ${y}`;
+  }
+  infoTxt += ` &nbsp;|&nbsp; ${modeTxt}`;
+
+  document.getElementById('printInfo').innerHTML = infoTxt;
+  document.getElementById('printCount').textContent =
+    `عدد الموظفين: ${filteredData.length}`;
+
+  let explainHtml = '';
+  if (monthVal && mode === 'inactive'){
+    const [y,m] = monthVal.split('-');
+    const monthName = getMonthName(m) + ' ' + y;
+    explainHtml = `<strong>ملاحظة:</strong> الموظفون المدرجون أدناه لم يسجلوا أي نشاط على منصة Lobster Ink خلال شهر <strong>${monthName}</strong>.
+    (آخر نشاط لهم قبل هذا الشهر أو لا يوجد لديهم نشاط مطلقاً). الموظفون الذين دخلوا المنصة بعد ${monthName} لا يظهرون في هذا التقرير لأنهم نشطون حالياً.`;
+  } else if (monthVal && mode === 'active'){
+    const [y,m] = monthVal.split('-');
+    const monthName = getMonthName(m) + ' ' + y;
+    explainHtml = `<strong>ملاحظة:</strong> الموظفون المدرجون أدناه قاموا بتسجيل نشاط على منصة Lobster Ink خلال شهر <strong>${monthName}</strong> أو بعده.`;
+  } else if (mode === 'never'){
+    explainHtml = `<strong>ملاحظة:</strong> الموظفون المدرجون أدناه لم يسجلوا أي نشاط على منصة Lobster Ink مطلقاً (لا يوجد تاريخ آخر نشاط).`;
+  } else {
+    explainHtml = `<strong>ملاحظة:</strong> يعرض هذا التقرير جميع الموظفين بغض النظر عن حالة النشاط.`;
+  }
+
+  document.getElementById('printExplain').innerHTML = explainHtml;
+}
+
+// ==== Toast ====
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
