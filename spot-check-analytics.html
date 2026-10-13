@@ -48,7 +48,7 @@ body{background:#f0f4f8;padding-bottom:60px}
 .range-btn:hover{background:#ebf8ff;border-color:#3182ce;color:#2c5282}
 .range-btn.active{background:#2b7a4b;border-color:#2b7a4b;color:#fff}
 
-/* ⭐ فلاتر السنة/الشهر/الأسبوع */
+/* فلاتر السنة/الشهر/الأسبوع */
 .filter-bar .date-filter-group {
     display: flex;
     gap: 0.5rem;
@@ -152,9 +152,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
   .section{padding:.8rem}
 }
 
-.allEmpSection{ width: 800px; }
-
-/* ⭐ قسم استعلام الموظف */
+/* قسم استعلام الموظف */
 .emp-lookup {
     background: linear-gradient(135deg, #4c1d95, #6b21a8);
     border-radius: 1rem;
@@ -234,7 +232,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
     background: rgba(255,255,255,0.3);
 }
 
-/* ⭐ نتيجة الاستعلام */
+/* نتيجة الاستعلام */
 .lookup-result { margin-top: 1rem; }
 .lookup-emp-header {
     background: rgba(255,255,255,0.15);
@@ -380,6 +378,94 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
     color: #742a2a;
     font-weight: 700;
 }
+
+/* قسم Never Checked */
+.never-checked-controls {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+.never-checked-controls input {
+    flex: 1;
+    min-width: 220px;
+    padding: 0.55rem 0.8rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.7rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+.never-checked-controls input:focus {
+    outline: none;
+    border-color: #2b7a4b;
+}
+.never-checked-controls select {
+    padding: 0.55rem 0.8rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.7rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: #fff;
+    cursor: pointer;
+}
+.never-checked-controls select:focus {
+    outline: none;
+    border-color: #2b7a4b;
+}
+.never-checked-controls .btn-export {
+    padding: 0.55rem 1rem;
+    border: none;
+    border-radius: 2rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.82rem;
+    background: #2b7a4b;
+    color: #fff;
+    transition: 0.2s;
+}
+.never-checked-controls .btn-export:hover {
+    background: #1e5a38;
+}
+
+/* ⭐ Toggle النطاق */
+.scope-toggle {
+    display: inline-flex;
+    background: #f0f4f8;
+    border-radius: 2rem;
+    padding: 0.2rem;
+    gap: 0.15rem;
+    border: 2px solid #e2e8f0;
+}
+.scope-btn {
+    padding: 0.45rem 0.9rem;
+    border: none;
+    background: transparent;
+    border-radius: 1.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #4a5568;
+    font-family: inherit;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+.scope-btn:hover {
+    background: #e2e8f0;
+}
+.scope-btn.active {
+    background: #fff;
+    color: #1e3a5f;
+    box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+.scope-btn.active[data-scope="all"] {
+    background: #fed7d7;
+    color: #742a2a;
+}
+.scope-btn.active[data-scope="period"] {
+    background: #bee3f8;
+    color: #2c5282;
+}
 </style>
 </head>
 <body>
@@ -422,7 +508,6 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
     
     <div style="flex-basis:100%; height:0;"></div>
     
-    <!-- ⭐ فلاتر السنة / الشهر / الأسبوع -->
     <div class="date-filter-group">
         <label>🗓️ Year:</label>
         <select id="filterYear" onchange="onYearChange()">
@@ -452,49 +537,43 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
   </div>
 
   <!-- Overview Stats -->
-  <div class="stats-grid" id="overviewStats">
-    <div class="stat-card emp">
-      <div class="icon">👥</div>
-      <div class="lbl">Total Checked</div>
-      <div class="val" id="statTotal">0</div>
-      <div class="sub" id="statDays">0 days</div>
-    </div>
-    <div class="stat-card know">
-      <div class="icon">🟢</div>
-      <div class="lbl">Know</div>
-      <div class="val" id="statKnow">0</div>
-      <div class="sub" id="statKnowPct">0%</div>
-    </div>
-    <div class="stat-card dont">
-      <div class="icon">🔴</div>
-      <div class="lbl">Don't Know</div>
-      <div class="val" id="statDont">0</div>
-      <div class="sub" id="statDontPct">0%</div>
-    </div>
-    <div class="stat-card pct">
-      <div class="icon">📈</div>
-      <div class="lbl">Overall %</div>
-      <div class="val" id="statPct">0%</div>
-      <div class="sub">Know / Total</div>
-    </div>
-    <div class="stat-card">
-      <div class="icon">🎯</div>
-      <div class="lbl">Unique Tasks</div>
-      <div class="val" id="statTasks">0</div>
-      <div class="sub">Different standards</div>
-    </div>
-    <div class="stat-card">
-      <div class="icon">🏢</div>
-      <div class="lbl">Departments</div>
-      <div class="val" id="statDepts">0</div>
-      <div class="sub">Covered</div>
-    </div>
+<div class="stats-grid" id="overviewStats">
+  <div class="stat-card emp">
+    <div class="icon">👥</div>
+    <div class="lbl">Employees</div>
+    <div class="val" id="statTotal">0</div>
   </div>
+  <div class="stat-card know">
+    <div class="icon">🟢</div>
+    <div class="lbl">Know</div>
+    <div class="val" id="statKnow">0</div>
+  </div>
+  <div class="stat-card dont">
+    <div class="icon">🔴</div>
+    <div class="lbl">Don't Know</div>
+    <div class="val" id="statDont">0</div>
+  </div>
+  <div class="stat-card pct">
+    <div class="icon">📈</div>
+    <div class="lbl">Pass %</div>
+    <div class="val" id="statPct">0%</div>
+  </div>
+  <div class="stat-card">
+    <div class="icon">🎯</div>
+    <div class="lbl">Tasks</div>
+    <div class="val" id="statTasks">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="icon">🏢</div>
+    <div class="lbl">Departments</div>
+    <div class="val" id="statDepts">0</div>
+  </div>
+</div>
 
   <!-- Chart -->
   <div class="chart-box">
     <div class="section-title" style="border:none;padding:0;margin-bottom:.5rem">
-      <span>📈 Daily Trend</span>
+      <span>📈 Daily Trend (Unique Employees)</span>
       <span class="badge" id="trendRange"></span>
     </div>
     <div class="chart-container">
@@ -516,7 +595,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
               <th style="width:40px">#</th>
               <th style="text-align:left">Name</th>
               <th style="text-align:left">Dept</th>
-              <th>Checked</th>
+              <th>Results</th>
               <th>Know</th>
               <th>%</th>
             </tr>
@@ -540,7 +619,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
               <th style="width:40px">#</th>
               <th style="text-align:left">Name</th>
               <th style="text-align:left">Dept</th>
-              <th>Checked</th>
+              <th>Results</th>
               <th>Don't</th>
               <th>%</th>
             </tr>
@@ -566,7 +645,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
             <tr>
               <th style="width:40px">#</th>
               <th style="text-align:left">Department</th>
-              <th>Checked</th>
+              <th>👥 Emp</th>
               <th>Know</th>
               <th>%</th>
             </tr>
@@ -589,7 +668,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
             <tr>
               <th style="width:40px">#</th>
               <th style="text-align:left">Department</th>
-              <th>Checked</th>
+              <th>👥 Emp</th>
               <th>Don't</th>
               <th>%</th>
             </tr>
@@ -605,7 +684,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
   <!-- Weekly Report -->
   <div class="section">
     <div class="section-title">
-      <span>📅 Weekly Report (Last 8 Weeks)</span>
+      <span>📅 Weekly Report (Last 8 Weeks) — Unique Employees</span>
       <span class="badge" id="weeklyBadge">0 weeks</span>
     </div>
     <div class="table-wrap">
@@ -615,7 +694,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
             <th style="text-align:left">Week</th>
             <th>From</th>
             <th>To</th>
-            <th>Checked</th>
+            <th>👥 Unique Emp</th>
             <th>Know</th>
             <th>Don't Know</th>
             <th>%</th>
@@ -632,7 +711,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
   <!-- Monthly Report -->
   <div class="section">
     <div class="section-title">
-      <span>📆 Monthly Report (Last 6 Months)</span>
+      <span>📆 Monthly Report (Last 6 Months) — Unique Employees</span>
       <span class="badge" id="monthlyBadge">0 months</span>
     </div>
     <div class="table-wrap">
@@ -640,7 +719,7 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
         <thead>
           <tr>
             <th style="text-align:left">Month</th>
-            <th>Checked</th>
+            <th>👥 Unique Emp</th>
             <th>Know</th>
             <th>Don't Know</th>
             <th>%</th>
@@ -655,7 +734,52 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
     </div>
   </div>
 
-  <!-- ⭐ قسم استعلام عن موظف (في أسفل الصفحة) -->
+  <!-- قسم الموظفين اللي متسألوش قبل كدا -->
+  <div class="section" id="neverCheckedSection">
+    <div class="section-title">
+      <span id="neverCheckedTitle">🆕 الموظفين اللي متسألوش قبل كدا (Never Checked — Active Only)</span>
+      <span class="badge" id="neverCheckedBadge">0</span>
+    </div>
+
+    <div class="never-checked-controls">
+      <input type="text" id="neverCheckedSearch" placeholder="🔍 ابحث بالاسم أو الرقم الوظيفي..." autocomplete="off">
+      
+      <select id="neverCheckedDept">
+        <option value="">-- كل الأقسام --</option>
+      </select>
+
+      <!-- ⭐ Toggle النطاق -->
+      <div class="scope-toggle" role="tablist">
+        <button type="button" class="scope-btn active" data-scope="all" onclick="setNeverCheckedScope('all')">
+          🔴 Never Checked
+        </button>
+        <button type="button" class="scope-btn" data-scope="period" onclick="setNeverCheckedScope('period')">
+          📅 Not in Period
+        </button>
+      </div>
+
+      <button class="btn-export" onclick="exportNeverChecked()">📥 تصدير CSV</button>
+    </div>
+
+    <div class="table-wrap" style="max-height:500px;overflow-y:auto">
+      <table>
+        <thead style="position:sticky;top:0;z-index:10">
+          <tr>
+            <th style="width:50px">#</th>
+            <th style="text-align:left">الاسم</th>
+            <th style="text-align:left">القسم</th>
+            <th style="text-align:left">الوظيفة</th>
+            <th>الرقم الوظيفي</th>
+          </tr>
+        </thead>
+        <tbody id="neverCheckedBody">
+          <tr><td colspan="5" class="empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- قسم استعلام عن موظف -->
   <div class="emp-lookup">
     <h3>🔍 استعلام عن موظف (بالرقم الوظيفي أو الاسم)</h3>
     <div class="lookup-form">
@@ -691,9 +815,10 @@ let savedResults = [];
 let currentRange = { from: null, to: null };
 let trendChartInstance = null;
 
-// ⭐ فلاتر السنة/الشهر/الأسبوع
 let dateFilter = { year: '', month: '', week: '' };
 let availableWeeks = [];
+let neverCheckedEmployees = [];
+let neverCheckedScope = 'all';  // ⭐ 'all' أو 'period'
 
 /* ===================== Helpers ===================== */
 function toast(msg, type='') {
@@ -723,7 +848,58 @@ function toISO(date) {
   return `${y}-${m}-${day}`;
 }
 
-// ⭐ رقم الأسبوع داخل الشهر بناءً على اليوم (1-7 → 1, 8-14 → 2, إلخ)
+// ⭐ استخراج employee_id من النتائج بكل الاحتمالات
+function extractEmployeeIdFromResult(r) {
+  if (!r) return null;
+  
+  if (r.employee_id != null && r.employee_id !== '') return String(r.employee_id).trim();
+  if (r.employeeId != null && r.employeeId !== '') return String(r.employeeId).trim();
+  if (r.empId != null && r.empId !== '') return String(r.empId).trim();
+  if (r.emp_id != null && r.emp_id !== '') return String(r.emp_id).trim();
+  
+  // استخراج من الـ id (آخر جزء بعد _)
+  if (r.id && typeof r.id === 'string' && r.id.includes('_')) {
+    const parts = r.id.split('_');
+    const lastPart = parts[parts.length - 1];
+    if (/^\d+$/.test(lastPart)) return lastPart;
+  }
+  
+  return null;
+}
+
+// ⭐ الموظف الفعّال (مش Left / Resigned / Terminated)
+function isActiveEmployee(emp) {
+  if (!emp || !emp.status) return true;
+  
+  const status = String(emp.status).trim().toLowerCase();
+  
+  const inactiveStatuses = [
+    'left', 'resigned', 'terminated', 'inactive',
+    'exited', 'dismissed', 'retired', 'suspended',
+    'استقالة', 'منتهي', 'موقوف', 'مستقيل'
+  ];
+  
+  return !inactiveStatuses.includes(status);
+}
+
+// ⭐ استبعاد المستويات الإدارية العليا من Never Checked
+function isExcludedLevel(emp) {
+  if (!emp) return false;
+  
+  const level = String(emp.level || '').trim().toLowerCase();
+  const position = String(emp.position || '').trim().toLowerCase();
+  
+  const excludedLevels = [
+    'gm', 'general manager',
+    'director',
+    'hods', 'hod',
+    'ahods', 'ahod'
+  ];
+  
+  return excludedLevels.includes(level) || excludedLevels.includes(position);
+}
+
+// ⭐ رقم الأسبوع داخل الشهر
 function getWeekNumInMonth(day) {
     if (day >= 1 && day <= 7) return 1;
     if (day >= 8 && day <= 14) return 2;
@@ -732,7 +908,6 @@ function getWeekNumInMonth(day) {
     return 5;
 }
 
-// ⭐ بداية الأسبوع داخل الشهر (1, 8, 15, 22, 29)
 function getWeekStartDayInMonth(day) {
     if (day >= 1 && day <= 7) return 1;
     if (day >= 8 && day <= 14) return 8;
@@ -741,7 +916,6 @@ function getWeekStartDayInMonth(day) {
     return 29;
 }
 
-// ⭐ نهاية الأسبوع داخل الشهر
 function getWeekEndDayInMonth(day, daysInMonth) {
     if (day >= 1 && day <= 7) return 7;
     if (day >= 8 && day <= 14) return 14;
@@ -750,7 +924,6 @@ function getWeekEndDayInMonth(day, daysInMonth) {
     return daysInMonth;
 }
 
-// ⭐ الحصول على بداية الأسبوع الحالي داخل الشهر
 function getWeekStartISO(date) {
     const d = new Date(date);
     const year = d.getFullYear();
@@ -760,7 +933,6 @@ function getWeekStartISO(date) {
     return `${year}-${String(month).padStart(2,'0')}-${String(weekStartDay).padStart(2,'0')}`;
 }
 
-// ⭐ الحصول على نهاية الأسبوع الحالي داخل الشهر
 function getWeekEndISO(date) {
     const d = new Date(date);
     const year = d.getFullYear();
@@ -790,7 +962,6 @@ function setQuickRange(range) {
   if (range === 'today') {
     currentRange = { from: toISO(today), to: toISO(today) };
   } else if (range === 'week') {
-    // ⭐ الأسبوع داخل الشهر (1-7, 8-14, إلخ)
     const day = today.getDate();
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
@@ -862,14 +1033,12 @@ function extractMonths(year) {
     return [...months].sort().reverse();
 }
 
-// ⭐ استخراج الأسابيع داخل شهر معين (كل أسبوع مستقل بالشهر)
 function extractWeeks(month) {
     const [yearStr, monthStr] = month.split('-');
     const year = parseInt(yearStr);
     const monthNum = parseInt(monthStr);
     const daysInMonth = new Date(year, monthNum, 0).getDate();
     
-    // الأسابيع الثابتة داخل الشهر: 1-7, 8-14, 15-21, 22-28, 29-آخر الشهر
     const weekRanges = [
         { weekNum: 1, from: 1, to: 7 },
         { weekNum: 2, from: 8, to: 14 },
@@ -890,7 +1059,7 @@ function extractWeeks(month) {
             weekNum: r.weekNum,
             label: `Week ${r.weekNum} (${fmtDate(fromISO)} → ${fmtDate(toISO_)})`
         };
-    }).reverse(); // الأحدث أولاً
+    }).reverse();
 }
 
 function getWeekNumber(date) {
@@ -1020,13 +1189,11 @@ function clearDateFilters() {
     loadAnalytics();
 }
 
-/* ⭐ تعيين الفلاتر على السنة/الشهر/الأسبوع الحالي */
 function setCurrentPeriodFilters() {
     const now = new Date();
     const currentYear = String(now.getFullYear());
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     
-    // 1) تعيين السنة الحالية
     const yearSelect = document.getElementById('filterYear');
     if (!yearSelect) return;
     
@@ -1044,7 +1211,6 @@ function setCurrentPeriodFilters() {
     yearSelect.value = currentYear;
     dateFilter.year = currentYear;
     
-    // 2) تعبئة الشهور للسنة الحالية
     const monthSelect = document.getElementById('filterMonth');
     let months = extractMonths(currentYear);
     
@@ -1062,7 +1228,6 @@ function setCurrentPeriodFilters() {
     monthSelect.value = currentMonth;
     dateFilter.month = currentMonth;
     
-    // 3) تعبئة الأسابيع للشهر الحالي (حساب داخل الشهر)
     const weekSelect = document.getElementById('filterWeek');
     availableWeeks = extractWeeks(currentMonth);
     
@@ -1087,7 +1252,6 @@ function setCurrentPeriodFilters() {
     weekSelect.value = weekStart;
     dateFilter.week = weekStart;
     
-    // 4) تعيين currentRange على الأسبوع الحالي
     const week = availableWeeks.find(w => w.start === weekStart);
     if (week) {
         currentRange = { from: week.start, to: week.end };
@@ -1095,7 +1259,6 @@ function setCurrentPeriodFilters() {
         document.getElementById('dateTo').value = week.end;
     }
     
-    // 5) إزالة active من Quick Range buttons
     document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
 }
 
@@ -1103,12 +1266,24 @@ function setCurrentPeriodFilters() {
 async function loadData() {
   try {
     const emps = await DB.getAll('employees') || [];
-    employees = emps.map(e => ({
-      id: String(e.id),
-      name: e.fullName || e.name || e.full_name || '',
-      department: (e.department || e.administration || e.admin || '').trim(),
-      position: (e.position || '').trim()
-    }));
+    
+    employees = emps.map(e => {
+      const docId = String(e.id || '');
+      const realEmpId = String(
+        e.employeeId || e.employee_id || e.empId || e.emp_id ||
+        e.employeeNumber || e.code || e.staffId || docId
+      );
+      
+      return {
+        id: realEmpId,
+        docId: docId,
+        name: e.fullName || e.name || e.full_name || e.employeeName || '',
+        department: (e.department || e.administration || e.admin || e.dept || '').trim(),
+        position: (e.position || e.jobTitle || e.job_title || '').trim(),
+        status: String(e.status || '').trim(),
+        level: String(e.level || '').trim()
+      };
+    });
 
     savedSpotChecks = await DB.getAll('spot_checks') || [];
     savedResults    = await DB.getAll('spot_check_results') || [];
@@ -1119,8 +1294,23 @@ async function loadData() {
       results: savedResults.length
     });
 
+    const statuses = {};
+    employees.forEach(e => {
+      const s = e.status || '(empty)';
+      statuses[s] = (statuses[s] || 0) + 1;
+    });
+    console.log('📊 Employee statuses:', statuses);
+
+    const levels = {};
+    employees.forEach(e => {
+      const l = e.level || '(empty)';
+      levels[l] = (levels[l] || 0) + 1;
+    });
+    console.log('📊 Employee levels:', levels);
+
     populateYearFilter();
     populateLookupDatalist();
+    populateNeverCheckedDepts();
   } catch (err) {
     console.error('Load error:', err);
     toast('Failed to load data', 'error');
@@ -1133,7 +1323,13 @@ function loadAnalytics() {
   try {
     const filteredChecks = savedSpotChecks.filter(sc => isDateInRange(sc.date));
     const filteredCheckIds = new Set(filteredChecks.map(sc => String(sc.id)));
-    const filteredResults = savedResults.filter(r => filteredCheckIds.has(String(r.spot_check_id)));
+    
+    const filteredResults = savedResults
+      .filter(r => filteredCheckIds.has(String(r.spot_check_id)))
+      .map(r => ({
+        ...r,
+        _empId: extractEmployeeIdFromResult(r)
+      }));
 
     document.getElementById('headerInfo').textContent =
       `${filteredChecks.length} spot checks • ${filteredResults.length} total results`;
@@ -1147,6 +1343,7 @@ function loadAnalytics() {
     renderBottomDepartments(filteredResults);
     renderWeeklyReport();
     renderMonthlyReport();
+    computeNeverCheckedEmployees(filteredResults);  // ⭐ نمرر filteredResults
 
     showLoading(false);
     toast('✅ Analytics updated');
@@ -1161,23 +1358,37 @@ function showLoading(show) {
   document.getElementById('loadingOverlay').classList.toggle('active', show);
 }
 
-/* ===================== Overview Stats ===================== */
+/* ===================== Overview Stats (Unique Employees) ===================== */
 function renderOverview(checks, results) {
-  const total = results.length;
-  const know = results.filter(r => r.result === 'KNOW').length;
-  const dont = total - know;
-  const pct = total ? (know / total * 100) : 0;
+  const validResults = results.filter(r => r._empId);
+  
+  const uniqueEmpIds = new Set(validResults.map(r => r._empId));
+  const totalUniqueEmp = uniqueEmpIds.size;
+
+  const empResults = {};
+  validResults.forEach(r => {
+    const eid = r._empId;
+    if (!empResults[eid]) empResults[eid] = { know: 0, dont: 0 };
+    if (r.result === 'KNOW') empResults[eid].know++;
+    else empResults[eid].dont++;
+  });
+
+  let knowEmp = 0, dontEmp = 0;
+  Object.values(empResults).forEach(e => {
+    if (e.know > 0) knowEmp++;
+    else dontEmp++;
+  });
+
+  const pct = totalUniqueEmp ? (knowEmp / totalUniqueEmp * 100) : 0;
 
   const uniqueDates = new Set(checks.map(c => c.date)).size;
   const uniqueTasks = new Set(checks.map(c => c.task_id)).size;
-  const uniqueDepts = new Set(results.map(r => r.department)).size;
+  const uniqueDepts = new Set(validResults.map(r => r.department)).size;
 
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statDays').textContent = `${uniqueDates} day${uniqueDates !== 1 ? 's' : ''}`;
-  document.getElementById('statKnow').textContent = know;
-  document.getElementById('statKnowPct').textContent = total ? `${(know/total*100).toFixed(1)}%` : '0%';
-  document.getElementById('statDont').textContent = dont;
-  document.getElementById('statDontPct').textContent = total ? `${(dont/total*100).toFixed(1)}%` : '0%';
+  // ⭐ الأرقام الأساسية
+  document.getElementById('statTotal').textContent = totalUniqueEmp;
+  document.getElementById('statKnow').textContent = knowEmp;
+  document.getElementById('statDont').textContent = dontEmp;
   document.getElementById('statPct').textContent = `${pct.toFixed(2)}%`;
   document.getElementById('statTasks').textContent = uniqueTasks;
   document.getElementById('statDepts').textContent = uniqueDepts;
@@ -1187,26 +1398,47 @@ function renderOverview(checks, results) {
     : 'All Time';
 }
 
-/* ===================== Trend Chart (with numbers) ===================== */
+/* ===================== Trend Chart (Unique Employees per Day) ===================== */
 function renderTrendChart(checks, results) {
   const byDate = {};
+  
   checks.forEach(sc => {
-    if (!byDate[sc.date]) byDate[sc.date] = { know: 0, dont: 0, total: 0 };
+    if (!byDate[sc.date]) {
+      byDate[sc.date] = { 
+        empKnow: new Set(),
+        empDont: new Set(),
+        allEmp: new Set()
+      };
+    }
   });
+
   results.forEach(r => {
+    const eid = r._empId;
+    if (!eid) return;
+    
     const sc = checks.find(c => String(c.id) === String(r.spot_check_id));
     if (!sc) return;
-    if (r.result === 'KNOW') byDate[sc.date].know++;
-    else byDate[sc.date].dont++;
-    byDate[sc.date].total++;
+    
+    byDate[sc.date].allEmp.add(eid);
+    if (r.result === 'KNOW') {
+      byDate[sc.date].empKnow.add(eid);
+    }
+  });
+
+  Object.keys(byDate).forEach(d => {
+    byDate[d].allEmp.forEach(eid => {
+      if (!byDate[d].empKnow.has(eid)) {
+        byDate[d].empDont.add(eid);
+      }
+    });
   });
 
   const dates = Object.keys(byDate).sort();
-  const knowData = dates.map(d => byDate[d].know);
-  const dontData = dates.map(d => byDate[d].dont);
+  const knowData = dates.map(d => byDate[d].empKnow.size);
+  const dontData = dates.map(d => byDate[d].empDont.size);
   const pctData = dates.map(d => {
-    const t = byDate[d].total;
-    return t ? +(byDate[d].know / t * 100).toFixed(2) : 0;
+    const t = byDate[d].allEmp.size;
+    return t ? +(byDate[d].empKnow.size / t * 100).toFixed(2) : 0;
   });
 
   const ctx = document.getElementById('trendChart').getContext('2d');
@@ -1224,7 +1456,7 @@ function renderTrendChart(checks, results) {
       labels: dates.map(d => fmtDate(d)),
       datasets: [
         {
-          label: 'Know',
+          label: 'Employees (Know)',
           data: knowData,
           backgroundColor: '#38a169',
           borderColor: '#2f855a',
@@ -1245,7 +1477,7 @@ function renderTrendChart(checks, results) {
           }
         },
         {
-          label: "Don't Know",
+          label: "Employees (Don't Know)",
           data: dontData,
           backgroundColor: '#e53e3e',
           borderColor: '#c53030',
@@ -1266,7 +1498,7 @@ function renderTrendChart(checks, results) {
           }
         },
         {
-          label: 'Percentage %',
+          label: 'Employee Pass %',
           data: pctData,
           type: 'line',
           borderColor: '#d69e2e',
@@ -1327,7 +1559,7 @@ function renderTrendChart(checks, results) {
           type: 'linear', 
           position: 'left', 
           beginAtZero: true, 
-          title: { display: true, text: 'Count', font: { family: 'Tajawal', size: 11 } }, 
+          title: { display: true, text: 'Unique Employees', font: { family: 'Tajawal', size: 11 } }, 
           ticks: { font: { family: 'Tajawal', size: 11 }, precision: 0 },
           suggestedMax: maxCount * 1.2
         },
@@ -1336,7 +1568,7 @@ function renderTrendChart(checks, results) {
           position: 'right', 
           beginAtZero: true, 
           max: 100, 
-          title: { display: true, text: 'Percentage %', font: { family: 'Tajawal', size: 11 }, color: '#d69e2e' }, 
+          title: { display: true, text: 'Pass %', font: { family: 'Tajawal', size: 11 }, color: '#d69e2e' }, 
           ticks: { font: { family: 'Tajawal', size: 11 }, color: '#d69e2e', callback: v => v + '%' }, 
           grid: { drawOnChartArea: false } 
         }
@@ -1349,7 +1581,9 @@ function renderTrendChart(checks, results) {
 function getEmployeeStats(results) {
   const stats = {};
   results.forEach(r => {
-    const eid = String(r.employee_id);
+    const eid = r._empId;
+    if (!eid) return;
+    
     if (!stats[eid]) stats[eid] = { id: eid, know: 0, dont: 0, total: 0 };
     if (r.result === 'KNOW') stats[eid].know++;
     else stats[eid].dont++;
@@ -1357,7 +1591,9 @@ function getEmployeeStats(results) {
   });
 
   return Object.values(stats).map(s => {
-    const emp = employees.find(e => String(e.id) === s.id);
+    const emp = employees.find(e => 
+      String(e.id) === s.id || String(e.docId) === s.id
+    );
     return {
       ...s,
       name: emp?.name || `#${s.id}`,
@@ -1431,25 +1667,52 @@ function renderBottomEmployees(results) {
   `).join('');
 }
 
-/* ===================== Department Analytics ===================== */
+/* ===================== Department Analytics (Unique Employees) ===================== */
 function getDeptStats(results) {
   const stats = {};
   results.forEach(r => {
+    const eid = r._empId;
+    if (!eid) return;
+    
     const d = r.department || '—';
-    if (!stats[d]) stats[d] = { department: d, know: 0, dont: 0, total: 0 };
-    if (r.result === 'KNOW') stats[d].know++;
-    else stats[d].dont++;
-    stats[d].total++;
+    if (!stats[d]) stats[d] = { 
+      department: d, 
+      empKnow: new Set(),
+      empDont: new Set(),
+      allEmp: new Set()
+    };
+    stats[d].allEmp.add(eid);
+    if (r.result === 'KNOW') stats[d].empKnow.add(eid);
+    else stats[d].empDont.add(eid);
   });
-  return Object.values(stats).map(s => ({
-    ...s,
-    pct: s.total ? (s.know / s.total * 100) : 0
-  }));
+
+  return Object.values(stats).map(s => {
+    const dontOnly = new Set();
+    s.allEmp.forEach(eid => {
+      if (!s.empKnow.has(eid)) dontOnly.add(eid);
+    });
+
+    const totalEmp = s.allEmp.size;
+    const knowEmp = s.empKnow.size;
+    const dontEmp = dontOnly.size;
+    const pct = totalEmp ? (knowEmp / totalEmp * 100) : 0;
+
+    return {
+      department: s.department,
+      total: totalEmp,
+      know: knowEmp,
+      dont: dontEmp,
+      pct
+    };
+  });
 }
 
 function renderTopDepartments(results) {
   const stats = getDeptStats(results);
-  const top = [...stats].sort((a, b) => b.pct - a.pct).slice(0, 7);
+  const top = [...stats].sort((a, b) => {
+    if (b.pct !== a.pct) return b.pct - a.pct;
+    return b.total - a.total;
+  }).slice(0, 7);
 
   const body = document.getElementById('topDeptBody');
   document.getElementById('topDeptBadge').textContent = `${stats.length} departments`;
@@ -1464,7 +1727,7 @@ function renderTopDepartments(results) {
     return `<tr>
       <td><span class="rank-badge ${rankCls}">${i+1}</span></td>
       <td class="dept-cell">${escapeHtml(s.department)}</td>
-      <td>${s.total}</td>
+      <td><strong>${s.total}</strong></td>
       <td class="know-cell">${s.know}</td>
       <td class="pct-cell good">${s.pct.toFixed(1)}%</td>
     </tr>`;
@@ -1473,7 +1736,10 @@ function renderTopDepartments(results) {
 
 function renderBottomDepartments(results) {
   const stats = getDeptStats(results);
-  const bottom = [...stats].sort((a, b) => a.pct - b.pct).slice(0, 7);
+  const bottom = [...stats].sort((a, b) => {
+    if (a.pct !== b.pct) return a.pct - b.pct;
+    return b.total - a.total;
+  }).slice(0, 7);
 
   const body = document.getElementById('bottomDeptBody');
   document.getElementById('bottomDeptBadge').textContent = `${stats.length} departments`;
@@ -1487,14 +1753,14 @@ function renderBottomDepartments(results) {
     <tr>
       <td>${i+1}</td>
       <td class="dept-cell">${escapeHtml(s.department)}</td>
-      <td>${s.total}</td>
+      <td><strong>${s.total}</strong></td>
       <td class="dont-cell">${s.dont}</td>
       <td class="pct-cell bad">${s.pct.toFixed(1)}%</td>
     </tr>
   `).join('');
 }
 
-/* ===================== Weekly Report (حساب داخل الشهر) ===================== */
+/* ===================== Weekly Report (Unique Employees) ===================== */
 function renderWeeklyReport() {
   const byWeek = {};
   
@@ -1509,22 +1775,22 @@ function renderWeeklyReport() {
     
     const weekStart = `${yearStr}-${monthStr}-${String(weekStartDay).padStart(2,'0')}`;
     const weekEnd = `${yearStr}-${monthStr}-${String(weekEndDay).padStart(2,'0')}`;
-    const weekKey = weekStart;
     
-    if (!byWeek[weekKey]) byWeek[weekKey] = {
+    if (!byWeek[weekStart]) byWeek[weekStart] = {
       start: weekStart,
       end: weekEnd,
-      spotCheckIds: new Set(),
       taskIds: new Set(),
-      know: 0,
-      dont: 0,
-      total: 0
+      empKnow: new Set(),
+      empDont: new Set(),
+      allEmp: new Set()
     };
-    byWeek[weekKey].spotCheckIds.add(String(sc.id));
-    byWeek[weekKey].taskIds.add(String(sc.task_id));
+    byWeek[weekStart].taskIds.add(String(sc.task_id));
   });
 
   savedResults.forEach(r => {
+    const eid = extractEmployeeIdFromResult(r);
+    if (!eid) return;
+    
     const sc = savedSpotChecks.find(c => String(c.id) === String(r.spot_check_id));
     if (!sc || !sc.date) return;
     
@@ -1535,9 +1801,14 @@ function renderWeeklyReport() {
     
     if (!byWeek[weekStart]) return;
     
-    if (r.result === 'KNOW') byWeek[weekStart].know++;
-    else byWeek[weekStart].dont++;
-    byWeek[weekStart].total++;
+    byWeek[weekStart].allEmp.add(eid);
+    if (r.result === 'KNOW') byWeek[weekStart].empKnow.add(eid);
+  });
+
+  Object.values(byWeek).forEach(w => {
+    w.allEmp.forEach(eid => {
+      if (!w.empKnow.has(eid)) w.empDont.add(eid);
+    });
   });
 
   const weeks = Object.values(byWeek)
@@ -1553,7 +1824,10 @@ function renderWeeklyReport() {
   }
 
   body.innerHTML = weeks.map(w => {
-    const pct = w.total ? (w.know / w.total * 100) : 0;
+    const totalEmp = w.allEmp.size;
+    const knowEmp = w.empKnow.size;
+    const dontEmp = w.empDont.size;
+    const pct = totalEmp ? (knowEmp / totalEmp * 100) : 0;
     const pctCls = pct >= 95 ? 'good' : pct >= 80 ? 'mid' : 'bad';
     
     const [y, m, d] = w.start.split('-');
@@ -1564,43 +1838,51 @@ function renderWeeklyReport() {
       <td class="dept-cell">${monthLabel} — Week ${weekNum}</td>
       <td>${fmtDate(w.start)}</td>
       <td>${fmtDate(w.end)}</td>
-      <td>${w.total}</td>
-      <td class="know-cell">${w.know}</td>
-      <td class="dont-cell">${w.dont}</td>
+      <td><strong>${totalEmp}</strong></td>
+      <td class="know-cell">${knowEmp}</td>
+      <td class="dont-cell">${dontEmp}</td>
       <td class="pct-cell ${pctCls}">${pct.toFixed(1)}%</td>
       <td>${w.taskIds.size}</td>
     </tr>`;
   }).join('');
 }
 
-/* ===================== Monthly Report ===================== */
+/* ===================== Monthly Report (Unique Employees) ===================== */
 function renderMonthlyReport() {
   const byMonth = {};
+  
   savedSpotChecks.forEach(sc => {
     if (!sc.date) return;
     const monthKey = sc.date.substring(0, 7);
     if (!byMonth[monthKey]) byMonth[monthKey] = {
       month: monthKey,
-      spotCheckIds: new Set(),
       taskIds: new Set(),
       dates: new Set(),
-      know: 0,
-      dont: 0,
-      total: 0
+      empKnow: new Set(),
+      empDont: new Set(),
+      allEmp: new Set()
     };
-    byMonth[monthKey].spotCheckIds.add(String(sc.id));
     byMonth[monthKey].taskIds.add(String(sc.task_id));
     byMonth[monthKey].dates.add(sc.date);
   });
 
   savedResults.forEach(r => {
+    const eid = extractEmployeeIdFromResult(r);
+    if (!eid) return;
+    
     const sc = savedSpotChecks.find(c => String(c.id) === String(r.spot_check_id));
-    if (!sc) return;
+    if (!sc || !sc.date) return;
     const monthKey = sc.date.substring(0, 7);
     if (!byMonth[monthKey]) return;
-    if (r.result === 'KNOW') byMonth[monthKey].know++;
-    else byMonth[monthKey].dont++;
-    byMonth[monthKey].total++;
+    
+    byMonth[monthKey].allEmp.add(eid);
+    if (r.result === 'KNOW') byMonth[monthKey].empKnow.add(eid);
+  });
+
+  Object.values(byMonth).forEach(m => {
+    m.allEmp.forEach(eid => {
+      if (!m.empKnow.has(eid)) m.empDont.add(eid);
+    });
   });
 
   const months = Object.values(byMonth)
@@ -1616,14 +1898,18 @@ function renderMonthlyReport() {
   }
 
   body.innerHTML = months.map(m => {
-    const pct = m.total ? (m.know / m.total * 100) : 0;
+    const totalEmp = m.allEmp.size;
+    const knowEmp = m.empKnow.size;
+    const dontEmp = m.empDont.size;
+    const pct = totalEmp ? (knowEmp / totalEmp * 100) : 0;
     const pctCls = pct >= 95 ? 'good' : pct >= 80 ? 'mid' : 'bad';
     const monthLabel = new Date(m.month + '-01T00:00:00').toLocaleDateString('en-GB', {month:'long', year:'numeric'});
+    
     return `<tr>
       <td class="dept-cell">${monthLabel}</td>
-      <td>${m.total}</td>
-      <td class="know-cell">${m.know}</td>
-      <td class="dont-cell">${m.dont}</td>
+      <td><strong>${totalEmp}</strong></td>
+      <td class="know-cell">${knowEmp}</td>
+      <td class="dont-cell">${dontEmp}</td>
       <td class="pct-cell ${pctCls}">${pct.toFixed(1)}%</td>
       <td>${m.taskIds.size}</td>
       <td>${m.dates.size}</td>
@@ -1631,8 +1917,169 @@ function renderMonthlyReport() {
   }).join('');
 }
 
-/* ===================== Employee Lookup ===================== */
+/* ===================== Never Checked Employees ===================== */
+// ⭐ تغيير نطاق Never Checked
+function setNeverCheckedScope(scope) {
+  neverCheckedScope = scope;
+  
+  // تحديث active class
+  document.querySelectorAll('.scope-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.scope === scope);
+  });
+  
+  // تحديث العنوان
+  const titleSpan = document.getElementById('neverCheckedTitle');
+  if (titleSpan) {
+    titleSpan.textContent = scope === 'all'
+      ? '🆕 الموظفين اللي متسألوش قبل كدا (Never Checked — Active Only)'
+      : '🆕 الموظفين اللي متسألوش في الفترة المختارة (Not in Period — Active Only)';
+  }
+  
+  // إعادة الحساب
+  loadAnalytics();
+}
 
+function computeNeverCheckedEmployees(filteredResults = null) {
+  // ⭐ اختيار المصدر حسب النطاق
+  const sourceResults = (neverCheckedScope === 'period' && filteredResults)
+    ? filteredResults
+    : savedResults;
+
+  const checkedIds = new Set();
+  let missingCount = 0;
+  
+  sourceResults.forEach(r => {
+    const eid = r._empId || extractEmployeeIdFromResult(r);
+    if (eid) {
+      checkedIds.add(String(eid).trim());
+    } else {
+      missingCount++;
+    }
+  });
+
+  console.log(`🔍 Scope: ${neverCheckedScope} | Source: ${sourceResults.length} results | Unique checked: ${checkedIds.size} | Missing: ${missingCount}`);
+
+  // فلترة: (مش متسأل) + (فعّال) + (مش إدارة عليا)
+  neverCheckedEmployees = employees
+    .filter(e => {
+      const empId = String(e.id).trim();
+      const docId = String(e.docId || '').trim();
+      const isChecked = checkedIds.has(empId) || checkedIds.has(docId);
+      
+      if (isChecked) return false;
+      if (!isActiveEmployee(e)) return false;
+      if (isExcludedLevel(e)) return false;
+      
+      return true;
+    })
+    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  console.log(`🔍 Never checked (${neverCheckedScope}):`, neverCheckedEmployees.length);
+  
+  const leftCount = employees.filter(e => !isActiveEmployee(e)).length;
+  const mgmtCount = employees.filter(e => isActiveEmployee(e) && isExcludedLevel(e)).length;
+  console.log('🔍 Inactive excluded:', leftCount, '| Management excluded:', mgmtCount);
+
+  renderNeverChecked();
+}
+
+function renderNeverChecked() {
+  const body = document.getElementById('neverCheckedBody');
+  const badge = document.getElementById('neverCheckedBadge');
+  
+  const search = (document.getElementById('neverCheckedSearch')?.value || '').trim().toLowerCase();
+  const dept = (document.getElementById('neverCheckedDept')?.value || '').trim();
+
+  let list = neverCheckedEmployees;
+  if (search) {
+    list = list.filter(e => 
+      (e.name || '').toLowerCase().includes(search) || String(e.id).includes(search)
+    );
+  }
+  if (dept) {
+    list = list.filter(e => (e.department || '') === dept);
+  }
+
+  // ⭐ الـ badge بيوضح النطاق
+  const scopeLabel = neverCheckedScope === 'all' ? 'never checked' : 'not in period';
+  badge.textContent = `${list.length} / ${neverCheckedEmployees.length} ${scopeLabel}`;
+  
+  if (list.length === 0) {
+    const msg = neverCheckedScope === 'all'
+      ? '🎉 كل الموظفين الفعّالين اتسألوا قبل كدا'
+      : '🎉 كل الموظفين الفعّالين اتسألوا في الفترة المختارة';
+    body.innerHTML = `<tr><td colspan="5" class="empty">${msg}</td></tr>`;
+    return;
+  }
+
+  const displayList = list.slice(0, 300);
+  body.innerHTML = displayList.map((e, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td class="name-cell">${escapeHtml(e.name) || '—'}</td>
+      <td class="dept-cell">${escapeHtml(e.department) || '—'}</td>
+      <td style="text-align:left;color:#4a5568">${escapeHtml(e.position) || '—'}</td>
+      <td><strong>${escapeHtml(e.id)}</strong></td>
+    </tr>
+  `).join('') + (list.length > 300 ? 
+    `<tr><td colspan="5" class="empty">... و ${list.length - 300} موظف آخر (استخدم البحث أو التصدير)</td></tr>` : '');
+}
+
+function populateNeverCheckedDepts() {
+  const select = document.getElementById('neverCheckedDept');
+  if (!select) return;
+  
+  const depts = [...new Set(
+    employees
+      .filter(e => isActiveEmployee(e) && !isExcludedLevel(e))
+      .map(e => e.department)
+      .filter(Boolean)
+  )].sort();
+  
+  select.innerHTML = '<option value="">-- كل الأقسام --</option>' +
+    depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+}
+
+function exportNeverChecked() {
+  const search = (document.getElementById('neverCheckedSearch')?.value || '').trim().toLowerCase();
+  const dept = (document.getElementById('neverCheckedDept')?.value || '').trim();
+  
+  let list = neverCheckedEmployees;
+  if (search) {
+    list = list.filter(e => 
+      (e.name || '').toLowerCase().includes(search) || String(e.id).includes(search)
+    );
+  }
+  if (dept) list = list.filter(e => (e.department || '') === dept);
+
+  if (list.length === 0) {
+    toast('لا يوجد بيانات للتصدير', 'error');
+    return;
+  }
+
+  const csv = '\uFEFF' +
+    'الرقم الوظيفي,الاسم,القسم,الوظيفة\n' +
+    list.map(e => 
+      `"${e.id}","${(e.name||'').replace(/"/g,'""')}","${(e.department||'').replace(/"/g,'""')}","${(e.position||'').replace(/"/g,'""')}"`
+    ).join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  
+  // ⭐ اسم الملف بيوضح النطاق
+  const scopeSuffix = neverCheckedScope === 'all' ? 'never-checked' : 'not-in-period';
+  const periodSuffix = (neverCheckedScope === 'period' && currentRange.from)
+    ? `-${currentRange.from}_to_${currentRange.to}`
+    : '';
+  a.download = `${scopeSuffix}${periodSuffix}-${toISO(new Date())}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`✅ تم تصدير ${list.length} موظف`);
+}
+
+/* ===================== Employee Lookup ===================== */
 function populateLookupDatalist() {
     const dl = document.getElementById('lookupDatalist');
     if (!dl) return;
@@ -1647,7 +2094,9 @@ function findEmployee(input) {
     const trimmed = String(input).trim();
     
     if (/^\d+$/.test(trimmed)) {
-        return employees.find(e => String(e.id) === trimmed) || null;
+        return employees.find(e => 
+          String(e.id) === trimmed || String(e.docId) === trimmed
+        ) || null;
     }
     
     const lower = trimmed.toLowerCase();
@@ -1673,7 +2122,11 @@ function lookupEmployee() {
         return;
     }
     
-    const empResults = savedResults.filter(r => String(r.employee_id) === String(emp.id));
+    const empResults = savedResults.filter(r => {
+      const eid = extractEmployeeIdFromResult(r);
+      if (!eid) return false;
+      return String(eid) === String(emp.id) || String(eid) === String(emp.docId);
+    });
     
     const enriched = empResults.map(r => {
         const sc = savedSpotChecks.find(c => String(c.id) === String(r.spot_check_id));
@@ -1703,6 +2156,7 @@ function lookupEmployee() {
                     <div class="emp-meta">
                         🆔 ${escapeHtml(emp.id)} • 🏢 ${escapeHtml(emp.department) || '—'}
                         ${emp.position ? ` • 💼 ${escapeHtml(emp.position)}` : ''}
+                        ${emp.status ? ` • 📌 ${escapeHtml(emp.status)}` : ''}
                     </div>
                 </div>
             </div>
@@ -1808,6 +2262,7 @@ window.logout = async function() {
   }
 };
 
+/* ===================== Exports ===================== */
 window.setQuickRange = setQuickRange;
 window.applyCustomRange = applyCustomRange;
 window.loadAnalytics = loadAnalytics;
@@ -1821,6 +2276,9 @@ window.setCurrentPeriodFilters = setCurrentPeriodFilters;
 window.getWeekStartISO = getWeekStartISO;
 window.getWeekEndISO = getWeekEndISO;
 window.getWeekNumInMonth = getWeekNumInMonth;
+window.exportNeverChecked = exportNeverChecked;
+window.renderNeverChecked = renderNeverChecked;
+window.setNeverCheckedScope = setNeverCheckedScope;  // ⭐ جديد
 
 /* ===================== Init ===================== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1830,6 +2288,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Enter') lookupEmployee();
         });
     }
+    document.getElementById('neverCheckedSearch')?.addEventListener('input', renderNeverChecked);
+    document.getElementById('neverCheckedDept')?.addEventListener('change', renderNeverChecked);
 });
 
 onAuthStateChanged(auth, async (user) => {
