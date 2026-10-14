@@ -24,6 +24,7 @@
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
+            --excel: #217346;
         }
 
         * {
@@ -424,6 +425,37 @@
             transform: translateY(-1px);
         }
 
+        /* --- Export Button --- */
+        .btn-export {
+            background-color: var(--excel);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-export:hover {
+            background-color: #185c37;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(33, 115, 70, 0.3);
+        }
+
+        .btn-export:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         /* --- Chart Section --- */
         .chart-card {
             background: var(--card-bg);
@@ -692,6 +724,10 @@
             <option value="medium">Medium Activity (40-70%)</option>
             <option value="low">Low Activity (<40%)</option>
         </select>
+        <!-- *** زر تصدير Excel *** -->
+        <button class="btn-export" id="exportBtn">
+            <i class="fa-solid fa-file-excel"></i> Export to Excel
+        </button>
     </div>
 
     <div class="delete-section" id="deleteSection" style="display: none;">
@@ -773,6 +809,7 @@
     const saveCacheBtn = document.getElementById('saveCacheBtn');
     const clearCacheBtn = document.getElementById('clearCacheBtn');
     const cacheStatus = document.getElementById('cacheStatus');
+    const exportBtn = document.getElementById('exportBtn');
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
 
@@ -782,7 +819,6 @@
 
     // --- 2. دوال الكاش (localStorage) ---
 
-    // حفظ البيانات في الكاش
     function saveToCache() {
         if (globalData.length === 0) {
             showToast('No data to save!', 'warning');
@@ -805,7 +841,6 @@
         }
     }
 
-    // تحميل البيانات من الكاش
     function loadFromCache() {
         try {
             const cached = localStorage.getItem(CACHE_KEY);
@@ -813,7 +848,6 @@
 
             const cacheData = JSON.parse(cached);
             
-            // التحقق من انتهاء الصلاحية (24 ساعة)
             const age = Date.now() - cacheData.timestamp;
             if (age > CACHE_DURATION) {
                 localStorage.removeItem(CACHE_KEY);
@@ -822,11 +856,9 @@
                 return false;
             }
 
-            // استعادة البيانات
             globalData = cacheData.data || [];
             deletedItems = cacheData.deletedItems || [];
 
-            // عرض البيانات
             loading.style.display = 'none';
             kpiGrid.style.display = 'grid';
             filtersSection.style.display = 'flex';
@@ -840,7 +872,6 @@
             renderTable(globalData);
             renderChart(globalData);
 
-            // إظهار زر الاستعادة إذا كانت هناك عناصر محذوفة
             if (deletedItems.length > 0) {
                 restoreBtn.style.display = 'inline-flex';
             }
@@ -855,7 +886,6 @@
         }
     }
 
-    // حذف الكاش
     function clearCache() {
         if (!localStorage.getItem(CACHE_KEY)) {
             showToast('No cache to clear', 'warning');
@@ -869,7 +899,6 @@
         showToast('Cache cleared successfully!', 'warning');
     }
 
-    // تحديث حالة الكاش في الواجهة
     function updateCacheStatus() {
         try {
             const cached = localStorage.getItem(CACHE_KEY);
@@ -899,7 +928,96 @@
         }
     }
 
-    // --- 3. أحداث رفع الملف ---
+    // --- 3. تصدير إلى Excel ---
+    function exportToExcel() {
+        if (globalData.length === 0) {
+            showToast('No data to export!', 'warning');
+            return;
+        }
+
+        try {
+            const sortedData = [...globalData].sort((a, b) => {
+                const rateA = a.registered === 0 ? 0 : (a.active / a.registered);
+                const rateB = b.registered === 0 ? 0 : (b.active / b.registered);
+                return rateB - rateA;
+            });
+
+            let totalRegistered = 0;
+            let totalActive = 0;
+
+            sortedData.forEach(item => {
+                totalRegistered += item.registered;
+                totalActive += item.active;
+            });
+
+            const totalInactive = totalRegistered - totalActive;
+            const totalActivePercent = totalRegistered === 0 ? 0 : Math.round((totalActive / totalRegistered) * 100);
+            const totalInactivePercent = totalRegistered === 0 ? 0 : Math.round((totalInactive / totalRegistered) * 100);
+
+            const exportData = [
+                ['Lobster Ink - Group Status Report'],
+                ['Generated:', new Date().toLocaleString('en-US')],
+                [],
+                ['Department', 'Registered', 'Active', 'Inactive', 'Active %', 'Inactive %']
+            ];
+
+            sortedData.forEach(item => {
+                const inactive = item.registered - item.active;
+                const activePercent = item.registered === 0 ? 0 : Math.round((item.active / item.registered) * 100);
+                const inactivePercent = item.registered === 0 ? 0 : Math.round((inactive / item.registered) * 100);
+
+                exportData.push([
+                    item.dep,
+                    item.registered,
+                    item.active,
+                    inactive,
+                    activePercent + '%',
+                    inactivePercent + '%'
+                ]);
+            });
+
+            exportData.push([
+                'Total',
+                totalRegistered,
+                totalActive,
+                totalInactive,
+                totalActivePercent + '%',
+                totalInactivePercent + '%'
+            ]);
+
+            const ws = XLSX.utils.aoa_to_sheet(exportData);
+
+            ws['!cols'] = [
+                { wch: 25 },
+                { wch: 12 },
+                { wch: 10 },
+                { wch: 10 },
+                { wch: 10 },
+                { wch: 12 }
+            ];
+
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Group Status');
+
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const fileName = `Lobster_Ink_Group_Status_${dateStr}.xlsx`;
+
+            XLSX.writeFile(wb, fileName);
+
+            showToast('Excel file exported successfully!');
+        } catch (e) {
+            console.error('Export error:', e);
+            showToast('Failed to export: ' + e.message, 'error');
+        }
+    }
+
+    // --- 4. أحداث رفع الملف ---
     uploadBox.addEventListener('click', () => fileInput.click());
     
     uploadBox.addEventListener('dragover', (e) => {
@@ -926,7 +1044,7 @@
         }
     });
 
-    // --- 4. معالجة الملف ---
+    // --- 5. معالجة الملف ---
     function handleFile(file) {
         loading.style.display = 'block';
         kpiGrid.style.display = 'none';
@@ -955,7 +1073,7 @@
         reader.readAsArrayBuffer(file);
     }
 
-    // --- 5. استخراج البيانات ---
+    // --- 6. استخراج البيانات ---
     function processData(rows) {
         let headerRowIndex = -1;
         let colIndices = { name: -1, registered: -1, active: -1 };
@@ -1013,7 +1131,7 @@
         updateDashboard(globalData);
     }
 
-    // --- 6. تحديث لوحة التحكم ---
+    // --- 7. تحديث لوحة التحكم ---
     function updateDashboard(data) {
         loading.style.display = 'none';
         if (data.length === 0) {
@@ -1035,7 +1153,7 @@
         updateCacheStatus();
     }
 
-    // --- 7. تحديث مؤشرات KPI ---
+    // --- 8. تحديث مؤشرات KPI ---
     function updateKPIs() {
         let totalRegistered = 0;
         let totalActive = 0;
@@ -1054,7 +1172,7 @@
         document.getElementById('kpiRate').textContent = activeRate + '%';
     }
 
-    // --- 8. تحديث القائمة المنسدلة للحذف ---
+    // --- 9. تحديث القائمة المنسدلة للحذف ---
     function updateDeleteDropdown() {
         deleteSelect.innerHTML = '<option value="">-- Select a department to delete --</option>';
         
@@ -1072,12 +1190,12 @@
         deleteBtn.disabled = true;
     }
 
-    // --- 9. تفعيل/تعطيل زر الحذف ---
+    // --- 10. تفعيل/تعطيل زر الحذف ---
     deleteSelect.addEventListener('change', () => {
         deleteBtn.disabled = deleteSelect.value === '';
     });
 
-    // --- 10. تنفيذ الحذف ---
+    // --- 11. تنفيذ الحذف ---
     deleteBtn.addEventListener('click', () => {
         const depName = deleteSelect.value;
         if (!depName) return;
@@ -1102,7 +1220,7 @@
         showToast(`"${depName}" deleted successfully`);
     });
 
-    // --- 11. استعادة الأقسام المحذوفة ---
+    // --- 12. استعادة الأقسام المحذوفة ---
     restoreBtn.addEventListener('click', () => {
         if (deletedItems.length === 0) return;
 
@@ -1125,7 +1243,7 @@
         showToast(`${count} department(s) restored successfully`);
     });
 
-    // --- 12. إشعار Toast ---
+    // --- 13. إشعار Toast ---
     function showToast(message, type = 'success') {
         toastMessage.textContent = message;
         toast.className = 'toast show';
@@ -1137,7 +1255,7 @@
         }, 3000);
     }
 
-    // --- 13. رسم الجدول ---
+    // --- 14. رسم الجدول ---
     function renderTable(data) {
         tableBody.innerHTML = '';
         let totalRegistered = 0;
@@ -1186,7 +1304,7 @@
         tableBody.appendChild(totalRow);
     }
 
-    // --- 14. رسم الشارت ---
+    // --- 15. رسم الشارت ---
     function renderChart(data) {
         const ctx = document.getElementById('statusChart').getContext('2d');
 
@@ -1329,7 +1447,7 @@
         });
     }
 
-    // --- 15. الفلاتر والبحث ---
+    // --- 16. الفلاتر والبحث ---
     function applyFilters() {
         const searchTerm = searchInput.value.toLowerCase();
         const statusValue = statusFilter.value;
@@ -1354,20 +1472,17 @@
     searchInput.addEventListener('input', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
 
-    // --- 16. أحداث أزرار الكاش ---
+    // --- 17. أحداث أزرار الكاش والتصدير ---
     saveCacheBtn.addEventListener('click', saveToCache);
     clearCacheBtn.addEventListener('click', clearCache);
+    exportBtn.addEventListener('click', exportToExcel);
 
-    // --- 17. تحميل الكاش عند فتح الصفحة ---
+    // --- 18. تحميل الكاش عند فتح الصفحة ---
     window.addEventListener('load', () => {
-        // تحديث حالة الكاش
         updateCacheStatus();
-
-        // محاولة تحميل البيانات من الكاش
         const loaded = loadFromCache();
         
         if (!loaded) {
-            // إذا لم يوجد كاش، إظهار قسم الكاش ليعرف المستخدم أنه يمكنه الحفظ
             cacheSection.style.display = 'flex';
         }
     });
