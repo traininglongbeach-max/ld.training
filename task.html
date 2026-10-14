@@ -6,6 +6,7 @@
 <title>Daily Spot Check - L&D System</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="auth-guard.js"></script>
 <script type="module" src="database.js"></script>
 <style>
@@ -21,6 +22,8 @@ body{background:#f0f4f8;padding-bottom:80px}
 .nav-links .home{background:#2b7a4b;color:#fff}
 .nav-links .refresh{background:#4299e1;color:#fff}
 .nav-links .refresh:hover{background:#3182ce}
+.nav-links .export{background:#217346;color:#fff}
+.nav-links .export:hover{background:#185c37}
 .nav-links .logout{background:#e53e3e;color:#fff}
 
 /* Container */
@@ -379,6 +382,7 @@ tr.row-dont:hover{background:#fed7d7}
   <div class="nav-links">
     <a href="index.html" class="home">🏠 Home</a>
     <a href="tasks-manager.html">📚 Tasks</a>
+    <button onclick="exportDeptSummaryToExcel()" class="export">📊 Export Excel</button>
     <button onclick="refreshData()" class="refresh">🔄 Refresh</button>
     <button onclick="logout()" class="logout">🚪 Logout</button>
   </div>
@@ -1941,10 +1945,6 @@ function renderTotalChart() {
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/so9u5deh/image/upload/';
 const PHOTO_EXTS = ['webp', 'jpg', 'jpeg', 'png', 'JPG', 'PNG', 'JPEG'];
 
-/**
- * يحاول تحميل صورة الموظف من Cloudinary باستخدام رقم الموظف
- * (نفس المنطق المستخدم في صفحة أعياد الميلاد)
- */
 function findEmployeePhotoUrl(empCode) {
   return new Promise((resolve) => {
     const code = String(empCode).trim();
@@ -1975,17 +1975,14 @@ window.showEmployeePhoto = async function(empId) {
   const nameEl = document.getElementById('photoModalName');
   const metaEl = document.getElementById('photoModalMeta');
 
-  // إظهار المودال مع رسالة تحميل
   content.innerHTML = `<div class="loading-photo">⏳ Loading photo...</div>`;
   nameEl.textContent = emp.name || '—';
   metaEl.textContent = `${emp.position || '—'} • ${emp.department || '—'} • #${emp.id}`;
   modal.classList.add('active');
 
   try {
-    // 1. لو فيه photoURL محفوظ في الداتا بيز، استخدمه
     let photoUrl = emp.photoURL || '';
 
-    // 2. لو مفيش، ابحث في Cloudinary برقم الموظف
     if (!photoUrl) {
       photoUrl = await findEmployeePhotoUrl(emp.id);
     }
@@ -2017,7 +2014,6 @@ window.closePhotoModal = function(event) {
   document.getElementById('photoModal').classList.remove('active');
 };
 
-// إغلاق بـ Escape
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     const modal = document.getElementById('photoModal');
@@ -2026,6 +2022,83 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
+
+/* ===================== ✅ Export Department Summary to Excel ===================== */
+window.exportDeptSummaryToExcel = function() {
+  const stats = getDeptStats();
+
+  if (!stats || stats.length === 0) {
+    toast('No data to export', 'warn');
+    return;
+  }
+
+  try {
+    const sorted = [...stats].sort((a, b) => {
+      let va = a[sortKey], vb = b[sortKey];
+      if (sortKey === 'department') {
+        return sortDir === 'asc'
+          ? va.localeCompare(vb, 'en')
+          : vb.localeCompare(va, 'en');
+      }
+      return sortDir === 'asc' ? va - vb : vb - va;
+    });
+
+    const rows = sorted.map((s, i) => ({
+      '#': i + 1,
+      'Department': s.department,
+      'Number of employee': s.total,
+      'Know': s.know,
+      "Don't Know": s.dont,
+      'Percentage %': Number(s.pct.toFixed(2))
+    }));
+
+    const gT = stats.reduce((a, b) => a + b.total, 0);
+    const gK = stats.reduce((a, b) => a + b.know, 0);
+    const gD = gT - gK;
+    const gP = gT ? Number((gK / gT * 100).toFixed(2)) : 0;
+
+    rows.push({
+      '#': '—',
+      'Department': 'TOTAL',
+      'Number of employee': gT,
+      'Know': gK,
+      "Don't Know": gD,
+      'Percentage %': gP
+    });
+
+    const taskName = currentTask?.name || 'Task';
+    const dateStr = spotDate || todayISO();
+
+    const infoRows = [
+      ['Task', taskName],
+      ['Date', fmtDate(dateStr)],
+      ['Exported At', new Date().toLocaleString('en-GB')],
+      []
+    ];
+
+    const wsFinal = XLSX.utils.aoa_to_sheet(infoRows);
+    XLSX.utils.sheet_add_json(wsFinal, rows, {
+      origin: -1,
+      header: ['#', 'Department', 'Number of employee', 'Know', "Don't Know", 'Percentage %']
+    });
+    wsFinal['!cols'] = [
+      { wch: 20 }, { wch: 28 }, { wch: 20 }, { wch: 10 }, { wch: 14 }, { wch: 16 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, wsFinal, 'Department Summary');
+
+    const safeTask = String(taskName).replace(/[\\/:*?"<>|]/g, '_').substring(0, 40);
+    const fileName = `Dept_Summary_${safeTask}_${dateStr}.xlsx`;
+
+    XLSX.writeFile(wb, fileName);
+
+    toast('✅ Excel file exported successfully');
+  } catch (err) {
+    console.error('Export error:', err);
+    toast('Export failed: ' + (err.message || ''), 'error');
+  }
+};
 
 /* ===================== Refresh ===================== */
 window.refreshData = async function() {
