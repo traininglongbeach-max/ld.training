@@ -89,6 +89,25 @@
             background: linear-gradient(135deg, #10B981, #059669); 
             color: white; font-weight: 800;
         }
+        .btn-cache-save { background: linear-gradient(135deg, #6366F1, #4F46E5); color: white; }
+        .btn-cache-clear { background: linear-gradient(135deg, #F97316, #EA580C); color: white; }
+
+        /* Cache info badge */
+        .cache-info-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 0.7rem; font-weight: 700;
+            padding: 4px 10px; border-radius: 8px;
+            background: #F1F5F9; color: #64748B;
+            border: 1px solid #E2E8F0;
+        }
+        .cache-info-badge.active {
+            background: #D1FAE5; color: #065F46;
+            border-color: #10B981;
+        }
+        .cache-info-badge.expired {
+            background: #FEE2E2; color: #991B1B;
+            border-color: #EF4444;
+        }
 
         .container { max-width: 1600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
@@ -142,6 +161,7 @@
         }
         .alert-card.danger { background: #FEE2E2; border-color: var(--danger); color: #991B1B; }
         .alert-card.success { background: #D1FAE5; border-color: var(--success); color: #065F46; }
+        .alert-card.info { background: #DBEAFE; border-color: #3B82F6; color: #1E40AF; }
         .alert-card .alert-title {
             font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
         }
@@ -193,7 +213,6 @@
         }
         .filter-checkbox.active { border-color: var(--primary); background: #EFF6FF; }
 
-        /* Level Filter Special Style */
         .filter-bar .level-filter {
             background: linear-gradient(135deg, #FEF3C7, #FDE68A);
             border: 2px solid var(--gold);
@@ -299,6 +318,11 @@
             gap: 6px; white-space: nowrap; max-width: 95%;
             overflow: hidden; text-overflow: ellipsis;
         }
+        .leaderboard-item .no-code-warning {
+            font-size: 0.55rem; color: #92400E; background: #FEF3C7;
+            padding: 2px 8px; border-radius: 8px; margin-top: 4px;
+            font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
+        }
 
         .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #E2E8F0; }
         .data-table {
@@ -315,6 +339,8 @@
             border-bottom: 1px solid #F1F5F9; color: var(--dark);
         }
         .data-table tbody tr:hover { background: #F8FAFC; }
+        .data-table tbody tr.no-code-row { background: #FEF9F3; }
+        .data-table tbody tr.no-code-row:hover { background: #FEF3C7; }
         .data-table .rank-badge {
             display: inline-flex; align-items: center; justify-content: center;
             width: 30px; height: 30px; border-radius: 50%;
@@ -362,6 +388,13 @@
         }
         .download-actions .btn { flex: 1; min-width: 140px; }
 
+        .cache-actions {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;
+            padding-top: 15px; border-top: 2px dashed #E2E8F0;
+            align-items: center;
+        }
+        .cache-actions .btn { min-width: 140px; }
+
         .toast {
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             background: var(--dark); color: white; padding: 12px 24px;
@@ -373,6 +406,7 @@
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
         .toast.warning { background: var(--gold); }
+        .toast.info { background: #3B82F6; }
         @keyframes toastIn {
             from { opacity: 0; transform: translate(-50%, 20px); }
             to { opacity: 1; transform: translate(-50%, 0); }
@@ -513,6 +547,20 @@
                     </button>
                 </div>
 
+                <!-- 🆕 CACHE ACTIONS -->
+                <div class="cache-actions">
+                    <span class="cache-info-badge" id="cacheInfoBadge">
+                        <i class="fas fa-database"></i>
+                        <span id="cacheInfoText">لا يوجد كاش</span>
+                    </span>
+                    <button class="btn btn-nav btn-cache-save" id="saveCacheBtn" style="padding:8px 16px;font-size:0.8rem;">
+                        <i class="fas fa-save"></i> <span data-i18n="saveCache">حفظ الكاش</span>
+                    </button>
+                    <button class="btn btn-nav btn-cache-clear" id="clearCacheBtn" style="padding:8px 16px;font-size:0.8rem;">
+                        <i class="fas fa-trash-can"></i> <span data-i18n="clearCache">حذف الكاش</span>
+                    </button>
+                </div>
+
                 <div class="alerts-container" id="alertsContainer"></div>
             </div>
 
@@ -527,7 +575,6 @@
                 </div>
 
                 <div class="filter-bar">
-                    <!-- 🆕 LEVEL FILTER -->
                     <div class="filter-group level-filter">
                         <label><i class="fas fa-user-tie"></i> <span data-i18n="level">المستوى:</span></label>
                         <select id="levelFilter">
@@ -602,7 +649,6 @@
                 </div>
 
                 <div class="filter-bar">
-                    <!-- 🆕 LEVEL FILTER -->
                     <div class="filter-group level-filter">
                         <label><i class="fas fa-user-tie"></i> <span data-i18n="level">المستوى:</span></label>
                         <select id="levelFilterTable">
@@ -700,14 +746,19 @@
         };
 
         // ============================================================
+        // CACHE CONFIG
+        // ============================================================
+        const CACHE_KEY = 'lobster_top10_cache_v1';
+        const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 ساعة
+
+        // ============================================================
         // LEVEL CONFIG
         // ============================================================
         const LEVEL_GROUPS = {
             employees: ['R&F', '5%', 'KPs', 'Supervisor'],
-            managers: ['GM', 'Director', 'HODs', 'AHODs']
+            managers:  ['GM', 'Director', 'HODs', 'AHODs']
         };
 
-        // ألوان الـ level badges
         const LEVEL_COLORS = {
             'GM':          { color: '#7C3AED', bg: '#EDE9FE' },
             'Director':    { color: '#0B3B82', bg: '#DBEAFE' },
@@ -727,11 +778,13 @@
             return key ? LEVEL_COLORS[key] : { color: '#64748B', bg: '#F1F5F9' };
         }
 
-        // ✅ التحقق إذا كان الموظف ينتمي لفئة معينة
         function isInLevelGroup(level, group) {
-            if (!level) return false;
             if (group === 'all') return true;
             const levels = LEVEL_GROUPS[group] || [];
+            // ✅ لو الموظف مفيش عنده level (بدون كود صحيح)، نعتبره "موظفين" افتراضياً
+            if (!level || String(level).trim() === '') {
+                return group === 'employees';
+            }
             const normalized = String(level).toLowerCase().trim();
             return levels.some(l => l.toLowerCase() === normalized);
         }
@@ -820,6 +873,20 @@
                 unknown: 'غير معروف',
                 undefinedDept: 'غير محدد',
                 noResults: 'لا توجد نتائج مطابقة',
+                noCodeWarning: 'بدون كود',
+                // Cache
+                saveCache: 'حفظ الكاش',
+                clearCache: 'حذف الكاش',
+                cacheSaved: '✅ تم حفظ الكاش بنجاح',
+                cacheCleared: '🗑️ تم حذف الكاش',
+                cacheRestored: '📦 تم استرجاع البيانات من الكاش',
+                cacheExpired: '⏰ انتهت صلاحية الكاش',
+                cacheActive: 'نشط',
+                cacheExpiredShort: 'منتهي',
+                cacheNone: 'لا يوجد كاش',
+                cacheSavedAt: 'آخر حفظ:',
+                cacheHoursLeft: 'متبقي:',
+                hours: 'ساعة',
             },
             en: {
                 uploadTitle: 'Upload LobsterInk Files',
@@ -901,6 +968,19 @@
                 unknown: 'Unknown',
                 undefinedDept: 'Not specified',
                 noResults: 'No matching results',
+                noCodeWarning: 'No Code',
+                saveCache: 'Save Cache',
+                clearCache: 'Clear Cache',
+                cacheSaved: '✅ Cache saved successfully',
+                cacheCleared: '🗑️ Cache cleared',
+                cacheRestored: '📦 Data restored from cache',
+                cacheExpired: '⏰ Cache expired',
+                cacheActive: 'Active',
+                cacheExpiredShort: 'Expired',
+                cacheNone: 'No cache',
+                cacheSavedAt: 'Saved:',
+                cacheHoursLeft: 'Left:',
+                hours: 'h',
             }
         };
 
@@ -917,8 +997,8 @@
         let activityData = null;
         let performanceData = null;
         let mergedData = [];
-        let rankedData = [];          // كل البيانات مرتبة (بدون فلتر level)
-        let filteredRankedData = [];  // البيانات بعد فلتر level
+        let rankedData = [];
+        let filteredRankedData = [];
         let top10Data = [];
         let invalidIds = [];
         let missingInFirebase = [];
@@ -932,18 +1012,12 @@
         // ============================================================
         function getPeriodThresholds(period) {
             switch (period) {
-                case 'year':
-                    return { cc: 120, ac: 120, lc: 360 };
-                case 'half':
-                    return { cc: 60, ac: 60, lc: 180 };
-                case 'quarter':
-                    return { cc: 30, ac: 30, lc: 90 };
-                case 'month':
-                    return { cc: 10, ac: 10, lc: 30 };
-                case 'week':
-                    return { cc: 10, ac: 10, lc: 30 };
-                default:
-                    return { cc: 10, ac: 10, lc: 30 };
+                case 'year':    return { cc: 120, ac: 120, lc: 360 };
+                case 'half':    return { cc: 60,  ac: 60,  lc: 180 };
+                case 'quarter': return { cc: 30,  ac: 30,  lc: 90 };
+                case 'month':   return { cc: 10,  ac: 10,  lc: 30 };
+                case 'week':    return { cc: 10,  ac: 10,  lc: 30 };
+                default:        return { cc: 10,  ac: 10,  lc: 30 };
             }
         }
 
@@ -992,6 +1066,11 @@
         const indexMax = document.getElementById('indexMax');
         const statusFilter = document.getElementById('statusFilter');
         const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+        const saveCacheBtn = document.getElementById('saveCacheBtn');
+        const clearCacheBtn = document.getElementById('clearCacheBtn');
+        const cacheInfoBadge = document.getElementById('cacheInfoBadge');
+        const cacheInfoText = document.getElementById('cacheInfoText');
 
         const modalOverlay = document.getElementById('modalOverlay');
         const modalTitle = document.getElementById('modalTitle');
@@ -1081,16 +1160,208 @@
         }
 
         function getIndexColorStyle(index) {
-            if (index >= 0.5) {
-                return { color: '#10B981', bg: '#D1FAE5' };
-            } else if (index >= 0.2) {
-                return { color: '#F59E0B', bg: '#FEF3C7' };
-            } else if (index >= 0.05) {
-                return { color: '#6366F1', bg: '#E0E7FF' };
-            } else if (index > 0) {
-                return { color: '#EF4444', bg: '#FEE2E2' };
-            }
+            if (index >= 0.5) return { color: '#10B981', bg: '#D1FAE5' };
+            if (index >= 0.2) return { color: '#F59E0B', bg: '#FEF3C7' };
+            if (index >= 0.05) return { color: '#6366F1', bg: '#E0E7FF' };
+            if (index > 0) return { color: '#EF4444', bg: '#FEE2E2' };
             return { color: '#64748B', bg: '#F1F5F9' };
+        }
+
+        // ============================================================
+        // 🆕 CACHE MANAGER
+        // ============================================================
+        function getCacheInfo() {
+            try {
+                const raw = localStorage.getItem(CACHE_KEY);
+                if (!raw) return { exists: false };
+                const obj = JSON.parse(raw);
+                if (!obj || !obj._savedAt) return { exists: false };
+                const age = Date.now() - obj._savedAt;
+                const remaining = CACHE_DURATION_MS - age;
+                return {
+                    exists: true,
+                    savedAt: obj._savedAt,
+                    age,
+                    remaining,
+                    expired: remaining <= 0,
+                    data: obj
+                };
+            } catch (e) {
+                return { exists: false };
+            }
+        }
+
+        function updateCacheBadge() {
+            const info = getCacheInfo();
+            cacheInfoBadge.classList.remove('active', 'expired');
+            
+            if (!info.exists) {
+                cacheInfoBadge.classList.remove('active', 'expired');
+                cacheInfoText.textContent = t('cacheNone');
+                return;
+            }
+            
+            const savedDate = new Date(info.savedAt);
+            const hoursLeft = Math.max(0, Math.floor(info.remaining / (60 * 60 * 1000)));
+            const timeStr = savedDate.toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US', {
+                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+            });
+            
+            if (info.expired) {
+                cacheInfoBadge.classList.add('expired');
+                cacheInfoText.textContent = `${t('cacheExpiredShort')} (${timeStr})`;
+            } else {
+                cacheInfoBadge.classList.add('active');
+                cacheInfoText.textContent = `${t('cacheActive')} • ${hoursLeft}${t('hours')} • ${timeStr}`;
+            }
+        }
+
+        function saveCache(showToastMsg = true) {
+            try {
+                const info = getCacheInfo();
+                // لو الكاش لسه نشط ومش عايزين نحدّثه، نكتفي
+                const cacheData = {
+                    _savedAt: Date.now(),
+                    // بيانات الموظفين
+                    allEmployees: allEmployees,
+                    // بيانات الملفات
+                    activityData: activityData,
+                    performanceData: performanceData,
+                    // نتائج التحليل
+                    mergedData: mergedData,
+                    rankedData: rankedData,
+                    top10Data: top10Data,
+                    invalidIds: invalidIds,
+                    missingInFirebase: missingInFirebase,
+                    // إعدادات الفلاتر
+                    filters: {
+                        levelFilter: levelFilter.value,
+                        levelFilterTable: levelFilterTable.value,
+                        periodFilter: periodFilter.value,
+                        monthFilter: monthFilter.value,
+                        weekFilter: weekFilter.value,
+                        quarterFilter: quarterFilter.value,
+                        searchFilter: searchFilter.value,
+                        groupFilter: groupFilter.value,
+                        completedFilter: completedFilter.checked,
+                        passRateFilter: passRateFilter.checked,
+                        noCodeFilter: noCodeFilter.checked,
+                        coursesMin: coursesMin.value,
+                        coursesMax: coursesMax.value,
+                        indexMin: indexMin.value,
+                        indexMax: indexMax.value,
+                        statusFilter: statusFilter.value
+                    },
+                    currentYear: currentYear
+                };
+                
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+                updateCacheBadge();
+                
+                if (showToastMsg) {
+                    showToast(t('cacheSaved'), 'success');
+                }
+                return true;
+            } catch (e) {
+                console.error('❌ Cache save failed:', e);
+                if (showToastMsg) showToast('❌ فشل حفظ الكاش', 'error');
+                return false;
+            }
+        }
+
+        function clearCache(showToastMsg = true) {
+            try {
+                localStorage.removeItem(CACHE_KEY);
+                updateCacheBadge();
+                if (showToastMsg) showToast(t('cacheCleared'), 'info');
+                return true;
+            } catch (e) {
+                console.error('❌ Cache clear failed:', e);
+                return false;
+            }
+        }
+
+        function loadFromCache() {
+            const info = getCacheInfo();
+            if (!info.exists || info.expired) {
+                if (info.exists && info.expired) {
+                    console.log('⏰ Cache expired');
+                }
+                return false;
+            }
+            
+            try {
+                const data = info.data;
+                
+                // استرجاع الموظفين
+                allEmployees = data.allEmployees || [];
+                employeesMap.clear();
+                allEmployees.forEach(emp => {
+                    if (emp && emp.id !== undefined && emp.id !== null) {
+                        employeesMap.set(String(emp.id).trim(), emp);
+                    }
+                });
+                
+                // استرجاع الملفات ونتائج التحليل
+                activityData = data.activityData || null;
+                performanceData = data.performanceData || null;
+                mergedData = data.mergedData || [];
+                rankedData = data.rankedData || [];
+                top10Data = data.top10Data || [];
+                invalidIds = data.invalidIds || [];
+                missingInFirebase = data.missingInFirebase || [];
+                
+                // استرجاع الفلاتر
+                if (data.filters) {
+                    const f = data.filters;
+                    if (f.levelFilter) levelFilter.value = f.levelFilter;
+                    if (f.levelFilterTable) levelFilterTable.value = f.levelFilterTable;
+                    if (f.periodFilter) periodFilter.value = f.periodFilter;
+                    if (f.monthFilter) monthFilter.value = f.monthFilter;
+                    if (f.weekFilter) weekFilter.value = f.weekFilter;
+                    if (f.quarterFilter) quarterFilter.value = f.quarterFilter;
+                    if (f.searchFilter) searchFilter.value = f.searchFilter;
+                    if (f.groupFilter) groupFilter.value = f.groupFilter;
+                    completedFilter.checked = !!f.completedFilter;
+                    passRateFilter.checked = !!f.passRateFilter;
+                    noCodeFilter.checked = !!f.noCodeFilter;
+                    if (f.coursesMin) coursesMin.value = f.coursesMin;
+                    if (f.coursesMax) coursesMax.value = f.coursesMax;
+                    if (f.indexMin) indexMin.value = f.indexMin;
+                    if (f.indexMax) indexMax.value = f.indexMax;
+                    if (f.statusFilter) statusFilter.value = f.statusFilter;
+                }
+                
+                console.log(`📦 Cache restored: ${allEmployees.length} employees, ${rankedData.length} ranked`);
+                updateFilterCheckboxStyles();
+                
+                // إعادة الرندر لو فيه بيانات
+                if (rankedData.length > 0) {
+                    applyLevelFilterToLeaderboard();
+                    renderAllEmployeesTable();
+                    renderAlerts();
+                    leaderboardSection.style.display = 'block';
+                    allEmployeesSection.style.display = 'block';
+                    downloadPngBtn.disabled = false;
+                    downloadPdfBtn.disabled = false;
+                    
+                    // استرجاع اسم الملفات لو موجودة
+                    if (activityData && activityData.length > 0) {
+                        activityUploadBox.classList.add('has-file');
+                        activityFileName.textContent = `✅ ${activityData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
+                    }
+                    if (performanceData && performanceData.length > 0) {
+                        performanceUploadBox.classList.add('has-file');
+                        performanceFileName.textContent = `✅ ${performanceData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
+                    }
+                    updateAnalyzeButton();
+                }
+                
+                return true;
+            } catch (e) {
+                console.error('❌ Cache restore failed:', e);
+                return false;
+            }
         }
 
         // ============================================================
@@ -1122,6 +1393,7 @@
 
             populateMonthFilter();
             populateGroupFilter();
+            updateCacheBadge();
 
             if (top10Data.length > 0) {
                 renderLeaderboard(top10Data);
@@ -1275,7 +1547,7 @@
                 const currentPeriod = periodFilter.value;
                 calculateIndexes(mergedData, currentPeriod);
                 rankedData = calculateFinalRank(mergedData);
-                applyLevelFilterToLeaderboard();  // ✅ يطبق فلتر المستوى + يحدث top10Data
+                applyLevelFilterToLeaderboard();
                 collectAlerts();
                 populateGroupFilter();
                 renderAllEmployeesTable();
@@ -1286,6 +1558,9 @@
                 downloadPdfBtn.disabled = false;
                 showToast(`✅ ${currentLang === 'ar' ? 'تم التحليل بنجاح' : 'Analysis complete'} - ${rankedData.length} ${t('employee')}`, 'success');
                 leaderboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // 🆕 حفظ الكاش تلقائياً بعد التحليل
+                saveCache(false);
             } catch (error) {
                 console.error('❌ Analysis failed:', error);
                 showToast(currentLang === 'ar' ? '❌ حدث خطأ أثناء التحليل' : '❌ Analysis error', 'error');
@@ -1346,21 +1621,10 @@
             });
 
             data.forEach(d => {
-                d.completionRate = d.coursesStarted > 0
-                    ? Math.min(d.coursesCompleted / d.coursesStarted, 1)
-                    : 0;
-
-                d.lessonsPerCourse = d.coursesStarted > 0
-                    ? d.lessonsCompleted / d.coursesStarted
-                    : 0;
-
-                d.assessPassRate = d.assessmentsCompleted > 0
-                    ? d.assessmentsPassed / d.assessmentsCompleted
-                    : 0;
-
-                d.attemptsEfficiency = d.avgAttemptsOverall > 0
-                    ? 1 / (1 + d.avgAttemptsOverall)
-                    : 0;
+                d.completionRate = d.coursesStarted > 0 ? Math.min(d.coursesCompleted / d.coursesStarted, 1) : 0;
+                d.lessonsPerCourse = d.coursesStarted > 0 ? d.lessonsCompleted / d.coursesStarted : 0;
+                d.assessPassRate = d.assessmentsCompleted > 0 ? d.assessmentsPassed / d.assessmentsCompleted : 0;
+                d.attemptsEfficiency = d.avgAttemptsOverall > 0 ? 1 / (1 + d.avgAttemptsOverall) : 0;
 
                 const comp = d.completionRate > 1 ? d.completionRate / 100 : d.completionRate;
                 const ap = d.assessPassRate > 1 ? d.assessPassRate / 100 : d.assessPassRate;
@@ -1368,27 +1632,13 @@
                 const initpass = d.initialPassRate > 1 ? d.initialPassRate / 100 : d.initialPassRate;
                 const attEff = d.attemptsEfficiency > 1 ? d.attemptsEfficiency / 100 : d.attemptsEfficiency;
 
-                const cov = d.coursesCompleted > 0
-                    ? Math.min(1, d.assessmentsCompleted / d.coursesCompleted)
-                    : 0;
-
-                const ccN = maxCoursesCompleted > 0
-                    ? Math.log(1 + d.coursesCompleted) / Math.log(1 + maxCoursesCompleted)
-                    : 0;
-
-                const lcN = maxLessonsCompleted > 0
-                    ? Math.log(1 + d.lessonsCompleted) / Math.log(1 + maxLessonsCompleted)
-                    : 0;
+                const cov = d.coursesCompleted > 0 ? Math.min(1, d.assessmentsCompleted / d.coursesCompleted) : 0;
+                const ccN = maxCoursesCompleted > 0 ? Math.log(1 + d.coursesCompleted) / Math.log(1 + maxCoursesCompleted) : 0;
+                const lcN = maxLessonsCompleted > 0 ? Math.log(1 + d.lessonsCompleted) / Math.log(1 + maxLessonsCompleted) : 0;
 
                 const baseScore =
-                    0.15 * comp +
-                    0.15 * ap +
-                    0.25 * score +
-                    0.10 * initpass +
-                    0.10 * attEff +
-                    0.10 * cov +
-                    0.10 * ccN +
-                    0.05 * lcN;
+                    0.15 * comp + 0.15 * ap + 0.25 * score + 0.10 * initpass +
+                    0.10 * attEff + 0.10 * cov + 0.10 * ccN + 0.05 * lcN;
 
                 const progressFactor =
                     Math.min(1, d.coursesCompleted / thresholds.cc) *
@@ -1416,24 +1666,21 @@
         }
 
         // ============================================================
-        // 🆕 APPLY LEVEL FILTER + RE-RANK (لوحة الأوائل)
+        // APPLY LEVEL FILTER + RE-RANK
         // ============================================================
         function applyLevelFilterToLeaderboard() {
             if (!rankedData.length) return;
             const levelGroup = levelFilter.value || 'all';
             
-            // فلترة حسب الـ level
             const filtered = rankedData.filter(d => {
                 const emp = d.isValidCode ? findEmployeeById(d.code) : null;
                 const empLevel = emp?.level || emp?.Level || '';
                 return isInLevelGroup(empLevel, levelGroup);
             });
             
-            // إعادة ترتيب الفئة المفلترة
             filteredRankedData = calculateFinalRank(filtered);
             top10Data = filteredRankedData.slice(0, 10);
             
-            // عرض Top 10
             renderLeaderboard(top10Data);
             previewCount.textContent = `${top10Data.length} ${t('learner')}`;
         }
@@ -1526,7 +1773,7 @@
         }
 
         function renderAlert(type, title, message) {
-            const className = type === 'danger' ? 'danger' : '';
+            const className = type === 'danger' ? 'danger' : type === 'info' ? 'info' : '';
             alertsContainer.innerHTML = `
                 <div class="alert-card ${className}">
                     <div class="alert-title">${title}</div>
@@ -1612,28 +1859,14 @@
             );
         };
 
-        window.__downloadInvalidIds = function() {
-            downloadCSV(invalidIds, 'invalid_ids.csv');
-        };
-
-        window.__downloadMissingFirebase = function() {
-            downloadCSV(missingInFirebase, 'missing_in_firebase.csv');
-        };
+        window.__downloadInvalidIds = function() { downloadCSV(invalidIds, 'invalid_ids.csv'); };
+        window.__downloadMissingFirebase = function() { downloadCSV(missingInFirebase, 'missing_in_firebase.csv'); };
 
         function downloadCSV(list, filename) {
             const headers = ['Row', 'Code', 'Name', 'CoursesStarted', 'CoursesCompleted', 'Lessons', 'Assessments', 'Index (%)'];
             const rows = list.map(x => {
                 const d = x.data;
-                return [
-                    x.rowIndex,
-                    x.code,
-                    x.name,
-                    d.coursesStarted,
-                    d.coursesCompleted,
-                    d.lessonsCompleted,
-                    d.assessmentsCompleted,
-                    (d.index * 100).toFixed(2) + '%'
-                ];
+                return [x.rowIndex, x.code, x.name, d.coursesStarted, d.coursesCompleted, d.lessonsCompleted, d.assessmentsCompleted, (d.index * 100).toFixed(2) + '%'];
             });
             const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -1665,15 +1898,12 @@
                 const initials = getInitials(displayName);
                 const avatarColor = getAvatarColor(displayName);
 
+                // ✅ الموظف بدون كود صحيح: نستخدم fallback بالأحرف الأولى بدون صورة
                 let avatarHtml = '';
                 if (photoUrl) {
                     avatarHtml = `
-                        <img 
-                            src="${escapeAttr(photoUrl)}" 
-                            alt="${escapeAttr(displayName)}" 
-                            crossorigin="anonymous"
-                            referrerpolicy="no-referrer"
-                            loading="eager"
+                        <img src="${escapeAttr(photoUrl)}" alt="${escapeAttr(displayName)}" 
+                            crossorigin="anonymous" referrerpolicy="no-referrer" loading="eager"
                             style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;border-radius:50%;"
                             onerror="this.onerror=null; this.style.display='none'; const fb=this.parentElement.querySelector('.fallback'); if(fb) fb.style.display='flex';"
                         />
@@ -1683,6 +1913,10 @@
                     avatarHtml = `<span class="fallback" style="background:${avatarColor};display:flex;">${initials}</span>`;
                 }
 
+                const noCodeBadge = !d.isValidCode 
+                    ? `<div class="no-code-warning"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</div>` 
+                    : '';
+
                 itemsHtml += `
                     <div class="leaderboard-item">
                         <div class="rank ${rankClass}"><span class="medal">${medal}</span></div>
@@ -1690,6 +1924,7 @@
                         <div class="info">
                             <div class="name">${escapeHtml(displayName)}${d.rank <= 3 ? '<span class="verified"><i class="fas fa-star"></i></span>' : ''}</div>
                             <div class="department"><i class="fas fa-building"></i> <span>${escapeHtml(displayGroup)}</span></div>
+                            ${noCodeBadge}
                         </div>
                     </div>`;
             });
@@ -1704,7 +1939,6 @@
             const quarterLabel = `Q${quarter}`;
             const levelGroup = levelFilter.value;
 
-            // ✅ عنوان مختلف حسب فلتر المستوى
             let titleText;
             if (levelGroup === 'employees') {
                 titleText = t('leaderboardTitleEmployees');
@@ -1715,17 +1949,11 @@
             }
 
             let periodLabel = '';
-            if (period === 'month') {
-                periodLabel = `${monthName} ${year}`;
-            } else if (period === 'week') {
-                periodLabel = `${monthName} ${year} - ${t('weekLabel')} ${weekName}`;
-            } else if (period === 'quarter') {
-                periodLabel = `${year} - ${t('quarterLabel')} ${quarterLabel}`;
-            } else if (period === 'half') {
-                periodLabel = `${year} - ${currentLang === 'ar' ? 'نصف سنوي' : 'Half-Yearly'}`;
-            } else {
-                periodLabel = `${year}`;
-            }
+            if (period === 'month') periodLabel = `${monthName} ${year}`;
+            else if (period === 'week') periodLabel = `${monthName} ${year} - ${t('weekLabel')} ${weekName}`;
+            else if (period === 'quarter') periodLabel = `${year} - ${t('quarterLabel')} ${quarterLabel}`;
+            else if (period === 'half') periodLabel = `${year} - ${currentLang === 'ar' ? 'نصف سنوي' : 'Half-Yearly'}`;
+            else periodLabel = `${year}`;
 
             leaderboardContainer.innerHTML = `
                 <div class="leaderboard-card" id="leaderboardCard" dir="${currentLang === 'ar' ? 'rtl' : 'ltr'}">
@@ -1757,16 +1985,19 @@
                 const emp = d.isValidCode ? findEmployeeById(d.code) : null;
                 const displayName = emp?.fullName || emp?.name || d.fullName || t('unknown');
                 const displayGroup = emp?.department || d.group || t('undefinedDept');
-                const codeDisplay = d.isValidCode ? escapeHtml(d.code) : `<span class="no-data">${escapeHtml(d.code || '(empty)')}</span>`;
+                const codeDisplay = d.isValidCode 
+                    ? escapeHtml(d.code) 
+                    : `<span class="no-data">${escapeHtml(d.code || '(empty)')}</span>`;
                 const passRate = (d.assessPassRate * 100).toFixed(1);
                 const avgScore = d.avgOverallScore.toFixed(1);
 
-                // 🆕 عرض الـ level
                 const empLevel = emp?.level || emp?.Level || '';
                 const levelStyle = getLevelColorStyle(empLevel);
                 const levelDisplay = empLevel 
                     ? `<span class="level-badge" style="color:${levelStyle.color};background:${levelStyle.bg};">${escapeHtml(empLevel)}</span>`
-                    : `<span class="no-data">-</span>`;
+                    : (!d.isValidCode 
+                        ? `<span class="level-badge" style="color:#92400E;background:#FEF3C7;"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</span>`
+                        : `<span class="no-data">-</span>`);
 
                 const indexVal = formatIndexPercent(d.index);
                 const idxStyle = getIndexColorStyle(d.index);
@@ -1776,8 +2007,10 @@
                 else if (d.assessPassRate >= 0.5) passRateColor = '#F59E0B';
                 else if (d.assessPassRate > 0) passRateColor = 'var(--danger)';
 
+                const rowClass = !d.isValidCode ? 'no-code-row' : '';
+
                 html += `
-                    <tr>
+                    <tr class="${rowClass}">
                         <td><span class="rank-badge ${rankClass}">${d.rank}</span></td>
                         <td class="id-cell">${codeDisplay}</td>
                         <td class="name-cell">${escapeHtml(displayName)}</td>
@@ -1819,10 +2052,14 @@
             const status = statusFilter.value;
 
             return data.filter(d => {
-                // 🆕 فلتر المستوى
                 const emp = d.isValidCode ? findEmployeeById(d.code) : null;
                 const empLevel = emp?.level || emp?.Level || '';
+                
+                // ✅ فلتر المستوى (الموظف بدون كود = "موظفين" افتراضياً)
                 if (!isInLevelGroup(empLevel, levelGroup)) return false;
+                
+                // ✅ فلتر "بدون كود صحيح"
+                if (onlyNoCode && d.isValidCode) return false;
 
                 if (search) {
                     const displayName = (emp?.fullName || emp?.name || d.fullName || '').toLowerCase();
@@ -1835,7 +2072,6 @@
                 }
                 if (onlyCompleted && d.coursesCompleted <= 0) return false;
                 if (onlyPassRate && d.assessPassRate <= 0.5) return false;
-                if (onlyNoCode && d.isValidCode) return false;
                 if (cMin !== null && d.coursesCompleted < cMin) return false;
                 if (cMax !== null && d.coursesCompleted > cMax) return false;
                 if (iMin !== null && d.index < iMin) return false;
@@ -1913,7 +2149,6 @@
             });
             resetFiltersBtn.addEventListener('click', resetFilters);
 
-            // 🆕 Level Filter الخاص بلوحة الأوائل
             levelFilter.addEventListener('change', () => {
                 applyLevelFilterToLeaderboard();
                 renderAllEmployeesTable();
@@ -1921,57 +2156,35 @@
         }
 
         // ============================================================
-        // DOWNLOAD PNG - html-to-image مباشر
+        // DOWNLOAD PNG
         // ============================================================
         async function downloadAsPNG() {
             const card = document.getElementById('leaderboardCard');
-            if (!card) { 
-                showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard to download', 'warning'); 
-                return; 
-            }
-            
+            if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
             setLoading(true, currentLang === 'ar' ? 'جاري تحضير الصورة...' : 'Preparing image...');
-            
             try {
                 if (typeof htmlToImage === 'undefined') {
                     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
                 }
-                
                 await document.fonts.ready;
-                
                 const images = card.querySelectorAll('img');
                 await Promise.all(Array.from(images).map(img => {
                     if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => {
-                        img.onload = resolve;
-                        img.onerror = resolve;
-                        setTimeout(resolve, 5000);
-                    });
+                    return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 5000); });
                 }));
-                
                 const dataUrl = await htmlToImage.toPng(card, {
-                    pixelRatio: 2,
-                    backgroundColor: '#F8FAFC',
-                    cacheBust: true,
-                    useCORS: true,
-                    style: {
-                        direction: currentLang === 'ar' ? 'rtl' : 'ltr'
-                    }
+                    pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
+                    style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
                 });
-                
                 const link = document.createElement('a');
                 link.download = `leaderboard_${new Date().toISOString().split('T')[0]}.png`;
                 link.href = dataUrl;
                 link.click();
-                
                 showToast(currentLang === 'ar' ? '✅ تم تحميل الصورة' : '✅ Image downloaded', 'success');
-                
             } catch (error) {
                 console.error('❌ PNG error:', error);
-                showToast(currentLang === 'ar' ? '❌ فشل تحميل الصورة' : '❌ Image download failed', 'error');
-            } finally {
-                setLoading(false);
-            }
+                showToast(currentLang === 'ar' ? '❌ فشل تحميل الصورة' : '❌ Image failed', 'error');
+            } finally { setLoading(false); }
         }
 
         // ============================================================
@@ -1979,13 +2192,8 @@
         // ============================================================
         async function downloadAsPDF() {
             const card = document.getElementById('leaderboardCard');
-            if (!card) { 
-                showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard to download', 'warning'); 
-                return; 
-            }
-            
+            if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
             setLoading(true, currentLang === 'ar' ? 'جاري تحضير PDF...' : 'Preparing PDF...');
-            
             try {
                 if (typeof htmlToImage === 'undefined') {
                     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
@@ -1993,52 +2201,30 @@
                 if (typeof window.jspdf === 'undefined') {
                     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
                 }
-                
                 await document.fonts.ready;
-                
                 const images = card.querySelectorAll('img');
                 await Promise.all(Array.from(images).map(img => {
                     if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => {
-                        img.onload = resolve;
-                        img.onerror = resolve;
-                        setTimeout(resolve, 5000);
-                    });
+                    return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 5000); });
                 }));
-                
                 const dataUrl = await htmlToImage.toPng(card, {
-                    pixelRatio: 2,
-                    backgroundColor: '#F8FAFC',
-                    cacheBust: true,
-                    useCORS: true,
-                    style: {
-                        direction: currentLang === 'ar' ? 'rtl' : 'ltr'
-                    }
+                    pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
+                    style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
                 });
-                
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('l', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                
                 const img = new Image();
                 img.src = dataUrl;
-                
-                await new Promise(resolve => {
-                    img.onload = resolve;
-                });
-                
+                await new Promise(resolve => { img.onload = resolve; });
                 const pdfHeight = (img.height * pdfWidth) / img.width;
                 pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`leaderboard_${new Date().toISOString().split('T')[0]}.pdf`);
-                
                 showToast(currentLang === 'ar' ? '✅ تم تحميل PDF' : '✅ PDF downloaded', 'success');
-                
             } catch (error) {
                 console.error('❌ PDF error:', error);
-                showToast(currentLang === 'ar' ? '❌ فشل تحميل PDF' : '❌ PDF download failed', 'error');
-            } finally {
-                setLoading(false);
-            }
+                showToast(currentLang === 'ar' ? '❌ فشل تحميل PDF' : '❌ PDF failed', 'error');
+            } finally { setLoading(false); }
         }
 
         function loadScript(src) {
@@ -2082,10 +2268,10 @@
                 </nav>`;
             document.getElementById('langBtn')?.addEventListener('click', toggleLanguage);
             document.getElementById('refreshDataBtn')?.addEventListener('click', async () => {
-                setLoading(true, currentLang === 'ar' ? 'جاري تحديث البيانات...' : 'Refreshing data...');
+                setLoading(true, currentLang === 'ar' ? 'جاري تحديث البيانات...' : 'Refreshing...');
                 await loadEmployees(true);
                 setLoading(false);
-                showToast(currentLang === 'ar' ? '🔄 تم تحديث قائمة الموظفين' : '🔄 Employees refreshed', 'success');
+                showToast(currentLang === 'ar' ? '🔄 تم تحديث قائمة الموظفين' : '🔄 Refreshed', 'success');
             });
             document.getElementById('logoutBtn')?.addEventListener('click', async () => {
                 await signOut(auth);
@@ -2137,11 +2323,34 @@
             downloadPngBtn.addEventListener('click', downloadAsPNG);
             downloadPdfBtn.addEventListener('click', downloadAsPDF);
 
+            // 🆕 Cache buttons
+            saveCacheBtn.addEventListener('click', () => saveCache(true));
+            clearCacheBtn.addEventListener('click', () => {
+                if (confirm(currentLang === 'ar' 
+                    ? '⚠️ هل تريد حذف الكاش؟ سيتم مسح كل البيانات المحفوظة.'
+                    : '⚠️ Delete cache? All saved data will be cleared.')) {
+                    clearCache(true);
+                }
+            });
+
             applyLanguage();
 
-            setLoading(true, currentLang === 'ar' ? 'جاري تحميل بيانات الموظفين...' : 'Loading employees...');
-            await loadEmployees();
-            setLoading(false);
+            // 🆕 محاولة تحميل الكاش أولاً
+            const cacheLoaded = loadFromCache();
+            
+            if (cacheLoaded) {
+                showToast(t('cacheRestored'), 'info');
+                updateCacheBadge();
+                // تحديث قائمة الموظفين من Firebase في الخلفية (بدون إعادة تحميل)
+                loadEmployees(false).catch(() => {});
+            } else {
+                // لا يوجد كاش → حمّل من Firebase
+                setLoading(true, currentLang === 'ar' ? 'جاري تحميل بيانات الموظفين...' : 'Loading employees...');
+                await loadEmployees();
+                setLoading(false);
+                updateCacheBadge();
+            }
+            
             console.log('🏆 Page ready!');
         }
 
