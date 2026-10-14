@@ -13,6 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- SheetJS لتصدير Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <!-- Firebase Modules -->
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
@@ -100,7 +103,7 @@
         }
 
         .header-section {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -184,6 +187,84 @@
 
         .search-box button:hover {
             color: #3182ce;
+        }
+
+        /* ============================================
+           FILTER BAR + EXPORT BUTTON
+        ============================================ */
+
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            color: #4a5568;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .filter-group select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.7rem;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            color: #2d3748;
+            cursor: pointer;
+            font-weight: bold;
+            min-width: 180px;
+            transition: 0.3s;
+        }
+
+        .filter-group select:focus {
+            border-color: #3182ce;
+            background: white;
+            outline: none;
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #217346, #185C37);
+            color: white;
+            padding: 0.7rem 1.4rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(33, 115, 70, 0.25);
+        }
+
+        .btn-export:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(33, 115, 70, 0.35);
+        }
+
+        .btn-export i {
+            font-size: 1.1rem;
         }
 
         .dashboard-grid {
@@ -458,9 +539,11 @@
         } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 
-        let courses = [];
-        let sessions = [];
-        let searchTerm = "";
+let courses = [];
+let sessions = [];
+let enrollments = [];
+let searchTerm = "";
+let dateFilter = 'all'; // all | month | quarter | half | year
 
 
         // =========================================================
@@ -545,6 +628,122 @@
             return String(dateValue);
         }
 
+        // =========================================================
+// FORMAT DATE FOR EXCEL (English: DD/MM/YYYY)
+// =========================================================
+
+function formatDateForExcel(dateValue) {
+
+    if (
+        dateValue === null ||
+        dateValue === undefined ||
+        dateValue === ''
+    ) {
+        return '';
+    }
+
+    let date = null;
+
+    // Excel Serial Date
+    if (
+        !isNaN(dateValue) &&
+        Number(dateValue) > 30000
+    ) {
+
+        const excelSerial = Number(dateValue);
+
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+
+        date = new Date(
+            excelEpoch.getTime() + excelSerial * 86400000
+        );
+
+    } else {
+
+        date = new Date(dateValue);
+    }
+
+    if (!date || isNaN(date.getTime())) {
+        return String(dateValue);
+    }
+
+    const day   = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year  = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+}
+
+
+// =========================================================
+// FORMAT TIME FOR EXCEL
+// يدعم: "08:30" أو Excel Serial Time مثل 0.395833
+// النتيجة: "08:30 AM"
+// =========================================================
+
+function formatTimeForExcel(timeValue) {
+
+    if (
+        timeValue === null ||
+        timeValue === undefined ||
+        timeValue === ''
+    ) {
+        return '';
+    }
+
+    let hours = 0;
+    let minutes = 0;
+
+    // Excel Serial Time (رقم بين 0 و 1)
+    if (
+        !isNaN(timeValue) &&
+        Number(timeValue) >= 0 &&
+        Number(timeValue) < 1
+    ) {
+
+        const totalMinutes = Math.round(Number(timeValue) * 1440);
+
+        hours   = Math.floor(totalMinutes / 60);
+        minutes = totalMinutes % 60;
+
+    } else if (
+        typeof timeValue === 'string' &&
+        timeValue.includes(':')
+    ) {
+
+        // "HH:MM" أو "HH:MM:SS"
+        const parts = timeValue.split(':');
+
+        hours   = parseInt(parts[0], 10) || 0;
+        minutes = parseInt(parts[1], 10) || 0;
+
+    } else if (typeof timeValue === 'number') {
+
+        // رقم أكبر من 1 (نادراً) - نأخذ الجزء العشري فقط
+        const frac = timeValue - Math.floor(timeValue);
+
+        const totalMinutes = Math.round(frac * 1440);
+
+        hours   = Math.floor(totalMinutes / 60);
+        minutes = totalMinutes % 60;
+    }
+
+    // ضبط القيم
+    hours   = ((hours % 24) + 24) % 24;
+    minutes = ((minutes % 60) + 60) % 60;
+
+    // تحويل إلى 12 ساعة + AM/PM
+    const period = hours >= 12 ? 'PM' : 'AM';
+
+    let displayHour = hours % 12;
+
+    if (displayHour === 0) displayHour = 12;
+
+    const hh = String(displayHour).padStart(2, '0');
+    const mm = String(minutes).padStart(2, '0');
+
+    return `${hh}:${mm} ${period}`;
+}
 
         // =========================================================
         // FORMAT DATE FOR HTML INPUT TYPE DATE
@@ -600,6 +799,38 @@
 
 
         // =========================================================
+        // PARSE TO DATE (للفلترة)
+        // =========================================================
+
+        function parseToDate(dateValue) {
+
+            if (
+                dateValue === null ||
+                dateValue === undefined ||
+                dateValue === ''
+            ) {
+                return null;
+            }
+
+            // Excel Serial Date
+            if (!isNaN(dateValue) && Number(dateValue) > 30000) {
+
+                const excelSerial = Number(dateValue);
+
+                const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+
+                return new Date(
+                    excelEpoch.getTime() + excelSerial * 86400000
+                );
+            }
+
+            const d = new Date(dateValue);
+
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+
+        // =========================================================
         // TOAST MESSAGE
         // =========================================================
 
@@ -623,21 +854,242 @@
 
 
         // =========================================================
+        // DATE FILTER LOGIC
+        // =========================================================
+
+        function getDateRange(filter) {
+
+            const now = new Date();
+
+            const year = now.getFullYear();
+
+            let start, end;
+
+            switch (filter) {
+
+                case 'month':
+                    start = new Date(year, now.getMonth(), 1);
+                    end = new Date(year, now.getMonth() + 1, 0, 23, 59, 59);
+                    break;
+
+                case 'quarter': {
+
+                    const q = Math.floor(now.getMonth() / 3);
+
+                    start = new Date(year, q * 3, 1);
+                    end = new Date(year, q * 3 + 3, 0, 23, 59, 59);
+                    break;
+                }
+
+                case 'half': {
+
+                    const h = now.getMonth() < 6 ? 0 : 1;
+
+                    start = new Date(year, h * 6, 1);
+                    end = new Date(year, h * 6 + 6, 0, 23, 59, 59);
+                    break;
+                }
+
+                case 'year':
+                    start = new Date(year, 0, 1);
+                    end = new Date(year, 11, 31, 23, 59, 59);
+                    break;
+
+                default:
+                    return null; // all
+            }
+
+            return { start, end };
+        }
+
+
+        function isSessionInRange(session, filter) {
+
+            if (filter === 'all') return true;
+
+            const range = getDateRange(filter);
+
+            if (!range) return true;
+
+            const d = parseToDate(session.session_date);
+
+            if (!d) return false;
+
+            return d >= range.start && d <= range.end;
+        }
+
+
+        // =========================================================
+        // CHANGE FILTER
+        // =========================================================
+
+        window.changeDateFilter = (value) => {
+
+            dateFilter = value;
+
+            renderUI();
+        };
+
+
+        // =========================================================
+        // EXPORT TO EXCEL
+        // الأعمدة: Date | Topic | Time | Venue | Audience | Trainer Facilitator | Attended
+        // =========================================================
+
+// =========================================================
+// EXPORT TO EXCEL
+// الأعمدة: Date | Topic | Time | Venue | Audience | Trainer Facilitator | Attended
+// =========================================================
+
+window.exportToExcel = () => {
+
+    // نأخذ الجلسات بعد تطبيق كل الفلاتر (البحث + الفترة)
+    let data = [...sessions].sort(
+        (a, b) =>
+            parseInt(b.session_code) - parseInt(a.session_code)
+    );
+
+    // فلتر البحث
+    if (searchTerm) {
+        data = data.filter(
+            s =>
+                String(s.session_code).includes(searchTerm) ||
+                String(s.course_code).includes(searchTerm) ||
+                (s.trainer_name &&
+                    s.trainer_name.toLowerCase().includes(searchTerm))
+        );
+    }
+
+    // فلتر الفترة
+    data = data.filter(s => isSessionInRange(s, dateFilter));
+
+    if (data.length === 0) {
+        showToast('⚠️ لا توجد بيانات للتصدير', true);
+        return;
+    }
+
+    // تجهيز الصفوف
+    const rows = data.map(s => {
+
+        const parentCourse = courses.find(
+            c => parseInt(c.course_code) === parseInt(s.course_code)
+        );
+
+        const topic = parentCourse
+            ? `${parentCourse.course_name} (${parentCourse.course_code})`
+            : `كورس غير معروف (${s.course_code})`;
+
+        // =============================================
+        // الوقت: منفصل بتنسيق 12 ساعة مع AM/PM
+        // =============================================
+        const startTime = formatTimeForExcel(s.start_time);
+        const endTime   = formatTimeForExcel(s.end_time);
+
+        let timeStr = '';
+
+        if (startTime && endTime) {
+            timeStr = `${startTime} - ${endTime}`;
+        } else if (startTime) {
+            timeStr = startTime;
+        } else if (endTime) {
+            timeStr = endTime;
+        }
+
+        // =============================================
+        // Attended: عدد الحضور الفعلي من التسجيلات
+        // =============================================
+        const sessionEnrollments = enrollments.filter(
+            e =>
+                String(e.session_code) === String(s.session_code) &&
+                (
+                    e.enrollment_status === 'Completed' ||
+                    e.attended === true ||
+                    e.attended === 'true' ||
+                    e.attended === 'Yes' ||
+                    e.attended === 'نعم'
+                )
+        );
+
+        const attended = sessionEnrollments.length;
+
+        return {
+            'Date': formatDateForExcel(s.session_date),
+            'Topic': topic,
+            'Time': timeStr,
+            'Venue': s.location || '',
+            'Audience': parentCourse?.target_audience || '',
+            'Trainer Facilitator': s.trainer_name || '',
+            'Attended': attended
+        };
+    });
+
+    // إنشاء ملف Excel
+    const ws = XLSX.utils.json_to_sheet(rows, {
+        header: [
+            'Date',
+            'Topic',
+            'Time',
+            'Venue',
+            'Audience',
+            'Trainer Facilitator',
+            'Attended'
+        ]
+    });
+
+    // ضبط عرض الأعمدة
+    ws['!cols'] = [
+        { wch: 14 }, // Date
+        { wch: 40 }, // Topic
+        { wch: 26 }, // Time
+        { wch: 22 }, // Venue
+        { wch: 25 }, // Audience
+        { wch: 25 }, // Trainer
+        { wch: 12 }  // Attended
+    ];
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Sessions');
+
+    // اسم الملف حسب الفلتر
+    const filterNames = {
+        all: 'All',
+        month: 'Monthly',
+        quarter: 'Quarterly',
+        half: 'Half-Year',
+        year: 'Yearly'
+    };
+
+    const fileName =
+        `OffJob_Sessions_${filterNames[dateFilter] || 'Report'}_${new Date()
+            .toISOString()
+            .split('T')[0]}.xlsx`;
+
+    XLSX.writeFile(wb, fileName);
+
+    showToast(`✅ تم تصدير ${rows.length} جلسة بنجاح`);
+};
+
+
+        // =========================================================
         // LOAD DATA
         // =========================================================
 
-        async function loadData() {
+async function loadData() {
 
-            await DB.init();
+    await DB.init();
 
-            courses =
-                await DB.getAll('offjob_courses') || [];
+    courses =
+        await DB.getAll('offjob_courses') || [];
 
-            sessions =
-                await DB.getAll('offjob_sessions') || [];
+    sessions =
+        await DB.getAll('offjob_sessions') || [];
 
-            renderUI();
-        }
+    enrollments =
+        await DB.getAll('offjob_enrollments') || [];
+
+    renderUI();
+}
 
 
         // =========================================================
@@ -1331,16 +1783,18 @@
 
 
             // =====================================================
-            // SESSIONS SORT
+            // SESSIONS SORT + DATE FILTER
             // تنازلي - الأكبر إلى الأصغر
             // =====================================================
 
             let filteredSessions =
-                [...sessions].sort(
-                    (a, b) =>
-                        parseInt(b.session_code) -
-                        parseInt(a.session_code)
-                );
+                [...sessions]
+                    .filter(s => isSessionInRange(s, dateFilter))
+                    .sort(
+                        (a, b) =>
+                            parseInt(b.session_code) -
+                            parseInt(a.session_code)
+                    );
 
 
             // =====================================================
@@ -1577,6 +2031,60 @@
                         </button>
 
                     </div>
+
+                </div>
+
+
+                <!-- =============================
+                     FILTER + EXPORT BAR
+                ============================= -->
+
+                <div class="filter-bar">
+
+                    <div class="filter-group">
+
+                        <label>
+                            <i class="fas fa-calendar-alt"></i>
+                            الفترة:
+                        </label>
+
+                        <select
+                            id="dateFilterSelect"
+                            onchange="window.changeDateFilter(this.value)"
+                        >
+
+                            <option value="all"     ${dateFilter === 'all'     ? 'selected' : ''}>
+                                كل الفترات
+                            </option>
+
+                            <option value="month"   ${dateFilter === 'month'   ? 'selected' : ''}>
+                                شهري (الشهر الحالي)
+                            </option>
+
+                            <option value="quarter" ${dateFilter === 'quarter' ? 'selected' : ''}>
+                                ربع سنوي (3 شهور)
+                            </option>
+
+                            <option value="half"    ${dateFilter === 'half'    ? 'selected' : ''}>
+                                نصف سنوي (6 شهور)
+                            </option>
+
+                            <option value="year"    ${dateFilter === 'year'    ? 'selected' : ''}>
+                                سنوي
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <button
+                        class="btn-export"
+                        onclick="window.exportToExcel()"
+                    >
+                        <i class="fas fa-file-excel"></i>
+                        تصدير Excel
+                    </button>
 
                 </div>
 
