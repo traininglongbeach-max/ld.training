@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant Feedback Report</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --primary:#1e40af; --primary-light:#3b82f6; --accent:#0ea5e9;
+    --bg:#f1f5f9; --card:#ffffff; --danger:#dc2626; --success:#16a34a;
+    --warning:#f59e0b; --gold:#fbbf24;
+  }
+  *{font-family:'Segoe UI', Tahoma, sans-serif;}
+  body{background:#f1f5f9; min-height:100vh; margin:0;}
+  body.lang-en{direction:ltr;}
+
+  .header{
+    background:#1e40af;
+    color:#fff; padding:1.5rem 0; box-shadow:0 2px 8px rgba(0,0,0,.1);
+  }
+  .header h1{font-weight:700; margin:0; font-size:1.5rem;}
+  .header p{margin:.2rem 0 0; opacity:.9; font-size:.9rem;}
+  .header .top-bar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;}
+  .lang-switch{
+    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.4);
+    color:#fff; border-radius:20px; padding:.4rem 1rem; font-weight:700;
+    cursor:pointer; font-size:.85rem;
+  }
+  .lang-switch:hover{background:rgba(255,255,255,.3); color:#fff;}
+
+  .main-container{max-width:1500px; margin:auto; padding:1.5rem 1rem;}
+  .card{border:none; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,.06);}
+
+  .upload-zone{
+    border:2px dashed #93c5fd; border-radius:12px; background:#fff;
+    padding:2.5rem 1rem; text-align:center; cursor:pointer;
+  }
+  .upload-zone:hover{background:#eff6ff;}
+  .upload-zone i{font-size:3rem; color:var(--primary-light);}
+  .upload-zone h5{margin-top:1rem; color:#334155; font-weight:600;}
+  .upload-zone p{color:#64748b; margin:.3rem 0;}
+
+  .stat-card{
+    background:#fff; border-radius:10px; padding:1rem; text-align:center;
+    box-shadow:0 1px 4px rgba(0,0,0,.06); border-right:3px solid var(--primary);
+  }
+  body.lang-en .stat-card{border-right:none; border-left:3px solid var(--primary);}
+  .stat-card .num{font-size:1.6rem; font-weight:800; color:var(--primary); line-height:1;}
+  .stat-card .lbl{color:#64748b; font-size:.8rem; margin-top:.3rem;}
+  .stat-card.danger{border-right-color:var(--danger);}
+  body.lang-en .stat-card.danger{border-left-color:var(--danger);}
+  .stat-card.danger .num{color:var(--danger);}
+  .stat-card.success{border-right-color:var(--success);}
+  body.lang-en .stat-card.success{border-left-color:var(--success);}
+  .stat-card.success .num{color:var(--success);}
+  .stat-card.warning{border-right-color:var(--warning);}
+  body.lang-en .stat-card.warning{border-left-color:var(--warning);}
+  .stat-card.warning .num{color:var(--warning);}
+
+  .filter-box{background:#fff; border-radius:12px; padding:1rem; box-shadow:0 1px 4px rgba(0,0,0,.06);}
+
+  .table thead th{
+    background:#1e40af; color:#fff; font-weight:600; white-space:nowrap;
+    position:sticky; top:0; z-index:5; font-size:.82rem;
+    text-align: center;
+  }
+  .table tbody tr:hover{background:#f8fafc;}
+  .table td{vertical-align:middle; font-size:.85rem; text-align: center;}
+
+  .badge-dept{background:#dbeafe; color:#1e40af; padding:.25rem .6rem; border-radius:12px; font-weight:600; font-size:.72rem; display:inline-block;}
+
+  .btn-copy{background:var(--primary); color:#fff; border:none; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
+  .btn-copy:hover{background:#1e3a8a; color:#fff;}
+  .btn-export{background:var(--success); color:#fff; border:none; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
+  .btn-export:hover{background:#15803d; color:#fff;}
+  .btn-comments-export{background:#0ea5e9; color:#fff; border:none; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
+  .btn-comments-export:hover{background:#0284c7; color:#fff;}
+  .btn-save{background:#7c3aed; color:#fff; border:none; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
+  .btn-save:hover{background:#6d28d9; color:#fff;}
+  .btn-clear-cache{background:#fef3c7; color:#92400e; border:1px solid #fbbf24; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
+  .btn-clear-cache:hover{background:#fbbf24; color:#78350f;}
+
+  .table-wrapper{max-height:700px; overflow:auto; border-radius:8px;}
+
+  .rating-badge{
+    display:inline-block; padding:.25rem .6rem; border-radius:12px;
+    font-weight:700; font-size:.78rem; min-width:52px; text-align:center;
+  }
+  .rating-excellent{background:#dcfce7; color:#166534;}
+  .rating-good{background:#fef3c7; color:#92400e;}
+  .rating-poor{background:#fee2e2; color:#991b1b;}
+  .rating-none{color:#94a3b8; font-weight:400;}
+
+  .staff-name-tag{
+    background:#fef3c7; color:#92400e; padding:.12rem .45rem;
+    border-radius:8px; font-size:.68rem; font-weight:600;
+    border:1px solid #fbbf24; display:inline-block; margin:.08rem;
+  }
+
+  .has-staff-row td{background:#fffef5 !important;}
+
+  .staff-cloud{display:flex; flex-wrap:wrap; gap:.4rem;}
+  .staff-cloud-item{
+    background:#1e40af; color:#fff; padding:.4rem .8rem; border-radius:20px;
+    font-weight:600; font-size:.82rem; display:flex;
+    align-items:center; gap:.4rem;
+  }
+  .staff-cloud-item .count{
+    background:rgba(255,255,255,.25); padding:.05rem .4rem;
+    border-radius:10px; font-size:.7rem;
+  }
+  .no-staff-msg{color:#94a3b8; font-style:italic; text-align:center; padding:1rem;}
+
+  .comments-cell{
+    max-width:320px; text-align:start; font-size:.82rem;
+    color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .comments-cell:hover{
+    white-space:normal; overflow:visible; background:#fff;
+    position:relative; z-index:5; box-shadow:0 2px 8px rgba(0,0,0,.1);
+    border-radius:6px;
+  }
+
+  .filter-toggle{
+    display:flex; align-items:center; gap:.4rem; padding:.4rem .9rem;
+    background:#f1f5f9; border-radius:20px; cursor:pointer;
+    user-select:none; font-weight:600;
+    color:#475569; font-size:.82rem; border:1px solid #e2e8f0;
+  }
+  .filter-toggle input{width:16px; height:16px; accent-color:var(--primary); cursor:pointer;}
+  .filter-toggle.active{background:#1e40af; color:#fff; border-color:#1e40af;}
+  .filter-toggle.active input{accent-color:#fff;}
+
+  .toast-msg{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#1e293b; color:#fff; padding:.7rem 1.3rem; border-radius:8px;
+    opacity:0; transition:.2s; z-index:999; font-weight:600;
+  }
+  .toast-msg.show{opacity:1;}
+
+  .empty-state{text-align:center; padding:3rem 1rem; color:#94a3b8;}
+  .empty-state i{font-size:3rem;}
+
+  .info-message{
+    background:#eff6ff; border:1px solid #93c5fd; color:#1e40af;
+    padding:.6rem 1rem; border-radius:8px; font-size:.85rem; margin-bottom:.8rem;
+  }
+
+  .cache-banner{
+    background:#7c3aed; color:#fff; padding:.6rem 1rem; border-radius:8px;
+    font-weight:600; margin-bottom:1rem; display:flex;
+    align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
+    font-size:.85rem;
+  }
+  .cache-banner .time-left{
+    background:rgba(255,255,255,.2); padding:.2rem .7rem;
+    border-radius:12px; font-size:.78rem;
+  }
+
+  .pagination{display:flex; justify-content:center; gap:.4rem; flex-wrap:wrap; margin-top:1rem;}
+  .pagination button{
+    background:#fff; border:1px solid #e2e8f0; padding:.4rem .8rem;
+    border-radius:6px; cursor:pointer; font-weight:700; color:var(--primary);
+    font-size:.82rem;
+  }
+  .pagination button:hover:not(:disabled){background:var(--primary); color:#fff;}
+  .pagination button.active{background:var(--primary); color:#fff;}
+  .pagination button:disabled{opacity:.5; cursor:not-allowed;}
+
+  .print-header{display:none; padding:1rem 0; border-bottom:2px solid #1e40af; margin-bottom:1rem; text-align:center;}
+  .print-header h2{margin:0; color:#1e40af; font-size:1.5rem; font-weight:800;}
+  .print-header .info{margin-top:.5rem; color:#334155; font-size:.9rem;}
+  .print-header .count-badge{
+    display:inline-block; background:#1e40af; color:#fff;
+    padding:.4rem 1.2rem; border-radius:20px; font-weight:700; margin-top:.8rem;
+    font-size:.9rem;
+  }
+  .print-header .explain{
+    margin-top:.8rem; padding:.6rem .9rem; background:#f1f5f9;
+    border-right:3px solid #1e40af; border-radius:6px;
+    font-size:.82rem; color:#334155; text-align:right;
+  }
+  body.lang-en .print-header .explain{border-right:none; border-left:3px solid #1e40af; text-align:left;}
+
+  @media print{
+    @page { size: A4 landscape; margin: 10mm; }
+    body{background:#fff !important; font-size:10px !important;}
+    .no-print, .header, .filter-box, .upload-zone,
+    .actions-bar, #uploadSection, .row.g-3.mb-4,
+    .cache-banner, .pagination, .staff-analysis-card {display:none !important;}
+    .main-container{padding:0 !important; max-width:100% !important; margin:0 !important;}
+    .card{box-shadow:none !important; border-radius:0 !important; border:none !important;}
+    .table-wrapper{max-height:none !important; overflow:visible !important;}
+    table.table{width:100% !important; border-collapse:collapse !important;}
+    .table thead{display:table-header-group !important;}
+    .table thead th{
+      background:#1e40af !important; color:#fff !important;
+      position:static !important;
+      -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+      padding:4px 6px !important; font-size:10px !important;
+    }
+    .table tbody tr{page-break-inside:avoid !important;}
+    .table tbody td{padding:3px 6px !important; font-size:10px !important;}
+    .table tbody tr:hover{background:transparent !important;}
+    .badge-dept, .rating-badge, .staff-name-tag{
+      -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+    }
+    .print-header{display:block !important;}
+    .comments-cell{max-width:none !important; white-space:normal !important;}
+  }
+
+  @media (max-width: 768px){
+    .header h1{font-size:1.1rem;}
+    .stat-card .num{font-size:1.3rem;}
+    .table td, .table th{font-size:.72rem; padding:.3rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header no-print">
+  <div class="main-container" style="padding-top:0;padding-bottom:0;">
+    <div class="top-bar">
+      <div>
+        <h1><i class="bi bi-chat-square-text-fill"></i> <span id="pageTitle">تقرير تقييمات المطاعم</span></h1>
+        <p id="pageSubtitle">Long Beach Resort - تحليل استبيانات الرضا</p>
+      </div>
+      <button class="lang-switch" onclick="toggleLang()">
+        <i class="bi bi-translate"></i>
+        <span id="langBtnText">English</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="main-container">
+
+  <!-- ===== Cache Banner ===== -->
+  <div id="cacheBanner" class="cache-banner no-print" style="display:none;">
+    <div>
+      <i class="bi bi-cloud-check-fill"></i>
+      <span id="cacheBannerText">تم استرجاع البيانات المحفوظة من المتصفح</span>
+    </div>
+    <div class="time-left" id="cacheTimeLeft">—</div>
+  </div>
+
+  <!-- ===== Upload Section ===== -->
+  <div id="uploadSection">
+    <div class="upload-zone" id="uploadZone">
+      <i class="bi bi-cloud-arrow-up-fill"></i>
+      <h5 id="uploadTitle">اسحب ملف Excel هنا أو اضغط للاختيار</h5>
+      <p id="uploadHint">يدعم ملفات .xlsx و .xls و .csv</p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+  </div>
+
+  <!-- ===== Dashboard ===== -->
+  <div id="dashboard" style="display:none;">
+
+    <div class="row g-2 mb-3">
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="num" id="statTotal">0</div>
+          <div class="lbl" id="lblTotal">إجمالي الردود</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card success">
+          <div class="num" id="statRestaurants">0</div>
+          <div class="lbl" id="lblRestaurants">عدد المطاعم</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="num" id="statGuests">0</div>
+          <div class="lbl" id="lblGuests">عدد الضيوف</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card success">
+          <div class="num" id="statAvg">0%</div>
+          <div class="lbl" id="lblAvg">متوسط التقييم</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card warning">
+          <div class="num" id="statComments">0</div>
+          <div class="lbl" id="lblComments">تعليقات مكتوبة</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card warning">
+          <div class="num" id="statStaff">0</div>
+          <div class="lbl" id="lblStaff">ذكر موظفين</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="mb-2" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
+      <i class="bi bi-list-check"></i> <span id="summaryTitle">ملخص المطاعم</span>
+    </h2>
+    <div class="card mb-3">
+      <div class="table-wrapper">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th style="width:50px;">#</th>
+              <th id="thRestaurant">المطعم</th>
+              <th id="thResponses">عدد الردود</th>
+              <th id="thAvgRating">متوسط التقييم العام</th>
+              <th id="thFood">الطعام</th>
+              <th id="thService">الخدمة</th>
+              <th id="thAtmosphere">الأجواء</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card staff-analysis-card mb-3 p-3">
+      <h3 style="color:#1e40af; font-weight:800; font-size:1rem; margin-bottom:.8rem;">
+        <i class="bi bi-trophy-fill" style="color:#f59e0b;"></i>
+        <span id="staffTitle">الموظفون المذكورون في التعليقات</span>
+      </h3>
+      <div id="staffCloud" class="staff-cloud"></div>
+    </div>
+
+    <h2 class="mb-2" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
+      <i class="bi bi-card-text"></i> <span id="detailsTitle">تفاصيل الردود</span>
+    </h2>
+
+    <div class="filter-box mb-3 no-print">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-search"></i> <span id="lblSearch">بحث</span></label>
+          <input type="text" class="form-control form-control-sm" id="searchBox" placeholder="ابحث بالاسم، رقم الغرفة، أو المطعم...">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-building"></i> <span id="lblRestaurantFilter">المطعم</span></label>
+          <select class="form-select form-select-sm" id="restaurantFilter">
+            <option value="">كل المطاعم</option>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <div class="d-flex gap-2 flex-wrap">
+            <label class="filter-toggle" id="commentsOnlyToggle">
+              <input type="checkbox" id="commentsOnly">
+              <span id="lblCommentsOnly">💬 تعليقات فقط</span>
+            </label>
+            <label class="filter-toggle" id="staffMentionToggle">
+              <input type="checkbox" id="staffMentionOnly">
+              <span id="lblStaffMention">⭐ ذكر موظفين</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-message no-print" id="infoMsg">
+      <i class="bi bi-info-circle-fill"></i>
+      <span id="infoText"></span>
+    </div>
+
+    <!-- Actions Bar with new Comments Export button -->
+    <div class="actions-bar d-flex flex-wrap gap-2 mb-2 no-print">
+      <button class="btn btn-save" onclick="saveToCache(true)">
+        <i class="bi bi-save-fill"></i> <span id="btnSave">حفظ (24 ساعة)</span>
+      </button>
+      <button class="btn btn-clear-cache" onclick="clearCache()">
+        <i class="bi bi-trash3-fill"></i> <span id="btnClearCache">حذف الكاش</span>
+      </button>
+      <button class="btn btn-copy" onclick="copyList()">
+        <i class="bi bi-clipboard-check"></i> <span id="btnCopy">نسخ</span>
+      </button>
+      <button class="btn btn-export" onclick="exportExcel()">
+        <i class="bi bi-file-earmark-excel"></i> <span id="btnExport">تصدير</span>
+      </button>
+      <button class="btn btn-comments-export" onclick="exportCommentsExcel()">
+        <i class="bi bi-chat-square-text-fill"></i> <span id="btnExportComments">تصدير التعليقات</span>
+      </button>
+      <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+        <i class="bi bi-printer"></i> <span id="btnPrint">طباعة</span>
+      </button>
+      <button class="btn btn-outline-secondary btn-sm ms-auto" onclick="changeFile()">
+        <i class="bi bi-upload"></i> <span id="btnNewFile">رفع ملف جديد</span>
+      </button>
+    </div>
+
+    <div class="print-header">
+      <h2>Restaurant Feedback Report</h2>
+      <div class="info" id="printInfo"></div>
+      <div class="count-badge" id="printCount">عدد الردود: 0</div>
+      <div class="explain" id="printExplain"></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th style="width:50px;">#</th>
+              <th id="thDate">التاريخ</th>
+              <th id="thRoom">الغرفة</th>
+              <th id="thName">الاسم</th>
+              <th id="thRestaurantCol">المطعم</th>
+              <th id="thRating">التقييم</th>
+              <th id="thFoodCol">الطعام</th>
+              <th id="thServiceCol">الخدمة</th>
+              <th id="thAtmosphereCol">الأجواء</th>
+              <th id="thComments">ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody id="detailsBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <i class="bi bi-inbox"></i>
+        <h5 class="mt-3" id="emptyTitle">لا توجد نتائج مطابقة</h5>
+        <p id="emptyHint">جرّب تغيير الفلاتر</p>
+      </div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+  </div>
+
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<script>
+// ============================================================
+// TRANSLATIONS
+// ============================================================
+const I18N = {
+  ar: {
+    dir: 'rtl', lang: 'ar',
+    pageTitle: 'تقرير تقييمات المطاعم',
+    pageSubtitle: 'Long Beach Resort - تحليل استبيانات الرضا',
+    langBtnText: 'English',
+    uploadTitle: 'اسحب ملف Excel هنا أو اضغط للاختيار',
+    uploadHint: 'يدعم ملفات .xlsx و .xls و .csv',
+    lblTotal: 'إجمالي الردود',
+    lblRestaurants: 'عدد المطاعم',
+    lblGuests: 'عدد الضيوف',
+    lblAvg: 'متوسط التقييم',
+    lblComments: 'تعليقات مكتوبة',
+    lblStaff: 'ذكر موظفين',
+    summaryTitle: 'ملخص المطاعم',
+    staffTitle: 'الموظفون المذكورون في التعليقات',
+    detailsTitle: 'تفاصيل الردود',
+    lblSearch: 'بحث',
+    lblRestaurantFilter: 'المطعم',
+    lblCommentsOnly: '💬 تعليقات فقط',
+    lblStaffMention: '⭐ ذكر موظفين',
+    thRestaurant: 'المطعم',
+    thResponses: 'عدد الردود',
+    thAvgRating: 'متوسط التقييم العام',
+    thFood: 'الطعام',
+    thService: 'الخدمة',
+    thAtmosphere: 'الأجواء',
+    thDate: 'التاريخ',
+    thRoom: 'الغرفة',
+    thName: 'الاسم',
+    thRestaurantCol: 'المطعم',
+    thRating: 'التقييم',
+    thFoodCol: 'الطعام',
+    thServiceCol: 'الخدمة',
+    thAtmosphereCol: 'الأجواء',
+    thComments: 'ملاحظات',
+    totalAvg: 'الإجمالي / المتوسط',
+    noComments: 'لا توجد تعليقات',
+    noStaff: 'لم يتم ذكر أي موظفين في التعليقات',
+    allRestaurants: 'كل المطاعم',
+    emptyTitle: 'لا توجد نتائج مطابقة',
+    emptyHint: 'جرّب تغيير الفلاتر',
+    toastSaved: 'تم حفظ البيانات ✅ (صالح 24 ساعة)',
+    toastSaveFail: 'فشل الحفظ ❌',
+    toastCacheCleared: 'تم حذف الكاش ✅',
+    toastCopied: 'تم نسخ القائمة ✅',
+    toastExported: 'تم تصدير الملف ✅',
+    toastCommentsExported: 'تم تصدير ملف التعليقات ✅',
+    toastNoComments: 'لا توجد تعليقات للتصدير',
+    toastNoData: 'لا توجد بيانات',
+    cacheBannerText: 'تم استرجاع البيانات المحفوظة من المتصفح',
+    cacheTimeLeft: (h,m,t) => `محفوظ ${t} • متبقي ${h}س ${m}د`,
+    infoAll: (n) => `يتم عرض <b>${n}</b> رد في الجدول.`,
+    printCount: 'عدد الردود',
+    printExplain: (n) => `<strong>ملخص:</strong> إجمالي الردود المعروضة: <strong>${n}</strong> — تقرير تقييمات مطاعم Long Beach Resort.`,
+    btnExportComments: 'تصدير التعليقات',
+    thCommentDate: 'تاريخ التعليق',
+    thGuestName: 'اسم الجيست',
+    thStaffName: 'اسم الموظف',
+    thRestaurantName: 'اسم المطعم',
+    thCommentStatus: 'حالة التعليق',
+    statusWithStaff: 'يذكر موظف',
+    statusGeneral: 'تعليق عام',
+  },
+  en: {
+    dir: 'ltr', lang: 'en',
+    pageTitle: 'Restaurant Feedback Report',
+    pageSubtitle: 'Long Beach Resort - Guest Satisfaction Analysis',
+    langBtnText: 'عربي',
+    uploadTitle: 'Drag Excel file here or click to select',
+    uploadHint: 'Supports .xlsx, .xls and .csv files',
+    lblTotal: 'Total Responses',
+    lblRestaurants: 'Restaurants',
+    lblGuests: 'Guests',
+    lblAvg: 'Average Rating',
+    lblComments: 'With Comments',
+    lblStaff: 'Staff Mentions',
+    summaryTitle: 'Restaurants Summary',
+    staffTitle: 'Staff Members Mentioned in Comments',
+    detailsTitle: 'Response Details',
+    lblSearch: 'Search',
+    lblRestaurantFilter: 'Restaurant',
+    lblCommentsOnly: '💬 Comments Only',
+    lblStaffMention: '⭐ Staff Mentioned',
+    thRestaurant: 'Restaurant',
+    thResponses: 'Responses',
+    thAvgRating: 'Average Rating',
+    thFood: 'Food',
+    thService: 'Service',
+    thAtmosphere: 'Atmosphere',
+    thDate: 'Date',
+    thRoom: 'Room',
+    thName: 'Name',
+    thRestaurantCol: 'Restaurant',
+    thRating: 'Rating',
+    thFoodCol: 'Food',
+    thServiceCol: 'Service',
+    thAtmosphereCol: 'Atmosphere',
+    thComments: 'Comments',
+    totalAvg: 'Total / Average',
+    noComments: 'No comments',
+    noStaff: 'No staff members mentioned in comments',
+    allRestaurants: 'All Restaurants',
+    emptyTitle: 'No matching results',
+    emptyHint: 'Try changing the filters',
+    toastSaved: 'Data saved ✅ (valid 24h)',
+    toastSaveFail: 'Save failed ❌',
+    toastCacheCleared: 'Cache cleared ✅',
+    toastCopied: 'List copied ✅',
+    toastExported: 'File exported ✅',
+    toastCommentsExported: 'Comments file exported ✅',
+    toastNoComments: 'No comments to export',
+    toastNoData: 'No data available',
+    cacheBannerText: 'Data restored from browser cache',
+    cacheTimeLeft: (h,m,t) => `Saved ${t} • ${h}h ${m}m left`,
+    infoAll: (n) => `Showing <b>${n}</b> responses in the table.`,
+    printCount: 'Responses Count',
+    printExplain: (n) => `<strong>Summary:</strong> Total displayed responses: <strong>${n}</strong> — Long Beach Resort Restaurant Feedback Report.`,
+    btnExportComments: 'Export Comments',
+    thCommentDate: 'Comment Date',
+    thGuestName: 'Guest Name',
+    thStaffName: 'Staff Name',
+    thRestaurantName: 'Restaurant Name',
+    thCommentStatus: 'Comment Status',
+    statusWithStaff: 'Staff Mentioned',
+    statusGeneral: 'General Comment',
+  }
+};
+
+let currentLang = localStorage.getItem('restaurantFeedback_lang') || 'ar';
+
+function t(key, ...args){
+  const val = I18N[currentLang][key];
+  return typeof val === 'function' ? val(...args) : val;
+}
+
+function toggleLang(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('restaurantFeedback_lang', currentLang);
+  applyLang();
+  if (allData.length){
+    populateRestaurantFilter();
+    applyFilters();
+    // Re-render summary & stats so "الإجمالي / المتوسط" changes language
+    renderStats();
+    renderSummary();
+    renderStaffAnalysis();
+  }
+  toast(currentLang === 'ar' ? 'تم تغيير اللغة إلى العربية' : 'Language changed to English');
+}
+
+function applyLang(){
+  const L = I18N[currentLang];
+  document.documentElement.lang = L.lang;
+  document.documentElement.dir = L.dir;
+  document.body.classList.toggle('lang-en', currentLang === 'en');
+
+  document.title = L.pageTitle;
+  setText('pageTitle', L.pageTitle);
+  setText('pageSubtitle', L.pageSubtitle);
+  setText('langBtnText', L.langBtnText);
+  setText('uploadTitle', L.uploadTitle);
+  setText('uploadHint', L.uploadHint);
+  setText('lblTotal', L.lblTotal);
+  setText('lblRestaurants', L.lblRestaurants);
+  setText('lblGuests', L.lblGuests);
+  setText('lblAvg', L.lblAvg);
+  setText('lblComments', L.lblComments);
+  setText('lblStaff', L.lblStaff);
+  setText('summaryTitle', L.summaryTitle);
+  setText('staffTitle', L.staffTitle);
+  setText('detailsTitle', L.detailsTitle);
+  setText('lblSearch', L.lblSearch);
+  setText('lblRestaurantFilter', L.lblRestaurantFilter);
+  setText('lblCommentsOnly', L.lblCommentsOnly);
+  setText('lblStaffMention', L.lblStaffMention);
+  setText('thRestaurant', L.thRestaurant);
+  setText('thResponses', L.thResponses);
+  setText('thAvgRating', L.thAvgRating);
+  setText('thFood', L.thFood);
+  setText('thService', L.thService);
+  setText('thAtmosphere', L.thAtmosphere);
+  setText('thDate', L.thDate);
+  setText('thRoom', L.thRoom);
+  setText('thName', L.thName);
+  setText('thRestaurantCol', L.thRestaurantCol);
+  setText('thRating', L.thRating);
+  setText('thFoodCol', L.thFoodCol);
+  setText('thServiceCol', L.thServiceCol);
+  setText('thAtmosphereCol', L.thAtmosphereCol);
+  setText('thComments', L.thComments);
+  setText('emptyTitle', L.emptyTitle);
+  setText('emptyHint', L.emptyHint);
+  setText('btnSave', currentLang === 'ar' ? 'حفظ (24 ساعة)' : 'Save (24h)');
+  setText('btnClearCache', currentLang === 'ar' ? 'حذف الكاش' : 'Clear Cache');
+  setText('btnCopy', currentLang === 'ar' ? 'نسخ' : 'Copy');
+  setText('btnExport', currentLang === 'ar' ? 'تصدير' : 'Export');
+  setText('btnExportComments', L.btnExportComments);
+  setText('btnPrint', currentLang === 'ar' ? 'طباعة' : 'Print');
+  setText('btnNewFile', currentLang === 'ar' ? 'رفع ملف جديد' : 'Upload New File');
+  setText('cacheBannerText', L.cacheBannerText);
+  document.getElementById('searchBox').placeholder = currentLang === 'ar'
+    ? 'ابحث بالاسم، رقم الغرفة، أو المطعم...'
+    : 'Search by name, room, or restaurant...';
+
+  // ⬇️⬇️⬇️ إعادة رسم الجداول لتحديث "الإجمالي / المتوسط" ⬇️⬇️⬇️
+  if (allData && allData.length > 0){
+    renderStats();
+    renderSummary();
+    renderStaffAnalysis();
+  }
+}
+
+function setText(id, val){
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ============================================================
+// CACHE
+// ============================================================
+const CACHE_KEY = 'restaurantFeedback_v1';
+const CACHE_TTL = 24 * 60 * 60 * 1000;
+
+// ============================================================
+// STATE
+// ============================================================
+const RESTAURANTS = [
+  "Podium A La Carte", "OpenBill A la Carte", "Dolce Vita A la Carte",
+  "Yalanji A la Carte", "Mar Y Sol Seafood Restaurant",
+  "Aika Dollia Nubian A La Carte", "Mac Breeze American Lunch",
+  "Cactus Mexican Dinner", "Breeze Indian Dinner"
+];
+
+const PAGE_SIZE = 50;
+let allData = [];
+let filteredData = [];
+let currentPage = 1;
+let staffCounts = {};
+
+const MAX_RATING = 5;
+
+// ============================================================
+// STAFF DETECTION
+// ============================================================
+const NON_STAFF_WORDS = new Set([
+  'the','and','was','were','is','are','very','good','great','excellent','amazing',
+  'food','service','staff','team','restaurant','thank','thanks','you','your','all',
+  'best','nice','perfect','us','we','our','my','me','i','he','she','they','them',
+  'for','with','from','this','that','here','there','have','has','had','will','would',
+  'could','should','can','may','but','not','so','as','at','by','in','on','of','to',
+  'it','its','be','been','being','do','does','did','done','also','too','just','only',
+  'more','most','much','many','some','any','no','yes','ok','okay','well','really',
+  'always','never','again','still','even','back','out','up','down','about','after',
+  'before','during','over','under','between','through','into','onto','upon','than',
+  'then','now','today','tomorrow','yesterday','day','night','morning','evening',
+  'time','times','one','two','three','first','second','third','last','next','new',
+  'old','big','small','little','long','short','high','low','hot','cold','warm',
+  'cool','fresh','tasty','delicious','lovely','wonderful','beautiful','fantastic',
+  'fabulous','awesome','incredible','outstanding','superb','brilliant','polite',
+  'friendly','helpful','attentive','professional','recommend','recommended',
+  'recommendation','experience','dinner','lunch','breakfast','meal','meals','dish',
+  'dishes','menu','place','location','view','atmosphere','ambiance','ambience',
+  'quality','quantity','portion','portions','special','welcome','visit','visited',
+  'coming','come','came','going','went','return','returning','hotel','resort',
+  'long','beach','egypt','hurghada','room','rooms','pool','sea','ocean','sunset',
+  'sunrise','holiday','vacation','stay','trip','week','month','year','birthday',
+  'anniversary','celebration','party','event','mr','mrs','ms','miss','dr','sir',
+  'madam','madame','chef','waiter','waitress','manager','captain','host','hostess',
+  'barman','bartender','cook','cooker','kitchen','guys','guy','man','men','woman',
+  'women','people','person','everyone','everybody','someone','somebody','anyone',
+  'anybody','nobody','nothing','something','anything','everything','both','each',
+  'every','other','another','same','different','such','own','quite','rather',
+  'enough','almost','nearly','hardly','barely','scarcely','truly','surely',
+  'certainly','definitely','absolutely','completely','totally','entirely',
+  'perfectly','extremely','incredibly','amazingly','surprisingly'
+]);
+
+const KNOWN_STAFF_NAMES = [
+  'Khaled','Khalid','Sayed','Michael','Mohamed','Mohammed','Muhammad','Ahmed','Ahmad',
+  'Ali','Mahmoud','Mahmud','Mustafa','Mostafa','Bahaa','Sabry','Sabri','Essam','Gamal',
+  'Jamal','Hassan','Hussein','Hussain','Ibrahim','Omar','Umar','Youssef','Yousef',
+  'Yasser','Yaser','Amr','Tarek','Tariq','Karim','Kareem','Nour','Noor','Nader',
+  'Adel','Adil','Ashraf','Ayman','Bassam','Basem','Emad','Imad','Fadi','Fady',
+  'Faisal','Fayez','Hany','Hani','Hatem','Hisham','Hesham','Kamal','Magdy','Magdi',
+  'Maged','Majed','Marwan','Mina','Mounir','Munir','Nabil','Nabih','Osama','Usama',
+  'Ramy','Rami','Rashad','Rasheed','Samer','Samir','Sami','Shady','Shadi','Sherif',
+  'Sharif','Tamer','Thamer','Wael','Walid','Waleed','Yahya','Yehia','Ziad','Zeyad',
+  'Abdel','Abd','Abdallah','Abdullah','Abdelazim','Abdelrahman','Abdelrahim',
+  'Abdelwahab','Amer','Amir','Anas','Anwar','Aref','Atef','Aziz','Azzam','Badr',
+  'Basel','Bilal','Belal','Diaa','Dia','Ehab','Eid','Elsayed','Fahmy','Fathi',
+  'Fawzy','Fawzi','Gaber','Ghassan','Ghanem','Hady','Haitham','Hamada','Hamdi',
+  'Hamza','Haroon','Harun','Hazem','Hossam','Husam','Ismail','Ismael','Louay',
+  'Luay','Maher','Mamdouh','Mansour','Medhat','Mokhtar','Moustafa','Moataz',
+  'Moatasem','Nasser','Naser','Osman','Othman','Rafik','Rafiq','Raouf','Rauf',
+  'Reda','Rida','Saad','Saber','Salah','Saleh','Salem','Samih','Shaker','Taha',
+  'Tawfik','Tawfiq','Wagih','Wagdy','Yacoub','Yakoub','Yassin','Yaseen','Zaki',
+  'Mariam','Maryam','Marian','Mariem','Maiar','Mayar','Maya','Noura','Nora',
+  'Sara','Sarah','Sandra','Salma','Samar','Sana','Sanaa','Shaimaa','Shaima',
+  'Sherine','Shirin','Soha','Sohair','Suha','Suzan','Susan','Suzanne','Yasmin',
+  'Yasmine','Yasmeen','Zeinab','Zainab','Zaynab','Aya','Ayah','Aisha','Aesha',
+  'Alaa','Alia','Alya','Amal','Amany','Amani','Amira','Amirah','Asmaa','Asma',
+  'Azza','Basma','Basmah','Dalia','Dalal','Dina','Dena','Doaa','Duaa','Eman',
+  'Iman','Engy','Engi','Esraa','Esra','Etab','Fatma','Fatima','Faten','Fatin',
+  'Ghada','Ghadah','Hala','Hana','Hanaa','Hanan','Heba','Hibah','Hoda','Huda',
+  'Howaida','Inas','Jana','Jihan','Kholoud','Khadija','Khaleda','Laila','Layla',
+  'Lamia','Latifa','Lubna','Lobna','Maha','Mahasen','Manal','Marwa','Maram',
+  'Mervat','Mona','Muna','Nadia','Nadya','Nadine','Nahla','Nawal','Nesma',
+  'Nesreen','Nisreen','Noha','Nuha','Rabab','Rania','Ranya','Rasha','Reem',
+  'Rim','Riham','Sabah','Sahar','Sawsan','Seham','Siham','Sonia','Taghreed',
+  'Taghrid','Wafaa','Wafa','Walaa','Wala','Yara','Yousra','Yusra','Zahra',
+  'Zahraa','Zein','Zain'
+];
+
+const KNOWN_STAFF_LOWER = new Set(KNOWN_STAFF_NAMES.map(n => n.toLowerCase()));
+
+function detectStaffNames(comment){
+  if (!comment || typeof comment !== 'string') return [];
+  const found = new Set();
+  const text = comment.trim();
+
+  const tokens = text.split(/[^A-Za-z\u0600-\u06FF'-]+/).filter(Boolean);
+  tokens.forEach(token => {
+    const clean = token.replace(/^['-]+|['-]+$/g, '');
+    if (!clean || clean.length < 2) return;
+    const lower = clean.toLowerCase();
+    if (NON_STAFF_WORDS.has(lower)) return;
+    if (KNOWN_STAFF_LOWER.has(lower)) found.add(capitalize(clean));
+  });
+
+  const patterns = [
+    /(?:thank(?:s| you)?(?:\s+to)?|thanks to|thank you to|special thanks to|big thanks to|shoutout to|kudos to|credit to|compliments to)\s+([A-Z][a-z]+)/gi,
+    /(?:mr\.?|mrs\.?|ms\.?|miss|dr\.?|chef|waiter|waitress|manager|captain|host|hostess)\s+([A-Z][a-z]+)/gi,
+    /([A-Z][a-z]+)\s+(?:was|is|are|were|has|made|served|helped|deserves|is amazing|is the best|is great|is wonderful|is excellent|is outstanding|is brilliant|is professional|is friendly|is kind|is polite|is attentive)/g
+  ];
+  patterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(text)) !== null){
+      const name = match[1].trim();
+      const lower = name.toLowerCase();
+      if (NON_STAFF_WORDS.has(lower)) continue;
+      if (name.length < 3) continue;
+      if (KNOWN_STAFF_LOWER.has(lower) || isLikelyName(name)) found.add(name);
+    }
+  });
+
+  KNOWN_STAFF_NAMES.forEach(staffName => {
+    const regex = new RegExp('\\b' + escapeRegex(staffName) + '\\b', 'i');
+    if (regex.test(text)) found.add(staffName);
+  });
+
+  return Array.from(found);
+}
+
+function isLikelyName(word){
+  if (word.length < 3 || word.length > 20) return false;
+  if (!/^[A-Z][a-z]+$/.test(word)) return false;
+  return true;
+}
+
+function escapeRegex(str){ return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function capitalize(str){ return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str; }
+
+// ============================================================
+// UPLOAD
+// ============================================================
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.background = '#eff6ff'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.background = ''; });
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.style.background = '';
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+function changeFile(){
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('uploadSection').style.display = 'block';
+  document.getElementById('cacheBanner').style.display = 'none';
+  fileInput.value = '';
+}
+
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array', cellDates: true });
+      processWorkbook(wb);
+    } catch (err) {
+      toast('Error: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ============================================================
+// PROCESS WORKBOOK
+// ============================================================
+function processWorkbook(workbook){
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+  let headerRowIndex = -1;
+  for (let i = 0; i < jsonData.length; i++){
+    const row = jsonData[i];
+    if (row && row.some(c => String(c).trim() === 'Date') &&
+        row.some(c => String(c).trim() === 'Restaurant')){
+      headerRowIndex = i;
+      break;
+    }
+  }
+
+  if (headerRowIndex === -1){
+    toast('Header row not found');
+    return;
+  }
+
+  const headers = jsonData[headerRowIndex].map(h => String(h).trim());
+  const col = {};
+  headers.forEach((h, i) => { col[h] = i; });
+
+  allData = [];
+  for (let i = headerRowIndex + 1; i < jsonData.length; i++){
+    const row = jsonData[i];
+    if (!row || row.length === 0) continue;
+    const restaurant = String(row[col['Restaurant']] || '').trim();
+    if (!restaurant) continue;
+
+    const comments = String(row[col['Comments']] || '').trim();
+    const staffNames = detectStaffNames(comments);
+
+    const parseRating = (v) => {
+      if (v === null || v === undefined || v === '') return null;
+      const n = parseFloat(v);
+      return isNaN(n) ? null : n;
+    };
+
+    const record = {
+      _id: i,
+      date: formatDate(row[col['Date']]),
+      room: String(row[col['Room Number']] || '').trim(),
+      name: String(row[col['Name']] || '').trim(),
+      restaurant: restaurant,
+      ratingAvg: parseRating(row[col['Ratings Avg.']]),
+      food: parseRating(row[col['Food']]),
+      service: parseRating(row[col['Service']]),
+      atmosphere: parseRating(row[col['Atmosphere']]),
+      comments: comments,
+      staffNames: staffNames,
+      hasComments: comments.length > 0,
+      hasStaffMention: staffNames.length > 0
+    };
+    allData.push(record);
+  }
+
+  staffCounts = {};
+  allData.forEach(r => {
+    r.staffNames.forEach(name => {
+      staffCounts[name] = (staffCounts[name] || 0) + 1;
+    });
+  });
+
+  filteredData = [...allData];
+  currentPage = 1;
+
+  document.getElementById('uploadSection').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  populateRestaurantFilter();
+  renderStats();
+  renderSummary();
+  renderStaffAnalysis();
+  renderDetails();
+  setupFilters();
+  updateInfoMessage();
+  updatePrintHeader();
+
+  saveToCache(false);
+}
+
+function formatDate(val){
+  if (!val) return '';
+  if (val instanceof Date){
+    const y = val.getFullYear();
+    const m = String(val.getMonth()+1).padStart(2,'0');
+    const d = String(val.getDate()).padStart(2,'0');
+    const hh = String(val.getHours()).padStart(2,'0');
+    const mm = String(val.getMinutes()).padStart(2,'0');
+    return `${y}-${m}-${d} ${hh}:${mm}`;
+  }
+  return String(val);
+}
+
+// ============================================================
+// RESTAURANT FILTER
+// ============================================================
+function populateRestaurantFilter(){
+  const select = document.getElementById('restaurantFilter');
+  const current = select.value;
+  select.innerHTML = `<option value="">${t('allRestaurants')}</option>`;
+  const uniqueRestaurants = [...new Set(allData.map(r => r.restaurant))].sort((a,b) =>
+    String(a).localeCompare(String(b), 'en', { numeric: true, sensitivity: 'base' })
+  );
+  uniqueRestaurants.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r;
+    opt.textContent = r;
+    select.appendChild(opt);
+  });
+  if (current && uniqueRestaurants.includes(current)) select.value = current;
+}
+
+// ============================================================
+// RENDER STATS
+// ============================================================
+function renderStats(){
+  const totalResponses = allData.length;
+  const uniqueGuests = new Set(allData.map(r => r.name).filter(Boolean)).size;
+  const uniqueRestaurants = new Set(allData.map(r => r.restaurant)).size;
+  const withComments = allData.filter(r => r.hasComments).length;
+  const withStaff = allData.filter(r => r.hasStaffMention).length;
+
+  const validRatings = allData.filter(r => r.ratingAvg !== null && !isNaN(r.ratingAvg));
+  const avgRating = validRatings.length > 0
+    ? (validRatings.reduce((s, r) => s + r.ratingAvg, 0) / validRatings.length) / MAX_RATING * 100
+    : 0;
+
+  document.getElementById('statTotal').textContent = totalResponses;
+  document.getElementById('statRestaurants').textContent = uniqueRestaurants;
+  document.getElementById('statGuests').textContent = uniqueGuests;
+  document.getElementById('statAvg').textContent = avgRating.toFixed(2) + '%';
+  document.getElementById('statComments').textContent = withComments;
+  document.getElementById('statStaff').textContent = withStaff;
+}
+
+// ============================================================
+// RENDER SUMMARY (matches Excel exactly)
+// ============================================================
+function renderSummary(){
+  const tbody = document.getElementById('summaryBody');
+  tbody.innerHTML = '';
+
+  let totalResponses = 0;
+  const allRestaurantAvgs = {
+    ratingAvg: [],
+    food: [],
+    service: [],
+    atmosphere: []
+  };
+
+  RESTAURANTS.forEach((restaurant, idx) => {
+    const records = allData.filter(r => r.restaurant === restaurant);
+    const count = records.length;
+    if (count === 0) return;
+    totalResponses += count;
+
+    const avg = (field) => {
+      const vals = records.map(r => r[field]).filter(v => v !== null && !isNaN(v));
+      if (vals.length === 0) return null;
+      return vals.reduce((s, v) => s + v, 0) / vals.length;
+    };
+
+    const avgRating     = avg('ratingAvg');
+    const avgFood       = avg('food');
+    const avgService    = avg('service');
+    const avgAtmosphere = avg('atmosphere');
+
+    if (avgRating     !== null) allRestaurantAvgs.ratingAvg.push(avgRating);
+    if (avgFood       !== null) allRestaurantAvgs.food.push(avgFood);
+    if (avgService    !== null) allRestaurantAvgs.service.push(avgService);
+    if (avgAtmosphere !== null) allRestaurantAvgs.atmosphere.push(avgAtmosphere);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td style="text-align:start; font-weight:600;">${escapeHtml(restaurant)}</td>
+      <td>${count}</td>
+      <td>${percentBadge(avgRating)}</td>
+      <td>${percentBadge(avgFood)}</td>
+      <td>${percentBadge(avgService)}</td>
+      <td>${percentBadge(avgAtmosphere)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const avgOf = (arr) => arr.length > 0 ? arr.reduce((s,v)=>s+v,0) / arr.length : null;
+
+  const totalAvgRating     = avgOf(allRestaurantAvgs.ratingAvg);
+  const totalAvgFood       = avgOf(allRestaurantAvgs.food);
+  const totalAvgService    = avgOf(allRestaurantAvgs.service);
+  const totalAvgAtmosphere = avgOf(allRestaurantAvgs.atmosphere);
+
+  // ⬇️⬇️⬇️ هنا يستخدم t('totalAvg') الذي يتغير مع اللغة ⬇️⬇️⬇️
+  const trTotal = document.createElement('tr');
+  trTotal.style.background = '#e8eeff';
+  trTotal.style.fontWeight = 'bold';
+  trTotal.innerHTML = `
+    <td colspan="2">${t('totalAvg')}</td>
+    <td>${totalResponses}</td>
+    <td>${percentBadge(totalAvgRating)}</td>
+    <td>${percentBadge(totalAvgFood)}</td>
+    <td>${percentBadge(totalAvgService)}</td>
+    <td>${percentBadge(totalAvgAtmosphere)}</td>
+  `;
+  tbody.appendChild(trTotal);
+}
+
+function percentBadge(val){
+  if (val === null || val === undefined || isNaN(val)) return `<span class="rating-none">—</span>`;
+  const v = parseFloat(val);
+  const pct = Math.round((v / MAX_RATING) * 100 * 100) / 100;
+  let cls = 'rating-excellent';
+  if (pct < 70){ cls = 'rating-poor'; }
+  else if (pct < 90){ cls = 'rating-good'; }
+  return `<span class="rating-badge ${cls}">${pct.toFixed(2)}%</span>`;
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ============================================================
+// RENDER STAFF ANALYSIS
+// ============================================================
+function renderStaffAnalysis(){
+  const container = document.getElementById('staffCloud');
+  container.innerHTML = '';
+  const entries = Object.entries(staffCounts).sort((a,b) => b[1] - a[1]);
+  if (entries.length === 0){
+    container.innerHTML = `<div class="no-staff-msg">${t('noStaff')}</div>`;
+    return;
+  }
+  entries.forEach(([name, count]) => {
+    const div = document.createElement('div');
+    div.className = 'staff-cloud-item';
+    div.innerHTML = `${escapeHtml(name)} <span class="count">${count}</span>`;
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// FILTERS
+// ============================================================
+function setupFilters(){
+  const searchBox = document.getElementById('searchBox');
+  const commentsOnly = document.getElementById('commentsOnly');
+  const staffMentionOnly = document.getElementById('staffMentionOnly');
+  const restaurantFilter = document.getElementById('restaurantFilter');
+
+  searchBox.oninput = applyFilters;
+  commentsOnly.onchange = applyFilters;
+  staffMentionOnly.onchange = applyFilters;
+  restaurantFilter.onchange = applyFilters;
+
+  commentsOnly.addEventListener('change', () => {
+    document.getElementById('commentsOnlyToggle').classList.toggle('active', commentsOnly.checked);
+  });
+  staffMentionOnly.addEventListener('change', () => {
+    document.getElementById('staffMentionToggle').classList.toggle('active', staffMentionOnly.checked);
+  });
+}
+
+function applyFilters(){
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const onlyComments = document.getElementById('commentsOnly').checked;
+  const onlyStaff = document.getElementById('staffMentionOnly').checked;
+  const restaurant = document.getElementById('restaurantFilter').value;
+
+  filteredData = allData.filter(r => {
+    if (q){
+      const matches = r.name.toLowerCase().includes(q) ||
+        r.room.toLowerCase().includes(q) ||
+        r.restaurant.toLowerCase().includes(q) ||
+        r.comments.toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+    if (onlyComments && !r.hasComments) return false;
+    if (onlyStaff && !r.hasStaffMention) return false;
+    if (restaurant && r.restaurant !== restaurant) return false;
+    return true;
+  });
+
+  currentPage = 1;
+  renderDetails();
+  updateInfoMessage();
+  updatePrintHeader();
+}
+
+// ============================================================
+// RENDER DETAILS
+// ============================================================
+function renderDetails(){
+  const tbody = document.getElementById('detailsBody');
+  const empty = document.getElementById('emptyState');
+  tbody.innerHTML = '';
+
+  if (!filteredData.length){
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const pageData = filteredData.slice(start, end);
+
+  pageData.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (r.hasStaffMention) tr.className = 'has-staff-row';
+
+    let staffHtml = '';
+    if (r.hasStaffMention){
+      staffHtml = '<div style="margin-top:.2rem;">' +
+        r.staffNames.map(n => `<span class="staff-name-tag">⭐ ${escapeHtml(n)}</span>`).join('') +
+        '</div>';
+    }
+
+    const commentDisplay = r.comments
+      ? escapeHtml(r.comments)
+      : `<span style="color:#bbb">${t('noComments')}</span>`;
+
+    tr.innerHTML = `
+      <td>${start + i + 1}</td>
+      <td style="white-space:nowrap; font-size:.78rem;">${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.room)}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td style="text-align:start;"><span class="badge-dept">${escapeHtml(r.restaurant)}</span></td>
+      <td>${percentBadge(r.ratingAvg)}</td>
+      <td>${percentBadge(r.food)}</td>
+      <td>${percentBadge(r.service)}</td>
+      <td>${percentBadge(r.atmosphere)}</td>
+      <td class="comments-cell" title="${escapeHtml(r.comments)}">
+        ${commentDisplay}
+        ${staffHtml}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  renderPagination();
+}
+
+// ============================================================
+// PAGINATION
+// ============================================================
+function renderPagination(){
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = '';
+  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+  if (totalPages <= 1) return;
+
+  const createBtn = (text, page, disabled = false, active = false) => {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.disabled = disabled;
+    if (active) btn.classList.add('active');
+    btn.onclick = () => {
+      currentPage = page;
+      renderDetails();
+      window.scrollTo({ top: document.getElementById('detailsBody').offsetTop - 100 });
+    };
+    return btn;
+  };
+
+  pagination.appendChild(createBtn('«', 1, currentPage === 1));
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+
+  if (startPage > 1){
+    pagination.appendChild(createBtn('1', 1, false, currentPage === 1));
+    if (startPage > 2) pagination.appendChild(createBtn('...', 0, true));
+  }
+  for (let p = startPage; p <= endPage; p++){
+    pagination.appendChild(createBtn(p, p, false, p === currentPage));
+  }
+  if (endPage < totalPages){
+    if (endPage < totalPages - 1) pagination.appendChild(createBtn('...', 0, true));
+    pagination.appendChild(createBtn(totalPages, totalPages, false, currentPage === totalPages));
+  }
+  pagination.appendChild(createBtn('»', totalPages, currentPage === totalPages));
+}
+
+// ============================================================
+// INFO MESSAGE
+// ============================================================
+function updateInfoMessage(){
+  document.getElementById('infoText').innerHTML = t('infoAll', filteredData.length);
+}
+
+function updatePrintHeader(){
+  document.getElementById('printInfo').textContent =
+    `Long Beach Resort — ${new Date().toLocaleDateString()}`;
+  document.getElementById('printCount').textContent =
+    `${t('printCount')}: ${filteredData.length}`;
+  document.getElementById('printExplain').innerHTML = t('printExplain', filteredData.length);
+}
+
+// ============================================================
+// COPY
+// ============================================================
+function copyList(){
+  if (!filteredData.length){ toast(t('toastNoData')); return; }
+  let txt = `📊 Restaurant Feedback Report\n`;
+  txt += `📅 ${new Date().toLocaleDateString()}\n`;
+  txt += `👥 ${filteredData.length} responses\n`;
+  txt += `${'─'.repeat(40)}\n\n`;
+
+  let currentRestaurant = null;
+  let counter = 0;
+  filteredData.forEach(r => {
+    if (r.restaurant !== currentRestaurant){
+      currentRestaurant = r.restaurant;
+      counter = 0;
+      txt += `\n🏢 === ${currentRestaurant} ===\n\n`;
+    }
+    counter++;
+    txt += `${counter}. ${r.name} (Room ${r.room})\n`;
+    txt += `   ⭐ Rating: ${r.ratingAvg !== null ? Math.round(r.ratingAvg/MAX_RATING*100)+'%' : '—'}\n`;
+    if (r.comments) txt += `   💬 ${r.comments}\n`;
+    if (r.staffNames.length) txt += `   🏆 Staff: ${r.staffNames.join(', ')}\n`;
+    txt += `\n`;
+  });
+
+  navigator.clipboard.writeText(txt).then(() => toast(t('toastCopied')));
+}
+
+// ============================================================
+// EXPORT EXCEL (Full Report)
+// ============================================================
+function exportExcel(){
+  if (!filteredData.length){ toast(t('toastNoData')); return; }
+  const rows = filteredData.map((r, i) => ({
+    '#': i + 1,
+    [t('thDate')]: r.date,
+    [t('thRoom')]: r.room,
+    [t('thName')]: r.name,
+    [t('thRestaurantCol')]: r.restaurant,
+    [t('thRating')]: r.ratingAvg !== null ? Math.round(r.ratingAvg/MAX_RATING*100)+'%' : '—',
+    [t('thFoodCol')]: r.food !== null ? Math.round(r.food/MAX_RATING*100)+'%' : '—',
+    [t('thServiceCol')]: r.service !== null ? Math.round(r.service/MAX_RATING*100)+'%' : '—',
+    [t('thAtmosphereCol')]: r.atmosphere !== null ? Math.round(r.atmosphere/MAX_RATING*100)+'%' : '—',
+    [t('thComments')]: r.comments,
+    [currentLang === 'ar' ? 'الموظفون المذكورون' : 'Staff Mentioned']: r.staffNames.join(', ')
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Report');
+  XLSX.writeFile(wb, `Restaurant_Feedback_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast(t('toastExported'));
+}
+
+// ============================================================
+// EXPORT COMMENTS EXCEL (Guest Comments with Staff Detection)
+// Columns: Comment Date | Guest Name | Staff Name | Restaurant Name | Comment Status
+// ============================================================
+function exportCommentsExcel(){
+  // Only records with comments
+  const recordsWithComments = filteredData.filter(r => r.hasComments);
+
+  if (!recordsWithComments.length){
+    toast(t('toastNoComments'));
+    return;
+  }
+
+  const rows = [];
+
+  recordsWithComments.forEach(r => {
+    if (r.hasStaffMention && r.staffNames.length > 0){
+      // One row per staff member mentioned
+      r.staffNames.forEach(staffName => {
+        rows.push({
+          [t('thCommentDate')]: r.date,
+          [t('thGuestName')]: r.name,
+          [t('thStaffName')]: staffName,
+          [t('thRestaurantName')]: r.restaurant,
+          [t('thCommentStatus')]: t('statusWithStaff')
+        });
+      });
+    } else {
+      // No staff mentioned — single row with general status
+      rows.push({
+        [t('thCommentDate')]: r.date,
+        [t('thGuestName')]: r.name,
+        [t('thStaffName')]: '—',
+        [t('thRestaurantName')]: r.restaurant,
+        [t('thCommentStatus')]: t('statusGeneral')
+      });
+    }
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Set column widths
+  ws['!cols'] = [
+    { wch: 20 },  // Comment Date
+    { wch: 25 },  // Guest Name
+    { wch: 18 },  // Staff Name
+    { wch: 30 },  // Restaurant Name
+    { wch: 18 }   // Comment Status
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, currentLang === 'ar' ? 'التعليقات' : 'Comments');
+  XLSX.writeFile(wb, `Guest_Comments_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast(t('toastCommentsExported'));
+}
+
+// ============================================================
+// CACHE (24h)
+// ============================================================
+function saveToCache(showToast){
+  if (!allData.length){
+    if (showToast) toast(t('toastNoData'));
+    return false;
+  }
+  try {
+    const payload = {
+      version: 1,
+      savedAt: Date.now(),
+      allData: allData,
+      staffCounts: staffCounts,
+      lang: currentLang,
+      filters: {
+        search: document.getElementById('searchBox').value,
+        restaurant: document.getElementById('restaurantFilter').value,
+        commentsOnly: document.getElementById('commentsOnly').checked,
+        staffMentionOnly: document.getElementById('staffMentionOnly').checked
+      }
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+    updateCacheBanner(payload.savedAt);
+    if (showToast) toast(t('toastSaved'));
+    return true;
+  } catch(err){
+    console.error(err);
+    if (showToast) toast(t('toastSaveFail'));
+    return false;
+  }
+}
+
+function loadFromCache(){
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || data.version !== 1){ clearCache(true); return false; }
+    const age = Date.now() - (data.savedAt || 0);
+    if (age > CACHE_TTL){ clearCache(true); return false; }
+
+    allData = data.allData || [];
+    staffCounts = data.staffCounts || {};
+
+    if (data.lang && I18N[data.lang]){
+      currentLang = data.lang;
+      localStorage.setItem('restaurantFeedback_lang', currentLang);
+    }
+
+    applyLang();
+    populateRestaurantFilter();
+
+    const f = data.filters || {};
+    document.getElementById('searchBox').value = f.search || '';
+    document.getElementById('restaurantFilter').value = f.restaurant || '';
+    document.getElementById('commentsOnly').checked = !!f.commentsOnly;
+    document.getElementById('staffMentionOnly').checked = !!f.staffMentionOnly;
+    document.getElementById('commentsOnlyToggle').classList.toggle('active', !!f.commentsOnly);
+    document.getElementById('staffMentionToggle').classList.toggle('active', !!f.staffMentionOnly);
+
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+
+    renderStats();
+    renderSummary();
+    renderStaffAnalysis();
+    setupFilters();
+    applyFilters();
+    updateCacheBanner(data.savedAt);
+    return true;
+  } catch(err){
+    console.error(err);
+    clearCache(true);
+    return false;
+  }
+}
+
+function clearCache(silent){
+  localStorage.removeItem(CACHE_KEY);
+  document.getElementById('cacheBanner').style.display = 'none';
+  if (!silent){
+    allData = [];
+    filteredData = [];
+    staffCounts = {};
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('uploadSection').style.display = 'block';
+    toast(t('toastCacheCleared'));
+  }
+}
+
+function updateCacheBanner(savedAt){
+  if (!savedAt){
+    document.getElementById('cacheBanner').style.display = 'none';
+    return;
+  }
+  const age = Date.now() - savedAt;
+  const left = CACHE_TTL - age;
+  if (left <= 0){
+    document.getElementById('cacheBanner').style.display = 'none';
+    return;
+  }
+  const hours = Math.floor(left / (60*60*1000));
+  const mins = Math.floor((left % (60*60*1000)) / (60*1000));
+  const d = new Date(savedAt);
+  const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('cacheTimeLeft').textContent = t('cacheTimeLeft', hours, mins, timeStr);
+  document.getElementById('cacheBanner').style.display = 'flex';
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  applyLang();
+  loadFromCache();
+  setInterval(() => {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw){ document.getElementById('cacheBanner').style.display = 'none'; return; }
+    try {
+      const d = JSON.parse(raw);
+      updateCacheBanner(d.savedAt);
+    } catch(e){}
+  }, 60000);
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
