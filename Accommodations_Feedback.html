@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Long Beach Resort - Guest Feedback & Comments Analytics</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --primary:#0f766e; --primary-light:#14b8a6; --accent:#f59e0b;
+    --bg:#f0fdfa; --card:#ffffff; --danger:#dc2626; --success:#16a34a;
+    --warning:#f59e0b; --gold:#fbbf24;
+  }
+  *{font-family:'Segoe UI', Tahoma, sans-serif;}
+  body{background:linear-gradient(135deg,#ecfeff 0%, #f0fdfa 100%); min-height:100vh; margin:0;}
+  body.lang-en{direction:ltr;}
+
+  .header{
+    background:linear-gradient(135deg,#0f766e 0%, #14b8a6 50%, #06b6d4 100%);
+    color:#fff; padding:2rem 0; box-shadow:0 4px 20px rgba(15,118,110,.3);
+  }
+  .header h1{font-weight:700; margin:0; font-size:1.8rem;}
+  .header p{margin:.3rem 0 0; opacity:.9;}
+  .header .top-bar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;}
+  .lang-switch{
+    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.4);
+    color:#fff; border-radius:30px; padding:.5rem 1.2rem; font-weight:700;
+    cursor:pointer; transition:.3s; display:flex; align-items:center; gap:.5rem;
+  }
+  .lang-switch:hover{background:rgba(255,255,255,.3); color:#fff;}
+
+  .main-container{max-width:1500px; margin:auto; padding:2rem 1rem;}
+  .card{border:none; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.06);}
+
+  .upload-zone{
+    border:2.5px dashed #5eead4; border-radius:16px; background:#f8fafc;
+    padding:3rem 1rem; text-align:center; cursor:pointer; transition:.3s;
+  }
+  .upload-zone:hover, .upload-zone.dragover{background:#ccfbf1; border-color:var(--primary);}
+  .upload-zone i{font-size:3.5rem; color:var(--primary-light);}
+  .upload-zone h5{margin-top:1rem; color:#334155; font-weight:600;}
+
+  .stat-card{
+    background:#fff; border-radius:14px; padding:1.2rem; text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.05); border-right:4px solid var(--primary);
+    transition:.3s;
+  }
+  .stat-card:hover{transform:translateY(-3px); box-shadow:0 8px 25px rgba(0,0,0,.1);}
+  body.lang-en .stat-card{border-right:none; border-left:4px solid var(--primary);}
+  .stat-card .num{font-size:2rem; font-weight:800; color:var(--primary); line-height:1;}
+  .stat-card .lbl{color:#64748b; font-size:.85rem; margin-top:.4rem;}
+  .stat-card.danger{border-right-color:var(--danger);}
+  body.lang-en .stat-card.danger{border-left-color:var(--danger);}
+  .stat-card.danger .num{color:var(--danger);}
+  .stat-card.success{border-right-color:var(--success);}
+  body.lang-en .stat-card.success{border-left-color:var(--success);}
+  .stat-card.success .num{color:var(--success);}
+  .stat-card.warning{border-right-color:var(--warning);}
+  body.lang-en .stat-card.warning{border-left-color:var(--warning);}
+  .stat-card.warning .num{color:var(--warning);}
+
+  /* Tab Navigation */
+  .tab-nav{
+    display:flex; gap:.5rem; margin-bottom:1.5rem; flex-wrap:wrap;
+    background:#fff; padding:.5rem; border-radius:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+  }
+  .tab-btn{
+    flex:1; min-width:150px; background:transparent; border:none;
+    padding:.8rem 1.2rem; border-radius:10px; font-weight:700;
+    color:#64748b; cursor:pointer; transition:.2s;
+    display:flex; align-items:center; justify-content:center; gap:.5rem;
+    font-size:.9rem;
+  }
+  .tab-btn:hover{background:#f0fdfa; color:var(--primary);}
+  .tab-btn.active{
+    background:linear-gradient(135deg,#0f766e,#14b8a6); color:#fff;
+    box-shadow:0 4px 12px rgba(15,118,110,.3);
+  }
+  .tab-content{display:none;}
+  .tab-content.active{display:block; animation:fadeIn .3s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .filter-box{background:#fff; border-radius:16px; padding:1.2rem; box-shadow:0 4px 20px rgba(0,0,0,.06);}
+
+  .table thead th{
+    background:#0f766e; color:#fff; font-weight:600; white-space:nowrap;
+    position:sticky; top:0; z-index:5;
+  }
+  .table tbody tr:hover{background:#ccfbf1;}
+  .table td{vertical-align:middle; font-size:.9rem;}
+
+  .rating-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:45px; height:45px; border-radius:50%; font-weight:800; font-size:.95rem;
+  }
+  .rating-excellent{background:#dcfce7; color:#166534;}
+  .rating-good{background:#fef3c7; color:#92400e;}
+  .rating-poor{background:#fee2e2; color:#991b1b;}
+  .rating-none{color:#94a3b8; font-weight:400;}
+
+  .progress{height:10px; border-radius:5px; background:#e2e8f0;}
+  .progress-bar{transition:width .5s ease;}
+
+  .btn-copy{background:var(--primary); color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-copy:hover{background:#0d5c56; color:#fff;}
+  .btn-export{background:var(--success); color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-export:hover{background:#15803d; color:#fff;}
+  .btn-comments-export{background:#0ea5e9; color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-comments-export:hover{background:#0284c7; color:#fff;}
+  .btn-staff-export{background:#f59e0b; color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-staff-export:hover{background:#d97706; color:#fff;}
+  .btn-save{background:#7c3aed; color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-save:hover{background:#6d28d9; color:#fff;}
+  .btn-clear-cache{background:#fef3c7; color:#92400e; border:1px solid #fbbf24; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-clear-cache:hover{background:#fbbf24; color:#78350f;}
+
+  .table-wrapper{max-height:700px; overflow:auto; border-radius:12px;}
+
+  .toast-msg{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#0f172a; color:#fff; padding:.8rem 1.5rem; border-radius:10px;
+    opacity:0; transition:.3s; z-index:999; font-weight:600;
+  }
+  .toast-msg.show{opacity:1;}
+
+  .empty-state{text-align:center; padding:3rem 1rem; color:#94a3b8;}
+  .empty-state i{font-size:4rem;}
+
+  .badge-operator{background:#dbeafe; color:#1e40af; padding:.3rem .7rem; border-radius:20px; font-weight:600; font-size:.78rem; display:inline-block;}
+  .badge-room{background:#f3e8ff; color:#7c3aed; padding:.3rem .7rem; border-radius:20px; font-weight:600; font-size:.78rem; display:inline-block;}
+
+  .cache-banner{
+    background:linear-gradient(135deg,#7c3aed 0%, #a855f7 100%);
+    color:#fff; padding:.8rem 1.2rem; border-radius:12px;
+    font-weight:600; margin-bottom:1rem; display:flex;
+    align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
+    box-shadow:0 4px 12px rgba(124,58,237,.25);
+  }
+  .cache-banner .time-left{
+    background:rgba(255,255,255,.2); padding:.3rem .8rem;
+    border-radius:20px; font-size:.85rem;
+  }
+
+  .chart-container{position:relative; height:350px;}
+
+  /* Stats Table */
+  #statsTable { font-size: 0.9rem; margin-bottom: 0; }
+  #statsTable th, #statsTable td {
+    text-align: center; vertical-align: middle;
+    padding: 0.6rem 0.5rem; border-color: #cbd5e1;
+  }
+  #statsTable thead th {
+    font-weight: 700; font-size: 0.85rem;
+    white-space: nowrap; border-bottom: 2px solid #1e40af;
+  }
+  #statsTable tbody tr { transition: background 0.2s; }
+  #statsTable tbody tr:hover { background: #f0fdfa !important; }
+  #statsTable tbody tr.highlight-row {
+    background: #fef3c7 !important; font-weight: 700;
+  }
+  #statsTable tbody tr.highlight-row td { border-color: #fbbf24; }
+  #statsTable tbody tr.highlight-row:hover { background: #fde68a !important; }
+  .stat-value-excellent { color: #166534; font-weight: 700; }
+  .stat-value-good { color: #92400e; font-weight: 700; }
+  .stat-value-poor { color: #991b1b; font-weight: 700; }
+  .mini-bar {
+    display: inline-block; width: 40px; height: 6px;
+    background: #e2e8f0; border-radius: 3px;
+    margin-right: 5px; vertical-align: middle; overflow: hidden;
+  }
+  body.lang-en .mini-bar { margin-right: 0; margin-left: 5px; }
+  .mini-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+
+  .print-header{display:none; padding:1.5rem 0; border-bottom:3px double #0f766e; margin-bottom:1.5rem; text-align:center;}
+  .print-header h2{margin:0; color:#0f766e; font-size:1.8rem; font-weight:800;}
+  .print-header .info{margin-top:.8rem; color:#334155; font-size:1rem; line-height:1.7;}
+  .print-header .count-badge{
+    display:inline-block; background:#0f766e; color:#fff;
+    padding:.5rem 1.5rem; border-radius:25px; font-weight:700;
+    margin-top:1rem; font-size:1rem;
+  }
+  .print-header .explain{
+    margin-top:1rem; padding:.8rem 1rem; background:#f1f5f9;
+    border-right:4px solid #0f766e; border-radius:8px;
+    font-size:.9rem; color:#334155; text-align:right; line-height:1.8;
+  }
+  body.lang-en .print-header .explain{border-right:none; border-left:4px solid #0f766e; text-align:left;}
+  .print-header .explain strong{color:#0f766e;}
+
+  .metric-row{
+    display:flex; align-items:center; gap:1rem; padding:.6rem 0;
+    border-bottom:1px solid #f1f5f9;
+  }
+  .metric-row:last-child{border-bottom:none;}
+  .metric-name{flex:0 0 180px; font-weight:600; font-size:.9rem;}
+  .metric-bar{flex:1;}
+  .metric-value{flex:0 0 60px; text-align:center; font-weight:700; font-size:.9rem;}
+
+  .detail-modal .modal-content{border-radius:16px; border:none;}
+  .detail-modal .modal-header{background:linear-gradient(135deg,#0f766e,#14b8a6); color:#fff; border-radius:16px 16px 0 0;}
+  .detail-modal .modal-header .btn-close{filter:brightness(0) invert(1);}
+
+  .comment-box{
+    background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;
+    padding:1rem; max-height:250px; overflow-y:auto; white-space:pre-wrap;
+    font-size:.9rem; line-height:1.7;
+  }
+
+  /* Staff Cloud */
+  .staff-cloud{display:flex; flex-wrap:wrap; gap:.4rem;}
+  .staff-cloud-item{
+    background:#1e40af; color:#fff; padding:.4rem .8rem; border-radius:20px;
+    font-weight:600; font-size:.82rem; display:flex;
+    align-items:center; gap:.4rem; cursor:pointer; transition:.2s;
+  }
+  .staff-cloud-item:hover{background:#1e3a8a; transform:scale(1.05);}
+  .staff-cloud-item .count{
+    background:rgba(255,255,255,.25); padding:.05rem .4rem;
+    border-radius:10px; font-size:.7rem;
+  }
+  .no-staff-msg{color:#94a3b8; font-style:italic; text-align:center; padding:1rem;}
+
+  .staff-name-tag{
+    background:#fef3c7; color:#92400e; padding:.12rem .45rem;
+    border-radius:8px; font-size:.68rem; font-weight:600;
+    border:1px solid #fbbf24; display:inline-block; margin:.08rem;
+  }
+
+  .has-staff-row td{background:#fffef5 !important;}
+
+  .comment-cell{
+    max-width:400px; text-align:start; font-size:.82rem;
+    color:#475569; white-space:normal; word-wrap:break-word;
+  }
+
+  .filter-toggle{
+    display:flex; align-items:center; gap:.4rem; padding:.4rem .9rem;
+    background:#f1f5f9; border-radius:20px; cursor:pointer;
+    user-select:none; font-weight:600;
+    color:#475569; font-size:.82rem; border:1px solid #e2e8f0;
+  }
+  .filter-toggle input{width:16px; height:16px; accent-color:var(--primary); cursor:pointer;}
+  .filter-toggle.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+  .filter-toggle.active input{accent-color:#fff;}
+
+  .pagination{display:flex; justify-content:center; gap:.4rem; flex-wrap:wrap; margin-top:1rem;}
+  .pagination button{
+    background:#fff; border:1px solid #e2e8f0; padding:.4rem .8rem;
+    border-radius:6px; cursor:pointer; font-weight:700; color:var(--primary);
+    font-size:.82rem;
+  }
+  .pagination button:hover:not(:disabled){background:var(--primary); color:#fff;}
+  .pagination button.active{background:var(--primary); color:#fff;}
+  .pagination button:disabled{opacity:.5; cursor:not-allowed;}
+
+  @media print{
+    @page { size: A4 landscape; margin: 12mm 10mm; }
+    body{background:#fff !important; font-size:11px !important;}
+    .no-print, .header, .filter-box, .upload-zone, .actions-bar,
+    #uploadSection, .cache-banner, .chart-container, .tab-nav,
+    .row.g-3.mb-4, .metric-selector, .staff-analysis-card,
+    .pagination {display:none !important;}
+    .main-container{padding:0 !important; max-width:100% !important; margin:0 !important;}
+    .card{box-shadow:none !important; border-radius:0 !important; border:none !important; overflow:visible !important;}
+    .table-wrapper{max-height:none !important; overflow:visible !important; border-radius:0 !important;}
+    table.table{width:100% !important; table-layout:auto !important; border-collapse:collapse !important;}
+    .table thead{display:table-header-group !important;}
+    .table thead th{background:#0f766e !important; color:#fff !important; position:static !important;
+      -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+      padding:6px 8px !important; font-size:11px !important; border:none !important;}
+    .table tbody tr{page-break-inside:avoid !important;}
+    .table tbody td{padding:5px 8px !important; font-size:11px !important; border-bottom:1px solid #e2e8f0 !important;}
+    .badge-operator, .badge-room, .rating-badge, .staff-name-tag{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+    .print-header{display:block !important; text-align:center !important;}
+    #statsTable{font-size:10px !important;}
+    #statsTable th, #statsTable td{padding:4px 6px !important;}
+    #statsTable tbody tr.highlight-row{background:#fef3c7 !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+    .comment-cell{max-width:none !important; white-space:normal !important;}
+    .tab-content{display:block !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header no-print">
+  <div class="main-container" style="padding-top:0;padding-bottom:0;">
+    <div class="top-bar">
+      <div>
+        <h1><i class="bi bi-star-fill"></i> <span id="pageTitle">Long Beach Resort - تحليل التقييمات والتعليقات</span></h1>
+      </div>
+      <button class="lang-switch" onclick="toggleLang()">
+        <i class="bi bi-translate"></i>
+        <span id="langBtnText">English</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="main-container">
+
+  <div id="cacheBanner" class="cache-banner no-print" style="display:none;">
+    <div>
+      <i class="bi bi-cloud-check-fill"></i>
+      <span id="cacheBannerText">تم استرجاع البيانات المحفوظة من المتصفح</span>
+    </div>
+    <div class="time-left" id="cacheTimeLeft">—</div>
+  </div>
+
+  <div id="uploadSection">
+    <div class="upload-zone" id="uploadZone">
+      <i class="bi bi-cloud-arrow-up-fill"></i>
+      <h5 id="uploadTitle">اسحب ملف Excel هنا أو اضغط للاختيار</h5>
+      <p id="uploadHint">يدعم ملفات .xlsx و .xls و .csv - ملف تقييمات الضيوف</p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="num" id="statTotal">0</div>
+          <div class="lbl" id="lblTotal">إجمالي التقييمات</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card success">
+          <div class="num" id="statAvg">0.0</div>
+          <div class="lbl" id="lblAvg">متوسط التقييم</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card warning">
+          <div class="num" id="statHigh">0</div>
+          <div class="lbl" id="lblHigh">≥ 4.5</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card danger">
+          <div class="num" id="statLow">0</div>
+          <div class="lbl" id="lblLow">< 4.5</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="num" id="statComments">0</div>
+          <div class="lbl" id="lblComments">تعليقات مكتوبة</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card warning">
+          <div class="num" id="statUniqueStaff">0</div>
+          <div class="lbl" id="lblUniqueStaff">موظفون مذكورون</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tab-nav no-print">
+      <button class="tab-btn active" onclick="switchTab('tab-ratings')">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span id="tabRatings">تقييمات المعايير</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-comments')">
+        <i class="bi bi-chat-square-text-fill"></i>
+        <span id="tabCommentsLabel">التعليقات والموظفين</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-staff')">
+        <i class="bi bi-person-badge-fill"></i>
+        <span id="tabStaffLabel">تحليل الموظفين</span>
+      </button>
+    </div>
+
+    <!-- ============================================
+         TAB 1: تقييمات المعايير
+         ============================================ -->
+    <div id="tab-ratings" class="tab-content active">
+
+      <!-- Filters -->
+      <div class="filter-box mb-4 no-print">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label fw-bold"><i class="bi bi-building"></i> <span id="lblOperatorFilter">الوكيل</span></label>
+            <select class="form-select" id="operatorFilter">
+              <option value="">كل الوكلاء</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold"><i class="bi bi-calendar-month"></i> <span id="lblMonthFilter">الشهر</span></label>
+            <div class="input-group">
+              <input type="month" class="form-control" id="monthFilter">
+              <button class="btn btn-outline-secondary" type="button" onclick="clearMonth()" title="مسح الشهر">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold"><i class="bi bi-sliders"></i> <span id="lblRatingFilter">التقييم</span></label>
+            <select class="form-select" id="ratingFilter">
+              <option value="all" id="optAllRatings">الكل</option>
+              <option value="high" id="optHighRatings">≥ 4.5 فقط</option>
+              <option value="low" id="optLowRatings">< 4.5 فقط</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold"><i class="bi bi-search"></i> <span id="lblSearch">بحث بالاسم / الغرفة</span></label>
+            <input type="text" class="form-control" id="searchInput" placeholder="...">
+          </div>
+          <div class="col-md-2 d-grid">
+            <button class="btn btn-outline-secondary" onclick="resetFilters()">
+              <i class="bi bi-arrow-counterclockwise"></i> <span id="btnReset">إعادة تعيين</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Table -->
+      <div class="card mb-4" id="statsTableCard">
+        <div class="card-header" style="background:linear-gradient(135deg,#0f766e,#14b8a6); color:#fff; border-radius:16px 16px 0 0; padding:1rem;">
+          <h5 class="mb-0 fw-bold text-center">
+            <i class="bi bi-table"></i>
+            <span id="statsTableTitle">Exclusivi Report - Internal Guest Feedback</span>
+          </h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover mb-0" id="statsTable">
+            <thead>
+              <tr>
+                <th class="text-center" id="thStatsQuestion">Questions</th>
+                <th class="text-center" id="thStatsAvgPct">Avg. Ratings %</th>
+                <th class="text-center" id="thStatsAvg">Avg. Ratings</th>
+                <th class="text-center" id="thStatsTotal">Total Responses</th>
+                <th class="text-center" id="thStatsHigh">≥4.5</th>
+                <th class="text-center" id="thStatsLow">&lt;4.5</th>
+                <th class="text-center" id="thStatsPct">≥4.5 %</th>
+              </tr>
+            </thead>
+            <tbody id="statsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="card p-3">
+            <h6 class="fw-bold mb-3">
+              <i class="bi bi-bar-chart-fill text-primary"></i>
+              <span id="chart1Title">متوسط التقييم   </span>
+            </h6>
+            <div class="chart-container" style="height:650px;">
+              <canvas id="metricsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-bar d-flex flex-wrap gap-2 mb-3 no-print">
+        <button class="btn btn-save" onclick="saveToCache(true)">
+          <i class="bi bi-save-fill"></i> <span id="btnSave">حفظ (24 ساعة)</span>
+        </button>
+        <button class="btn btn-clear-cache" onclick="clearCache()">
+          <i class="bi bi-trash3-fill"></i> <span id="btnClearCache">حذف الكاش</span>
+        </button>
+        <button class="btn btn-copy" onclick="copyList()">
+          <i class="bi bi-clipboard-check"></i> <span id="btnCopy">نسخ الملخص</span>
+        </button>
+        <button class="btn btn-export" onclick="exportExcel()">
+          <i class="bi bi-file-earmark-excel"></i> <span id="btnExport">تصدير Excel</span>
+        </button>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+          <i class="bi bi-printer"></i> <span id="btnPrint">طباعة</span>
+        </button>
+        <button class="btn btn-outline-secondary ms-auto" onclick="changeFile()">
+          <i class="bi bi-upload"></i> <span id="btnNewFile">رفع ملف جديد</span>
+        </button>
+      </div>
+
+      <!-- Print Header -->
+      <div class="print-header">
+        <h2>Long Beach Resort - Guest Feedback Report</h2>
+        <div class="info" id="printInfo"></div>
+        <div class="count-badge" id="printCount">عدد التقييمات: 0</div>
+        <div class="explain" id="printExplain"></div>
+      </div>
+
+      <!-- Details Table -->
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thName">الاسم</th>
+                <th id="thRoom">الغرفة</th>
+                <th id="thOperator">الوكيل</th>
+                <th id="thDate">التاريخ</th>
+                <th id="thAvg">المتوسط</th>
+                <th id="thDetails" class="no-print">تفاصيل</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <i class="bi bi-inbox"></i>
+          <h5 class="mt-3" id="emptyTitle">لا توجد نتائج مطابقة</h5>
+          <p id="emptyHint">جرّب تغيير الفلاتر</p>
+        </div>
+      </div>
+
+    </div><!-- /tab-ratings -->
+
+    <!-- ============================================
+         TAB 2: التعليقات
+         ============================================ -->
+    <div id="tab-comments" class="tab-content">
+
+      <h2 class="mb-3" style="color:#0f766e; font-weight:800; font-size:1.1rem;">
+        <i class="bi bi-chat-square-text-fill"></i>
+        <span id="commentsTitle">تعليقات الضيوف مع الموظفين المذكورين</span>
+      </h2>
+
+      <!-- Filters -->
+      <div class="filter-box mb-3 no-print">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-search"></i> <span id="lblCommentsSearch">بحث</span></label>
+            <input type="text" class="form-control form-control-sm" id="commentsSearchBox" placeholder="ابحث بالاسم، رقم الغرفة، أو نص التعليق...">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-person-badge"></i> <span id="lblStaffFilter">الموظف</span></label>
+            <select class="form-select form-select-sm" id="staffFilter">
+              <option value="">كل الموظفين</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-building"></i> <span id="lblCommentsOperator">الوكيل</span></label>
+            <select class="form-select form-select-sm" id="commentsOperatorFilter">
+              <option value="">كل الوكلاء</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="filter-toggle" id="staffMentionToggle">
+              <input type="checkbox" id="staffMentionOnly">
+              <span id="lblStaffMention">⭐ ذكر موظفين</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-message no-print" id="commentsInfoMsg" style="background:#eff6ff; border:1px solid #93c5fd; color:#1e40af; padding:.6rem 1rem; border-radius:8px; font-size:.85rem; margin-bottom:.8rem;">
+        <i class="bi bi-info-circle-fill"></i>
+        <span id="commentsInfoText"></span>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-bar d-flex flex-wrap gap-2 mb-3 no-print">
+        <button class="btn btn-copy" onclick="copyComments()">
+          <i class="bi bi-clipboard-check"></i> <span id="btnCopyComments">نسخ التعليقات</span>
+        </button>
+        <button class="btn btn-comments-export" onclick="exportCommentsExcel()">
+          <i class="bi bi-chat-square-text-fill"></i> <span id="btnExportComments">تصدير التعليقات</span>
+        </button>
+        <button class="btn btn-staff-export" onclick="exportStaffExcel()">
+          <i class="bi bi-person-badge-fill"></i> <span id="btnExportStaff">تصدير الموظفين</span>
+        </button>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+          <i class="bi bi-printer"></i> <span id="btnPrint2">طباعة</span>
+        </button>
+      </div>
+
+      <!-- Comments Table -->
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thCommentDate">التاريخ</th>
+                <th id="thCommentRoom">الغرفة</th>
+                <th id="thCommentName">اسم الجيست</th>
+                <th id="thCommentOperator">الوكيل</th>
+                <th id="thCommentRating">التقييم</th>
+                <th id="thCommentStaff">الموظفون المذكورون</th>
+                <th id="thCommentText">التعليق</th>
+              </tr>
+            </thead>
+            <tbody id="commentsBody"></tbody>
+          </table>
+        </div>
+        <div id="commentsEmptyState" class="empty-state" style="display:none;">
+          <i class="bi bi-chat-square"></i>
+          <h5 class="mt-3" id="emptyCommentsTitle">لا توجد تعليقات مطابقة</h5>
+          <p id="emptyCommentsHint">جرّب تغيير الفلاتر</p>
+        </div>
+      </div>
+
+      <div class="pagination" id="commentsPagination"></div>
+
+    </div><!-- /tab-comments -->
+
+    <!-- ============================================
+         TAB 3: تحليل الموظفين
+         ============================================ -->
+    <div id="tab-staff" class="tab-content">
+
+      <h2 class="mb-3" style="color:#0f766e; font-weight:800; font-size:1.1rem;">
+        <i class="bi bi-trophy-fill" style="color:#f59e0b;"></i>
+        <span id="staffAnalysisTitle">الموظفون المذكورون في التعليقات</span>
+      </h2>
+
+      <!-- Actions -->
+      <div class="actions-bar d-flex flex-wrap gap-2 mb-3 no-print">
+        <button class="btn btn-staff-export" onclick="exportStaffExcel()">
+          <i class="bi bi-person-badge-fill"></i> <span id="btnExportStaff2">تصدير الموظفين</span>
+        </button>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+          <i class="bi bi-printer"></i> <span id="btnPrint3">طباعة</span>
+        </button>
+      </div>
+
+      <!-- Staff Cloud -->
+      <div class="card staff-analysis-card mb-3 p-4">
+        <div id="staffCloud" class="staff-cloud"></div>
+      </div>
+
+      <!-- Staff Details Table -->
+      <div class="card">
+        <div class="card-header" style="background:linear-gradient(135deg,#0f766e,#14b8a6); color:#fff; border-radius:16px 16px 0 0; padding:1rem;">
+          <h5 class="mb-0 fw-bold text-center">
+            <i class="bi bi-list-ul"></i>
+            <span id="staffDetailsTitle">تفاصيل ذكر الموظفين</span>
+          </h5>
+        </div>
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thStaffName">اسم الموظف</th>
+                <th id="thStaffCount">عدد المرات</th>
+                <th id="thStaffGuests">الضيوف الذين ذكروه</th>
+                <th id="thStaffRooms">الغرف</th>
+              </tr>
+            </thead>
+            <tbody id="staffDetailsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /tab-staff -->
+
+  </div><!-- /dashboard -->
+
+</div><!-- /main-container -->
+
+<!-- Detail Modal -->
+<div class="modal fade detail-modal" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-badge"></i> <span id="modalName">تفاصيل التقييم</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// =============================================
+// ==== نظام الترجمة ====
+// =============================================
+const I18N = {
+  ar: {
+    dir:'rtl', lang:'ar',
+    pageTitle:'Long Beach Resort - تحليل التقييمات والتعليقات',
+    pageSubtitle:'تحليل شامل - تقييمات الضيوف + التعليقات + استخراج أسماء الموظفين',
+    langBtnText:'English',
+    uploadTitle:'اسحب ملف Excel هنا أو اضغط للاختيار',
+    uploadHint:'يدعم ملفات .xlsx و .xls و .csv',
+    lblTotal:'إجمالي التقييمات', lblAvg:'متوسط التقييم',
+    lblHigh:'تقييمات ≥ 4.5', lblLow:'تقييمات < 4.5',
+    lblComments:'تعليقات مكتوبة', lblUniqueStaff:'موظفون مذكورون',
+    tabRatings:'تقييمات المعايير', tabCommentsLabel:'التعليقات والموظفين', tabStaffLabel:'تحليل الموظفين',
+    lblOperatorFilter:'الوكيل', lblMonthFilter:'الشهر', lblRatingFilter:'التقييم',
+    optAllRatings:'الكل', optHighRatings:'≥ 4.5 فقط', optLowRatings:'< 4.5 فقط',
+    lblSearch:'بحث بالاسم / الغرفة',
+    btnReset:'إعادة تعيين', btnSave:'حفظ (24 ساعة)',
+    btnClearCache:'حذف الكاش', btnCopy:'نسخ الملخص', btnExport:'تصدير Excel',
+    btnPrint:'طباعة', btnNewFile:'رفع ملف جديد',
+    thName:'الاسم', thRoom:'الغرفة', thOperator:'الوكيل',
+    thDate:'التاريخ', thAvg:'المتوسط', thDetails:'تفاصيل',
+    emptyTitle:'لا توجد نتائج مطابقة', emptyHint:'جرّب تغيير الفلاتر',
+    cacheBannerText:'تم استرجاع البيانات المحفوظة من المتصفح',
+    allOperators:'كل الوكلاء',
+    chart1Title:'متوسط التقييم حسب المعيار (مرتب تنازلياً - نسبة مئوية)',
+    statsTableTitle:'تقرير Exclusivi - تقييمات الضيوف الداخلي',
+    // Comments tab
+    commentsTitle:'تعليقات الضيوف مع الموظفين المذكورين',
+    lblCommentsSearch:'بحث', lblStaffFilter:'الموظف', lblCommentsOperator:'الوكيل',
+    lblStaffMention:'⭐ ذكر موظفين',
+    thCommentDate:'التاريخ', thCommentRoom:'الغرفة', thCommentName:'اسم الجيست',
+    thCommentOperator:'الوكيل', thCommentRating:'التقييم',
+    thCommentStaff:'الموظفون المذكورون', thCommentText:'التعليق',
+    emptyCommentsTitle:'لا توجد تعليقات مطابقة', emptyCommentsHint:'جرّب تغيير الفلاتر',
+    allStaff:'كل الموظفين',
+    btnCopyComments:'نسخ التعليقات', btnExportComments:'تصدير التعليقات', btnExportStaff:'تصدير الموظفين',
+    infoCommentsAll:(n)=>`يتم عرض <b>${n}</b> تعليق في الجدول.`,
+    // Staff tab
+    staffAnalysisTitle:'الموظفون المذكورون في التعليقات',
+    staffDetailsTitle:'تفاصيل ذكر الموظفين',
+    thStaffName:'اسم الموظف', thStaffCount:'عدد المرات',
+    thStaffGuests:'الضيوف الذين ذكروه', thStaffRooms:'الغرف',
+    noStaff:'لم يتم ذكر أي موظفين في التعليقات',
+    // Toast messages
+    toastSaved:'تم حفظ البيانات ✅ (صالح 24 ساعة)',
+    toastSaveFail:'فشل الحفظ ❌',
+    toastNoData:'لا توجد بيانات',
+    toastNoDataCopy:'لا توجد بيانات للنسخ',
+    toastNoDataExport:'لا توجد بيانات للتصدير',
+    toastCacheCleared:'تم حذف الكاش ✅',
+    toastCopied:'تم نسخ الملخص ✅',
+    toastCommentsCopied:'تم نسخ التعليقات ✅',
+    toastExported:'تم تصدير الملف ✅',
+    toastCommentsExported:'تم تصدير ملف التعليقات ✅',
+    toastStaffExported:'تم تصدير ملف الموظفين ✅',
+    toastNoComments:'لا توجد تعليقات للتصدير',
+    toastNoStaff:'لا توجد أسماء موظفين للتصدير',
+    cacheTimeLeft:(h,m,t)=>`محفوظ ${t} • متبقي ${h}س ${m}د`,
+    monthNames:['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    excellent:'ممتاز', good:'جيد', poor:'ضعيف',
+    noData:'—',
+    summaryTitle:'ملخص تقييمات الضيوف',
+    period:'الفترة', operator:'الوكيل',
+    totalRatings:'إجمالي التقييمات', overallAvg:'المتوسط العام',
+    highRatings:'تقييمات عالية (≥4.5)', lowRatings:'تقييمات منخفضة (<4.5)',
+    metricsBreakdown:'تفصيل المعايير',
+    ratingDetails:'تفاصيل التقييم', comments:'التعليقات', noComments:'لا توجد تعليقات',
+    guestName:'اسم الضيف', roomNumber:'رقم الغرفة', operatorLabel:'الوكيل',
+    dateLabel:'التاريخ', overallRating:'التقييم العام',
+    // Excel columns
+    thStaffNameCol:'اسم الموظف', thCommentStatus:'حالة التعليق',
+    thStaffCountCol:'عدد المرات',
+    statusWithStaff:'يذكر موظف', statusGeneral:'تعليق عام',
+  },
+  en: {
+    dir:'ltr', lang:'en',
+    pageTitle:'Long Beach Resort - Feedback & Comments Analytics',
+    pageSubtitle:'Comprehensive Analysis - Ratings + Comments + Staff Detection',
+    langBtnText:'عربي',
+    uploadTitle:'Drag Excel file here or click to select',
+    uploadHint:'Supports .xlsx, .xls and .csv files',
+    lblTotal:'Total Ratings', lblAvg:'Overall Average',
+    lblHigh:'Ratings ≥ 4.5', lblLow:'Ratings < 4.5',
+    lblComments:'With Comments', lblUniqueStaff:'Unique Staff',
+    tabRatings:'Metrics Ratings', tabCommentsLabel:'Comments & Staff', tabStaffLabel:'Staff Analysis',
+    lblOperatorFilter:'Operator', lblMonthFilter:'Month', lblRatingFilter:'Rating',
+    optAllRatings:'All', optHighRatings:'≥ 4.5 only', optLowRatings:'< 4.5 only',
+    lblSearch:'Search by name / room',
+    btnReset:'Reset', btnSave:'Save (24h)',
+    btnClearCache:'Clear Cache', btnCopy:'Copy Summary', btnExport:'Export Excel',
+    btnPrint:'Print', btnNewFile:'Upload New File',
+    thName:'Name', thRoom:'Room', thOperator:'Operator',
+    thDate:'Date', thAvg:'Average', thDetails:'Details',
+    emptyTitle:'No matching results', emptyHint:'Try changing the filters',
+    cacheBannerText:'Data restored from browser cache',
+    allOperators:'All Operators',
+    chart1Title:'Average Rating',
+    statsTableTitle:'Exclusivi Report',
+    commentsTitle:'Guest Comments with Staff Mentions',
+    lblCommentsSearch:'Search', lblStaffFilter:'Staff', lblCommentsOperator:'Operator',
+    lblStaffMention:'⭐ Staff Mentioned',
+    thCommentDate:'Date', thCommentRoom:'Room', thCommentName:'Guest Name',
+    thCommentOperator:'Operator', thCommentRating:'Rating',
+    thCommentStaff:'Staff Mentioned', thCommentText:'Comment',
+    emptyCommentsTitle:'No matching comments', emptyCommentsHint:'Try changing the filters',
+    allStaff:'All Staff',
+    btnCopyComments:'Copy Comments', btnExportComments:'Export Comments', btnExportStaff:'Export Staff',
+    infoCommentsAll:(n)=>`Showing <b>${n}</b> comments in the table.`,
+    staffAnalysisTitle:'Staff Members Mentioned in Comments',
+    staffDetailsTitle:'Staff Mentions Details',
+    thStaffName:'Staff Name', thStaffCount:'Mentions',
+    thStaffGuests:'Guests Who Mentioned', thStaffRooms:'Rooms',
+    noStaff:'No staff members mentioned in comments',
+    toastSaved:'Data saved ✅ (valid 24h)',
+    toastSaveFail:'Save failed ❌',
+    toastNoData:'No data available',
+    toastNoDataCopy:'No data to copy',
+    toastNoDataExport:'No data to export',
+    toastCacheCleared:'Cache cleared ✅',
+    toastCopied:'Summary copied ✅',
+    toastCommentsCopied:'Comments copied ✅',
+    toastExported:'File exported ✅',
+    toastCommentsExported:'Comments file exported ✅',
+    toastStaffExported:'Staff file exported ✅',
+    toastNoComments:'No comments to export',
+    toastNoStaff:'No staff names to export',
+    cacheTimeLeft:(h,m,t)=>`Saved ${t} • ${h}h ${m}m left`,
+    monthNames:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    excellent:'Excellent', good:'Good', poor:'Poor',
+    noData:'—',
+    summaryTitle:'Guest Feedback Summary',
+    period:'Period', operator:'Operator',
+    totalRatings:'Total Ratings', overallAvg:'Overall Average',
+    highRatings:'High Ratings (≥4.5)', lowRatings:'Low Ratings (<4.5)',
+    metricsBreakdown:'Metrics Breakdown',
+    ratingDetails:'Rating Details', comments:'Comments', noComments:'No comments',
+    guestName:'Guest Name', roomNumber:'Room Number', operatorLabel:'Operator',
+    dateLabel:'Date', overallRating:'Overall Rating',
+    thStaffNameCol:'Staff Name', thCommentStatus:'Comment Status',
+    thStaffCountCol:'Mentions',
+    statusWithStaff:'Staff Mentioned', statusGeneral:'General Comment',
+  }
+};
+
+let currentLang = localStorage.getItem('merged_feedback_lang') || 'ar';
+function t(key, ...args){
+  const val = I18N[currentLang][key];
+  return typeof val === 'function' ? val(...args) : val;
+}
+
+function toggleLang(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('merged_feedback_lang', currentLang);
+  applyLang();
+  if (allData.length){
+    rebuildOperatorFilter();
+    populateFilters();
+    applyFilters();
+    applyCommentsFilters();
+    renderCharts();
+    renderStaffAnalysis();
+    renderStaffDetails();
+  }
+  toast(currentLang === 'ar' ? 'تم تغيير اللغة إلى العربية' : 'Language changed to English');
+}
+
+function applyLang(){
+  const L = I18N[currentLang];
+  document.documentElement.lang = L.lang;
+  document.documentElement.dir = L.dir;
+  document.body.classList.toggle('lang-en', currentLang === 'en');
+  document.title = L.pageTitle;
+
+  const ids = [
+    'pageTitle','pageSubtitle','langBtnText','uploadTitle','uploadHint',
+    'lblTotal','lblAvg','lblHigh','lblLow','lblComments','lblUniqueStaff',
+    'tabRatings','tabCommentsLabel','tabStaffLabel',
+    'lblOperatorFilter','lblMonthFilter','lblRatingFilter',
+    'optAllRatings','optHighRatings','optLowRatings',
+    'lblSearch','btnReset','btnSave','btnClearCache','btnCopy','btnExport',
+    'btnPrint','btnNewFile',
+    'thName','thRoom','thOperator','thDate','thAvg','thDetails',
+    'emptyTitle','emptyHint','cacheBannerText','chart1Title','statsTableTitle',
+    'commentsTitle','lblCommentsSearch','lblStaffFilter','lblCommentsOperator','lblStaffMention',
+    'thCommentDate','thCommentRoom','thCommentName','thCommentOperator','thCommentRating',
+    'thCommentStaff','thCommentText','emptyCommentsTitle','emptyCommentsHint',
+    'btnCopyComments','btnExportComments','btnExportStaff',
+    'staffAnalysisTitle','staffDetailsTitle','thStaffName','thStaffCount','thStaffGuests','thStaffRooms',
+    'btnPrint2','btnPrint3','btnExportStaff2'
+  ];
+  ids.forEach(id => { if (L[id] !== undefined) setText(id, L[id]); });
+
+  setText('thStatsQuestion', currentLang === 'ar' ? 'السؤال' : 'Questions');
+  setText('thStatsAvgPct', currentLang === 'ar' ? 'متوسط النسبة %' : 'Avg. Ratings %');
+  setText('thStatsAvg', currentLang === 'ar' ? 'متوسط التقييم' : 'Avg. Ratings');
+  setText('thStatsTotal', currentLang === 'ar' ? 'إجمالي الردود' : 'Total Responses');
+  setText('thStatsHigh', '≥4.5');
+  setText('thStatsLow', '<4.5');
+  setText('thStatsPct', currentLang === 'ar' ? 'نسبة ≥4.5' : '≥4.5 %');
+
+  const searchBox = document.getElementById('searchInput');
+  if (searchBox) searchBox.placeholder = currentLang === 'ar' ? 'ابحث...' : 'Search...';
+  const commentsSearch = document.getElementById('commentsSearchBox');
+  if (commentsSearch) commentsSearch.placeholder = currentLang === 'ar'
+    ? 'ابحث بالاسم، رقم الغرفة، أو نص التعليق...'
+    : 'Search by name, room, or comment text...';
+
+  if (allData.length){
+    renderStatsTable();
+    renderStaffDetails();
+  }
+}
+function setText(id, val){ const el = document.getElementById(id); if (el) el.textContent = val; }
+
+// =============================================
+// ==== التبويبات ====
+// =============================================
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.closest('.tab-btn').classList.add('active');
+  if (tabId === 'tab-ratings') setTimeout(() => { if (chart1) chart1.resize(); }, 100);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// =============================================
+// ==== إعدادات ====
+// =============================================
+const CACHE_KEY = 'merged_feedback_v1';
+const CACHE_TTL = 24 * 60 * 60 * 1000;
+
+let allData = [];
+let filteredData = [];
+let commentsFilteredData = [];
+let metricKeys = [];
+let chart1 = null;
+let currentPage = 1;
+let staffCounts = {};
+const MAX_RATING = 5;
+const PAGE_SIZE = 50;
+
+const METRIC_DEFS = [
+  { key:'Cleanliness', ar:'النظافة' },
+  { key:'Location', ar:'الموقع' },
+  { key:'Rooms', ar:'الغرف' },
+  { key:'Value', ar:'القيمة' },
+  { key:'Sleep', ar:'النوم' },
+  { key:'Overall Stay', ar:'الإقامة العامة' },
+  { key:'Food Quality', ar:'جودة الطعام' },
+  { key:'Drinks Quality', ar:'جودة المشروبات' },
+  { key:'Staff Service', ar:'خدمة الموظفين' },
+  { key:'Checkin Process', ar:'عملية تسجيل الوصول' },
+  { key:'Luggage Service', ar:'خدمة الأمتعة' },
+  { key:'Evening Entertainment', ar:'الترفيه المسائي' },
+  { key:'Fitness & Wellness', ar:'اللياقة والعافية' },
+  { key:'WiFi', ar:'واي فاي' },
+  { key:'Sustainability', ar:'الاستدامة' },
+  { key:'Sports & Activities', ar:'الرياضة والأنشطة' },
+  { key:'Pool', ar:'المسبح' },
+  { key:'Bathroom', ar:'الحمام' },
+  { key:'Mini Club', ar:'نادي الأطفال' },
+  { key:'Spa Facilities', ar:'مرافق السبا' },
+  { key:'Spa Treatments', ar:'علاجات السبا' },
+  { key:'Environmental Performance', ar:'الأداء البيئي' },
+  { key:'Room Cleanliness', ar:'نظافة الغرفة' },
+  { key:'Hotel Cleanliness', ar:'نظافة الفندق' },
+  { key:'Restaurant Staff Service', ar:'خدمة موظفي المطعم' },
+  { key:'Bar Staff Service', ar:'خدمة موظفي البار' },
+  { key:'Dessert', ar:'الحلويات' },
+  { key:'Atmosphere', ar:'الأجواء' },
+  { key:'Zero Waste Policy', ar:'سياسة صفر نفايات' },
+  { key:'Consistency of Service', ar:'ثبات الخدمة' },
+  { key:'Breakfast Experience', ar:'تجربة الإفطار' },
+  { key:'Lunch Experience', ar:'تجربة الغداء' },
+  { key:'Dinner Experience', ar:'تجربة العشاء' },
+  { key:'Pool & Bar Experience', ar:'تجربة المسبح والبار' },
+];
+
+// =============================================
+// ==== كشف الموظفين ====
+// =============================================
+const NON_STAFF_WORDS = new Set([
+  'the','and','was','were','is','are','very','good','great','excellent','amazing',
+  'food','service','staff','team','restaurant','thank','thanks','you','your','all',
+  'best','nice','perfect','us','we','our','my','me','i','he','she','they','them',
+  'for','with','from','this','that','here','there','have','has','had','will','would',
+  'could','should','can','may','but','not','so','as','at','by','in','on','of','to',
+  'it','its','be','been','being','do','does','did','done','also','too','just','only',
+  'more','most','much','many','some','any','no','yes','ok','okay','well','really',
+  'always','never','again','still','even','back','out','up','down','about','after',
+  'before','during','over','under','between','through','into','onto','upon','than',
+  'then','now','today','tomorrow','yesterday','day','night','morning','evening',
+  'time','times','one','two','three','first','second','third','last','next','new',
+  'old','big','small','little','long','short','high','low','hot','cold','warm',
+  'cool','fresh','tasty','delicious','lovely','wonderful','beautiful','fantastic',
+  'fabulous','awesome','incredible','outstanding','superb','brilliant','polite',
+  'friendly','helpful','attentive','professional','recommend','recommended',
+  'recommendation','experience','dinner','lunch','breakfast','meal','meals','dish',
+  'dishes','menu','place','location','view','atmosphere','ambiance','ambience',
+  'quality','quantity','portion','portions','special','welcome','visit','visited',
+  'coming','come','came','going','went','return','returning','hotel','resort',
+  'long','beach','egypt','hurghada','room','rooms','pool','sea','ocean','sunset',
+  'sunrise','holiday','vacation','stay','trip','week','month','year','birthday',
+  'anniversary','celebration','party','event','mr','mrs','ms','miss','dr','sir',
+  'madam','madame','chef','waiter','waitress','manager','captain','host','hostess',
+  'barman','bartender','cook','cooker','kitchen','guys','guy','man','men','woman',
+  'women','people','person','everyone','everybody','someone','somebody','anyone',
+  'anybody','nobody','nothing','something','anything','everything','both','each',
+  'every','other','another','same','different','such','own','quite','rather',
+  'enough','almost','nearly','hardly','barely','scarcely','truly','surely',
+  'certainly','definitely','absolutely','completely','totally','entirely',
+  'perfectly','extremely','incredibly','amazingly','surprisingly',
+  'wifi','internet','connection','network','signal','slow','fast','weak','strong',
+  'clean','dirty','towel','towels','toilet','paper','bed','beds','pillow','pillows',
+  'mattress','aircon','air','conditioning','noise','noisy','quiet','loud',
+  'building','works','renovation','reconstruction','construction','beachside',
+  'drinks','drink','cocktail','cocktails','coffee','tea','water','juice','beer','wine',
+  'alcohol','soda','sweet','sugar','salt','spicy','bland','temperature',
+  'front','desk','reception','concierge','checkin','check','out','checkout',
+  'bar','bars','poolside','lifeguard','security','housekeeping','cleaner','maid',
+  'guest','guests','relation','relations','animation','animator','animators',
+  'entertainment','activity','activities','show','shows','parties',
+  'kid','kids','child','children','baby','babies','family','families',
+  'buffet','alacarte','al','carte','a','la','grill','bbq','snack','snacks',
+  'consistency','environmental','performance','sustainability','zerowaste','zero',
+  'waste','policy','awareness','recycling','please','also','thanks','very'
+]);
+
+const KNOWN_STAFF_NAMES = [
+  'Khaled','Khalid','Sayed','Michael','Mohamed','Mohammed','Muhammad','Ahmed','Ahmad',
+  'Ali','Mahmoud','Mahmud','Mustafa','Mostafa','Bahaa','Sabry','Sabri','Essam','Gamal',
+  'Jamal','Hassan','Hussein','Hussain','Ibrahim','Omar','Umar','Youssef','Yousef',
+  'Yasser','Yaser','Amr','Tarek','Tariq','Karim','Kareem','Nour','Noor','Nader',
+  'Adel','Adil','Ashraf','Ayman','Bassam','Basem','Emad','Imad','Fadi','Fady',
+  'Faisal','Fayez','Hany','Hani','Hatem','Hisham','Hesham','Kamal','Magdy','Magdi',
+  'Maged','Majed','Marwan','Mina','Mounir','Munir','Nabil','Nabih','Osama','Usama',
+  'Ramy','Rami','Rashad','Rasheed','Samer','Samir','Sami','Shady','Shadi','Sherif',
+  'Sharif','Tamer','Thamer','Wael','Walid','Waleed','Yahya','Yehia','Ziad','Zeyad',
+  'Abdel','Abd','Abdallah','Abdullah','Abdelazim','Abdelrahman','Abdelrahim',
+  'Abdelwahab','Amer','Amir','Anas','Anwar','Aref','Atef','Aziz','Azzam','Badr',
+  'Basel','Bilal','Belal','Diaa','Dia','Ehab','Eid','Elsayed','Fahmy','Fathi',
+  'Fawzy','Fawzi','Gaber','Ghassan','Ghanem','Hady','Haitham','Hamada','Hamdi',
+  'Hamza','Haroon','Harun','Hazem','Hossam','Husam','Ismail','Ismael','Louay',
+  'Luay','Maher','Mamdouh','Mansour','Medhat','Mokhtar','Moustafa','Moataz',
+  'Moatasem','Nasser','Naser','Osman','Othman','Rafik','Rafiq','Raouf','Rauf',
+  'Reda','Rida','Saad','Saber','Salah','Saleh','Salem','Samih','Shaker','Taha',
+  'Tawfik','Tawfiq','Wagih','Wagdy','Yacoub','Yakoub','Yassin','Yaseen','Zaki',
+  'Remon','Rimon','Ramon','Malak','Akmed','Ahmet','Achmed','Massoud',
+  'Ramadan','Ragab','Rajab','Hafez','Hafiz','Nagy','Nagi',
+  'Mariam','Maryam','Marian','Mariem','Maiar','Mayar','Maya','Noura','Nora',
+  'Sara','Sarah','Sandra','Salma','Samar','Sana','Sanaa','Shaimaa','Shaima',
+  'Sherine','Shirin','Soha','Sohair','Suha','Suzan','Susan','Suzanne','Yasmin',
+  'Yasmine','Yasmeen','Zeinab','Zainab','Zaynab','Aya','Ayah','Aisha','Aesha',
+  'Alaa','Alia','Alya','Amal','Amany','Amani','Amira','Amirah','Asmaa','Asma',
+  'Azza','Basma','Basmah','Dalia','Dalal','Dina','Dena','Doaa','Duaa','Eman',
+  'Iman','Engy','Engi','Esraa','Esra','Etab','Fatma','Fatima','Faten','Fatin',
+  'Ghada','Ghadah','Hala','Hana','Hanaa','Hanan','Heba','Hibah','Hoda','Huda',
+  'Howaida','Inas','Jana','Jihan','Kholoud','Khadija','Khaleda','Laila','Layla',
+  'Lamia','Latifa','Lubna','Lobna','Maha','Mahasen','Manal','Marwa','Maram',
+  'Mervat','Mona','Muna','Nadia','Nadya','Nadine','Nahla','Nawal','Nesma',
+  'Nesreen','Nisreen','Noha','Nuha','Rabab','Rania','Ranya','Rasha','Reem',
+  'Rim','Riham','Sabah','Sahar','Sawsan','Seham','Siham','Sonia','Taghreed',
+  'Taghrid','Wafaa','Wafa','Walaa','Wala','Yara','Yousra','Yusra','Zahra',
+  'Zahraa','Zein','Zain','Taha','Hamza'
+];
+
+const KNOWN_STAFF_LOWER = new Set(KNOWN_STAFF_NAMES.map(n => n.toLowerCase()));
+
+function detectStaffNames(comment){
+  if (!comment || typeof comment !== 'string') return [];
+  const found = new Set();
+  const text = comment.trim();
+
+  KNOWN_STAFF_NAMES.forEach(staffName => {
+    const regex = new RegExp('\\b' + escapeRegex(staffName) + '\\b', 'i');
+    if (regex.test(text)) found.add(staffName);
+  });
+
+  const patterns = [
+    /(?:thank(?:s| you)?(?:\s+to)?|thanks to|thank you to|special thanks to|big thanks to|shoutout to|kudos to|credit to|compliments to)\s+([A-Z][a-z]+)/gi,
+    /(?:mr\.?|mrs\.?|ms\.?|miss|dr\.?|chef|waiter|waitress|manager|captain|host|hostess)\s+([A-Z][a-z]+)/gi
+  ];
+  patterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(text)) !== null){
+      const name = match[1].trim();
+      const lower = name.toLowerCase();
+      if (NON_STAFF_WORDS.has(lower)) continue;
+      if (name.length < 3) continue;
+      if (KNOWN_STAFF_LOWER.has(lower) || isLikelyName(name)) found.add(name);
+    }
+  });
+
+  return Array.from(found);
+}
+
+function isLikelyName(word){
+  if (word.length < 3 || word.length > 20) return false;
+  if (!/^[A-Z][a-z]+$/.test(word)) return false;
+  return true;
+}
+
+function escapeRegex(str){ return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// =============================================
+// ==== رفع الملف ====
+// =============================================
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+function changeFile(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('uploadSection').style.display='block';
+  document.getElementById('cacheBanner').style.display='none';
+  fileInput.value='';
+}
+
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type:'array', cellDates:true });
+      let targetSheet = null;
+      let rows = [];
+      for (const sheetName of wb.SheetNames){
+        const sheet = wb.Sheets[sheetName];
+        const sheetRows = XLSX.utils.sheet_to_json(sheet, { defval:'', raw:false });
+        if (sheetRows.length > 0){
+          const firstKeys = Object.keys(sheetRows[0]);
+          if (firstKeys.includes('Name') || firstKeys.includes('Room Number') || firstKeys.includes('Ratings Avg.')){
+            targetSheet = sheet;
+            rows = sheetRows;
+            break;
+          }
+        }
+      }
+      if (!targetSheet && wb.SheetNames.length > 0){
+        targetSheet = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(targetSheet, { defval:'', raw:false });
+      }
+      if (!rows.length){ alert('الملف فارغ'); return; }
+      processRows(rows);
+    } catch(err){
+      console.error(err);
+      alert('خطأ في قراءة الملف: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseDate(val){
+  if (!val || val === '') return null;
+  if (val instanceof Date) return isNaN(val) ? null : val;
+  if (typeof val === 'number'){
+    const d = XLSX.SSF.parse_date_code(val);
+    if (!d) return null;
+    return new Date(Date.UTC(d.y, d.m-1, d.d));
+  }
+  const s = String(val).trim();
+  if (!s) return null;
+  let m = s.match(/^([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})/);
+  if (m){
+    const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+                    january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+    const mon = months[m[1].toLowerCase()];
+    if (mon !== undefined) return new Date(Date.UTC(+m[3], mon, +m[2]));
+  }
+  m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if (m) return new Date(Date.UTC(+m[1], +m[2]-1, +m[3]));
+  m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+  if (m) return new Date(Date.UTC(+m[3], +m[2]-1, +m[1]));
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function processRows(rows){
+  if (!rows || rows.length === 0){ alert('لا توجد بيانات'); return; }
+
+  const normalizeKey = (obj) => {
+    const newObj = {};
+    Object.keys(obj).forEach(k => { newObj[String(k).trim()] = obj[k]; });
+    return newObj;
+  };
+  rows = rows.map(normalizeKey);
+
+  const firstRow = rows[0] || {};
+  const fileKeys = Object.keys(firstRow);
+  metricKeys = METRIC_DEFS.filter(def => fileKeys.includes(def.key));
+  if (!metricKeys.length) metricKeys = METRIC_DEFS.slice(0, 15);
+
+  allData = rows.map((r, idx) => {
+    const first = String(r['Name'] || '').trim();
+    const last = String(r['Last Name'] || '').trim();
+    let name = (first + ' ' + last).trim();
+    if (!name) name = '—';
+
+    const room = String(r['Room Number'] || '').trim();
+    const operator = String(r['Operator'] || '').trim();
+    const date = parseDate(r['Date']);
+    const avg = parseFloat(r['Ratings Avg.']) || 0;
+    const comments = String(r['Comments'] || '').trim();
+    const reservation = String(r['Reservation ID'] || '').trim();
+    const staffNames = detectStaffNames(comments);
+
+    const metrics = {};
+    metricKeys.forEach(def => {
+      const val = parseFloat(r[def.key]);
+      if (!isNaN(val) && val > 0) metrics[def.key] = val;
+    });
+
+    return {
+      _id: idx,
+      name, room,
+      operator: operator || '—',
+      reservation,
+      date: date ? date.toISOString() : null,
+      avg, comments, metrics,
+      staffNames,
+      hasComments: comments.length > 0 && comments !== '…',
+      hasStaffMention: staffNames.length > 0
+    };
+  }).filter(x => x.name !== '—' || x.room);
+
+  if (!allData.length){ alert('لم يتم التعرف على أي بيانات صالحة.'); return; }
+
+  // Staff counts
+  staffCounts = {};
+  allData.forEach(r => {
+    r.staffNames.forEach(name => {
+      staffCounts[name] = (staffCounts[name] || 0) + 1;
+    });
+  });
+
+  rebuildOperatorFilter();
+  populateCommentsOperatorFilter();
+
+  // Set month from latest date
+  const dates = allData.map(r => r.date ? new Date(r.date) : null).filter(d => d !== null);
+  if (dates.length > 0){
+    const latestDate = new Date(Math.max(...dates.map(d => d.getTime())));
+    const monthVal = latestDate.getUTCFullYear() + '-' + String(latestDate.getUTCMonth()+1).padStart(2,'0');
+    document.getElementById('monthFilter').value = monthVal;
+  }
+
+  document.getElementById('uploadSection').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  populateFilters();
+  applyFilters();
+  applyCommentsFilters();
+  renderCharts();
+  renderStaffAnalysis();
+  renderStaffDetails();
+  renderStats();
+  setupCommentsFilters();
+
+  saveToCache(false);
+}
+
+function rebuildOperatorFilter(){
+  const operators = [...new Set(allData.map(x => x.operator).filter(o => o && o !== '—'))].sort();
+  const sel = document.getElementById('operatorFilter');
+  const currentVal = sel.value;
+  sel.innerHTML = `<option value="">${t('allOperators')}</option>` +
+    operators.map(o => `<option value="${o}">${o}</option>`).join('');
+  if (currentVal && operators.includes(currentVal)) sel.value = currentVal;
+}
+
+function populateCommentsOperatorFilter(){
+  const operators = [...new Set(allData.map(x => x.operator).filter(o => o && o !== '—'))].sort();
+  const sel = document.getElementById('commentsOperatorFilter');
+  sel.innerHTML = `<option value="">${t('allOperators')}</option>` +
+    operators.map(o => `<option value="${o}">${o}</option>`).join('');
+}
+
+function populateFilters(){
+  const staffSelect = document.getElementById('staffFilter');
+  const currentStaff = staffSelect.value;
+  staffSelect.innerHTML = `<option value="">${t('allStaff')}</option>`;
+  const sortedStaff = Object.keys(staffCounts).sort((a,b) => staffCounts[b] - staffCounts[a]);
+  sortedStaff.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = `${name} (${staffCounts[name]})`;
+    staffSelect.appendChild(opt);
+  });
+  if (currentStaff && sortedStaff.includes(currentStaff)) staffSelect.value = currentStaff;
+}
+
+// =============================================
+// ==== Filters - Tab 1 (Ratings) ====
+// =============================================
+document.getElementById('operatorFilter').addEventListener('change', () => { applyFilters(); renderCharts(); });
+document.getElementById('monthFilter').addEventListener('change', () => { applyFilters(); renderCharts(); });
+document.getElementById('ratingFilter').addEventListener('change', () => { applyFilters(); renderCharts(); });
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+function clearMonth(){
+  document.getElementById('monthFilter').value = '';
+  applyFilters();
+  renderCharts();
+}
+
+function resetFilters(){
+  document.getElementById('operatorFilter').value = '';
+  document.getElementById('monthFilter').value = '';
+  document.getElementById('ratingFilter').value = 'all';
+  document.getElementById('searchInput').value = '';
+  applyFilters();
+  renderCharts();
+}
+
+function applyFilters(){
+  const operator = document.getElementById('operatorFilter').value;
+  const monthVal = document.getElementById('monthFilter').value;
+  const ratingFilter = document.getElementById('ratingFilter').value;
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  filteredData = allData.filter(row => {
+    if (operator && row.operator !== operator) return false;
+    if (monthVal){
+      if (!row.date) return false;
+      const d = new Date(row.date);
+      const [y, m] = monthVal.split('-').map(Number);
+      if (d.getUTCFullYear() !== y || (d.getUTCMonth()+1) !== m) return false;
+    }
+    if (ratingFilter === 'high' && row.avg < 4.5) return false;
+    if (ratingFilter === 'low' && row.avg >= 4.5) return false;
+    if (search){
+      const matchName = row.name.toLowerCase().includes(search);
+      const matchRoom = row.room.toLowerCase().includes(search);
+      if (!matchName && !matchRoom) return false;
+    }
+    return true;
+  });
+
+  const total = allData.length;
+  const avg = filteredData.length ? (filteredData.reduce((s, r) => s + r.avg, 0) / filteredData.length) : 0;
+  const high = filteredData.filter(r => r.avg >= 4.5).length;
+  const low = filteredData.filter(r => r.avg < 4.5).length;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statAvg').textContent = avg.toFixed(2);
+  document.getElementById('statHigh').textContent = high;
+  document.getElementById('statLow').textContent = low;
+
+  renderTable();
+  renderStatsTable();
+  updatePrintHeader();
+}
+
+// =============================================
+// ==== Filters - Tab 2 (Comments) ====
+// =============================================
+function setupCommentsFilters(){
+  document.getElementById('commentsSearchBox').oninput = applyCommentsFilters;
+  document.getElementById('staffFilter').onchange = applyCommentsFilters;
+  document.getElementById('commentsOperatorFilter').onchange = applyCommentsFilters;
+  document.getElementById('staffMentionOnly').onchange = (e) => {
+    document.getElementById('staffMentionToggle').classList.toggle('active', e.target.checked);
+    applyCommentsFilters();
+  };
+}
+
+function applyCommentsFilters(){
+  const q = document.getElementById('commentsSearchBox').value.trim().toLowerCase();
+  const staff = document.getElementById('staffFilter').value;
+  const operator = document.getElementById('commentsOperatorFilter').value;
+  const onlyStaff = document.getElementById('staffMentionOnly').checked;
+
+  commentsFilteredData = allData.filter(r => {
+    if (!r.hasComments) return false;
+    if (q){
+      const matches = r.name.toLowerCase().includes(q) ||
+        r.room.toLowerCase().includes(q) ||
+        r.operator.toLowerCase().includes(q) ||
+        r.comments.toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+    if (staff && !r.staffNames.includes(staff)) return false;
+    if (operator && r.operator !== operator) return false;
+    if (onlyStaff && !r.hasStaffMention) return false;
+    return true;
+  });
+
+  currentPage = 1;
+  renderComments();
+  updateCommentsInfo();
+  renderStats();
+}
+
+function updateCommentsInfo(){
+  const count = commentsFilteredData.length;
+  document.getElementById('commentsInfoText').innerHTML = t('infoCommentsAll', count);
+}
+
+// =============================================
+// ==== الرسم البياني ====
+// =============================================
+function renderCharts(){
+  const ctx1 = document.getElementById('metricsChart').getContext('2d');
+  if (chart1) chart1.destroy();
+
+  const metricsData = [];
+  metricKeys.forEach(def => {
+    const ratings = filteredData.map(r => r.metrics[def.key]).filter(v => v !== undefined);
+    if (ratings.length >= 3){
+      const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+      const avgPct = (avg / 5) * 100;
+      const high = ratings.filter(v => v >= 4.5).length;
+      const pct = (high / ratings.length) * 100;
+      const label = currentLang === 'ar' ? def.ar : def.key;
+      metricsData.push({ key: def.key, label, avg, avgPct, high, total: ratings.length, pct });
+    }
+  });
+
+  metricsData.sort((a, b) => b.avgPct - a.avgPct);
+
+  const labels = metricsData.map(m => m.label);
+  const values = metricsData.map(m => +m.avgPct.toFixed(2));
+  const colors = metricsData.map(m =>
+    m.avgPct >= 90 ? '#16a34a' :
+    m.avgPct >= 80 ? '#22c55e' :
+    m.avgPct >= 70 ? '#f59e0b' :
+    m.avgPct >= 60 ? '#f97316' :
+    '#dc2626'
+  );
+
+  const dataLabelsPlugin = {
+    id: 'dataLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      ctx.save();
+      chart.data.datasets.forEach((dataset, i) => {
+        const meta = chart.getDatasetMeta(i);
+        meta.data.forEach((element, index) => {
+          const value = dataset.data[index];
+          const barColor = Array.isArray(dataset.backgroundColor)
+            ? dataset.backgroundColor[index]
+            : dataset.backgroundColor;
+          ctx.font = 'bold 12px "Segoe UI", Tahoma, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          const xPos = element.x + 6;
+          const yPos = element.y;
+          const text = value.toFixed(1) + '%';
+          const textWidth = ctx.measureText(text).width;
+          ctx.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx.fillRect(xPos - 2, yPos - 10, textWidth + 6, 20);
+          ctx.fillStyle = barColor;
+          ctx.fillText(text, xPos, yPos);
+        });
+      });
+      ctx.restore();
+    }
+  };
+
+  const topPct = Math.max(...values);
+  chart1 = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: currentLang === 'ar' ? 'نسبة الرضا %' : 'Satisfaction %',
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderSkipped: false,
+        barThickness: 'flex',
+        maxBarThickness: 35
+      }]
+    },
+    plugins: [dataLabelsPlugin],
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      layout: { padding: { right: 70 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (ctx) => {
+              const item = metricsData[ctx.dataIndex];
+              return [
+                `📊 ${currentLang === 'ar' ? 'نسبة الرضا' : 'Satisfaction'}: ${ctx.parsed.x.toFixed(2)}%`,
+                `⭐ ${currentLang === 'ar' ? 'المتوسط' : 'Average'}: ${item.avg.toFixed(2)} / 5`,
+                `👥 ${currentLang === 'ar' ? 'عدد الردود' : 'Responses'}: ${item.total}`,
+                `✅ ≥4.5: ${item.high} (${item.pct.toFixed(1)}%)`
+              ];
+            }
+          },
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          padding: 12,
+          titleFont: { size: 14, weight: 'bold' },
+          bodyFont: { size: 13 },
+          displayColors: false
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: Math.min(105, Math.ceil((topPct + 10) / 5) * 5),
+          ticks: { callback: (v) => v + '%', font: { size: 11, weight: '600' } },
+          grid: { color: '#f1f5f9' },
+          title: {
+            display: true,
+            text: currentLang === 'ar' ? 'نسبة الرضا %' : 'Satisfaction %',
+            font: { size: 12, weight: 'bold' },
+            color: '#64748b'
+          }
+        },
+        y: {
+          ticks: { font: { size: 11, weight: '600' }, autoSkip: false },
+          grid: { display: false }
+        }
+      },
+      animation: { duration: 800, easing: 'easeOutQuart' }
+    }
+  });
+}
+
+// =============================================
+// ==== Stats Table ====
+// =============================================
+function renderStatsTable(){
+  const tbody = document.getElementById('statsTableBody');
+  if (!tbody) return;
+
+  const metricsData = [];
+
+  const allAvgs = filteredData.map(r => r.avg).filter(v => v > 0);
+  if (allAvgs.length > 0){
+    const avg = allAvgs.reduce((s, v) => s + v, 0) / allAvgs.length;
+    const avgPct = (avg / 5) * 100;
+    const high = allAvgs.filter(v => v >= 4.5).length;
+    const low = allAvgs.filter(v => v < 4.5).length;
+    const pct = (high / allAvgs.length) * 100;
+    metricsData.push({
+      label: currentLang === 'ar' ? 'متوسط التقييمات' : 'Ratings Avg.',
+      avgPct, avg, total: allAvgs.length, high, low, pct, isHighlight: true
+    });
+  }
+
+  metricKeys.forEach(def => {
+    const ratings = filteredData.map(r => r.metrics[def.key]).filter(v => v !== undefined);
+    if (ratings.length >= 3){
+      const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+      const avgPct = (avg / 5) * 100;
+      const high = ratings.filter(v => v >= 4.5).length;
+      const low = ratings.filter(v => v < 4.5).length;
+      const pct = (high / ratings.length) * 100;
+      const label = currentLang === 'ar' ? def.ar : def.key;
+      metricsData.push({ label, avgPct, avg, total: ratings.length, high, low, pct, isHighlight: false });
+    }
+  });
+
+  const highlight = metricsData.find(m => m.isHighlight);
+  const others = metricsData.filter(m => !m.isHighlight).sort((a, b) => b.avgPct - a.avgPct);
+  const finalData = highlight ? [highlight, ...others] : others;
+
+  tbody.innerHTML = finalData.map(m => {
+    const avgPctColor = m.avgPct >= 90 ? 'stat-value-excellent' : m.avgPct >= 70 ? 'stat-value-good' : 'stat-value-poor';
+    const pctColor = m.pct >= 80 ? 'stat-value-excellent' : m.pct >= 60 ? 'stat-value-good' : 'stat-value-poor';
+    const barColor = m.avgPct >= 90 ? '#16a34a' : m.avgPct >= 70 ? '#f59e0b' : '#dc2626';
+    return `
+      <tr class="${m.isHighlight ? 'highlight-row' : ''}">
+        <td class="text-start fw-semibold">${m.label}</td>
+        <td class="${avgPctColor}">
+          ${m.avgPct.toFixed(2)}%
+        </td>
+        <td class="fw-bold">${m.avg.toFixed(2)}</td>
+        <td>${m.total.toLocaleString()}</td>
+        <td class="text-success fw-semibold">${m.high.toLocaleString()}</td>
+        <td class="text-danger fw-semibold">${m.low.toLocaleString()}</td>
+        <td class="${pctColor}">${m.pct.toFixed(2)}%</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// =============================================
+// ==== Stats Cards ====
+// =============================================
+function renderStats(){
+  document.getElementById('statTotal').textContent = allData.length;
+  document.getElementById('statComments').textContent = allData.filter(r => r.hasComments).length;
+  document.getElementById('statUniqueStaff').textContent = Object.keys(staffCounts).length;
+}
+
+// =============================================
+// ==== Details Table ====
+// =============================================
+function fmtDate(iso){
+  if (!iso) return t('noData');
+  const d = new Date(iso);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+}
+
+function getRatingClass(avg){
+  if (avg >= 4.5) return 'rating-excellent';
+  if (avg >= 3.5) return 'rating-good';
+  return 'rating-poor';
+}
+
+function renderTable(){
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  if (!filteredData.length){ tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const displayRows = filteredData.slice(0, 300);
+  tbody.innerHTML = displayRows.map((r, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td><span class="badge-room">${escapeHtml(r.room)}</span></td>
+      <td><span class="badge-operator">${escapeHtml(r.operator)}</span></td>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="rating-badge ${getRatingClass(r.avg)}">${r.avg.toFixed(1)}</span></td>
+      <td class="no-print">
+        <button class="btn btn-sm btn-outline-primary" onclick="showDetails(${r._id})">
+          <i class="bi bi-eye"></i>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+
+  if (filteredData.length > 300){
+    tbody.innerHTML += `<tr><td colspan="7" class="text-center text-muted py-3">
+      <i class="bi bi-info-circle"></i> عرض 300 من أصل ${filteredData.length} صف
+    </td></tr>`;
+  }
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// =============================================
+// ==== Comments Table ====
+// =============================================
+function percentBadge(val){
+  if (val === null || val === undefined || isNaN(val)) return `<span class="rating-none">—</span>`;
+  const v = parseFloat(val);
+  const pct = (v / MAX_RATING) * 100;
+  let cls = 'rating-excellent';
+  if (pct < 70){ cls = 'rating-poor'; }
+  else if (pct < 90){ cls = 'rating-good'; }
+  return `<span class="rating-badge ${cls}" style="width:auto; min-width:52px; padding:.25rem .6rem; border-radius:12px; font-size:.78rem; height:auto;">${pct.toFixed(1)}%</span>`;
+}
+
+function renderComments(){
+  const tbody = document.getElementById('commentsBody');
+  const empty = document.getElementById('commentsEmptyState');
+  tbody.innerHTML = '';
+
+  if (!commentsFilteredData.length){
+    empty.style.display = 'block';
+    renderCommentsPagination(0);
+    return;
+  }
+  empty.style.display = 'none';
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const pageData = commentsFilteredData.slice(start, end);
+
+  pageData.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (r.hasStaffMention) tr.className = 'has-staff-row';
+
+    let staffHtml = '';
+    if (r.hasStaffMention){
+      staffHtml = r.staffNames.map(n =>
+        `<span class="staff-name-tag">⭐ ${escapeHtml(n)}</span>`
+      ).join('');
+    } else {
+      staffHtml = `<span style="color:#94a3b8;">—</span>`;
+    }
+
+    tr.innerHTML = `
+      <td>${start + i + 1}</td>
+      <td style="white-space:nowrap; font-size:.78rem;">${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.room)}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td><span class="badge-operator">${escapeHtml(r.operator)}</span></td>
+      <td>${percentBadge(r.avg)}</td>
+      <td>${staffHtml}</td>
+      <td class="comment-cell">${escapeHtml(r.comments)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  renderCommentsPagination(commentsFilteredData.length);
+}
+
+function renderCommentsPagination(totalRows){
+  const pagination = document.getElementById('commentsPagination');
+  pagination.innerHTML = '';
+  const totalPages = Math.ceil(totalRows / PAGE_SIZE);
+  if (totalPages <= 1) return;
+
+  const createBtn = (text, page, disabled = false, active = false) => {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.disabled = disabled;
+    if (active) btn.classList.add('active');
+    btn.onclick = () => {
+      currentPage = page;
+      renderComments();
+      window.scrollTo({ top: document.getElementById('commentsBody').offsetTop - 100 });
+    };
+    return btn;
+  };
+
+  pagination.appendChild(createBtn('«', 1, currentPage === 1));
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+
+  if (startPage > 1){
+    pagination.appendChild(createBtn('1', 1, false, currentPage === 1));
+    if (startPage > 2) pagination.appendChild(createBtn('...', 0, true));
+  }
+  for (let p = startPage; p <= endPage; p++){
+    pagination.appendChild(createBtn(p, p, false, p === currentPage));
+  }
+  if (endPage < totalPages){
+    if (endPage < totalPages - 1) pagination.appendChild(createBtn('...', 0, true));
+    pagination.appendChild(createBtn(totalPages, totalPages, false, currentPage === totalPages));
+  }
+  pagination.appendChild(createBtn('»', totalPages, currentPage === totalPages));
+}
+
+// =============================================
+// ==== Staff Analysis ====
+// =============================================
+function renderStaffAnalysis(){
+  const container = document.getElementById('staffCloud');
+  container.innerHTML = '';
+  const entries = Object.entries(staffCounts).sort((a,b) => b[1] - a[1]);
+  if (entries.length === 0){
+    container.innerHTML = `<div class="no-staff-msg">${t('noStaff')}</div>`;
+    return;
+  }
+  entries.forEach(([name, count]) => {
+    const div = document.createElement('div');
+    div.className = 'staff-cloud-item';
+    div.innerHTML = `${escapeHtml(name)} <span class="count">${count}</span>`;
+    div.onclick = () => {
+      switchTab('tab-comments');
+      setTimeout(() => {
+        document.getElementById('staffFilter').value = name;
+        document.getElementById('commentsSearchBox').value = '';
+        document.getElementById('staffMentionOnly').checked = false;
+        document.getElementById('staffMentionToggle').classList.remove('active');
+        applyCommentsFilters();
+      }, 100);
+    };
+    container.appendChild(div);
+  });
+}
+
+function renderStaffDetails(){
+  const tbody = document.getElementById('staffDetailsBody');
+  if (!tbody) return;
+  const entries = Object.entries(staffCounts).sort((a,b) => b[1] - a[1]);
+
+  if (!entries.length){
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">${t('noStaff')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = entries.map(([name, count], i) => {
+    const mentions = allData.filter(r => r.staffNames.includes(name));
+    const guests = mentions.map(r => r.name).filter(Boolean).slice(0, 3).join(', ');
+    const rooms = [...new Set(mentions.map(r => r.room).filter(Boolean))].slice(0, 5).join(', ');
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td><span class="staff-name-tag" style="font-size:.85rem; padding:.3rem .7rem;">⭐ ${escapeHtml(name)}</span></td>
+        <td><span class="rating-badge rating-excellent" style="width:auto; min-width:45px; padding:.3rem .8rem; border-radius:12px; height:auto; font-size:.85rem;">${count}</span></td>
+        <td style="text-align:start; font-size:.82rem;">${escapeHtml(guests)}${mentions.length > 3 ? ' ...' : ''}</td>
+        <td style="text-align:start; font-size:.82rem;">${escapeHtml(rooms)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// =============================================
+// ==== Detail Modal ====
+// =============================================
+function showDetails(id){
+  const row = allData.find(r => r._id === id);
+  if (!row) return;
+
+  document.getElementById('modalName').textContent = `${row.name} - ${t('roomNumber')}: ${row.room}`;
+
+  let html = `
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <p><strong>${t('guestName')}:</strong> ${escapeHtml(row.name)}</p>
+        <p><strong>${t('roomNumber')}:</strong> ${escapeHtml(row.room)}</p>
+        <p><strong>${t('operatorLabel')}:</strong> ${escapeHtml(row.operator)}</p>
+      </div>
+      <div class="col-md-6">
+        <p><strong>${t('dateLabel')}:</strong> ${fmtDate(row.date)}</p>
+        <p><strong>${t('overallRating')}:</strong>
+          <span class="rating-badge ${getRatingClass(row.avg)}" style="width:40px;height:40px;font-size:.85rem;">${row.avg.toFixed(1)}</span>
+        </p>
+      </div>
+    </div>
+    <hr>
+    <h6 class="fw-bold mb-3">${t('ratingDetails')}</h6>
+    <div class="row">
+  `;
+
+  const metricsEntries = Object.entries(row.metrics);
+  if (metricsEntries.length === 0){
+    html += `<div class="col-12 text-muted text-center py-3">${t('noData')}</div>`;
+  } else {
+    metricsEntries.forEach(([key, val]) => {
+      const def = METRIC_DEFS.find(d => d.key === key);
+      const label = currentLang === 'ar' ? (def ? def.ar : key) : key;
+      const pct = (val / 5) * 100;
+      const color = val >= 4.5 ? '#16a34a' : val >= 3.5 ? '#f59e0b' : '#dc2626';
+      html += `
+        <div class="col-md-6 mb-2">
+          <div class="metric-row">
+            <div class="metric-name">${label}</div>
+            <div class="metric-bar">
+              <div class="progress">
+                <div class="progress-bar" style="width:${pct}%; background:${color};"></div>
+              </div>
+            </div>
+            <div class="metric-value" style="color:${color};">${val}</div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  html += `</div>`;
+
+  if (row.comments){
+    html += `
+      <hr>
+      <h6 class="fw-bold mb-2"><i class="bi bi-chat-left-text"></i> ${t('comments')}</h6>
+      <div class="comment-box">${escapeHtml(row.comments)}</div>
+    `;
+    if (row.hasStaffMention){
+      html += `<div class="mt-2">${row.staffNames.map(n =>
+        `<span class="staff-name-tag">⭐ ${escapeHtml(n)}</span>`
+      ).join('')}</div>`;
+    }
+  } else {
+    html += `<hr><p class="text-muted text-center">${t('noComments')}</p>`;
+  }
+
+  document.getElementById('modalBody').innerHTML = html;
+  new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+// =============================================
+// ==== Copy ====
+// =============================================
+function copyList(){
+  if (!filteredData.length){ toast(t('toastNoDataCopy')); return; }
+
+  const avg = filteredData.reduce((s, r) => s + r.avg, 0) / filteredData.length;
+  const high = filteredData.filter(r => r.avg >= 4.5).length;
+  const low = filteredData.filter(r => r.avg < 4.5).length;
+
+  let txt = `📊 ${t('summaryTitle')}\n`;
+  txt += `👥 ${t('totalRatings')}: ${filteredData.length}\n`;
+  txt += `⭐ ${t('overallAvg')}: ${avg.toFixed(2)} / 5\n`;
+  txt += `✅ ${t('highRatings')}: ${high}\n`;
+  txt += `❌ ${t('lowRatings')}: ${low}\n`;
+  txt += `${'─'.repeat(40)}\n\n`;
+  txt += `📈 ${t('metricsBreakdown')}:\n\n`;
+
+  const metricsData = [];
+  metricKeys.forEach(def => {
+    const ratings = filteredData.map(r => r.metrics[def.key]).filter(v => v !== undefined);
+    if (ratings.length >= 3){
+      const avgM = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+      metricsData.push({ label: currentLang === 'ar' ? def.ar : def.key, avg: avgM, total: ratings.length });
+    }
+  });
+  metricsData.sort((a, b) => b.avg - a.avg);
+  metricsData.forEach(m => {
+    const stars = '★'.repeat(Math.round(m.avg)) + '☆'.repeat(5 - Math.round(m.avg));
+    txt += `${stars} ${m.label}: ${m.avg.toFixed(2)} (${m.total})\n`;
+  });
+
+  navigator.clipboard.writeText(txt).then(() => toast(t('toastCopied')));
+}
+
+function copyComments(){
+  if (!commentsFilteredData.length){ toast(t('toastNoDataCopy')); return; }
+  let txt = `📊 Guest Comments Report\n`;
+  txt += `💬 ${commentsFilteredData.length} comments\n`;
+  txt += `${'─'.repeat(40)}\n\n`;
+
+  commentsFilteredData.forEach((r, i) => {
+    txt += `${i+1}. ${r.name} (Room ${r.room})\n`;
+    txt += `   📅 ${r.date}\n`;
+    if (r.staffNames.length) txt += `   🏆 Staff: ${r.staffNames.join(', ')}\n`;
+    txt += `   💬 ${r.comments}\n\n`;
+  });
+
+  navigator.clipboard.writeText(txt).then(() => toast(t('toastCommentsCopied')));
+}
+
+// =============================================
+// ==== Export Excel - Full Data ====
+// =============================================
+function exportExcel(){
+  if (!filteredData.length){ toast(t('toastNoDataExport')); return; }
+
+  const dataRows = filteredData.map((r, i) => {
+    const row = {
+      '#': i+1,
+      [currentLang === 'ar' ? 'الاسم' : 'Name']: r.name,
+      [currentLang === 'ar' ? 'الغرفة' : 'Room']: r.room,
+      [currentLang === 'ar' ? 'الوكيل' : 'Operator']: r.operator,
+      [currentLang === 'ar' ? 'التاريخ' : 'Date']: fmtDate(r.date),
+      [currentLang === 'ar' ? 'المتوسط' : 'Average']: r.avg,
+      [currentLang === 'ar' ? 'التعليقات' : 'Comments']: r.comments,
+      [currentLang === 'ar' ? 'الموظفون المذكورون' : 'Staff Mentioned']: r.staffNames.join(', ')
+    };
+    metricKeys.forEach(def => {
+      const label = currentLang === 'ar' ? def.ar : def.key;
+      row[label] = r.metrics[def.key] || '';
+    });
+    return row;
+  });
+
+  const ws1 = XLSX.utils.json_to_sheet(dataRows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, 'Data');
+
+  const summaryRows = [];
+  const allAvgs = filteredData.map(r => r.avg).filter(v => v > 0);
+  if (allAvgs.length){
+    const avg = allAvgs.reduce((s, v) => s + v, 0) / allAvgs.length;
+    const high = allAvgs.filter(v => v >= 4.5).length;
+    const low = allAvgs.filter(v => v < 4.5).length;
+    summaryRows.push({
+      [currentLang === 'ar' ? 'المعيار' : 'Metric']: currentLang === 'ar' ? 'متوسط التقييمات' : 'Ratings Avg.',
+      [currentLang === 'ar' ? 'متوسط النسبة %' : 'Avg %']: ((avg/5)*100).toFixed(2)+'%',
+      [currentLang === 'ar' ? 'المتوسط' : 'Average']: +avg.toFixed(2),
+      [currentLang === 'ar' ? 'إجمالي الردود' : 'Total']: allAvgs.length,
+      [currentLang === 'ar' ? '≥4.5' : '>=4.5']: high,
+      [currentLang === 'ar' ? '<4.5' : '<4.5']: low,
+      [currentLang === 'ar' ? 'نسبة ≥4.5' : '>=4.5 %']: ((high/allAvgs.length)*100).toFixed(2)+'%'
+    });
+  }
+  metricKeys.forEach(def => {
+    const ratings = filteredData.map(r => r.metrics[def.key]).filter(v => v !== undefined);
+    if (ratings.length < 3) return;
+    const avg = ratings.reduce((s, v) => s + v, 0) / ratings.length;
+    const high = ratings.filter(v => v >= 4.5).length;
+    const low = ratings.filter(v => v < 4.5).length;
+    summaryRows.push({
+      [currentLang === 'ar' ? 'المعيار' : 'Metric']: currentLang === 'ar' ? def.ar : def.key,
+      [currentLang === 'ar' ? 'متوسط النسبة %' : 'Avg %']: ((avg/5)*100).toFixed(2)+'%',
+      [currentLang === 'ar' ? 'المتوسط' : 'Average']: +avg.toFixed(2),
+      [currentLang === 'ar' ? 'إجمالي الردود' : 'Total']: ratings.length,
+      [currentLang === 'ar' ? '≥4.5' : '>=4.5']: high,
+      [currentLang === 'ar' ? '<4.5' : '<4.5']: low,
+      [currentLang === 'ar' ? 'نسبة ≥4.5' : '>=4.5 %']: ((high/ratings.length)*100).toFixed(2)+'%'
+    });
+  });
+
+  const ws2 = XLSX.utils.json_to_sheet(summaryRows);
+  XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
+
+  XLSX.writeFile(wb, `GuestFeedback_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast(t('toastExported'));
+}
+
+// =============================================
+// ==== Export Comments Excel ====
+// =============================================
+function exportCommentsExcel(){
+  if (!commentsFilteredData.length){
+    toast(t('toastNoComments'));
+    return;
+  }
+
+  const rows = [];
+  commentsFilteredData.forEach(r => {
+    if (r.hasStaffMention && r.staffNames.length > 0){
+      r.staffNames.forEach(staffName => {
+        rows.push({
+          [t('thCommentDate')]: r.date,
+          [t('thCommentName')]: r.name,
+          [t('thCommentRoom')]: r.room,
+          [t('thCommentOperator')]: r.operator,
+          [t('thStaffNameCol')]: staffName,
+          [t('thCommentStatus')]: t('statusWithStaff'),
+          [t('thCommentText')]: r.comments
+        });
+      });
+    } else {
+      rows.push({
+        [t('thCommentDate')]: r.date,
+        [t('thCommentName')]: r.name,
+        [t('thCommentRoom')]: r.room,
+        [t('thCommentOperator')]: r.operator,
+        [t('thStaffNameCol')]: '—',
+        [t('thCommentStatus')]: t('statusGeneral'),
+        [t('thCommentText')]: r.comments
+      });
+    }
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [
+    { wch: 20 }, { wch: 25 }, { wch: 10 }, { wch: 20 },
+    { wch: 20 }, { wch: 18 }, { wch: 60 }
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, currentLang === 'ar' ? 'التعليقات' : 'Comments');
+  XLSX.writeFile(wb, `Comments_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast(t('toastCommentsExported'));
+}
+
+// =============================================
+// ==== Export Staff Excel ====
+// =============================================
+function exportStaffExcel(){
+  const entries = Object.entries(staffCounts).sort((a,b) => b[1] - a[1]);
+
+  if (!entries.length){
+    toast(t('toastNoStaff'));
+    return;
+  }
+
+  // ✅ Staff Summary Sheet
+  const staffSummaryRows = entries.map(([name, count], i) => {
+    const mentions = allData.filter(r => r.staffNames.includes(name));
+    const guestNames = mentions.map(r => r.name).filter(Boolean).slice(0, 5).join(', ');
+    const rooms = [...new Set(mentions.map(r => r.room).filter(Boolean))].slice(0, 5).join(', ');
+    const dates = mentions.map(r => r.date).filter(Boolean).slice(0, 3).join(' | ');
+
+    return {
+      '#': i + 1,
+      [currentLang === 'ar' ? 'اسم الموظف' : 'Staff Name']: name,
+      [t('thStaffCountCol')]: count,
+      [currentLang === 'ar' ? 'أسماء الضيوف' : 'Guest Names']: guestNames + (mentions.length > 5 ? ' ...' : ''),
+      [currentLang === 'ar' ? 'الغرف' : 'Rooms']: rooms,
+      [currentLang === 'ar' ? 'آخر تواريخ' : 'Recent Dates']: dates
+    };
+  });
+
+  const ws1 = XLSX.utils.json_to_sheet(staffSummaryRows);
+  ws1['!cols'] = [
+    { wch: 5 }, { wch: 20 }, { wch: 12 }, { wch: 40 }, { wch: 20 }, { wch: 30 }
+  ];
+
+  // ✅ Staff Details Sheet
+  const staffDetailsRows = [];
+  entries.forEach(([name, count]) => {
+    const mentions = allData.filter(r => r.staffNames.includes(name));
+    mentions.forEach(r => {
+      staffDetailsRows.push({
+        [currentLang === 'ar' ? 'اسم الموظف' : 'Staff Name']: name,
+        [t('thCommentDate')]: r.date,
+        [t('thCommentName')]: r.name,
+        [t('thCommentRoom')]: r.room,
+        [t('thCommentOperator')]: r.operator,
+        [t('thCommentText')]: r.comments
+      });
+    });
+  });
+
+  const ws2 = XLSX.utils.json_to_sheet(staffDetailsRows);
+  ws2['!cols'] = [
+    { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 10 }, { wch: 20 }, { wch: 60 }
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, currentLang === 'ar' ? 'ملخص الموظفين' : 'Staff Summary');
+  XLSX.utils.book_append_sheet(wb, ws2, currentLang === 'ar' ? 'تفاصيل الموظفين' : 'Staff Details');
+
+  XLSX.writeFile(wb, `Staff_Mentions_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast(t('toastStaffExported'));
+}
+
+// =============================================
+// ==== Print Header ====
+// =============================================
+function updatePrintHeader(){
+  const operator = document.getElementById('operatorFilter').value || t('allOperators');
+  const monthVal = document.getElementById('monthFilter').value;
+  let infoTxt = `${t('operator')}: ${operator}`;
+  if (monthVal){
+    const [y, m] = monthVal.split('-');
+    infoTxt += ` &nbsp;|&nbsp; ${t('period')}: ${I18N[currentLang].monthNames[parseInt(m,10)-1]} ${y}`;
+  }
+  document.getElementById('printInfo').innerHTML = infoTxt;
+  document.getElementById('printCount').textContent = `${t('totalRatings')}: ${filteredData.length}`;
+
+  const avg = filteredData.length ? filteredData.reduce((s, r) => s + r.avg, 0) / filteredData.length : 0;
+  document.getElementById('printExplain').innerHTML =
+    `<strong>${t('overallAvg')}:</strong> ${avg.toFixed(2)} / 5 &nbsp;|&nbsp; ` +
+    `<strong>${t('highRatings')}:</strong> ${filteredData.filter(r => r.avg >= 4.5).length} &nbsp;|&nbsp; ` +
+    `<strong>${t('lowRatings')}:</strong> ${filteredData.filter(r => r.avg < 4.5).length}`;
+}
+
+// =============================================
+// ==== Cache ====
+// =============================================
+function saveToCache(showToast){
+  if (!allData.length){ if (showToast) toast(t('toastNoData')); return false; }
+  try{
+    const payload = {
+      version: 1,
+      savedAt: Date.now(),
+      allData: allData,
+      metricKeys: metricKeys,
+      staffCounts: staffCounts,
+      lang: currentLang,
+      filters: {
+        operator: document.getElementById('operatorFilter').value,
+        month: document.getElementById('monthFilter').value,
+        rating: document.getElementById('ratingFilter').value,
+        search: document.getElementById('searchInput').value,
+        commentsSearch: document.getElementById('commentsSearchBox').value,
+        staffFilter: document.getElementById('staffFilter').value,
+        commentsOperator: document.getElementById('commentsOperatorFilter').value,
+        staffMentionOnly: document.getElementById('staffMentionOnly').checked
+      }
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+    updateCacheBanner(payload.savedAt);
+    if (showToast) toast(t('toastSaved'));
+    return true;
+  } catch(err){
+    console.error(err);
+    if (showToast) toast(t('toastSaveFail'));
+    return false;
+  }
+}
+
+function loadFromCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || data.version !== 1){ clearCache(true); return false; }
+    const age = Date.now() - (data.savedAt || 0);
+    if (age > CACHE_TTL){ clearCache(true); return false; }
+
+    allData = data.allData || [];
+    metricKeys = data.metricKeys || METRIC_DEFS.slice(0, 15);
+    staffCounts = data.staffCounts || {};
+
+    if (data.lang && I18N[data.lang]){
+      currentLang = data.lang;
+      localStorage.setItem('merged_feedback_lang', currentLang);
+    }
+
+    applyLang();
+    rebuildOperatorFilter();
+    populateCommentsOperatorFilter();
+    populateFilters();
+
+    const f = data.filters || {};
+    document.getElementById('operatorFilter').value = f.operator || '';
+    document.getElementById('monthFilter').value = f.month || '';
+    document.getElementById('ratingFilter').value = f.rating || 'all';
+    document.getElementById('searchInput').value = f.search || '';
+    document.getElementById('commentsSearchBox').value = f.commentsSearch || '';
+    document.getElementById('staffFilter').value = f.staffFilter || '';
+    document.getElementById('commentsOperatorFilter').value = f.commentsOperator || '';
+    document.getElementById('staffMentionOnly').checked = !!f.staffMentionOnly;
+    document.getElementById('staffMentionToggle').classList.toggle('active', !!f.staffMentionOnly);
+
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+
+    setupCommentsFilters();
+    applyFilters();
+    applyCommentsFilters();
+    renderCharts();
+    renderStaffAnalysis();
+    renderStaffDetails();
+    renderStats();
+    updateCacheBanner(data.savedAt);
+    return true;
+  } catch(err){
+    console.error(err);
+    clearCache(true);
+    return false;
+  }
+}
+
+function clearCache(silent){
+  localStorage.removeItem(CACHE_KEY);
+  document.getElementById('cacheBanner').style.display = 'none';
+  if (!silent){
+    allData = [];
+    filteredData = [];
+    commentsFilteredData = [];
+    staffCounts = {};
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('uploadSection').style.display = 'block';
+    toast(t('toastCacheCleared'));
+  }
+}
+
+function updateCacheBanner(savedAt){
+  if (!savedAt){ document.getElementById('cacheBanner').style.display = 'none'; return; }
+  const age = Date.now() - savedAt;
+  const left = CACHE_TTL - age;
+  if (left <= 0){ document.getElementById('cacheBanner').style.display = 'none'; return; }
+  const hours = Math.floor(left / (60*60*1000));
+  const mins = Math.floor((left % (60*60*1000)) / (60*1000));
+  const d = new Date(savedAt);
+  const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('cacheTimeLeft').textContent = t('cacheTimeLeft', hours, mins, timeStr);
+  document.getElementById('cacheBanner').style.display = 'flex';
+}
+
+// =============================================
+// ==== Init ====
+// =============================================
+window.addEventListener('DOMContentLoaded', () => {
+  applyLang();
+  loadFromCache();
+  setInterval(() => {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw){ document.getElementById('cacheBanner').style.display = 'none'; return; }
+    try{
+      const d = JSON.parse(raw);
+      updateCacheBanner(d.savedAt);
+    }catch(e){}
+  }, 60000);
+});
+
+// ==== Toast ====
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
