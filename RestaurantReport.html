@@ -7,6 +7,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root{
     --primary:#1e40af; --primary-light:#3b82f6; --accent:#0ea5e9;
@@ -78,6 +79,8 @@
   .btn-export:hover{background:#15803d; color:#fff;}
   .btn-comments-export{background:#0ea5e9; color:#fff; border:none; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
   .btn-comments-export:hover{background:#0284c7; color:#fff;}
+  .btn-staff-export{background:#f59e0b; color:#fff; border:none; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
+  .btn-staff-export:hover{background:#d97706; color:#fff;}
   .btn-save{background:#7c3aed; color:#fff; border:none; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
   .btn-save:hover{background:#6d28d9; color:#fff;}
   .btn-clear-cache{background:#fef3c7; color:#92400e; border:1px solid #fbbf24; border-radius:6px; padding:.4rem .9rem; font-weight:600; font-size:.85rem;}
@@ -106,8 +109,9 @@
   .staff-cloud-item{
     background:#1e40af; color:#fff; padding:.4rem .8rem; border-radius:20px;
     font-weight:600; font-size:.82rem; display:flex;
-    align-items:center; gap:.4rem;
+    align-items:center; gap:.4rem; cursor:pointer; transition:.2s;
   }
+  .staff-cloud-item:hover{background:#1e3a8a; transform:scale(1.05);}
   .staff-cloud-item .count{
     background:rgba(255,255,255,.25); padding:.05rem .4rem;
     border-radius:10px; font-size:.7rem;
@@ -185,12 +189,61 @@
   }
   body.lang-en .print-header .explain{border-right:none; border-left:3px solid #1e40af; text-align:left;}
 
+  /* ===== New: Tab Navigation ===== */
+  .tab-nav{
+    display:flex; gap:.5rem; margin-bottom:1.5rem; flex-wrap:wrap;
+    background:#fff; padding:.5rem; border-radius:12px;
+    box-shadow:0 1px 4px rgba(0,0,0,.06);
+  }
+  .tab-btn{
+    flex:1; min-width:150px; background:transparent; border:none;
+    padding:.8rem 1.2rem; border-radius:8px; font-weight:700;
+    color:#64748b; cursor:pointer; transition:.2s;
+    display:flex; align-items:center; justify-content:center; gap:.5rem;
+    font-size:.9rem;
+  }
+  .tab-btn:hover{background:#eff6ff; color:var(--primary);}
+  .tab-btn.active{
+    background:linear-gradient(135deg,#1e40af,#3b82f6); color:#fff;
+    box-shadow:0 4px 12px rgba(30,64,175,.3);
+  }
+  .tab-content{display:none;}
+  .tab-content.active{display:block; animation:fadeIn .3s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ===== New: Detail Modal ===== */
+  .detail-modal .modal-content{border-radius:12px; border:none;}
+  .detail-modal .modal-header{background:linear-gradient(135deg,#1e40af,#3b82f6); color:#fff; border-radius:12px 12px 0 0;}
+  .detail-modal .modal-header .btn-close{filter:brightness(0) invert(1);}
+
+  .metric-row{
+    display:flex; align-items:center; gap:1rem; padding:.6rem 0;
+    border-bottom:1px solid #f1f5f9;
+  }
+  .metric-row:last-child{border-bottom:none;}
+  .metric-name{flex:0 0 180px; font-weight:600; font-size:.9rem;}
+  .metric-bar{flex:1;}
+  .metric-value{flex:0 0 60px; text-align:center; font-weight:700; font-size:.9rem;}
+
+  .progress{height:10px; border-radius:5px; background:#e2e8f0;}
+  .progress-bar{transition:width .5s ease;}
+
+  .comment-box{
+    background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;
+    padding:1rem; max-height:250px; overflow-y:auto; white-space:pre-wrap;
+    font-size:.9rem; line-height:1.7;
+  }
+
+  /* ===== New: Staff Details Table ===== */
+  #staffDetailsBody td{vertical-align:middle;}
+
   @media print{
     @page { size: A4 landscape; margin: 10mm; }
     body{background:#fff !important; font-size:10px !important;}
     .no-print, .header, .filter-box, .upload-zone,
     .actions-bar, #uploadSection, .row.g-3.mb-4,
-    .cache-banner, .pagination, .staff-analysis-card {display:none !important;}
+    .cache-banner, .pagination, .staff-analysis-card,
+    .tab-nav, .chart-container {display:none !important;}
     .main-container{padding:0 !important; max-width:100% !important; margin:0 !important;}
     .card{box-shadow:none !important; border-radius:0 !important; border:none !important;}
     .table-wrapper{max-height:none !important; overflow:visible !important;}
@@ -210,6 +263,7 @@
     }
     .print-header{display:block !important;}
     .comments-cell{max-width:none !important; white-space:normal !important;}
+    .tab-content{display:block !important;}
   }
 
   @media (max-width: 768px){
@@ -300,139 +354,299 @@
       </div>
     </div>
 
-    <h2 class="mb-2" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
-      <i class="bi bi-list-check"></i> <span id="summaryTitle">ملخص المطاعم</span>
-    </h2>
-    <div class="card mb-3">
-      <div class="table-wrapper">
-        <table class="table table-hover mb-0">
-          <thead>
-            <tr>
-              <th style="width:50px;">#</th>
-              <th id="thRestaurant">المطعم</th>
-              <th id="thResponses">عدد الردود</th>
-              <th id="thAvgRating">متوسط التقييم العام</th>
-              <th id="thFood">الطعام</th>
-              <th id="thService">الخدمة</th>
-              <th id="thAtmosphere">الأجواء</th>
-            </tr>
-          </thead>
-          <tbody id="summaryBody"></tbody>
-        </table>
+    <!-- ===== NEW: Tab Navigation ===== -->
+    <div class="tab-nav no-print">
+      <button class="tab-btn active" onclick="switchTab('tab-ratings')">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span id="tabRatings">تقييمات المعايير</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-comments')">
+        <i class="bi bi-chat-square-text-fill"></i>
+        <span id="tabCommentsLabel">التعليقات والموظفين</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-staff')">
+        <i class="bi bi-person-badge-fill"></i>
+        <span id="tabStaffLabel">تحليل الموظفين</span>
+      </button>
+    </div>
+
+    <!-- ============================================
+         TAB 1: تقييمات المعايير (Ratings)
+         ============================================ -->
+    <div id="tab-ratings" class="tab-content active">
+
+      <h2 class="mb-2" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
+        <i class="bi bi-list-check"></i> <span id="summaryTitle">ملخص المطاعم</span>
+      </h2>
+      <div class="card mb-3">
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thRestaurant">المطعم</th>
+                <th id="thResponses">عدد الردود</th>
+                <th id="thAvgRating">متوسط التقييم العام</th>
+                <th id="thFood">الطعام</th>
+                <th id="thService">الخدمة</th>
+                <th id="thAtmosphere">الأجواء</th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <div class="card staff-analysis-card mb-3 p-3">
-      <h3 style="color:#1e40af; font-weight:800; font-size:1rem; margin-bottom:.8rem;">
-        <i class="bi bi-trophy-fill" style="color:#f59e0b;"></i>
-        <span id="staffTitle">الموظفون المذكورون في التعليقات</span>
-      </h3>
-      <div id="staffCloud" class="staff-cloud"></div>
-    </div>
+      <h2 class="mb-2" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
+        <i class="bi bi-card-text"></i> <span id="detailsTitle">تفاصيل الردود</span>
+      </h2>
 
-    <h2 class="mb-2" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
-      <i class="bi bi-card-text"></i> <span id="detailsTitle">تفاصيل الردود</span>
-    </h2>
-
-    <div class="filter-box mb-3 no-print">
-      <div class="row g-2 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-search"></i> <span id="lblSearch">بحث</span></label>
-          <input type="text" class="form-control form-control-sm" id="searchBox" placeholder="ابحث بالاسم، رقم الغرفة، أو المطعم...">
+      <div class="filter-box mb-3 no-print">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-search"></i> <span id="lblSearch">بحث</span></label>
+            <input type="text" class="form-control form-control-sm" id="searchBox" placeholder="ابحث بالاسم، رقم الغرفة، أو المطعم...">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-building"></i> <span id="lblRestaurantFilter">المطعم</span></label>
+            <select class="form-select form-select-sm" id="restaurantFilter">
+              <option value="">كل المطاعم</option>
+            </select>
+          </div>
+          <div class="col-md-5">
+            <div class="d-flex gap-2 flex-wrap">
+              <label class="filter-toggle" id="commentsOnlyToggle">
+                <input type="checkbox" id="commentsOnly">
+                <span id="lblCommentsOnly">💬 تعليقات فقط</span>
+              </label>
+              <label class="filter-toggle" id="staffMentionToggle">
+                <input type="checkbox" id="staffMentionOnly">
+                <span id="lblStaffMention">⭐ ذكر موظفين</span>
+              </label>
+            </div>
+          </div>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-building"></i> <span id="lblRestaurantFilter">المطعم</span></label>
-          <select class="form-select form-select-sm" id="restaurantFilter">
-            <option value="">كل المطاعم</option>
-          </select>
+      </div>
+
+      <div class="info-message no-print" id="infoMsg">
+        <i class="bi bi-info-circle-fill"></i>
+        <span id="infoText"></span>
+      </div>
+
+      <div class="actions-bar d-flex flex-wrap gap-2 mb-2 no-print">
+        <button class="btn btn-save" onclick="saveToCache(true)">
+          <i class="bi bi-save-fill"></i> <span id="btnSave">حفظ (24 ساعة)</span>
+        </button>
+        <button class="btn btn-clear-cache" onclick="clearCache()">
+          <i class="bi bi-trash3-fill"></i> <span id="btnClearCache">حذف الكاش</span>
+        </button>
+        <button class="btn btn-copy" onclick="copyList()">
+          <i class="bi bi-clipboard-check"></i> <span id="btnCopy">نسخ</span>
+        </button>
+        <button class="btn btn-export" onclick="exportExcel()">
+          <i class="bi bi-file-earmark-excel"></i> <span id="btnExport">تصدير</span>
+        </button>
+        <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+          <i class="bi bi-printer"></i> <span id="btnPrint">طباعة</span>
+        </button>
+        <button class="btn btn-outline-secondary btn-sm ms-auto" onclick="changeFile()">
+          <i class="bi bi-upload"></i> <span id="btnNewFile">رفع ملف جديد</span>
+        </button>
+      </div>
+
+      <div class="print-header">
+        <h2>Restaurant Feedback Report</h2>
+        <div class="info" id="printInfo"></div>
+        <div class="count-badge" id="printCount">عدد الردود: 0</div>
+        <div class="explain" id="printExplain"></div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thDate">التاريخ</th>
+                <th id="thRoom">الغرفة</th>
+                <th id="thName">الاسم</th>
+                <th id="thRestaurantCol">المطعم</th>
+                <th id="thRating">التقييم</th>
+                <th id="thFoodCol">الطعام</th>
+                <th id="thServiceCol">الخدمة</th>
+                <th id="thAtmosphereCol">الأجواء</th>
+                <th id="thComments">ملاحظات</th>
+                <th id="thDetails" class="no-print">تفاصيل</th>
+              </tr>
+            </thead>
+            <tbody id="detailsBody"></tbody>
+          </table>
         </div>
-        <div class="col-md-5">
-          <div class="d-flex gap-2 flex-wrap">
-            <label class="filter-toggle" id="commentsOnlyToggle">
-              <input type="checkbox" id="commentsOnly">
-              <span id="lblCommentsOnly">💬 تعليقات فقط</span>
-            </label>
-            <label class="filter-toggle" id="staffMentionToggle">
-              <input type="checkbox" id="staffMentionOnly">
-              <span id="lblStaffMention">⭐ ذكر موظفين</span>
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <i class="bi bi-inbox"></i>
+          <h5 class="mt-3" id="emptyTitle">لا توجد نتائج مطابقة</h5>
+          <p id="emptyHint">جرّب تغيير الفلاتر</p>
+        </div>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+
+    </div><!-- /tab-ratings -->
+
+    <!-- ============================================
+         TAB 2: التعليقات والموظفين (Comments)
+         ============================================ -->
+    <div id="tab-comments" class="tab-content">
+
+      <h2 class="mb-3" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
+        <i class="bi bi-chat-square-text-fill"></i>
+        <span id="commentsTitle">تعليقات الضيوف مع الموظفين المذكورين</span>
+      </h2>
+
+      <div class="filter-box mb-3 no-print">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-search"></i> <span id="lblCommentsSearch">بحث</span></label>
+            <input type="text" class="form-control form-control-sm" id="commentsSearchBox" placeholder="ابحث بالاسم، رقم الغرفة، أو نص التعليق...">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-person-badge"></i> <span id="lblStaffFilter">الموظف</span></label>
+            <select class="form-select form-select-sm" id="staffFilter">
+              <option value="">كل الموظفين</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold" style="font-size:.8rem;"><i class="bi bi-building"></i> <span id="lblCommentsRestaurant">المطعم</span></label>
+            <select class="form-select form-select-sm" id="commentsRestaurantFilter">
+              <option value="">كل المطاعم</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="filter-toggle" id="staffMentionToggle2">
+              <input type="checkbox" id="staffMentionOnly2">
+              <span id="lblStaffMention2">⭐ ذكر موظفين</span>
             </label>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="info-message no-print" id="infoMsg">
-      <i class="bi bi-info-circle-fill"></i>
-      <span id="infoText"></span>
-    </div>
-
-    <!-- Actions Bar with new Comments Export button -->
-    <div class="actions-bar d-flex flex-wrap gap-2 mb-2 no-print">
-      <button class="btn btn-save" onclick="saveToCache(true)">
-        <i class="bi bi-save-fill"></i> <span id="btnSave">حفظ (24 ساعة)</span>
-      </button>
-      <button class="btn btn-clear-cache" onclick="clearCache()">
-        <i class="bi bi-trash3-fill"></i> <span id="btnClearCache">حذف الكاش</span>
-      </button>
-      <button class="btn btn-copy" onclick="copyList()">
-        <i class="bi bi-clipboard-check"></i> <span id="btnCopy">نسخ</span>
-      </button>
-      <button class="btn btn-export" onclick="exportExcel()">
-        <i class="bi bi-file-earmark-excel"></i> <span id="btnExport">تصدير</span>
-      </button>
-      <button class="btn btn-comments-export" onclick="exportCommentsExcel()">
-        <i class="bi bi-chat-square-text-fill"></i> <span id="btnExportComments">تصدير التعليقات</span>
-      </button>
-      <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
-        <i class="bi bi-printer"></i> <span id="btnPrint">طباعة</span>
-      </button>
-      <button class="btn btn-outline-secondary btn-sm ms-auto" onclick="changeFile()">
-        <i class="bi bi-upload"></i> <span id="btnNewFile">رفع ملف جديد</span>
-      </button>
-    </div>
-
-    <div class="print-header">
-      <h2>Restaurant Feedback Report</h2>
-      <div class="info" id="printInfo"></div>
-      <div class="count-badge" id="printCount">عدد الردود: 0</div>
-      <div class="explain" id="printExplain"></div>
-    </div>
-
-    <div class="card">
-      <div class="table-wrapper">
-        <table class="table table-hover mb-0">
-          <thead>
-            <tr>
-              <th style="width:50px;">#</th>
-              <th id="thDate">التاريخ</th>
-              <th id="thRoom">الغرفة</th>
-              <th id="thName">الاسم</th>
-              <th id="thRestaurantCol">المطعم</th>
-              <th id="thRating">التقييم</th>
-              <th id="thFoodCol">الطعام</th>
-              <th id="thServiceCol">الخدمة</th>
-              <th id="thAtmosphereCol">الأجواء</th>
-              <th id="thComments">ملاحظات</th>
-            </tr>
-          </thead>
-          <tbody id="detailsBody"></tbody>
-        </table>
+      <div class="info-message no-print" id="commentsInfoMsg">
+        <i class="bi bi-info-circle-fill"></i>
+        <span id="commentsInfoText"></span>
       </div>
-      <div id="emptyState" class="empty-state" style="display:none;">
-        <i class="bi bi-inbox"></i>
-        <h5 class="mt-3" id="emptyTitle">لا توجد نتائج مطابقة</h5>
-        <p id="emptyHint">جرّب تغيير الفلاتر</p>
-      </div>
-    </div>
 
-    <div class="pagination" id="pagination"></div>
+      <div class="actions-bar d-flex flex-wrap gap-2 mb-3 no-print">
+        <button class="btn btn-copy" onclick="copyComments()">
+          <i class="bi bi-clipboard-check"></i> <span id="btnCopyComments">نسخ التعليقات</span>
+        </button>
+        <button class="btn btn-comments-export" onclick="exportCommentsExcel()">
+          <i class="bi bi-chat-square-text-fill"></i> <span id="btnExportComments">تصدير التعليقات</span>
+        </button>
+        <button class="btn btn-staff-export" onclick="exportStaffExcel()">
+          <i class="bi bi-person-badge-fill"></i> <span id="btnExportStaff">تصدير الموظفين</span>
+        </button>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+          <i class="bi bi-printer"></i> <span id="btnPrint2">طباعة</span>
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thCommentDate">التاريخ</th>
+                <th id="thCommentRoom">الغرفة</th>
+                <th id="thCommentName">اسم الجيست</th>
+                <th id="thCommentRestaurant">المطعم</th>
+                <th id="thCommentRating">التقييم</th>
+                <th id="thCommentStaff">الموظفون المذكورون</th>
+                <th id="thCommentText">التعليق</th>
+              </tr>
+            </thead>
+            <tbody id="commentsBody"></tbody>
+          </table>
+        </div>
+        <div id="commentsEmptyState" class="empty-state" style="display:none;">
+          <i class="bi bi-chat-square"></i>
+          <h5 class="mt-3" id="emptyCommentsTitle">لا توجد تعليقات مطابقة</h5>
+          <p id="emptyCommentsHint">جرّب تغيير الفلاتر</p>
+        </div>
+      </div>
+
+      <div class="pagination" id="commentsPagination"></div>
+
+    </div><!-- /tab-comments -->
+
+    <!-- ============================================
+         TAB 3: تحليل الموظفين (Staff)
+         ============================================ -->
+    <div id="tab-staff" class="tab-content">
+
+      <h2 class="mb-3" style="color:#1e40af; font-weight:800; font-size:1.1rem;">
+        <i class="bi bi-trophy-fill" style="color:#f59e0b;"></i>
+        <span id="staffAnalysisTitle">الموظفون المذكورون في التعليقات</span>
+      </h2>
+
+      <div class="actions-bar d-flex flex-wrap gap-2 mb-3 no-print">
+        <button class="btn btn-staff-export" onclick="exportStaffExcel()">
+          <i class="bi bi-person-badge-fill"></i> <span id="btnExportStaff2">تصدير الموظفين</span>
+        </button>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+          <i class="bi bi-printer"></i> <span id="btnPrint3">طباعة</span>
+        </button>
+      </div>
+
+      <div class="card staff-analysis-card mb-3 p-4">
+        <div id="staffCloud" class="staff-cloud"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="background:linear-gradient(135deg,#1e40af,#3b82f6); color:#fff; border-radius:12px 12px 0 0; padding:1rem;">
+          <h5 class="mb-0 fw-bold text-center">
+            <i class="bi bi-list-ul"></i>
+            <span id="staffDetailsTitle">تفاصيل ذكر الموظفين</span>
+          </h5>
+        </div>
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thStaffName">اسم الموظف</th>
+                <th id="thStaffCount">عدد المرات</th>
+                <th id="thStaffGuests">الضيوف الذين ذكروه</th>
+                <th id="thStaffRestaurants">المطاعم</th>
+              </tr>
+            </thead>
+            <tbody id="staffDetailsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /tab-staff -->
 
   </div>
 
 </div>
 
+<!-- ===== Detail Modal ===== -->
+<div class="modal fade detail-modal" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-badge"></i> <span id="modalName">تفاصيل التقييم</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-msg" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // ============================================================
 // TRANSLATIONS
@@ -473,33 +687,80 @@ const I18N = {
     thServiceCol: 'الخدمة',
     thAtmosphereCol: 'الأجواء',
     thComments: 'ملاحظات',
+    thDetails: 'تفاصيل',
     totalAvg: 'الإجمالي / المتوسط',
     noComments: 'لا توجد تعليقات',
     noStaff: 'لم يتم ذكر أي موظفين في التعليقات',
     allRestaurants: 'كل المطاعم',
+    allStaff: 'كل الموظفين',
     emptyTitle: 'لا توجد نتائج مطابقة',
     emptyHint: 'جرّب تغيير الفلاتر',
     toastSaved: 'تم حفظ البيانات ✅ (صالح 24 ساعة)',
     toastSaveFail: 'فشل الحفظ ❌',
     toastCacheCleared: 'تم حذف الكاش ✅',
     toastCopied: 'تم نسخ القائمة ✅',
+    toastCommentsCopied: 'تم نسخ التعليقات ✅',
     toastExported: 'تم تصدير الملف ✅',
     toastCommentsExported: 'تم تصدير ملف التعليقات ✅',
+    toastStaffExported: 'تم تصدير ملف الموظفين ✅',
     toastNoComments: 'لا توجد تعليقات للتصدير',
+    toastNoStaff: 'لا توجد أسماء موظفين للتصدير',
     toastNoData: 'لا توجد بيانات',
     cacheBannerText: 'تم استرجاع البيانات المحفوظة من المتصفح',
     cacheTimeLeft: (h,m,t) => `محفوظ ${t} • متبقي ${h}س ${m}د`,
     infoAll: (n) => `يتم عرض <b>${n}</b> رد في الجدول.`,
+    infoComments: (n) => `يتم عرض <b>${n}</b> تعليق في الجدول.`,
     printCount: 'عدد الردود',
     printExplain: (n) => `<strong>ملخص:</strong> إجمالي الردود المعروضة: <strong>${n}</strong> — تقرير تقييمات مطاعم Long Beach Resort.`,
+    // Tabs
+    tabRatings: 'تقييمات المعايير',
+    tabCommentsLabel: 'التعليقات والموظفين',
+    tabStaffLabel: 'تحليل الموظفين',
+    // Comments tab
+    commentsTitle: 'تعليقات الضيوف مع الموظفين المذكورين',
+    lblCommentsSearch: 'بحث',
+    lblStaffFilter: 'الموظف',
+    lblCommentsRestaurant: 'المطعم',
+    lblStaffMention2: '⭐ ذكر موظفين',
+    thCommentDate: 'التاريخ',
+    thCommentRoom: 'الغرفة',
+    thCommentName: 'اسم الجيست',
+    thCommentRestaurant: 'المطعم',
+    thCommentRating: 'التقييم',
+    thCommentStaff: 'الموظفون المذكورون',
+    thCommentText: 'التعليق',
+    emptyCommentsTitle: 'لا توجد تعليقات مطابقة',
+    emptyCommentsHint: 'جرّب تغيير الفلاتر',
+    btnCopyComments: 'نسخ التعليقات',
     btnExportComments: 'تصدير التعليقات',
-    thCommentDate: 'تاريخ التعليق',
-    thGuestName: 'اسم الجيست',
+    btnExportStaff: 'تصدير الموظفين',
+    btnPrint2: 'طباعة',
+    btnPrint3: 'طباعة',
+    btnExportStaff2: 'تصدير الموظفين',
+    // Staff tab
+    staffAnalysisTitle: 'الموظفون المذكورون في التعليقات',
+    staffDetailsTitle: 'تفاصيل ذكر الموظفين',
     thStaffName: 'اسم الموظف',
-    thRestaurantName: 'اسم المطعم',
+    thStaffCount: 'عدد المرات',
+    thStaffGuests: 'الضيوف الذين ذكروه',
+    thStaffRestaurants: 'المطاعم',
+    // Modal
+    ratingDetails: 'تفاصيل التقييم',
+    guestName: 'اسم الضيف',
+    roomNumber: 'رقم الغرفة',
+    restaurantLabel: 'المطعم',
+    dateLabel: 'التاريخ',
+    overallRating: 'التقييم العام',
+    comments: 'التعليقات',
+    noData: '—',
+    // Excel export
     thCommentStatus: 'حالة التعليق',
+    thStaffNameCol: 'اسم الموظف',
+    thStaffCountCol: 'عدد المرات',
     statusWithStaff: 'يذكر موظف',
     statusGeneral: 'تعليق عام',
+    btnExportComments: 'تصدير التعليقات',
+    thRestaurantName: 'اسم المطعم',
   },
   en: {
     dir: 'ltr', lang: 'en',
@@ -536,33 +797,74 @@ const I18N = {
     thServiceCol: 'Service',
     thAtmosphereCol: 'Atmosphere',
     thComments: 'Comments',
+    thDetails: 'Details',
     totalAvg: 'Total / Average',
     noComments: 'No comments',
     noStaff: 'No staff members mentioned in comments',
     allRestaurants: 'All Restaurants',
+    allStaff: 'All Staff',
     emptyTitle: 'No matching results',
     emptyHint: 'Try changing the filters',
     toastSaved: 'Data saved ✅ (valid 24h)',
     toastSaveFail: 'Save failed ❌',
     toastCacheCleared: 'Cache cleared ✅',
     toastCopied: 'List copied ✅',
+    toastCommentsCopied: 'Comments copied ✅',
     toastExported: 'File exported ✅',
     toastCommentsExported: 'Comments file exported ✅',
+    toastStaffExported: 'Staff file exported ✅',
     toastNoComments: 'No comments to export',
+    toastNoStaff: 'No staff names to export',
     toastNoData: 'No data available',
     cacheBannerText: 'Data restored from browser cache',
     cacheTimeLeft: (h,m,t) => `Saved ${t} • ${h}h ${m}m left`,
     infoAll: (n) => `Showing <b>${n}</b> responses in the table.`,
+    infoComments: (n) => `Showing <b>${n}</b> comments in the table.`,
     printCount: 'Responses Count',
     printExplain: (n) => `<strong>Summary:</strong> Total displayed responses: <strong>${n}</strong> — Long Beach Resort Restaurant Feedback Report.`,
+    tabRatings: 'Metrics Ratings',
+    tabCommentsLabel: 'Comments & Staff',
+    tabStaffLabel: 'Staff Analysis',
+    commentsTitle: 'Guest Comments with Staff Mentions',
+    lblCommentsSearch: 'Search',
+    lblStaffFilter: 'Staff',
+    lblCommentsRestaurant: 'Restaurant',
+    lblStaffMention2: '⭐ Staff Mentioned',
+    thCommentDate: 'Date',
+    thCommentRoom: 'Room',
+    thCommentName: 'Guest Name',
+    thCommentRestaurant: 'Restaurant',
+    thCommentRating: 'Rating',
+    thCommentStaff: 'Staff Mentioned',
+    thCommentText: 'Comment',
+    emptyCommentsTitle: 'No matching comments',
+    emptyCommentsHint: 'Try changing the filters',
+    btnCopyComments: 'Copy Comments',
     btnExportComments: 'Export Comments',
-    thCommentDate: 'Comment Date',
-    thGuestName: 'Guest Name',
+    btnExportStaff: 'Export Staff',
+    btnPrint2: 'Print',
+    btnPrint3: 'Print',
+    btnExportStaff2: 'Export Staff',
+    staffAnalysisTitle: 'Staff Members Mentioned in Comments',
+    staffDetailsTitle: 'Staff Mentions Details',
     thStaffName: 'Staff Name',
-    thRestaurantName: 'Restaurant Name',
+    thStaffCount: 'Mentions',
+    thStaffGuests: 'Guests Who Mentioned',
+    thStaffRestaurants: 'Restaurants',
+    ratingDetails: 'Rating Details',
+    guestName: 'Guest Name',
+    roomNumber: 'Room Number',
+    restaurantLabel: 'Restaurant',
+    dateLabel: 'Date',
+    overallRating: 'Overall Rating',
+    comments: 'Comments',
+    noData: '—',
     thCommentStatus: 'Comment Status',
+    thStaffNameCol: 'Staff Name',
+    thStaffCountCol: 'Mentions',
     statusWithStaff: 'Staff Mentioned',
     statusGeneral: 'General Comment',
+    thRestaurantName: 'Restaurant Name',
   }
 };
 
@@ -579,11 +881,14 @@ function toggleLang(){
   applyLang();
   if (allData.length){
     populateRestaurantFilter();
+    populateCommentsRestaurantFilter();
+    populateFilters();
     applyFilters();
-    // Re-render summary & stats so "الإجمالي / المتوسط" changes language
+    applyCommentsFilters();
     renderStats();
     renderSummary();
     renderStaffAnalysis();
+    renderStaffDetails();
   }
   toast(currentLang === 'ar' ? 'تم تغيير اللغة إلى العربية' : 'Language changed to English');
 }
@@ -628,31 +933,77 @@ function applyLang(){
   setText('thServiceCol', L.thServiceCol);
   setText('thAtmosphereCol', L.thAtmosphereCol);
   setText('thComments', L.thComments);
+  setText('thDetails', L.thDetails);
   setText('emptyTitle', L.emptyTitle);
   setText('emptyHint', L.emptyHint);
   setText('btnSave', currentLang === 'ar' ? 'حفظ (24 ساعة)' : 'Save (24h)');
   setText('btnClearCache', currentLang === 'ar' ? 'حذف الكاش' : 'Clear Cache');
   setText('btnCopy', currentLang === 'ar' ? 'نسخ' : 'Copy');
   setText('btnExport', currentLang === 'ar' ? 'تصدير' : 'Export');
-  setText('btnExportComments', L.btnExportComments);
   setText('btnPrint', currentLang === 'ar' ? 'طباعة' : 'Print');
   setText('btnNewFile', currentLang === 'ar' ? 'رفع ملف جديد' : 'Upload New File');
   setText('cacheBannerText', L.cacheBannerText);
+  setText('tabRatings', L.tabRatings);
+  setText('tabCommentsLabel', L.tabCommentsLabel);
+  setText('tabStaffLabel', L.tabStaffLabel);
+  setText('commentsTitle', L.commentsTitle);
+  setText('lblCommentsSearch', L.lblCommentsSearch);
+  setText('lblStaffFilter', L.lblStaffFilter);
+  setText('lblCommentsRestaurant', L.lblCommentsRestaurant);
+  setText('lblStaffMention2', L.lblStaffMention2);
+  setText('thCommentDate', L.thCommentDate);
+  setText('thCommentRoom', L.thCommentRoom);
+  setText('thCommentName', L.thCommentName);
+  setText('thCommentRestaurant', L.thCommentRestaurant);
+  setText('thCommentRating', L.thCommentRating);
+  setText('thCommentStaff', L.thCommentStaff);
+  setText('thCommentText', L.thCommentText);
+  setText('emptyCommentsTitle', L.emptyCommentsTitle);
+  setText('emptyCommentsHint', L.emptyCommentsHint);
+  setText('btnCopyComments', L.btnCopyComments);
+  setText('btnExportComments', L.btnExportComments);
+  setText('btnExportStaff', L.btnExportStaff);
+  setText('btnPrint2', L.btnPrint2);
+  setText('btnPrint3', L.btnPrint3);
+  setText('btnExportStaff2', L.btnExportStaff2);
+  setText('staffAnalysisTitle', L.staffAnalysisTitle);
+  setText('staffDetailsTitle', L.staffDetailsTitle);
+  setText('thStaffName', L.thStaffName);
+  setText('thStaffCount', L.thStaffCount);
+  setText('thStaffGuests', L.thStaffGuests);
+  setText('thStaffRestaurants', L.thStaffRestaurants);
+
   document.getElementById('searchBox').placeholder = currentLang === 'ar'
     ? 'ابحث بالاسم، رقم الغرفة، أو المطعم...'
     : 'Search by name, room, or restaurant...';
+  const cSearch = document.getElementById('commentsSearchBox');
+  if (cSearch) cSearch.placeholder = currentLang === 'ar'
+    ? 'ابحث بالاسم، رقم الغرفة، أو نص التعليق...'
+    : 'Search by name, room, or comment text...';
 
-  // ⬇️⬇️⬇️ إعادة رسم الجداول لتحديث "الإجمالي / المتوسط" ⬇️⬇️⬇️
   if (allData && allData.length > 0){
     renderStats();
     renderSummary();
     renderStaffAnalysis();
+    renderStaffDetails();
   }
 }
 
 function setText(id, val){
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.closest('.tab-btn').classList.add('active');
+  if (tabId === 'tab-ratings') setTimeout(() => { if (chart1) chart1.resize(); }, 100);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ============================================================
@@ -674,8 +1025,11 @@ const RESTAURANTS = [
 const PAGE_SIZE = 50;
 let allData = [];
 let filteredData = [];
+let commentsFilteredData = [];
 let currentPage = 1;
+let commentsCurrentPage = 1;
 let staffCounts = {};
+let chart1 = null;
 
 const MAX_RATING = 5;
 
@@ -906,16 +1260,23 @@ function processWorkbook(workbook){
 
   filteredData = [...allData];
   currentPage = 1;
+  commentsCurrentPage = 1;
 
   document.getElementById('uploadSection').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
   populateRestaurantFilter();
+  populateCommentsRestaurantFilter();
+  populateFilters();
   renderStats();
   renderSummary();
   renderStaffAnalysis();
+  renderStaffDetails();
   renderDetails();
+  renderCharts();
+  applyCommentsFilters();
   setupFilters();
+  setupCommentsFilters();
   updateInfoMessage();
   updatePrintHeader();
 
@@ -936,7 +1297,7 @@ function formatDate(val){
 }
 
 // ============================================================
-// RESTAURANT FILTER
+// RESTAURANT FILTERS
 // ============================================================
 function populateRestaurantFilter(){
   const select = document.getElementById('restaurantFilter');
@@ -952,6 +1313,36 @@ function populateRestaurantFilter(){
     select.appendChild(opt);
   });
   if (current && uniqueRestaurants.includes(current)) select.value = current;
+}
+
+function populateCommentsRestaurantFilter(){
+  const select = document.getElementById('commentsRestaurantFilter');
+  const current = select.value;
+  select.innerHTML = `<option value="">${t('allRestaurants')}</option>`;
+  const uniqueRestaurants = [...new Set(allData.map(r => r.restaurant))].sort((a,b) =>
+    String(a).localeCompare(String(b), 'en', { numeric: true, sensitivity: 'base' })
+  );
+  uniqueRestaurants.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r;
+    opt.textContent = r;
+    select.appendChild(opt);
+  });
+  if (current && uniqueRestaurants.includes(current)) select.value = current;
+}
+
+function populateFilters(){
+  const staffSelect = document.getElementById('staffFilter');
+  const currentStaff = staffSelect.value;
+  staffSelect.innerHTML = `<option value="">${t('allStaff')}</option>`;
+  const sortedStaff = Object.keys(staffCounts).sort((a,b) => staffCounts[b] - staffCounts[a]);
+  sortedStaff.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = `${name} (${staffCounts[name]})`;
+    staffSelect.appendChild(opt);
+  });
+  if (currentStaff && sortedStaff.includes(currentStaff)) staffSelect.value = currentStaff;
 }
 
 // ============================================================
@@ -978,7 +1369,7 @@ function renderStats(){
 }
 
 // ============================================================
-// RENDER SUMMARY (matches Excel exactly)
+// RENDER SUMMARY
 // ============================================================
 function renderSummary(){
   const tbody = document.getElementById('summaryBody');
@@ -1034,7 +1425,6 @@ function renderSummary(){
   const totalAvgService    = avgOf(allRestaurantAvgs.service);
   const totalAvgAtmosphere = avgOf(allRestaurantAvgs.atmosphere);
 
-  // ⬇️⬇️⬇️ هنا يستخدم t('totalAvg') الذي يتغير مع اللغة ⬇️⬇️⬇️
   const trTotal = document.createElement('tr');
   trTotal.style.background = '#e8eeff';
   trTotal.style.fontWeight = 'bold';
@@ -1064,7 +1454,7 @@ function escapeHtml(s){
 }
 
 // ============================================================
-// RENDER STAFF ANALYSIS
+// RENDER STAFF CLOUD
 // ============================================================
 function renderStaffAnalysis(){
   const container = document.getElementById('staffCloud');
@@ -1078,12 +1468,51 @@ function renderStaffAnalysis(){
     const div = document.createElement('div');
     div.className = 'staff-cloud-item';
     div.innerHTML = `${escapeHtml(name)} <span class="count">${count}</span>`;
+    div.onclick = () => {
+      switchTab('tab-comments');
+      setTimeout(() => {
+        document.getElementById('staffFilter').value = name;
+        document.getElementById('commentsSearchBox').value = '';
+        document.getElementById('staffMentionOnly2').checked = false;
+        document.getElementById('staffMentionToggle2').classList.remove('active');
+        applyCommentsFilters();
+      }, 100);
+    };
     container.appendChild(div);
   });
 }
 
 // ============================================================
-// FILTERS
+// RENDER STAFF DETAILS TABLE
+// ============================================================
+function renderStaffDetails(){
+  const tbody = document.getElementById('staffDetailsBody');
+  if (!tbody) return;
+  const entries = Object.entries(staffCounts).sort((a,b) => b[1] - a[1]);
+
+  if (!entries.length){
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">${t('noStaff')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = entries.map(([name, count], i) => {
+    const mentions = allData.filter(r => r.staffNames.includes(name));
+    const guests = mentions.map(r => r.name).filter(Boolean).slice(0, 3).join(', ');
+    const restaurants = [...new Set(mentions.map(r => r.restaurant).filter(Boolean))].slice(0, 5).join(', ');
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td><span class="staff-name-tag" style="font-size:.85rem; padding:.3rem .7rem;">⭐ ${escapeHtml(name)}</span></td>
+        <td><span class="rating-badge rating-excellent" style="width:auto; min-width:45px; padding:.3rem .8rem; border-radius:12px; height:auto; font-size:.85rem;">${count}</span></td>
+        <td style="text-align:start; font-size:.82rem;">${escapeHtml(guests)}${mentions.length > 3 ? ' ...' : ''}</td>
+        <td style="text-align:start; font-size:.82rem;">${escapeHtml(restaurants)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// FILTERS (Tab 1 - Ratings)
 // ============================================================
 function setupFilters(){
   const searchBox = document.getElementById('searchBox');
@@ -1126,12 +1555,63 @@ function applyFilters(){
 
   currentPage = 1;
   renderDetails();
+  renderCharts();
   updateInfoMessage();
   updatePrintHeader();
 }
 
 // ============================================================
-// RENDER DETAILS
+// FILTERS (Tab 2 - Comments)
+// ============================================================
+function setupCommentsFilters(){
+  const cSearch = document.getElementById('commentsSearchBox');
+  const staffF = document.getElementById('staffFilter');
+  const cRest = document.getElementById('commentsRestaurantFilter');
+  const staffOnly2 = document.getElementById('staffMentionOnly2');
+
+  if (cSearch) cSearch.oninput = applyCommentsFilters;
+  if (staffF) staffF.onchange = applyCommentsFilters;
+  if (cRest) cRest.onchange = applyCommentsFilters;
+  if (staffOnly2) staffOnly2.onchange = (e) => {
+    document.getElementById('staffMentionToggle2').classList.toggle('active', e.target.checked);
+    applyCommentsFilters();
+  };
+}
+
+function applyCommentsFilters(){
+  const q = (document.getElementById('commentsSearchBox').value || '').trim().toLowerCase();
+  const staff = document.getElementById('staffFilter').value;
+  const restaurant = document.getElementById('commentsRestaurantFilter').value;
+  const onlyStaff = document.getElementById('staffMentionOnly2').checked;
+
+  commentsFilteredData = allData.filter(r => {
+    if (!r.hasComments) return false;
+    if (q){
+      const matches = r.name.toLowerCase().includes(q) ||
+        r.room.toLowerCase().includes(q) ||
+        r.restaurant.toLowerCase().includes(q) ||
+        r.comments.toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+    if (staff && !r.staffNames.includes(staff)) return false;
+    if (restaurant && r.restaurant !== restaurant) return false;
+    if (onlyStaff && !r.hasStaffMention) return false;
+    return true;
+  });
+
+  commentsCurrentPage = 1;
+  renderComments();
+  updateCommentsInfo();
+}
+
+function updateCommentsInfo(){
+  const count = commentsFilteredData.length;
+  const el = document.getElementById('commentsInfoText');
+  if (el) el.innerHTML = t('infoComments', count);
+}
+
+// ============================================================
+// RENDER DETAILS (Tab 1)
 // ============================================================
 function renderDetails(){
   const tbody = document.getElementById('detailsBody');
@@ -1140,6 +1620,7 @@ function renderDetails(){
 
   if (!filteredData.length){
     empty.style.display = 'block';
+    renderPagination();
     return;
   }
   empty.style.display = 'none';
@@ -1177,6 +1658,11 @@ function renderDetails(){
         ${commentDisplay}
         ${staffHtml}
       </td>
+      <td class="no-print">
+        <button class="btn btn-sm btn-outline-primary" onclick="showDetails(${r._id})">
+          <i class="bi bi-eye"></i>
+        </button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -1185,7 +1671,55 @@ function renderDetails(){
 }
 
 // ============================================================
-// PAGINATION
+// RENDER COMMENTS (Tab 2)
+// ============================================================
+function renderComments(){
+  const tbody = document.getElementById('commentsBody');
+  const empty = document.getElementById('commentsEmptyState');
+  tbody.innerHTML = '';
+
+  if (!commentsFilteredData.length){
+    empty.style.display = 'block';
+    renderCommentsPagination(0);
+    return;
+  }
+  empty.style.display = 'none';
+
+  const start = (commentsCurrentPage - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const pageData = commentsFilteredData.slice(start, end);
+
+  pageData.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (r.hasStaffMention) tr.className = 'has-staff-row';
+
+    let staffHtml = '';
+    if (r.hasStaffMention){
+      staffHtml = r.staffNames.map(n =>
+        `<span class="staff-name-tag">⭐ ${escapeHtml(n)}</span>`
+      ).join('');
+    } else {
+      staffHtml = `<span style="color:#94a3b8;">—</span>`;
+    }
+
+    tr.innerHTML = `
+      <td>${start + i + 1}</td>
+      <td style="white-space:nowrap; font-size:.78rem;">${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.room)}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td><span class="badge-dept">${escapeHtml(r.restaurant)}</span></td>
+      <td>${percentBadge(r.ratingAvg)}</td>
+      <td>${staffHtml}</td>
+      <td class="comments-cell">${escapeHtml(r.comments)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  renderCommentsPagination(commentsFilteredData.length);
+}
+
+// ============================================================
+// PAGINATION (Tab 1)
 // ============================================================
 function renderPagination(){
   const pagination = document.getElementById('pagination');
@@ -1222,6 +1756,128 @@ function renderPagination(){
     pagination.appendChild(createBtn(totalPages, totalPages, false, currentPage === totalPages));
   }
   pagination.appendChild(createBtn('»', totalPages, currentPage === totalPages));
+}
+
+// ============================================================
+// PAGINATION (Tab 2)
+// ============================================================
+function renderCommentsPagination(totalRows){
+  const pagination = document.getElementById('commentsPagination');
+  pagination.innerHTML = '';
+  const totalPages = Math.ceil(totalRows / PAGE_SIZE);
+  if (totalPages <= 1) return;
+
+  const createBtn = (text, page, disabled = false, active = false) => {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.disabled = disabled;
+    if (active) btn.classList.add('active');
+    btn.onclick = () => {
+      commentsCurrentPage = page;
+      renderComments();
+      window.scrollTo({ top: document.getElementById('commentsBody').offsetTop - 100 });
+    };
+    return btn;
+  };
+
+  pagination.appendChild(createBtn('«', 1, commentsCurrentPage === 1));
+  const startPage = Math.max(1, commentsCurrentPage - 2);
+  const endPage = Math.min(totalPages, commentsCurrentPage + 2);
+
+  if (startPage > 1){
+    pagination.appendChild(createBtn('1', 1, false, commentsCurrentPage === 1));
+    if (startPage > 2) pagination.appendChild(createBtn('...', 0, true));
+  }
+  for (let p = startPage; p <= endPage; p++){
+    pagination.appendChild(createBtn(p, p, false, p === commentsCurrentPage));
+  }
+  if (endPage < totalPages){
+    if (endPage < totalPages - 1) pagination.appendChild(createBtn('...', 0, true));
+    pagination.appendChild(createBtn(totalPages, totalPages, false, commentsCurrentPage === totalPages));
+  }
+  pagination.appendChild(createBtn('»', totalPages, commentsCurrentPage === totalPages));
+}
+
+// ============================================================
+// DETAIL MODAL
+// ============================================================
+function showDetails(id){
+  const row = allData.find(r => r._id === id);
+  if (!row) return;
+
+  document.getElementById('modalName').textContent = `${row.name} - ${t('restaurantLabel')}: ${row.restaurant}`;
+
+  let html = `
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <p><strong>${t('guestName')}:</strong> ${escapeHtml(row.name)}</p>
+        <p><strong>${t('roomNumber')}:</strong> ${escapeHtml(row.room)}</p>
+        <p><strong>${t('restaurantLabel')}:</strong> ${escapeHtml(row.restaurant)}</p>
+      </div>
+      <div class="col-md-6">
+        <p><strong>${t('dateLabel')}:</strong> ${escapeHtml(row.date)}</p>
+        <p><strong>${t('overallRating')}:</strong> ${percentBadge(row.ratingAvg)}</p>
+      </div>
+    </div>
+    <hr>
+    <h6 class="fw-bold mb-3">${t('ratingDetails')}</h6>
+  `;
+
+  const metricDefs = [
+    { key: 'food', label_ar: 'الطعام', label_en: 'Food' },
+    { key: 'service', label_ar: 'الخدمة', label_en: 'Service' },
+    { key: 'atmosphere', label_ar: 'الأجواء', label_en: 'Atmosphere' },
+    { key: 'ratingAvg', label_ar: 'متوسط التقييم', label_en: 'Average Rating' }
+  ];
+
+  html += '<div class="row">';
+  metricDefs.forEach(def => {
+    const val = row[def.key];
+    if (val === null || val === undefined) return;
+    const label = currentLang === 'ar' ? def.label_ar : def.label_en;
+    const pct = (val / MAX_RATING) * 100;
+    const color = val >= 4.5 ? '#16a34a' : val >= 3.5 ? '#f59e0b' : '#dc2626';
+    html += `
+      <div class="col-md-6 mb-2">
+        <div class="metric-row">
+          <div class="metric-name">${label}</div>
+          <div class="metric-bar">
+            <div class="progress">
+              <div class="progress-bar" style="width:${pct}%; background:${color};"></div>
+            </div>
+          </div>
+          <div class="metric-value" style="color:${color};">${val}</div>
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+
+  if (row.comments){
+    html += `
+      <hr>
+      <h6 class="fw-bold mb-2"><i class="bi bi-chat-left-text"></i> ${t('comments')}</h6>
+      <div class="comment-box">${escapeHtml(row.comments)}</div>
+    `;
+    if (row.hasStaffMention){
+      html += `<div class="mt-2">${row.staffNames.map(n =>
+        `<span class="staff-name-tag">⭐ ${escapeHtml(n)}</span>`
+      ).join('')}</div>`;
+    }
+  } else {
+    html += `<hr><p class="text-muted text-center">${t('noComments')}</p>`;
+  }
+
+  document.getElementById('modalBody').innerHTML = html;
+  new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+// ============================================================
+// CHART (restaurant metrics, optional)
+// ============================================================
+function renderCharts(){
+  // Chart is optional here. We keep it lightweight for ratings tab (no extra chart).
+  // (Original file didn't include a chart; keeping behavior, no renderCharts called from filters.)
 }
 
 // ============================================================
@@ -1268,6 +1924,22 @@ function copyList(){
   navigator.clipboard.writeText(txt).then(() => toast(t('toastCopied')));
 }
 
+function copyComments(){
+  if (!commentsFilteredData.length){ toast(t('toastNoData')); return; }
+  let txt = `📊 Guest Comments Report\n`;
+  txt += `💬 ${commentsFilteredData.length} comments\n`;
+  txt += `${'─'.repeat(40)}\n\n`;
+
+  commentsFilteredData.forEach((r, i) => {
+    txt += `${i+1}. ${r.name} (Room ${r.room}) - ${r.restaurant}\n`;
+    txt += `   📅 ${r.date}\n`;
+    if (r.staffNames.length) txt += `   🏆 Staff: ${r.staffNames.join(', ')}\n`;
+    txt += `   💬 ${r.comments}\n\n`;
+  });
+
+  navigator.clipboard.writeText(txt).then(() => toast(t('toastCommentsCopied')));
+}
+
 // ============================================================
 // EXPORT EXCEL (Full Report)
 // ============================================================
@@ -1294,59 +1966,103 @@ function exportExcel(){
 }
 
 // ============================================================
-// EXPORT COMMENTS EXCEL (Guest Comments with Staff Detection)
-// Columns: Comment Date | Guest Name | Staff Name | Restaurant Name | Comment Status
+// EXPORT COMMENTS EXCEL (enhanced, filtered)
 // ============================================================
 function exportCommentsExcel(){
-  // Only records with comments
-  const recordsWithComments = filteredData.filter(r => r.hasComments);
-
-  if (!recordsWithComments.length){
+  if (!commentsFilteredData.length){
     toast(t('toastNoComments'));
     return;
   }
 
   const rows = [];
-
-  recordsWithComments.forEach(r => {
+  commentsFilteredData.forEach(r => {
     if (r.hasStaffMention && r.staffNames.length > 0){
-      // One row per staff member mentioned
       r.staffNames.forEach(staffName => {
         rows.push({
           [t('thCommentDate')]: r.date,
           [t('thGuestName')]: r.name,
-          [t('thStaffName')]: staffName,
+          [t('thCommentRoom')]: r.room,
           [t('thRestaurantName')]: r.restaurant,
-          [t('thCommentStatus')]: t('statusWithStaff')
+          [t('thStaffNameCol')]: staffName,
+          [t('thCommentStatus')]: t('statusWithStaff'),
+          [t('thCommentText')]: r.comments
         });
       });
     } else {
-      // No staff mentioned — single row with general status
       rows.push({
         [t('thCommentDate')]: r.date,
         [t('thGuestName')]: r.name,
-        [t('thStaffName')]: '—',
+        [t('thCommentRoom')]: r.room,
         [t('thRestaurantName')]: r.restaurant,
-        [t('thCommentStatus')]: t('statusGeneral')
+        [t('thStaffNameCol')]: '—',
+        [t('thCommentStatus')]: t('statusGeneral'),
+        [t('thCommentText')]: r.comments
       });
     }
   });
 
   const ws = XLSX.utils.json_to_sheet(rows);
-
-  // Set column widths
   ws['!cols'] = [
-    { wch: 20 },  // Comment Date
-    { wch: 25 },  // Guest Name
-    { wch: 18 },  // Staff Name
-    { wch: 30 },  // Restaurant Name
-    { wch: 18 }   // Comment Status
+    { wch: 20 }, { wch: 25 }, { wch: 10 }, { wch: 25 },
+    { wch: 20 }, { wch: 18 }, { wch: 60 }
   ];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, currentLang === 'ar' ? 'التعليقات' : 'Comments');
   XLSX.writeFile(wb, `Guest_Comments_${new Date().toISOString().slice(0,10)}.xlsx`);
   toast(t('toastCommentsExported'));
+}
+
+// ============================================================
+// EXPORT STAFF EXCEL (summary + details)
+// ============================================================
+function exportStaffExcel(){
+  const entries = Object.entries(staffCounts).sort((a,b) => b[1] - a[1]);
+  if (!entries.length){
+    toast(t('toastNoStaff'));
+    return;
+  }
+
+  const summaryRows = entries.map(([name, count], i) => {
+    const mentions = allData.filter(r => r.staffNames.includes(name));
+    const guests = mentions.map(r => r.name).filter(Boolean).slice(0,5).join(', ');
+    const restaurants = [...new Set(mentions.map(r => r.restaurant).filter(Boolean))].slice(0,5).join(', ');
+    const dates = mentions.map(r => r.date).filter(Boolean).slice(0,3).join(' | ');
+    return {
+      '#': i + 1,
+      [currentLang === 'ar' ? 'اسم الموظف' : 'Staff Name']: name,
+      [t('thStaffCountCol')]: count,
+      [currentLang === 'ar' ? 'أسماء الضيوف' : 'Guest Names']: guests + (mentions.length > 5 ? ' ...' : ''),
+      [currentLang === 'ar' ? 'المطاعم' : 'Restaurants']: restaurants,
+      [currentLang === 'ar' ? 'آخر تواريخ' : 'Recent Dates']: dates
+    };
+  });
+
+  const ws1 = XLSX.utils.json_to_sheet(summaryRows);
+  ws1['!cols'] = [{ wch:5 }, { wch:20 }, { wch:12 }, { wch:40 }, { wch:25 }, { wch:30 }];
+
+  const detailsRows = [];
+  entries.forEach(([name, count]) => {
+    allData.filter(r => r.staffNames.includes(name)).forEach(r => {
+      detailsRows.push({
+        [currentLang === 'ar' ? 'اسم الموظف' : 'Staff Name']: name,
+        [t('thCommentDate')]: r.date,
+        [t('thGuestName')]: r.name,
+        [t('thCommentRoom')]: r.room,
+        [t('thRestaurantName')]: r.restaurant,
+        [t('thCommentText')]: r.comments
+      });
+    });
+  });
+
+  const ws2 = XLSX.utils.json_to_sheet(detailsRows);
+  ws2['!cols'] = [{ wch:20 }, { wch:20 }, { wch:25 }, { wch:10 }, { wch:25 }, { wch:60 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, currentLang === 'ar' ? 'ملخص الموظفين' : 'Staff Summary');
+  XLSX.utils.book_append_sheet(wb, ws2, currentLang === 'ar' ? 'تفاصيل الموظفين' : 'Staff Details');
+  XLSX.writeFile(wb, `Restaurant_Staff_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast(t('toastStaffExported'));
 }
 
 // ============================================================
@@ -1368,7 +2084,11 @@ function saveToCache(showToast){
         search: document.getElementById('searchBox').value,
         restaurant: document.getElementById('restaurantFilter').value,
         commentsOnly: document.getElementById('commentsOnly').checked,
-        staffMentionOnly: document.getElementById('staffMentionOnly').checked
+        staffMentionOnly: document.getElementById('staffMentionOnly').checked,
+        commentsSearch: document.getElementById('commentsSearchBox').value,
+        staffFilter: document.getElementById('staffFilter').value,
+        commentsRestaurant: document.getElementById('commentsRestaurantFilter').value,
+        staffMentionOnly2: document.getElementById('staffMentionOnly2').checked
       }
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
@@ -1401,6 +2121,8 @@ function loadFromCache(){
 
     applyLang();
     populateRestaurantFilter();
+    populateCommentsRestaurantFilter();
+    populateFilters();
 
     const f = data.filters || {};
     document.getElementById('searchBox').value = f.search || '';
@@ -1409,6 +2131,11 @@ function loadFromCache(){
     document.getElementById('staffMentionOnly').checked = !!f.staffMentionOnly;
     document.getElementById('commentsOnlyToggle').classList.toggle('active', !!f.commentsOnly);
     document.getElementById('staffMentionToggle').classList.toggle('active', !!f.staffMentionOnly);
+    document.getElementById('commentsSearchBox').value = f.commentsSearch || '';
+    document.getElementById('staffFilter').value = f.staffFilter || '';
+    document.getElementById('commentsRestaurantFilter').value = f.commentsRestaurant || '';
+    document.getElementById('staffMentionOnly2').checked = !!f.staffMentionOnly2;
+    document.getElementById('staffMentionToggle2').classList.toggle('active', !!f.staffMentionOnly2);
 
     document.getElementById('uploadSection').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
@@ -1416,8 +2143,11 @@ function loadFromCache(){
     renderStats();
     renderSummary();
     renderStaffAnalysis();
+    renderStaffDetails();
     setupFilters();
+    setupCommentsFilters();
     applyFilters();
+    applyCommentsFilters();
     updateCacheBanner(data.savedAt);
     return true;
   } catch(err){
@@ -1433,6 +2163,7 @@ function clearCache(silent){
   if (!silent){
     allData = [];
     filteredData = [];
+    commentsFilteredData = [];
     staffCounts = {};
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('uploadSection').style.display = 'block';
