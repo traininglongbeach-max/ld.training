@@ -134,7 +134,6 @@
             font-size: 0.85rem;
         }
 
-        /* كاش بادج */
         .cache-badge {
             display: inline-flex;
             align-items: center;
@@ -1371,7 +1370,9 @@
         import {
             getFirestore,
             collection,
-            getDocs
+            getDocs,
+            query,
+            where
         } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
         const firestoreDb = getFirestore(getApp());
@@ -1400,7 +1401,7 @@
         // ============================================================
         let people = [];
         let taskTemplates = [];
-        let taskRecords = [];
+        let taskRecords = []; // سجلات التاريخ المحدد فقط
         let selectedDate = getToday();
         let currentUser = null;
         let isAdmin = false;
@@ -1411,10 +1412,11 @@
         let isLoading = false;
         let lastLoadSource = "memory";
         let cacheTimestamp = null;
+        let lastLoadedDate = null; // ✅ تتبع آخر تاريخ تم تحميله
         const CACHE_DURATION = 5 * 60 * 1000; // 5 دقائق
 
         // ============================================================
-        // HELPERS - تعريف الدوال قبل استخدامها
+        // HELPERS
         // ============================================================
         function getToday() {
             const d = new Date();
@@ -1457,9 +1459,31 @@
             overlay.style.display = show ? 'flex' : 'none';
         }
 
-        function getPersonName(personId) {
+        // ✅ دالة الحصول على الاسم - تبحث في الأشخاص ثم في snapshot السجلات
+        function getPersonName(personId, record = null) {
+            // أولاً: ابحث في الأشخاص الحاليين
             const person = people.find(p => String(p.id) === String(personId));
-            return person ? person.name : 'غير محدد';
+            if (person) return person.name;
+
+            // ثانياً: ابحث في snapshot السجل نفسه
+            if (record && record.snapshot_person_names && record.snapshot_person_ids) {
+                const idx = record.snapshot_person_ids.map(String).indexOf(String(personId));
+                if (idx !== -1 && record.snapshot_person_names[idx]) {
+                    return record.snapshot_person_names[idx];
+                }
+            }
+
+            // ثالثاً: ابحث في كل السجلات المحملة
+            for (const r of taskRecords) {
+                if (r.snapshot_person_names && r.snapshot_person_ids) {
+                    const idx = r.snapshot_person_ids.map(String).indexOf(String(personId));
+                    if (idx !== -1 && r.snapshot_person_names[idx]) {
+                        return r.snapshot_person_names[idx];
+                    }
+                }
+            }
+
+            return 'شخص محذوف';
         }
 
         function getPersonInitials(name) {
@@ -1747,16 +1771,40 @@
         }
 
         // ============================================================
-        // LOAD DATA - محسّن مع كاش ذكي
+        // ✅ NEW: جلب سجلات تاريخ محدد فقط من Firestore
         // ============================================================
-        async function loadAllData(forceRefresh = false) {
+        async function fetchRecordsByDate(date) {
+            try {
+                // محاولة استخدام دالة DB.getRecordsByDate إن وجدت
+                if (typeof DB.getRecordsByDate === 'function') {
+                    return await DB.getRecordsByDate('daily_task_records', date);
+                }
+
+                // Fallback: استخدام query مباشرة
+                const colRef = collection(firestoreDb, 'daily_task_records');
+                const q = query(colRef, where('task_date', '==', date));
+                const snapshot = await getDocs(q);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.warn('⚠️ فشل جلب السجلات بتاريخ محدد، سيتم الرجوع للطريقة القديمة:', error);
+                // Fallback أخير: جلب الكل ثم الفلترة
+                const all = await DB.getAll('daily_task_records', { cache: false });
+                return (all || []).filter(r => String(r.task_date) === String(date));
+            }
+        }
+
+        // ============================================================
+        // LOAD DATA - يجلب الأشخاص والقوالب كاملة + سجلات تاريخ محدد فقط
+        // ============================================================
+        async function loadAllData(forceRefresh = false, targetDate = selectedDate) {
             if (isLoading) {
                 console.log('⏳ جاري التحميل بالفعل...');
                 return;
             }
 
-            // إذا كانت البيانات محملة وليس Refresh، استخدم الكاش
-            if (isDataLoaded && !forceRefresh && cacheTimestamp) {
+            // استخدام الكاش فقط إذا: نفس التاريخ + لم يمر وقت + ليس refresh
+            if (isDataLoaded && !forceRefresh && cacheTimestamp &&
+                lastLoadedDate === targetDate) {
                 const elapsed = Date.now() - cacheTimestamp;
                 if (elapsed < CACHE_DURATION) {
                     console.log(`📖 استخدام البيانات المخزنة في Memory Cache (${elapsed/1000}s)`);
@@ -1773,12 +1821,13 @@
             setLoading(true);
 
             try {
-                console.log('🔥 جلب البيانات من Firestore...');
+                console.log(`🔥 جلب البيانات من Firestore للتاريخ: ${targetDate}`);
 
+                // ✅ الأشخاص والقوالب كاملة (صغيرة) + سجلات التاريخ المحدد فقط
                 const [peopleResult, templatesResult, recordsResult] = await Promise.all([
                     DB.getAll('daily_task_people', { cache: false }),
                     DB.getAll('daily_task_templates', { cache: false }),
-                    DB.getAll('daily_task_records', { cache: false })
+                    fetchRecordsByDate(targetDate)
                 ]);
 
                 people = peopleResult || [];
@@ -1796,16 +1845,32 @@
                     const personIds = normalizePersonIds(record);
                     const completedIds = normalizeCompletedPeopleIds(record);
 
+                    // ✅ إذا لم يكن snapshot موجوداً، أنشئه من البيانات الحالية
+                    const snapshotIds = Array.isArray(record.snapshot_person_ids)
+                        ? record.snapshot_person_ids.map(String)
+                        : personIds;
+                    const snapshotNames = Array.isArray(record.snapshot_person_names)
+                        ? record.snapshot_person_names
+                        : snapshotIds.map(id => {
+                            const p = people.find(pp => String(pp.id) === String(id));
+                            return p ? p.name : 'شخص محذوف';
+                        });
+
                     let currentStatus = record.status;
                     if (currentStatus !== 'cancelled') {
-                        currentStatus = isRecordFullyCompleted({ ...record, person_ids: personIds,
-                                completed_people_ids: completedIds }) ? 'completed' : 'pending';
+                        currentStatus = isRecordFullyCompleted({
+                            ...record,
+                            person_ids: personIds,
+                            completed_people_ids: completedIds
+                        }) ? 'completed' : 'pending';
                     }
 
                     return {
                         ...record,
                         person_ids: personIds,
                         completed_people_ids: completedIds,
+                        snapshot_person_ids: snapshotIds,
+                        snapshot_person_names: snapshotNames,
                         status: currentStatus
                     };
                 });
@@ -1830,20 +1895,18 @@
                 isDataLoaded = true;
                 lastLoadSource = "firebase";
                 cacheTimestamp = Date.now();
+                lastLoadedDate = targetDate;
 
-                console.log(`✅ تم تحميل: ${people.length} شخص، ${taskTemplates.length} قالب، ${taskRecords.length} سجل`);
+                console.log(`✅ تم تحميل: ${people.length} شخص، ${taskTemplates.length} قالب، ${taskRecords.length} سجل لتاريخ ${targetDate}`);
 
             } catch (error) {
                 console.error('❌ فشل تحميل البيانات:', error);
-                // محاولة قراءة من الكاش الاحتياطي
                 try {
                     const backupPeople = await DB.getAll('daily_task_people') || [];
                     const backupTemplates = await DB.getAll('daily_task_templates') || [];
-                    const backupRecords = await DB.getAll('daily_task_records') || [];
                     if (backupPeople.length > 0) {
                         people = backupPeople;
                         taskTemplates = backupTemplates;
-                        taskRecords = backupRecords;
                         console.log('📖 تم استعادة البيانات من الكاش الاحتياطي');
                     }
                 } catch (e) {
@@ -1901,7 +1964,8 @@
                     completed_by: null,
                     created_at: new Date().toISOString(),
                     snapshot_person_ids: [...personIds],
-                    note: '' // إضافة حقل الملاحظة
+                    snapshot_person_names: personIds.map(id => getPersonName(id)),
+                    note: ''
                 };
 
                 await DB.insert('daily_task_records', newRecord);
@@ -1955,6 +2019,51 @@
             document.body.classList.add('modal-open');
         };
 
+        // ✅ تحديث السجلات من تاريخ معين فصاعداً فقط
+        async function updateFutureRecords(templateId, updatedTemplate, fromDate) {
+            try {
+                const allRecords = await DB.getAll('daily_task_records', { cache: false });
+                const futureRecords = (allRecords || []).filter(r =>
+                    String(r.template_id) === String(templateId) &&
+                    String(r.task_date) >= String(fromDate)
+                );
+
+                const personIds = normalizePersonIds(updatedTemplate);
+                const snapshotNames = personIds.map(id => getPersonName(id));
+
+                for (const record of futureRecords) {
+                    const completedIds = normalizeCompletedPeopleIds(record)
+                        .filter(id => personIds.includes(String(id)));
+
+                    const fullyCompleted = isRecordFullyCompleted({
+                        ...record,
+                        person_ids: personIds,
+                        completed_people_ids: completedIds
+                    });
+
+                    const updatedRecord = {
+                        ...record,
+                        task_name: updatedTemplate.task_name,
+                        description: updatedTemplate.description,
+                        person_ids: personIds,
+                        person_id: personIds[0] || null,
+                        completed_people_ids: completedIds,
+                        status: record.status === 'cancelled' ? 'cancelled' :
+                            (fullyCompleted ? 'completed' : 'pending'),
+                        snapshot_person_ids: [...personIds],
+                        snapshot_person_names: [...snapshotNames],
+                        updated_at: new Date().toISOString()
+                    };
+
+                    await DB.update('daily_task_records', updatedRecord);
+                }
+
+                console.log(`✅ تم تحديث ${futureRecords.length} سجل من تاريخ ${fromDate} فصاعداً`);
+            } catch (error) {
+                console.error('❌ فشل تحديث السجلات المستقبلية:', error);
+            }
+        }
+
         window.saveTask = async function() {
             if (!isAdmin) {
                 showToast('❌ فقط الأدمن يمكنه إضافة أو تعديل المهام', 'error');
@@ -1985,6 +2094,7 @@
                 const now = new Date().toISOString();
 
                 if (!id) {
+                    // ✅ إضافة مهمة جديدة
                     const template = {
                         id: generateId('template'),
                         task_name: taskName,
@@ -1996,7 +2106,8 @@
                         end_date: endDate || null,
                         active: true,
                         created_at: now,
-                        updated_at: now
+                        updated_at: now,
+                        last_modified_date: selectedDate
                     };
 
                     await DB.insert('daily_task_templates', template);
@@ -2004,6 +2115,7 @@
                     await generateRecordsForDate(selectedDate);
                     showToast('✅ تم إضافة المهمة', 'success');
                 } else {
+                    // ✅ تعديل مهمة موجودة
                     const oldTemplate = taskTemplates.find(t => String(t.id) === String(id));
                     if (!oldTemplate) return showToast('❌ لم يتم العثور على المهمة', 'error');
 
@@ -2017,15 +2129,40 @@
                         start_date: startDate,
                         end_date: endDate || null,
                         active: true,
-                        updated_at: now
+                        updated_at: now,
+                        last_modified_date: selectedDate
                     };
 
                     await DB.update('daily_task_templates', updatedTemplate);
                     const ti = taskTemplates.findIndex(t => String(t.id) === String(id));
                     if (ti !== -1) taskTemplates[ti] = updatedTemplate;
 
-                    await generateRecordsForDate(selectedDate);
-                    showToast('✅ تم تعديل المهمة (التغييرات تسري على الأيام القادمة فقط)', 'success');
+                    // ✅ تحديث السجلات من تاريخ التعديل (اليوم المحدد) فصاعداً فقط
+                    await updateFutureRecords(id, updatedTemplate, selectedDate);
+
+                    // ✅ إذا كان التاريخ المحدد هو اليوم، أعد تحميل سجلاته
+                    if (lastLoadedDate === selectedDate) {
+                        taskRecords = await fetchRecordsByDate(selectedDate);
+                        taskRecords = taskRecords.map(record => {
+                            const personIdsN = normalizePersonIds(record);
+                            const completedIdsN = normalizeCompletedPeopleIds(record);
+                            const snapshotIds = Array.isArray(record.snapshot_person_ids)
+                                ? record.snapshot_person_ids.map(String) : personIdsN;
+                            const snapshotNames = Array.isArray(record.snapshot_person_names)
+                                ? record.snapshot_person_names
+                                : snapshotIds.map(pid => {
+                                    const p = people.find(pp => String(pp.id) === String(pid));
+                                    return p ? p.name : 'شخص محذوف';
+                                });
+                            let st = record.status;
+                            if (st !== 'cancelled') {
+                                st = isRecordFullyCompleted({ ...record, person_ids: personIdsN, completed_people_ids: completedIdsN }) ? 'completed' : 'pending';
+                            }
+                            return { ...record, person_ids: personIdsN, completed_people_ids: completedIdsN, snapshot_person_ids: snapshotIds, snapshot_person_names: snapshotNames, status: st };
+                        });
+                    }
+
+                    showToast('✅ تم تعديل المهمة (التعديل يسري على اليوم والأيام القادمة)', 'success');
                 }
 
                 closeModal('taskModal');
@@ -2040,7 +2177,7 @@
         };
 
         // ============================================================
-        // TASK ACTIONS مع ملاحظة
+        // TASK ACTIONS
         // ============================================================
         window.togglePersonTask = async function(recordId, personId) {
             const taskRecord = taskRecords.find(r => String(r.id) === String(recordId));
@@ -2058,6 +2195,13 @@
                 return;
             }
 
+            // تحقق إذا كان الشخص محذوفاً
+            const personExists = people.some(p => String(p.id) === String(personId));
+            if (!personExists) {
+                showToast('❌ هذا الشخص محذوف من النظام، لا يمكن تغيير حالته', 'error');
+                return;
+            }
+
             const assignedIds = normalizePersonIds(taskRecord);
             if (!assignedIds.includes(String(personId))) {
                 return showToast('❌ هذا الشخص غير مسند إلى المهمة', 'error');
@@ -2069,11 +2213,9 @@
             if (completedIds.includes(normalizedPersonId)) {
                 completedIds = completedIds.filter(id => String(id) !== normalizedPersonId);
             } else {
-                // 🔥 عند إتمام المهمة، نطلب ملاحظة
                 const note = prompt('📝 أدخل ملاحظة عن إنجاز هذه المهمة (اختياري):', '');
                 completedIds.push(normalizedPersonId);
-                
-                // حفظ الملاحظة في السجل
+
                 if (note !== null && note.trim() !== '') {
                     taskRecord.note = note.trim();
                 }
@@ -2121,9 +2263,8 @@
             const activePeople = getActivePeopleForTask(taskRecord);
             if (activePeople.length === 0) return showToast('❌ لا يوجد أشخاص نشطين في هذه المهمة', 'error');
 
-            // 🔥 طلب ملاحظة عند إتمام المهمة للجميع
             const note = prompt('📝 أدخل ملاحظة عن إنجاز هذه المهمة (اختياري):', taskRecord.note || '');
-            
+
             const now = new Date().toISOString();
             const updatedRecord = {
                 ...taskRecord,
@@ -2278,10 +2419,10 @@
                 return showToast(`❌ لا يمكن تسجيل مهمة في يوم كنت فيه في إجازة (${formatDate(selectedDate)})`, 'error');
             }
 
-            // 🔥 طلب ملاحظة عند تسجيل المهمة
             const note = prompt('📝 أدخل ملاحظة عن هذه المهمة (اختياري):', '');
 
             const now = new Date().toISOString();
+            const personName = getPersonName(personId);
             const selfRecord = {
                 id: generateId('record'),
                 template_id: null,
@@ -2298,6 +2439,7 @@
                 created_at: now,
                 self_registered: true,
                 snapshot_person_ids: [String(personId)],
+                snapshot_person_names: [personName],
                 note: (note !== null && note.trim() !== '') ? note.trim() : ''
             };
 
@@ -2467,7 +2609,7 @@
             const person = people.find(p => String(p.id) === String(id));
             if (!person) return;
 
-            const confirmation = confirm(`هل تريد حذف "${person.name}"؟\n\nسيتم الاحتفاظ بسجلات المهام القديمة.`);
+            const confirmation = confirm(`هل تريد حذف "${person.name}"؟\n\nسيتم الاحتفاظ بسجلات المهام القديمة (لن تظهر "غير محدد").`);
             if (!confirmation) return;
 
             setLoading(true);
@@ -2478,7 +2620,7 @@
                 renderPeopleManager();
                 updatePeopleSelects();
                 render();
-                showToast('🗑️ تم حذف الشخص', 'success');
+                showToast('🗑️ تم حذف الشخص (الاسم محفوظ في السجلات القديمة)', 'success');
             } catch (error) {
                 showToast('❌ فشل حذف الشخص', 'error');
             } finally {
@@ -2532,17 +2674,26 @@
         };
 
         // ============================================================
-        // DATE NAVIGATION
+        // DATE NAVIGATION - ✅ يجلب بيانات التاريخ الجديد من Firebase
         // ============================================================
         window.changeDate = async function(date) {
             if (!date) return;
+            if (date === selectedDate && lastLoadedDate === date) {
+                // نفس التاريخ، لا داعي لإعادة التحميل
+                render();
+                return;
+            }
+
             selectedDate = date;
             setLoading(true);
 
             try {
+                // ✅ إعادة تحميل البيانات للتاريخ الجديد من Firebase
+                await loadAllData(true, date);
                 await generateRecordsForDate(selectedDate);
                 render();
             } catch (error) {
+                console.error(error);
                 showToast('❌ فشل تحميل مهام التاريخ', 'error');
             } finally {
                 setLoading(false);
@@ -2565,7 +2716,7 @@
         window.refreshData = async function() {
             setLoading(true);
             try {
-                await loadAllData(true);
+                await loadAllData(true, selectedDate);
                 await generateRecordsForDate(selectedDate);
                 render();
                 updatePeopleSelects();
@@ -2593,18 +2744,23 @@
                 const completed = completedIds.includes(String(personId));
                 const wasOnVacation = wasPersonOnVacationOnDate(personId, taskDate);
                 const isCurrentlyOnVacation = isPersonOnVacation(personId);
-                const name = getPersonName(personId);
+                const name = getPersonName(personId, record);
                 const isFiltered = filterPersonId && String(personId) === String(filterPersonId);
+                const isDeleted = !people.some(p => String(p.id) === String(personId));
 
                 let statusText = '';
                 let className = 'person-tag';
                 let onClickAction = '';
 
-                if (record.status !== 'cancelled') {
+                if (record.status !== 'cancelled' && !isDeleted) {
                     onClickAction = `togglePersonTask('${escapeHtml(record.id)}', '${escapeHtml(personId)}')`;
                 }
 
-                if (wasOnVacation) {
+                if (isDeleted) {
+                    className += ' was-on-vacation';
+                    statusText = '🗑️';
+                    onClickAction = '';
+                } else if (wasOnVacation) {
                     className += ' was-on-vacation';
                     statusText = '📅 إجازة';
                     onClickAction = '';
@@ -2626,7 +2782,9 @@
                 }
 
                 let title = '';
-                if (record.status === 'cancelled') {
+                if (isDeleted) {
+                    title = 'شخص محذوف - الاسم محفوظ من السجل';
+                } else if (record.status === 'cancelled') {
                     title = 'المهمة ملغاة';
                 } else {
                     title = wasOnVacation ? 'كان في إجازة في هذا التاريخ' :
@@ -2642,6 +2800,7 @@
                         ${statusText} ${escapeHtml(name)}
                         ${isFiltered ? ' 🎯' : ''}
                         ${wasOnVacation ? ' (إجازة)' : ''}
+                        ${isDeleted ? ' (محذوف)' : ''}
                     </span>
                 `;
             }).join('');
@@ -2707,7 +2866,6 @@
                     <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} ${isPersonOnVacation(p.id) ? '(إجازة)' : ''}</option>
                 `).join('');
 
-            // رسالة الكاش
             const sourceBadge = lastLoadSource === 'firebase'
                 ? `<span class="cache-badge firebase">🔥 من Firestore</span>`
                 : `<span class="cache-badge cache">⚡ من الذاكرة المؤقتة</span>`;
@@ -3115,7 +3273,6 @@
                 </div>
             `;
 
-            // تحديث قيمة الفلتر في الـ select
             const filterSelect = document.querySelector('.filter-section select');
             if (filterSelect && selectedFilterPerson) {
                 filterSelect.value = selectedFilterPerson;
@@ -3284,7 +3441,8 @@
                             <div style="margin-bottom:12px;padding:8px 12px;background:#F5F6FA;border-radius:10px;font-size:0.75rem;color:var(--gray);">
                                 <i class="fas fa-info-circle"></i> 
                                 <strong>"إجازة"</strong> لتحديد إجازة مع تواريخ<br>
-                                <strong>"إنهاء الإجازة"</strong> لإنهاء الإجازة الحالية (يتم الاحتفاظ بالسجل)
+                                <strong>"إنهاء الإجازة"</strong> لإنهاء الإجازة الحالية (يتم الاحتفاظ بالسجل)<br>
+                                <strong>الحذف</strong> يحذف الشخص من القائمة لكن يبقى اسمه في السجلات القديمة
                             </div>
                             <div id="peopleManager"></div>
                             <div class="modal-buttons">
@@ -3298,7 +3456,8 @@
                 const startDateInput = document.getElementById('taskStartDate');
                 if (startDateInput) startDateInput.value = selectedDate;
 
-                await loadAllData(false);
+                // ✅ تحميل بيانات اليوم الحالي فقط
+                await loadAllData(false, selectedDate);
                 await generateRecordsForDate(selectedDate);
                 render();
                 updatePeopleSelects();
