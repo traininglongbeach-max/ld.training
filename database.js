@@ -2,7 +2,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import {
     initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-    collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch
+    collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch,
+    query, where   // ✅ جديد: لدعم الاستعلامات المفلترة
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
@@ -34,7 +35,7 @@ export const auth = getAuth(app);
 
 // ==================== إعدادات الكاش ====================
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 ساعات
-const CACHE_VERSION = 2;               // ✅ رفعنا الإصدار لإبطال localStorage القديم
+const CACHE_VERSION = 3;               // ✅ رفعنا الإصدار لإبطال localStorage القديم
 
 // ==================== الكاش الداخلي ====================
 const memoryCache = new Map();
@@ -88,12 +89,10 @@ async function loadFromIndexedDB(collectionName) {
  */
 async function saveCache(collectionName, data) {
     try {
-        // 1. حفظ في الذاكرة
         memoryCache.set(collectionName, data);
         const cnt = Array.isArray(data) ? data.length : 1;
         console.log(`💾 Memory Cache: ${collectionName} (${cnt} items)`);
 
-        // 2. حفظ في IndexedDB (async)
         const ok = await cacheSet(collectionName, data);
         if (ok) {
             console.log(`💾 IndexedDB: ${collectionName} (${cnt} items)`);
@@ -328,6 +327,61 @@ export const DB = {
         }
     },
 
+    // ============================================================
+    // ✅ NEW: جلب السجلات بتاريخ محدد فقط (استعلام Firestore مباشر)
+    // ============================================================
+    /**
+     * جلب السجلات التي تطابق تاريخاً محدداً باستخدام query مباشر على Firestore
+     * @param {string} storeName - اسم الـ Collection (مثلاً 'daily_task_records')
+     * @param {string} date - التاريخ بصيغة YYYY-MM-DD
+     * @param {string} dateField - اسم حقل التاريخ (افتراضي: 'task_date')
+     * @returns {Promise<Array>} - قائمة السجلات
+     */
+    async getRecordsByDate(storeName, date, dateField = 'task_date') {
+        try {
+            if (!date) {
+                console.warn(`⚠️ getRecordsByDate: date is empty for ${storeName}`);
+                return [];
+            }
+
+            console.log(`🔥 Firestore query: ${storeName} where ${dateField} == ${date}`);
+
+            const colRef = collection(db, storeName);
+            const q = query(colRef, where(dateField, "==", date));
+            const querySnapshot = await getDocs(q);
+
+            const data = querySnapshot.docs.map(d => ({
+                id: d.id,
+                ...d.data()
+            }));
+
+            console.log(`✅ getRecordsByDate: ${data.length} records for ${date}`);
+
+            // ✅ لا نحفظ في الـ cache العام (لأنه مخصص لتاريخ واحد)
+            // بدلاً من ذلك، نخزّنها في memory cache تحت مفتاح مركّب
+            // حتى يمكن استخدامها في نفس الجلسة دون إعادة جلب
+            const cacheKey = `${storeName}__date__${date}`;
+            memoryCache.set(cacheKey, data);
+
+            return data;
+        } catch (error) {
+            console.error(`❌ getRecordsByDate failed: ${storeName} @ ${date}`, error);
+
+            // ✅ Fallback: إذا فشل الـ query (مثلاً لا يوجد index)،
+            // ارجع للطريقة القديمة: جلب الكل ثم الفلترة
+            try {
+                console.log(`⚠️ Falling back to full collection fetch for ${storeName}`);
+                const all = await this.getAll(storeName);
+                const filtered = (all || []).filter(r => String(r[dateField]) === String(date));
+                console.log(`✅ Fallback: ${filtered.length} records found for ${date}`);
+                return filtered;
+            } catch (fallbackError) {
+                console.error(`❌ Fallback also failed: ${storeName}`, fallbackError);
+                throw error;
+            }
+        }
+    },
+
     // ==================== حذف عنصر ====================
     async delete(storeName, id) {
         try {
@@ -341,17 +395,11 @@ export const DB = {
     },
 
     // ==================== ✅ الحذف الدفعي ====================
-    /**
-     * حذف عدة عناصر من Collection واحد باستخدام writeBatch
-     * @param {string} storeName - اسم الـ Collection
-     * @param {Array<string|number>} idsArray - قائمة الـ IDs
-     * @returns {Promise<number>} - عدد العناصر المحذوفة
-     */
     async bulkDelete(storeName, idsArray) {
         try {
             if (!idsArray || idsArray.length === 0) return 0;
 
-            const CHUNK_SIZE = 400;   // Firestore batch limit = 500 — نترك هامش
+            const CHUNK_SIZE = 400;
             let deleted = 0;
 
             for (let i = 0; i < idsArray.length; i += CHUNK_SIZE) {
@@ -366,13 +414,11 @@ export const DB = {
                 deleted += chunk.length;
                 console.log(`🗑️ Bulk deleted ${chunk.length} from ${storeName}`);
 
-                // تأخير بسيط بين الدفعات لتفادي rate limit
                 if (i + CHUNK_SIZE < idsArray.length) {
                     await new Promise(r => setTimeout(r, 300));
                 }
             }
 
-            // امسح من الكاش
             await removeCacheItems(storeName, idsArray);
 
             console.log(`✅ BulkDelete done: ${deleted} items from ${storeName}`);
@@ -440,7 +486,6 @@ export const DB = {
 
             console.log(`✅ Bulk insert done: ${dataArray.length} items → ${storeName}`);
 
-            // تحديث الكاش
             try {
                 const currentData = await loadData(storeName);
                 if (currentData) {
@@ -470,6 +515,16 @@ export const DB = {
         try {
             console.log(`🔄 Refreshing: ${collectionName}`);
             memoryCache.delete(collectionName);
+
+            // ✅ امسح كل مفاتيح التاريخ المرتبطة
+            const dateKeysToRemove = [];
+            for (const key of memoryCache.keys()) {
+                if (key.startsWith(`${collectionName}__date__`)) {
+                    dateKeysToRemove.push(key);
+                }
+            }
+            dateKeysToRemove.forEach(k => memoryCache.delete(k));
+
             await cacheRemove(collectionName);
 
             return await fetchFromFirestore(collectionName);
@@ -483,7 +538,8 @@ export const DB = {
     async refreshAll() {
         try {
             console.log('🔄 Refreshing all caches');
-            const collections = Array.from(memoryCache.keys());
+            const collections = Array.from(memoryCache.keys())
+                .filter(k => !k.includes('__date__'));   // ✅ تجاهل مفاتيح التاريخ
             const results = {};
 
             for (const collectionName of collections) {
@@ -506,7 +562,6 @@ export const DB = {
             memoryCache.clear();
             await cacheClear();
 
-            // نظّف أيضاً أي localStorage قديم
             try {
                 Object.keys(localStorage)
                     .filter(k => k.startsWith('db_cache_'))
@@ -533,7 +588,6 @@ export const DB = {
                 indexedDBCollections: []
             };
 
-            // جمع معلومات IndexedDB
             try {
                 const cacheModule = await import('./cache.js');
                 const keys = await cacheModule.cacheKeys();
@@ -564,6 +618,16 @@ export const DB = {
         try {
             console.log(`🚫 Invalidating: ${collectionName}`);
             memoryCache.delete(collectionName);
+
+            // ✅ امسح كل مفاتيح التاريخ المرتبطة
+            const dateKeysToRemove = [];
+            for (const key of memoryCache.keys()) {
+                if (key.startsWith(`${collectionName}__date__`)) {
+                    dateKeysToRemove.push(key);
+                }
+            }
+            dateKeysToRemove.forEach(k => memoryCache.delete(k));
+
             await cacheRemove(collectionName);
             console.log(`✅ Invalidated: ${collectionName}`);
             return true;
@@ -571,6 +635,24 @@ export const DB = {
             console.error(`❌ Invalidate failed: ${collectionName}`, error);
             throw error;
         }
+    },
+
+    // ============================================================
+    // ✅ NEW: إبطال cache تاريخ محدد فقط
+    // ============================================================
+    /**
+     * إبطال cache تاريخ محدد (لا يؤثر على باقي التواريخ)
+     * @param {string} storeName - اسم الـ Collection
+     * @param {string} date - التاريخ
+     */
+    invalidateDate(storeName, date) {
+        const cacheKey = `${storeName}__date__${date}`;
+        if (memoryCache.has(cacheKey)) {
+            memoryCache.delete(cacheKey);
+            console.log(`🚫 Invalidated date cache: ${storeName} @ ${date}`);
+            return true;
+        }
+        return false;
     }
 };
 
