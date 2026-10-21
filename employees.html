@@ -210,6 +210,24 @@
         .save-btn { background: #2b7a4b; color: white; border: none; }
         .cancel-btn { background: #a0aec0; color: white; border: none; }
 
+        /* ✅ تنسيق الحقول الإجبارية */
+        .req-label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #1e3a5f;
+            font-size: 0.9rem;
+        }
+        .req-label::after {
+            content: " *";
+            color: #e53e3e;
+            font-weight: bold;
+        }
+        .input-error {
+            border-color: #e53e3e !important;
+            background: #fff5f5 !important;
+        }
+
         .photo-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 2000; }
         .photo-modal-content { position: relative; background: white; border-radius: 20px; padding: 20px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
         .photo-modal-image-container { width: 100%; height: 400px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 15px; }
@@ -437,16 +455,33 @@
         </div>
     </div>
 
+    <!-- ✅ Add Modal (معدّل: Dep و Level قوائم منسدلة + حقول إجبارية) -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <h3>➕ إضافة موظف جديد</h3>
-            <input type="number" id="empId" placeholder="Employee ID *">
-            <input type="text" id="empName" placeholder="Full Name *">
-            <input type="text" id="empDept" placeholder="Dep (مثال: FO, HK, Lau)">
+
+            <label class="req-label">Employee ID</label>
+            <input type="number" id="empId" placeholder="Employee ID">
+
+            <label class="req-label">Full Name</label>
+            <input type="text" id="empName" placeholder="Full Name">
+
+            <label class="req-label">Dep</label>
+            <select id="empDept">
+                <option value="">-- اختر القسم --</option>
+            </select>
+
+            <label class="req-label">Position</label>
             <input type="text" id="empPosition" placeholder="Position">
-            <input type="text" id="empLevel" placeholder="Level">
-            <input type="tel" id="empPhone" placeholder="📱 رقم الهاتف (Phone)" style="direction:ltr; text-align:left;">
-            
+
+            <label class="req-label">Level</label>
+            <select id="empLevel">
+                <option value="">-- اختر المستوى --</option>
+            </select>
+
+            <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">📱 رقم الهاتف (اختياري)</label>
+            <input type="tel" id="empPhone" placeholder="Phone" style="direction:ltr; text-align:left;">
+
             <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">🎂 تاريخ الميلاد (اختياري):</label>
             <div style="display: flex; gap: 0.5rem; margin: 0.5rem 0;">
                 <input type="number" id="empBirthYear" placeholder="السنة (Year)">
@@ -454,14 +489,15 @@
                 <input type="number" id="empBirthDay" placeholder="اليوم (Day)" min="1" max="31">
             </div>
 
-            <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">📅 تاريخ التعيين:</label>
-            <input type="date" id="empHireDate" placeholder="Hire Date">
-            
+            <label class="req-label">📅 تاريخ التعيين</label>
+            <input type="date" id="empHireDate">
+
+            <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">📌 الحالة</label>
             <select id="empStatus">
                 <option value="Active">✅ نشط (Active)</option>
                 <option value="Left">❌ مستقيل (Left)</option>
             </select>
-            
+
             <label style="display:block; margin-top: 10px; font-weight: bold; color: #1e3a5f; font-size: 0.9rem;">📷 صورة الموظف (اختياري):</label>
             <input type="file" id="empPhotoInput" accept="image/*" style="margin-top: 5px;">
             <div style="text-align: center;"><img id="empPhotoPreview" style="display:none; max-width: 100px; max-height: 100px; border-radius: 10px; margin-top: 5px;"></div>
@@ -521,34 +557,37 @@
         let filterDept = "all";
         let selectedPositions = [];
         let filterLevel = "all";
-        let filterStatus = "Active"; // ✅ الافتراضي: نشط
+        let filterStatus = "Active";
         let currentEditId = null;
         let currentUserRole = null;
+        let currentUserPermissions = [];
 
         // ============================================================
-        // ✅ دالة تنسيق رقم الهاتف تلقائياً
+        // ✅ صلاحية إدارة الموظفين فقط
+        // ============================================================
+        const EMPLOYEES_MANAGER_UIDS = ['GdzLW9eJpUWZ3IFVDQ4HA46owAY2'];
+
+        function canManageEmployees() {
+            return currentUserRole === 'Admin'
+                || currentUserRole === 'admin'
+                || EMPLOYEES_MANAGER_UIDS.includes(auth.currentUser?.uid)
+                || (Array.isArray(currentUserPermissions) && currentUserPermissions.includes('employees_manager'));
+        }
+
+        // ============================================================
+        // ✅ دالة تنسيق رقم الهاتف
         // ============================================================
         function formatPhoneNumber(phone) {
             if (!phone) return '';
-            
-            // 1. تحويل لنص وإزالة كل حاجة مش رقم
             let cleaned = String(phone).trim().replace(/[^0-9]/g, '');
-            
             if (cleaned.length === 0) return '';
-            
-            // 2. إزالة كود الدولة 20 (مصر) لو موجود في الأول
             if (cleaned.startsWith('20') && cleaned.length > 10) {
                 cleaned = cleaned.substring(2);
             }
-            
-            // 3. إزالة كل الأصفار الزيادة في الأول
             cleaned = cleaned.replace(/^0+/, '');
-            
-            // 4. إضافة صفر واحد في الأول
             if (cleaned.length > 0 && !cleaned.startsWith('0')) {
                 cleaned = '0' + cleaned;
             }
-            
             return cleaned;
         }
 
@@ -556,7 +595,6 @@
         async function refreshData() {
             document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2rem;">⏳ جاري جلب أحدث البيانات من السيرفر...</td></tr>';
             
-            // ✅ مسح الكاش الفعلي المستخدم في database.js
             localStorage.removeItem('db_cache_employees');
             localStorage.removeItem('db_cache_meta_employees');
             localStorage.removeItem('db_cache_employee_birthdays_final');
@@ -565,10 +603,8 @@
             showToast('⏳ جاري تحديث البيانات من Firebase...', false);
             
             try {
-                // ✅ إجبار DB على إعادة القراءة من Firestore
                 await DB.refresh('employees');
                 await DB.refresh('employee_birthdays_final');
-                
                 await updateUI();
                 showToast('✅ تم تحديث البيانات بنجاح من السيرفر');
             } catch (error) {
@@ -577,7 +613,7 @@
             }
         }
 
-        // ========== دوال ضغط ورفع الصور ==========
+        // ========== ضغط ورفع الصور ==========
         const compressImage = (file) => {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -656,7 +692,7 @@
             }
         });
 
-        // ========== دوال تحميل البيانات ==========
+        // ========== تحميل البيانات ==========
         async function loadEmployees() {
             try {
                 const data = await DB.getAll('employees');
@@ -717,7 +753,6 @@
             return Array.from(positions).sort();
         }
 
-        // ✅ فلتر المستويات مرتبط بالقسم
         function getUniqueLevels(dept = 'all') {
             const levels = new Set();
             employees.forEach(emp => {
@@ -752,7 +787,7 @@
             return filtered.sort((a, b) => parseInt(a.id) - parseInt(b.id));
         }
 
-        // ========== إدارة الوظائف المنسدلة ==========
+        // ========== إدارة الوظائف المنسدلة (فلتر) ==========
         function togglePositionDropdown(event) {
             event.stopPropagation();
             const dropdown = document.getElementById('positionDropdownContent');
@@ -850,7 +885,7 @@
             if (newDept !== filterDept) {
                 filterDept = newDept;
                 selectedPositions = [];
-                filterLevel = "all"; // ✅ إعادة تعيين فلتر المستوى عند تغيير القسم
+                filterLevel = "all";
                 renderPositionOptions(true);
             }
             await updateUI();
@@ -891,10 +926,8 @@
             
             renderPositionOptions();
 
-            // ✅ فلتر المستويات مرتبط بالقسم
             const levelFilter = document.getElementById('levelFilter');
             const levelsForDept = getUniqueLevels(filterDept);
-            // لو المستوى المختار مش موجود في القسم الحالي، صفّره
             if (filterLevel !== 'all' && !levelsForDept.includes(filterLevel)) {
                 filterLevel = 'all';
             }
@@ -905,6 +938,8 @@
             
             const tableBody = document.getElementById('tableBody');
             if (tableBody) {
+                const canEdit = canManageEmployees();
+
                 tableBody.innerHTML = filtered.map(emp => {
                     const empIdStr = emp.id.toString().trim();
                     let birthInfoHTML = '-';
@@ -930,13 +965,11 @@
                         }
                     }
 
-                    const isAdmin = (currentUserRole === 'Admin' || currentUserRole === 'admin');
-                    const editDeleteButtons = isAdmin ? `
+                    const editDeleteButtons = canEdit ? `
                         <button class="edit-btn" onclick="openEditModal('${emp.id}')">✏️ تعديل</button>
                         <button class="delete-btn" onclick="deleteEmployee('${emp.id}')">🗑️ حذف</button>
                     ` : '';
 
-                    // ✅ زر الهاتف مع تنسيق الرقم
                     const phoneClean = formatPhoneNumber(emp.phone);
                     const hasPhone = phoneClean.length > 0;
                     const phoneBtn = hasPhone 
@@ -984,7 +1017,7 @@
             filterDept = "all"; 
             selectedPositions = []; 
             filterLevel = "all"; 
-            filterStatus = "Active"; // ✅ إعادة تعيين إلى نشط
+            filterStatus = "Active";
             
             document.getElementById('deptFilter').value = "all";
             document.getElementById('levelFilter').value = "all";
@@ -995,12 +1028,14 @@
             updateUI();
         }
 
+        // ============================================================
+        // ✅ فتح نموذج الإضافة + تعبئة قوائم Dep و Level
+        // ============================================================
         function openAddModal() { 
+            // تفريغ الحقول
             document.getElementById('empId').value = '';
             document.getElementById('empName').value = '';
-            document.getElementById('empDept').value = '';
             document.getElementById('empPosition').value = '';
-            document.getElementById('empLevel').value = '';
             document.getElementById('empPhone').value = '';
             document.getElementById('empHireDate').value = '';
             document.getElementById('empBirthYear').value = '';
@@ -1008,21 +1043,75 @@
             document.getElementById('empBirthDay').value = '';
             document.getElementById('empPhotoInput').value = '';
             document.getElementById('empPhotoPreview').style.display = 'none';
+            document.getElementById('empStatus').value = 'Active';
+
+            // ✅ إزالة أي علامات خطأ سابقة
+            ['empId','empName','empDept','empPosition','empLevel','empHireDate'].forEach(id => {
+                document.getElementById(id).classList.remove('input-error');
+            });
+
+            // ✅ تعبئة قائمة الأقسام من البيانات الحالية
+            const deptSelect = document.getElementById('empDept');
+            const departments = getUniqueDepartments();
+            deptSelect.innerHTML = '<option value="">-- اختر القسم --</option>' 
+                + departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            deptSelect.value = '';
+
+            // ✅ تعبئة قائمة المستويات من البيانات الحالية (كل المستويات)
+            const levelSelect = document.getElementById('empLevel');
+            const levels = getUniqueLevels('all');
+            levelSelect.innerHTML = '<option value="">-- اختر المستوى --</option>' 
+                + levels.map(l => `<option value="${l}">${l}</option>`).join('');
+            levelSelect.value = '';
+
             document.getElementById('addModal').style.display = 'flex'; 
         }
 
+        // ============================================================
+        // ✅ إضافة موظف مع التحقق من الحقول الإجبارية
+        // ============================================================
         async function addEmployee() {
-            const id = document.getElementById('empId').value;
-            const fullName = document.getElementById('empName').value;
-            const department = document.getElementById('empDept').value;
-            const position = document.getElementById('empPosition').value;
-            const level = document.getElementById('empLevel').value;
+            const id = document.getElementById('empId').value.trim();
+            const fullName = document.getElementById('empName').value.trim();
+            const department = document.getElementById('empDept').value.trim();
+            const position = document.getElementById('empPosition').value.trim();
+            const level = document.getElementById('empLevel').value.trim();
             const phone = formatPhoneNumber(document.getElementById('empPhone').value);
             const hireDate = document.getElementById('empHireDate').value;
             const status = document.getElementById('empStatus').value;
             
-            if (!id || !fullName) { showToast('❌ الرجاء إدخال كود الموظف والاسم', true); return; }
-            if (employees.find(e => String(e.id) === String(id))) { showToast('❌ هذا الكود موجود بالفعل', true); return; }
+            // ✅ التحقق من الحقول الإجبارية
+            const requiredFields = [
+                { id: 'empId', label: 'Employee ID', value: id },
+                { id: 'empName', label: 'Full Name', value: fullName },
+                { id: 'empDept', label: 'Dep', value: department },
+                { id: 'empPosition', label: 'Position', value: position },
+                { id: 'empLevel', label: 'Level', value: level },
+                { id: 'empHireDate', label: 'Hire Date', value: hireDate }
+            ];
+
+            let missing = [];
+            requiredFields.forEach(field => {
+                const el = document.getElementById(field.id);
+                if (!field.value) {
+                    el.classList.add('input-error');
+                    missing.push(field.label);
+                } else {
+                    el.classList.remove('input-error');
+                }
+            });
+
+            if (missing.length > 0) {
+                showToast('❌ الحقول التالية مطلوبة: ' + missing.join(' - '), true);
+                return;
+            }
+
+            // ✅ منع تكرار الكود
+            if (employees.find(e => String(e.id) === String(id))) {
+                showToast('❌ هذا الكود موجود بالفعل', true);
+                document.getElementById('empId').classList.add('input-error');
+                return;
+            }
             
             const photoInput = document.getElementById('empPhotoInput');
             let photoUrl = null;
@@ -1039,7 +1128,16 @@
                 }
             }
 
-            const newEmp = { id: parseInt(id), fullName, department: department || '', position: position || '', level: level || '', phone: phone || '', hireDate: hireDate || '', status: status || 'Active' };
+            const newEmp = { 
+                id: parseInt(id), 
+                fullName, 
+                department, 
+                position, 
+                level, 
+                phone: phone || '', 
+                hireDate, 
+                status: status || 'Active' 
+            };
             if (photoUrl) {
                 newEmp.photoUrl = photoUrl;
             }
@@ -1119,7 +1217,6 @@
                 emp.department = document.getElementById('editDept').value;
                 emp.position = document.getElementById('editPosition').value;
                 emp.level = document.getElementById('editLevel').value;
-                // ✅ تنسيق الرقم عند الحفظ
                 emp.phone = formatPhoneNumber(document.getElementById('editPhone').value);
                 emp.hireDate = document.getElementById('editHireDate').value;
                 emp.status = document.getElementById('editStatus').value;
@@ -1195,7 +1292,6 @@
                     let department = row['Dep'] || row['department'] || row['Department'] || '';
                     let position = row['Position'] || row['position'] || '';
                     let level = row['Level'] || row['level'] || '';
-                    // ✅ قراءة وتنسيق رقم الهاتف
                     let rawPhone = row['Phone'] || row['phone'] || row['Phone Number'] || row['phone_number'] || row['Mobile'] || row['mobile'] || row['موبايل'] || '';
                     let phone = formatPhoneNumber(rawPhone);
                     let hireDate = row['Hire Date'] || row['hire_date'] || '';
@@ -1350,14 +1446,12 @@
 
         function closePhotoModal() { document.getElementById('photoModal').style.display = 'none'; }
 
-        // ✅ دالة عرض رقم الهاتف (مع التنسيق)
         function showPhone(employeeId, employeeName, phoneNumber) {
             const modal = document.getElementById('phoneModal');
             const nameEl = document.getElementById('phoneModalName');
             const idEl = document.getElementById('phoneModalId');
             const bodyEl = document.getElementById('phoneModalBody');
             
-            // ✅ تنسيق الرقم قبل العرض
             const formattedPhone = formatPhoneNumber(phoneNumber);
             
             nameEl.textContent = employeeName;
@@ -1411,7 +1505,7 @@
         }
 
         function checkAdminAndShowButtons() {
-            if (currentUserRole === 'Admin' || currentUserRole === 'admin') {
+            if (canManageEmployees()) {
                 document.querySelectorAll('.admin-only').forEach(el => el.classList.add('visible'));
             } else {
                 document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('visible'));
@@ -1423,6 +1517,24 @@
             const dropdown = document.getElementById('positionDropdownContent');
             if (dropdown && multiselect && !multiselect.contains(e.target)) {
                 dropdown.classList.remove('open');
+            }
+        });
+
+        // ============================================================
+        // ✅ ربط قائمة المستويات بالقسم المختار في نموذج الإضافة
+        // ============================================================
+        document.getElementById('empDept').addEventListener('change', function() {
+            const selectedDept = this.value;
+            const levelSelect = document.getElementById('empLevel');
+            const levels = selectedDept ? getUniqueLevels(selectedDept) : getUniqueLevels('all');
+            
+            const previousLevel = levelSelect.value;
+            levelSelect.innerHTML = '<option value="">-- اختر المستوى --</option>' 
+                + levels.map(l => `<option value="${l}">${l}</option>`).join('');
+            
+            // لو المستوى السابق لسه موجود في القسم الجديد، احتفظ بيه
+            if (previousLevel && levels.includes(previousLevel)) {
+                levelSelect.value = previousLevel;
             }
         });
 
@@ -1460,11 +1572,16 @@
             }
         });
 
+        // ============================================================
+        // ✅ تحميل بيانات المستخدم + الصلاحيات
+        // ============================================================
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
                     const userData = await DB.get('users', user.uid);
                     currentUserRole = userData ? userData.role : 'user';
+                    currentUserPermissions = (userData && Array.isArray(userData.permissions)) 
+                        ? userData.permissions : [];
                     checkAdminAndShowButtons();
                     await updateUI();
                 } catch(e) { 
