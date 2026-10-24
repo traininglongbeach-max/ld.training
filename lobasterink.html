@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 10 LobsterInk - تحليل تلقائي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Top 10 LobsterInk </title>
+
+    <!-- ⭐ أيقونات الموقع -->
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
-    
+
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', 'Cairo', 'Arial', sans-serif; }
 
@@ -40,76 +43,165 @@
             --shadow-hover: 0 15px 50px rgba(11, 59, 130, 0.25);
             --radius: 16px;
             --transition: all 0.3s ease;
+
+            /* ألوان الهيدر الجديد (L&D) */
+            --hdr-navy: #1e3a5f;
+            --hdr-green: #2b7a4b;
+            --hdr-blue: #4299e1;
+            --hdr-red: #e53e3e;
         }
 
-        body { 
-            background: linear-gradient(135deg, #F0F4F8 0%, #E8EEF5 100%); 
-            min-height: 100vh; 
-            padding: 20px;
+        body {
+            background: linear-gradient(135deg, #F0F4F8 0%, #E8EEF5 100%);
+            min-height: 100vh;
+            padding: 0;
             transition: background 0.3s ease;
         }
 
         body.lang-en { direction: ltr; }
-        body.lang-en .navbar .logo,
-        body.lang-en .nav-actions,
-        body.lang-en .section-header,
-        body.lang-en .filter-bar,
-        body.lang-en .data-table .name-cell { direction: ltr; }
-        body.lang-en .data-table .name-cell { text-align: left; }
-        body.lang-en .leaderboard-card { direction: ltr; }
-        body.lang-en .leaderboard-item .info .name { direction: ltr; }
 
-        .navbar {
-            background: var(--white); padding: 12px 30px; border-radius: var(--radius);
-            box-shadow: var(--shadow); display: flex; justify-content: space-between;
-            align-items: center; flex-wrap: wrap; gap: 10px;
-            max-width: 1600px; margin: 0 auto 20px;
-            border: 1px solid rgba(11, 59, 130, 0.08);
+        /* ============ ⭐ الهيدر الجديد (Navbar) ============ */
+        .app-navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
         }
-        .navbar .logo { display: flex; align-items: center; gap: 12px; }
-        .navbar .logo .logo-icon {
-            width: 46px; height: 46px; background: var(--primary-gradient);
-            border-radius: 12px; display: flex; align-items: center;
-            justify-content: center; color: white; font-size: 1.4rem;
-            box-shadow: 0 4px 15px rgba(11, 59, 130, 0.25);
+        .app-navbar .logo h2 { color: var(--hdr-navy); font-size: 1.3rem; margin: 0; font-weight: 800; }
+        .app-navbar .logo span { color: var(--hdr-green); }
+        .app-navbar .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+        .app-navbar .nav-links a,
+        .app-navbar .nav-links button {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.85rem;
+            transition: 0.3s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
         }
-        .navbar .logo h1 { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
-        .navbar .logo .subtitle { font-size: 0.7rem; color: var(--gray); font-weight: 600; }
-        .nav-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .btn-nav {
-            padding: 8px 16px; border: none; border-radius: 10px; cursor: pointer;
-            font-weight: 700; transition: var(--transition); display: inline-flex;
-            align-items: center; gap: 6px; font-size: 0.85rem; text-decoration: none;
-        }
-        .btn-nav:hover { transform: translateY(-2px); }
-        .btn-home { background: var(--primary-gradient); color: white; }
-        .btn-refresh { background: #F1F5F9; color: var(--dark); }
-        .btn-logout { background: var(--danger); color: white; }
-        .btn-lang { 
-            background: linear-gradient(135deg, #10B981, #059669); 
-            color: white; font-weight: 800;
-        }
-        .btn-cache-save { background: linear-gradient(135deg, #6366F1, #4F46E5); color: white; }
-        .btn-cache-clear { background: linear-gradient(135deg, #F97316, #EA580C); color: white; }
+        .app-navbar .nav-links a:hover,
+        .app-navbar .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .app-navbar .nav-links .home { background: var(--hdr-green); color: white; }
+        .app-navbar .nav-links .refresh { background: var(--hdr-blue); color: white; }
+        .app-navbar .nav-links .logout { background: var(--hdr-red); color: white; }
+        .app-navbar .nav-links .lang-switch-nav { background: #6b7280; color: white; }
 
-        /* Cache info badge */
-        .cache-info-badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            font-size: 0.7rem; font-weight: 700;
-            padding: 4px 10px; border-radius: 8px;
-            background: #F1F5F9; color: #64748B;
+        /* ============ ⭐ شارة الدور ============ */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: 1px solid transparent;
+        }
+        .role-badge.viewer { background: #e6fffa; color: #234e52; border-color: #b2f5ea; }
+        .role-badge.admin  { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+
+        /* شاشة التحميل */
+        .loading-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 10000; flex-direction: column;
+        }
+        .loading-overlay.show { display: flex; }
+        .loading-overlay .loader {
+            width: 60px; height: 60px;
+            border: 6px solid #e2e8f0;
+            border-top: 6px solid var(--hdr-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-overlay .loading-text { font-size: 1.1rem; color: var(--hdr-navy); font-weight: 500; }
+
+        /* ============ ⭐ الفوتر ============ */
+        .app-footer {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+            margin-top: 2rem;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .container { max-width: 1600px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; padding: 0 20px; }
+
+        /* ============ ⭐ التابات المدمجة في النافبار ============ */
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 2rem;
             border: 1px solid #E2E8F0;
+            margin: 0 4px;
         }
-        .cache-info-badge.active {
-            background: #D1FAE5; color: #065F46;
-            border-color: #10B981;
+        .nav-tabs .tab-btn {
+            flex: 0 1 auto;
+            min-width: auto;
+            background: transparent;
+            border: none;
+            border-radius: 2rem;
+            padding: 6px 14px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+            white-space: nowrap;
         }
-        .cache-info-badge.expired {
-            background: #FEE2E2; color: #991B1B;
-            border-color: #EF4444;
+        .nav-tabs .tab-btn:hover {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .nav-tabs .tab-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 2px 8px rgba(11, 59, 130, 0.25);
+        }
+        .nav-tabs .tab-btn .badge-count {
+            background: rgba(255,255,255,0.3);
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 900;
+        }
+        .nav-tabs .tab-btn:not(.active) .badge-count {
+            background: white;
+            color: #64748B;
         }
 
-        .container { max-width: 1600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .tab-content { display: none; animation: fadeInTab 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .section {
             background: var(--white); border-radius: var(--radius); padding: 25px;
@@ -125,11 +217,10 @@
             margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #F1F5F9;
             flex-wrap: wrap; gap: 8px;
         }
-        .section-header h2 { 
+        .section-header h2 {
             font-size: 1.4rem; font-weight: 800; color: var(--dark);
             display: flex; align-items: center; gap: 10px;
         }
-        .section-header .hint { font-size: 0.75rem; color: var(--gray); font-weight: 600; }
         .count-badge {
             background: #F1F5F9; color: var(--gray); padding: 4px 14px;
             border-radius: 20px; font-size: 0.75rem; font-weight: 700;
@@ -174,15 +265,13 @@
         .alert-card .alert-actions button {
             padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer;
             font-weight: 700; font-size: 0.75rem; transition: var(--transition);
-        }
-        .alert-card .alert-actions .btn-view {
             background: var(--primary); color: white;
         }
-        .alert-card .alert-actions .btn-view:hover { background: var(--primary-light); }
+        .alert-card .alert-actions button:hover { background: var(--primary-light); }
 
         .filter-bar {
             display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
-            padding: 15px 20px; background: linear-gradient(135deg, #F1F5F9, #F8FAFC); 
+            padding: 15px 20px; background: linear-gradient(135deg, #F1F5F9, #F8FAFC);
             border-radius: 12px; align-items: center;
             border: 1px solid #E2E8F0;
         }
@@ -190,17 +279,16 @@
         .filter-group label {
             font-weight: 700; font-size: 0.8rem; color: var(--gray); white-space: nowrap;
         }
-        .filter-bar select, .filter-bar input[type="text"], .filter-bar input[type="number"] {
+        .filter-bar select, .filter-bar input[type="text"] {
             padding: 7px 14px; border: 2px solid #E2E8F0; border-radius: 10px;
             font-size: 0.8rem; background: white; outline: none;
             transition: var(--transition); font-family: 'Tajawal', sans-serif; color: var(--dark);
         }
-        .filter-bar select:focus, .filter-bar input:focus { 
-            border-color: var(--primary); 
+        .filter-bar select:focus, .filter-bar input:focus {
+            border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(11, 59, 130, 0.1);
         }
-        .filter-bar input[type="number"] { width: 80px; }
-        .filter-bar input[type="text"] { width: 180px; }
+        .filter-bar input[type="text"] { width: 150px; }
         .filter-checkbox {
             display: flex; align-items: center; gap: 6px; font-size: 0.8rem;
             font-weight: 700; color: var(--gray); cursor: pointer; user-select: none;
@@ -224,21 +312,11 @@
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
         }
         .filter-bar .level-filter label {
-            color: #92400E;
-            font-weight: 800;
-            font-size: 0.8rem;
-            padding-right: 6px;
+            color: #92400E; font-weight: 800; font-size: 0.8rem; padding-right: 6px;
         }
         .filter-bar .level-filter select {
-            background: white;
-            border: 2px solid #F59E0B;
-            font-weight: 800;
-            color: #92400E;
-            padding: 6px 12px;
-        }
-        .filter-bar .level-filter select:focus {
-            border-color: #D97706;
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+            background: white; border: 2px solid #F59E0B;
+            font-weight: 800; color: #92400E; padding: 6px 12px;
         }
 
         #leaderboardContainer {
@@ -251,12 +329,16 @@
         .empty-state i { font-size: 4rem; color: #CBD5E1; margin-bottom: 15px; }
         .empty-state h3 { font-size: 1.1rem; color: var(--dark); margin-bottom: 6px; }
 
+        /* ✅ تعديل الاتجاه للكارد */
         .leaderboard-card {
             width: 100%; min-height: 400px; background: #F8FAFC;
             padding: 30px 35px; border-radius: var(--radius); display: flex;
             flex-direction: column; position: relative; overflow: hidden;
-            border: 1px solid #E2E8F0; font-family: 'Tajawal', 'Arial', sans-serif; direction: rtl;
+            border: 1px solid #E2E8F0; font-family: 'Tajawal', 'Arial', sans-serif;
+            direction: rtl;
         }
+        body.lang-en .leaderboard-card { direction: ltr !important; }
+
         .leaderboard-header {
             text-align: center; padding-bottom: 15px;
             border-bottom: 3px solid #F59E0B; position: relative; z-index: 1; margin-bottom: 15px;
@@ -291,6 +373,7 @@
             border: 4px solid #E2E8F0; background: #F1F5F9; display: flex;
             align-items: center; justify-content: center; font-size: 2rem;
             color: #64748B; margin-bottom: 8px; position: relative; transition: var(--transition);
+            direction: ltr; /* ثابت */
         }
         .leaderboard-item .avatar img {
             width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;
@@ -351,6 +434,7 @@
         .data-table .rank-badge.bronze { background: var(--bronze-gradient); }
         .data-table .id-cell { font-family: monospace; font-weight: 700; color: var(--primary); }
         .data-table .name-cell { text-align: right; font-weight: 700; }
+        body.lang-en .data-table .name-cell { text-align: left; }
         .data-table .group-cell {
             font-size: 0.75rem; background: #F1F5F9; padding: 3px 10px;
             border-radius: 10px; display: inline-block;
@@ -361,11 +445,8 @@
             display: inline-block; white-space: nowrap;
         }
         .data-table .index-cell {
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 6px;
-            display: inline-block;
-            min-width: 60px;
+            font-weight: 800; padding: 4px 10px;
+            border-radius: 6px; display: inline-block; min-width: 60px;
         }
         .data-table .no-data { color: var(--danger); font-size: 0.7rem; font-weight: 700; }
 
@@ -395,10 +476,33 @@
         }
         .cache-actions .btn { min-width: 140px; }
 
+        .cache-info-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 0.7rem; font-weight: 700;
+            padding: 4px 10px; border-radius: 8px;
+            background: #F1F5F9; color: #64748B;
+            border: 1px solid #E2E8F0;
+        }
+        .cache-info-badge.active {
+            background: #D1FAE5; color: #065F46; border-color: #10B981;
+        }
+        .cache-info-badge.expired {
+            background: #FEE2E2; color: #991B1B; border-color: #EF4444;
+        }
+
+        .btn-nav {
+            padding: 8px 16px; border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 700; transition: var(--transition); display: inline-flex;
+            align-items: center; gap: 6px; font-size: 0.85rem; text-decoration: none;
+        }
+        .btn-nav:hover { transform: translateY(-2px); }
+        .btn-cache-save { background: linear-gradient(135deg, #6366F1, #4F46E5); color: white; }
+        .btn-cache-clear { background: linear-gradient(135deg, #F97316, #EA580C); color: white; }
+
         .toast {
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             background: var(--dark); color: white; padding: 12px 24px;
-            border-radius: 14px; font-weight: 700; z-index: 9999;
+            border-radius: 14px; font-weight: 700; z-index: 10001;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             max-width: calc(100vw - 30px); text-align: center;
             animation: toastIn .3s ease;
@@ -412,12 +516,12 @@
             to { opacity: 1; transform: translate(-50%, 0); }
         }
 
-        .loading-overlay {
+        .loading-inline {
             position: fixed; inset: 0; background: rgba(255,255,255,0.85);
             backdrop-filter: blur(4px); display: none; align-items: center;
             justify-content: center; z-index: 10000;
         }
-        .loading-overlay.active { display: flex; }
+        .loading-inline.active { display: flex; }
         .loading-box {
             background: var(--white); padding: 25px 40px; border-radius: var(--radius);
             box-shadow: var(--shadow-hover); text-align: center;
@@ -428,7 +532,6 @@
             border: 4px solid var(--light-gray); border-top-color: var(--primary);
             border-radius: 50%; animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.7);
@@ -457,6 +560,9 @@
         @media (max-width: 1200px) {
             .leaderboard-body { grid-template-columns: repeat(5, 1fr); }
             .leaderboard-item .avatar { width: 130px; height: 130px; }
+            .nav-tabs .tab-btn span[data-i18n] { display: none; }
+            .nav-tabs .tab-btn { padding: 8px 12px; }
+            .nav-tabs .tab-btn i { font-size: 1rem; }
         }
         @media (max-width: 992px) {
             .leaderboard-body { grid-template-columns: repeat(4, 1fr); }
@@ -464,16 +570,18 @@
             .upload-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-            body { padding: 12px; }
-            .navbar { padding: 12px 16px; flex-direction: column; }
-            .nav-actions { width: 100%; justify-content: center; }
+            .container { padding: 0 12px; }
+            .app-navbar { padding: 12px 16px; flex-direction: column; align-items: stretch; }
+            .app-navbar .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .nav-tabs { order: 10; width: 100%; justify-content: center; margin-top: 8px; margin: 8px 0 0 0; }
+            .nav-tabs .tab-btn span[data-i18n] { display: inline-block; }
             .section { padding: 18px; }
             .leaderboard-body { grid-template-columns: repeat(3, 1fr); gap: 8px; }
             .leaderboard-item .avatar { width: 75px; height: 75px; }
             .leaderboard-item .info .name { font-size: 0.75rem; }
             .leaderboard-card { padding: 18px; }
             .filter-bar { flex-direction: column; align-items: stretch; }
-            .filter-bar input[type="text"] { width: 100%; }
+            .filter-bar input[type="text"], .filter-bar select { width: 100%; }
         }
         @media (max-width: 480px) {
             .leaderboard-body { grid-template-columns: repeat(2, 1fr); gap: 6px; }
@@ -483,32 +591,81 @@
             .leaderboard-item .info .name { font-size: 0.7rem; }
             .leaderboard-item .info .department { font-size: 0.55rem; }
         }
+
+        @media print {
+            .app-navbar, .app-footer, .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-box">
-            <div class="spinner"></div>
-            <div id="loadingText">جاري التحميل...</div>
-        </div>
+<!-- ⭐ شاشة التحميل -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+    <div class="loading-text">⏳ جاري التحقق من الصلاحيات...</div>
+</div>
+
+<div class="loading-inline" id="loadingInline">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <div id="loadingText">جاري التحميل...</div>
     </div>
+</div>
 
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3 id="modalTitle">معاينة</h3>
-                <button class="close-btn" id="modalCloseBtn"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">معاينة</h3>
+            <button class="close-btn" id="modalCloseBtn"><i class="fas fa-times"></i></button>
         </div>
+        <div class="modal-body" id="modalBody"></div>
     </div>
+</div>
 
-    <div id="app">
-        <div id="navbarContainer"></div>
+<!-- ⭐ الهيدر الجديد (Navbar) مع التابات مدمجة -->
+<div class="app-navbar no-print">
+    <div class="logo">
+        <h2>🎓 <span>L&D</span> Management System</h2>
+    </div>
+    
+    <div class="nav-links">
+        <span class="role-badge viewer" id="roleBadge">👤 User</span>
+        
+        <button class="lang-switch-nav" id="langBtn">
+            <i class="fas fa-globe"></i> <span id="langBtnText">English</span>
+        </button>
+        
+        <!-- ⭐ التابات المدمجة -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="upload" onclick="switchTab('upload')">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span data-i18n="tabUpload">رفع الملفات</span>
+            </button>
+            <button class="tab-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+                <i class="fas fa-crown"></i>
+                <span data-i18n="tabLeaderboard">لوحة الأوائل</span>
+                <span class="badge-count" id="leaderboardTabCount">0</span>
+            </button>
+            <button class="tab-btn" data-tab="allEmployees" onclick="switchTab('allEmployees')">
+                <i class="fas fa-users"></i>
+                <span data-i18n="tabAllEmployees">كل الموظفين</span>
+                <span class="badge-count" id="allTabCount">0</span>
+            </button>
+        </div>
 
-        <div class="container">
-            <!-- SECTION 1: UPLOAD -->
+        <button id="refreshDataBtn" class="refresh">
+            <i class="fas fa-sync-alt"></i> <span data-i18n="refresh">تحديث</span>
+        </button>
+        <a href="index.html" class="home">🏠 Home</a>
+        <button id="logoutBtn" class="logout">🚪 Logout</button>
+    </div>
+</div>
+
+<div id="app">
+    <div class="container">
+
+        <!-- ============ TAB 1: UPLOAD ============ -->
+        <div id="tab-upload" class="tab-content active">
             <div class="section">
                 <div class="section-header">
                     <h2>
@@ -538,16 +695,15 @@
 
                 <div class="btn-group">
                     <button class="btn btn-primary" id="analyzeBtn" disabled>
-                        <i class="fas fa-calculator"></i> 
+                        <i class="fas fa-calculator"></i>
                         <span data-i18n="analyzeBtn">تحليل الملفات</span>
                     </button>
                     <button class="btn btn-secondary" id="resetBtn">
-                        <i class="fas fa-eraser"></i> 
+                        <i class="fas fa-eraser"></i>
                         <span data-i18n="resetBtn">مسح الكل</span>
                     </button>
                 </div>
 
-                <!-- 🆕 CACHE ACTIONS -->
                 <div class="cache-actions">
                     <span class="cache-info-badge" id="cacheInfoBadge">
                         <i class="fas fa-database"></i>
@@ -563,9 +719,11 @@
 
                 <div class="alerts-container" id="alertsContainer"></div>
             </div>
+        </div>
 
-            <!-- SECTION 2: TOP 10 -->
-            <div class="section" id="leaderboardSection" style="display:none;">
+        <!-- ============ TAB 2: LEADERBOARD ============ -->
+        <div id="tab-leaderboard" class="tab-content">
+            <div class="section" id="leaderboardSection">
                 <div class="section-header">
                     <h2>
                         <i class="fas fa-crown" style="color:var(--gold);"></i>
@@ -628,18 +786,20 @@
 
                 <div class="download-actions">
                     <button class="btn btn-success" id="downloadPngBtn" disabled>
-                        <i class="fas fa-image"></i> 
+                        <i class="fas fa-image"></i>
                         <span data-i18n="downloadPng">تحميل كصورة PNG (1920×1080)</span>
                     </button>
                     <button class="btn btn-primary" id="downloadPdfBtn" disabled>
-                        <i class="fas fa-file-pdf"></i> 
+                        <i class="fas fa-file-pdf"></i>
                         <span data-i18n="downloadPdf">تحميل كـ PDF</span>
                     </button>
                 </div>
             </div>
+        </div>
 
-            <!-- SECTION 3: ALL EMPLOYEES -->
-            <div class="section" id="allEmployeesSection" style="display:none;">
+        <!-- ============ TAB 3: ALL EMPLOYEES ============ -->
+        <div id="tab-allEmployees" class="tab-content">
+            <div class="section" id="allEmployeesSection">
                 <div class="section-header">
                     <h2>
                         <i class="fas fa-users" style="color:var(--primary);"></i>
@@ -680,18 +840,61 @@
                         <input type="checkbox" id="noCodeFilter">
                         <span data-i18n="noCode">بدون كود صحيح</span>
                     </label>
-                    <div class="filter-group">
-                        <label data-i18n="courses">الكورسات:</label>
-                        <input type="number" id="coursesMin" placeholder="من" min="0">
-                        <span>-</span>
-                        <input type="number" id="coursesMax" placeholder="إلى" min="0">
-                    </div>
-                    <div class="filter-group">
-                        <label data-i18n="index">الـ Index %:</label>
-                        <input type="number" id="indexMin" placeholder="من" min="0" step="0.01">
-                        <span>-</span>
-                        <input type="number" id="indexMax" placeholder="إلى" min="0" step="0.01">
-                    </div>
+                    
+<!-- الكورسات -->
+<div class="filter-group">
+    <label data-i18n="coursesFilterLabel">الكورسات:</label>
+    <select id="coursesFilter">
+        <option value="" data-i18n="allOption">الكل</option>
+        <option value="0" data-i18n="zeroOption">0</option>
+        <option value="1-5" data-i18n="range1to5">1 - 5</option>
+        <option value="6-10" data-i18n="range6to10">6 - 10</option>
+        <option value="11-20" data-i18n="range11to20">11 - 20</option>
+        <option value="21-50" data-i18n="range21to50">21 - 50</option>
+        <option value="50+" data-i18n="rangeAbove50">أكثر من 50</option>
+    </select>
+</div>
+
+<!-- الـ Index -->
+<div class="filter-group">
+    <label data-i18n="indexFilterLabel">الـ Index %:</label>
+    <select id="indexFilter">
+        <option value="" data-i18n="allOption">الكل</option>
+        <option value="0" data-i18n="pctZero">0%</option>
+        <option value="1-20" data-i18n="pct1to20">1% - 20%</option>
+        <option value="21-50" data-i18n="pct21to50">21% - 50%</option>
+        <option value="51-75" data-i18n="pct51to75">51% - 75%</option>
+        <option value="76-100" data-i18n="pct76to100">76% - 100%</option>
+    </select>
+</div>
+
+<!-- الدروس -->
+<div class="filter-group">
+    <label data-i18n="lessonsFilterLabel">الدروس:</label>
+    <select id="lessonsFilter">
+        <option value="" data-i18n="allOption">الكل</option>
+        <option value="0" data-i18n="zeroOption">0</option>
+        <option value="1-10" data-i18n="range1to10">1 - 10</option>
+        <option value="11-30" data-i18n="range11to30">11 - 30</option>
+        <option value="31-60" data-i18n="range31to60">31 - 60</option>
+        <option value="61-100" data-i18n="range61to100">61 - 100</option>
+        <option value="100+" data-i18n="rangeAbove100">أكثر من 100</option>
+    </select>
+</div>
+
+<!-- الاختبارات -->
+<div class="filter-group">
+    <label data-i18n="testsFilterLabel">الاختبارات:</label>
+    <select id="testsFilter">
+        <option value="" data-i18n="allOption">الكل</option>
+        <option value="0" data-i18n="zeroOption">0</option>
+        <option value="1-5" data-i18n="range1to5">1 - 5</option>
+        <option value="6-10" data-i18n="range6to10">6 - 10</option>
+        <option value="11-20" data-i18n="range11to20">11 - 20</option>
+        <option value="20+" data-i18n="rangeAbove20">أكثر من 20</option>
+    </select>
+</div>
+
                     <div class="filter-group">
                         <label data-i18n="status">الحالة:</label>
                         <select id="statusFilter">
@@ -700,8 +903,9 @@
                             <option value="inactive" data-i18n="inactive">غير نشط</option>
                         </select>
                     </div>
+                    
                     <button class="btn btn-secondary" id="resetFiltersBtn" style="padding:6px 14px;font-size:0.8rem;">
-                        <i class="fas fa-times"></i> 
+                        <i class="fas fa-times"></i>
                         <span data-i18n="resetFilters">مسح الفلاتر</span>
                     </button>
                 </div>
@@ -730,1638 +934,1812 @@
                 </div>
             </div>
         </div>
+
     </div>
+</div>
 
-    <script type="module">
-        import { auth, DB } from './database.js';
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+<!-- ⭐ الفوتر -->
+<div class="app-footer no-print">
+    <p style="margin:0;">© 2026 Learning & Development Management System</p>
+</div>
 
-        // ============================================================
-        // CLOUDINARY CONFIG
-        // ============================================================
-        const CLOUDINARY_CONFIG = {
-            cloudName: 'so9u5deh',
-            baseUrl: 'https://res.cloudinary.com/so9u5deh/image/upload',
-            format: 'webp',
-        };
+<!-- ============ ⭐ نظام الحماية ============ -->
+<script type="module">
+import { auth } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-        // ============================================================
-        // CACHE CONFIG
-        // ============================================================
-        const CACHE_KEY = 'lobster_top10_cache_v1';
-        const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 ساعة
+const firestoreDb = getFirestore(getApp());
 
-        // ============================================================
-        // LEVEL CONFIG
-        // ============================================================
-        const LEVEL_GROUPS = {
-            employees: ['R&F', '5%', 'KPs', 'Supervisor'],
-            managers:  ['GM', 'Director', 'HODs', 'AHODs']
-        };
-
-        const LEVEL_COLORS = {
-            'GM':          { color: '#7C3AED', bg: '#EDE9FE' },
-            'Director':    { color: '#0B3B82', bg: '#DBEAFE' },
-            'HODs':        { color: '#0891B2', bg: '#CFFAFE' },
-            'AHODs':       { color: '#0E7490', bg: '#CFFAFE' },
-            'KPs':         { color: '#D97706', bg: '#FEF3C7' },
-            'Supervisor':  { color: '#B45309', bg: '#FEF3C7' },
-            'R&F':         { color: '#059669', bg: '#D1FAE5' },
-            '5%':          { color: '#65A30D', bg: '#ECFCCB' }
-        };
-
-        function getLevelColorStyle(level) {
-            if (!level) return { color: '#64748B', bg: '#F1F5F9' };
-            const key = Object.keys(LEVEL_COLORS).find(k => 
-                k.toLowerCase() === String(level).toLowerCase().trim()
-            );
-            return key ? LEVEL_COLORS[key] : { color: '#64748B', bg: '#F1F5F9' };
+async function checkAdminRole(user) {
+    try {
+        const userDocRef = doc(firestoreDb, 'users', user.uid);
+        const userSnap = await getDoc(userDocRef);
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            const role = (data.role || data.userType || data.type || '').toLowerCase();
+            if (role === 'admin' || role === 'administrator' || data.isAdmin === true) return true;
         }
-
-        function isInLevelGroup(level, group) {
-            if (group === 'all') return true;
-            const levels = LEVEL_GROUPS[group] || [];
-            // ✅ لو الموظف مفيش عنده level (بدون كود صحيح)، نعتبره "موظفين" افتراضياً
-            if (!level || String(level).trim() === '') {
-                return group === 'employees';
-            }
-            const normalized = String(level).toLowerCase().trim();
-            return levels.some(l => l.toLowerCase() === normalized);
+        const storedRole = (localStorage.getItem('userRole') || localStorage.getItem('role') || '').toLowerCase();
+        if (storedRole === 'admin' || storedRole === 'administrator') return true;
+        if (user.getIdTokenResult) {
+            const tokenResult = await user.getIdTokenResult();
+            if (tokenResult.claims.admin === true || tokenResult.claims.role === 'admin') return true;
         }
+        return false;
+    } catch (e) {
+        console.warn('⚠️ Could not determine admin role:', e);
+        return false;
+    }
+}
 
-        // ============================================================
-        // TRANSLATIONS
-        // ============================================================
-        const TRANSLATIONS = {
-            ar: {
-                uploadTitle: 'رفع ملفات LobsterInk',
-                waitingFiles: 'في انتظار الملفات',
-                waitingOther: 'في انتظار الملف الآخر',
-                readyAnalyze: 'جاهز للتحليل',
-                activityReport: 'Learner Activity Report',
-                performanceReport: 'Assessment Performance Report',
-                dragDrop: 'اسحب الملف هنا أو اضغط للاختيار',
-                analyzeBtn: 'تحليل الملفات',
-                analyzing: 'جاري التحليل...',
-                resetBtn: 'مسح الكل',
-                top10Title: 'لوحة الأوائل - Top 10',
-                period: 'الفترة:',
-                monthly: 'شهري',
-                weekly: 'أسبوعي',
-                quarterly: 'ربع سنوي',
-                halfYearly: 'نصف سنوي',
-                yearly: 'سنوي',
-                month: 'الشهر:',
-                week: 'الأسبوع:',
-                quarter: 'الربع:',
-                q1: 'Q1 (يناير - مارس)',
-                q2: 'Q2 (أبريل - يونيو)',
-                q3: 'Q3 (يوليو - سبتمبر)',
-                q4: 'Q4 (أكتوبر - ديسمبر)',
-                week1: 'الأسبوع الأول',
-                week2: 'الأسبوع الثاني',
-                week3: 'الأسبوع الثالث',
-                week4: 'الأسبوع الرابع',
-                noData: 'لا توجد بيانات',
-                uploadHint: 'ارفع الملفات واضغط "تحليل الملفات"',
-                downloadPng: 'تحميل كصورة PNG (1920×1080)',
-                downloadPdf: 'تحميل كـ PDF',
-                allEmployeesTitle: 'كل الموظفين',
-                search: 'بحث:',
-                department: 'القسم:',
-                all: 'الكل',
-                completedCourses: 'خلص كورسات',
-                passRateAbove: 'معدل نجاح > 50%',
-                noCode: 'بدون كود صحيح',
-                courses: 'الكورسات:',
-                index: 'الـ Index %:',
-                status: 'الحالة:',
-                active: 'نشط',
-                inactive: 'غير نشط',
-                resetFilters: 'مسح الفلاتر',
-                rank: 'الترتيب',
-                code: 'الكود',
-                name: 'الاسم',
-                level: 'المستوى',
-                levelAll: 'الكل',
-                levelEmployees: 'موظفين',
-                levelManagers: 'مديرين ومساعدين',
-                coursesStarted: 'كورسات بدأها',
-                coursesCompleted: 'كورسات خلصها',
-                lessons: 'دروس',
-                assessments: 'اختبارات',
-                passed: 'ناجحة',
-                passRate: 'نسبة النجاح',
-                avgScore: 'متوسط الدرجات',
-                noCodeAlert: 'موظفين بدون كود صحيح',
-                missingFirebase: 'موظفين مش موجودين في Firebase',
-                allGood: 'كل البيانات سليمة',
-                allGoodMsg: '✅ كل الموظفين عندهم أكواد صحيحة ومربوطين بـ Firebase',
-                viewList: 'عرض القائمة',
-                downloadList: 'تحميل القائمة',
-                previewTitle: 'معاينة',
-                monthNames: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
-                weekNames: ['الأول','الثاني','الثالث','الرابع'],
-                leaderboardTitle: 'أعلى 10 متدربين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
-                leaderboardTitleEmployees: 'أعلى 10 موظفين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
-                leaderboardTitleManagers: 'أعلى 10 مديرين ومساعدين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
-                yearLabel: 'سنة',
-                weekLabel: 'الأسبوع',
-                quarterLabel: 'الربع',
-                employee: 'موظف',
-                learner: 'متدرب',
-                unknown: 'غير معروف',
-                undefinedDept: 'غير محدد',
-                noResults: 'لا توجد نتائج مطابقة',
-                noCodeWarning: 'بدون كود',
-                // Cache
-                saveCache: 'حفظ الكاش',
-                clearCache: 'حذف الكاش',
-                cacheSaved: '✅ تم حفظ الكاش بنجاح',
-                cacheCleared: '🗑️ تم حذف الكاش',
-                cacheRestored: '📦 تم استرجاع البيانات من الكاش',
-                cacheExpired: '⏰ انتهت صلاحية الكاش',
-                cacheActive: 'نشط',
-                cacheExpiredShort: 'منتهي',
-                cacheNone: 'لا يوجد كاش',
-                cacheSavedAt: 'آخر حفظ:',
-                cacheHoursLeft: 'متبقي:',
-                hours: 'ساعة',
-            },
-            en: {
-                uploadTitle: 'Upload LobsterInk Files',
-                waitingFiles: 'Waiting for files',
-                waitingOther: 'Waiting for other file',
-                readyAnalyze: 'Ready to analyze',
-                activityReport: 'Learner Activity Report',
-                performanceReport: 'Assessment Performance Report',
-                dragDrop: 'Drag file here or click to select',
-                analyzeBtn: 'Analyze Files',
-                analyzing: 'Analyzing...',
-                resetBtn: 'Reset All',
-                top10Title: 'Top 10 Leaderboard',
-                period: 'Period:',
-                monthly: 'Monthly',
-                weekly: 'Weekly',
-                quarterly: 'Quarterly',
-                halfYearly: 'Half-Yearly',
-                yearly: 'Yearly',
-                month: 'Month:',
-                week: 'Week:',
-                quarter: 'Quarter:',
-                q1: 'Q1 (Jan - Mar)',
-                q2: 'Q2 (Apr - Jun)',
-                q3: 'Q3 (Jul - Sep)',
-                q4: 'Q4 (Oct - Dec)',
-                week1: 'Week 1',
-                week2: 'Week 2',
-                week3: 'Week 3',
-                week4: 'Week 4',
-                noData: 'No Data',
-                uploadHint: 'Upload files and click "Analyze Files"',
-                downloadPng: 'Download PNG (1920×1080)',
-                downloadPdf: 'Download PDF',
-                allEmployeesTitle: 'All Employees',
-                search: 'Search:',
-                department: 'Department:',
-                all: 'All',
-                completedCourses: 'Completed Courses',
-                passRateAbove: 'Pass Rate > 50%',
-                noCode: 'No Valid Code',
-                courses: 'Courses:',
-                index: 'Index %:',
-                status: 'Status:',
-                active: 'Active',
-                inactive: 'Inactive',
-                resetFilters: 'Reset Filters',
-                rank: 'Rank',
-                code: 'Code',
-                name: 'Name',
-                level: 'Level',
-                levelAll: 'All',
-                levelEmployees: 'Employees',
-                levelManagers: 'Managers & Assistants',
-                coursesStarted: 'Started',
-                coursesCompleted: 'Completed',
-                lessons: 'Lessons',
-                assessments: 'Assessments',
-                passed: 'Passed',
-                passRate: 'Pass Rate',
-                avgScore: 'Avg Score',
-                noCodeAlert: 'Employees without valid code',
-                missingFirebase: 'Employees not in Firebase',
-                allGood: 'All data is valid',
-                allGoodMsg: '✅ All employees have valid codes and are linked to Firebase',
-                viewList: 'View List',
-                downloadList: 'Download List',
-                previewTitle: 'Preview',
-                monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
-                weekNames: ['First','Second','Third','Fourth'],
-                leaderboardTitle: 'Top 10 Learners on LobsterInk Platform',
-                leaderboardTitleEmployees: 'Top 10 Employees on LobsterInk Platform',
-                leaderboardTitleManagers: 'Top 10 Managers & Assistants on LobsterInk Platform',
-                yearLabel: 'Year',
-                weekLabel: 'Week',
-                quarterLabel: 'Quarter',
-                employee: 'employees',
-                learner: 'learners',
-                unknown: 'Unknown',
-                undefinedDept: 'Not specified',
-                noResults: 'No matching results',
-                noCodeWarning: 'No Code',
-                saveCache: 'Save Cache',
-                clearCache: 'Clear Cache',
-                cacheSaved: '✅ Cache saved successfully',
-                cacheCleared: '🗑️ Cache cleared',
-                cacheRestored: '📦 Data restored from cache',
-                cacheExpired: '⏰ Cache expired',
-                cacheActive: 'Active',
-                cacheExpiredShort: 'Expired',
-                cacheNone: 'No cache',
-                cacheSavedAt: 'Saved:',
-                cacheHoursLeft: 'Left:',
-                hours: 'h',
-            }
-        };
+function applyRoleBadge(isAdmin) {
+    const badge = document.getElementById('roleBadge');
+    if (!badge) return;
+    if (isAdmin) {
+        badge.className = 'role-badge admin';
+        badge.textContent = '👑 Admin';
+    } else {
+        badge.className = 'role-badge viewer';
+        badge.textContent = '👤 User';
+    }
+}
 
-        let currentLang = localStorage.getItem('lang') || 'ar';
-        function t(key) {
-            return TRANSLATIONS[currentLang][key] || key;
-        }
+function showLoading(show, text) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (!overlay) return;
+    if (show) {
+        if (text) overlay.querySelector('.loading-text').textContent = text;
+        overlay.classList.add('show');
+    } else {
+        overlay.classList.remove('show');
+    }
+}
 
-        // ============================================================
-        // GLOBALS
-        // ============================================================
-        let allEmployees = [];
-        let employeesMap = new Map();
-        let activityData = null;
-        let performanceData = null;
-        let mergedData = [];
-        let rankedData = [];
-        let filteredRankedData = [];
-        let top10Data = [];
-        let invalidIds = [];
-        let missingInFirebase = [];
-        let isAnalyzing = false;
+window.logout = async () => {
+    try {
+        showLoading(true, '⏳ جاري تسجيل الخروج...');
+        await signOut(auth);
+        window.location.href = 'login.html';
+    } catch (e) {
+        console.error('Logout failed:', e);
+        window.location.href = 'login.html';
+    }
+};
 
-        const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-        let currentYear = new Date().getFullYear();
+window.refreshPage = () => { window.location.reload(); };
 
-        // ============================================================
-        // THRESHOLDS PER PERIOD
-        // ============================================================
-        function getPeriodThresholds(period) {
-            switch (period) {
-                case 'year':    return { cc: 120, ac: 120, lc: 360 };
-                case 'half':    return { cc: 60,  ac: 60,  lc: 180 };
-                case 'quarter': return { cc: 30,  ac: 30,  lc: 90 };
-                case 'month':   return { cc: 10,  ac: 10,  lc: 30 };
-                case 'week':    return { cc: 10,  ac: 10,  lc: 30 };
-                default:        return { cc: 10,  ac: 10,  lc: 30 };
-            }
-        }
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        showLoading(true, '⏳ جاري التحقق من الصلاحيات...');
+        const isAdmin = await checkAdminRole(user);
+        window.__isAdmin = isAdmin;
+        window.__currentUser = user;
+        applyRoleBadge(isAdmin);
+        showLoading(false);
+        console.log(isAdmin ? '👑 Admin logged in' : '👤 User logged in');
+        window.dispatchEvent(new CustomEvent('authReady', { detail: { isAdmin, user } }));
+    } else {
+        window.location.href = 'login.html';
+    }
+});
+</script>
 
-        // ============================================================
-        // DOM REFS
-        // ============================================================
-        const navbarContainer = document.getElementById('navbarContainer');
-        const activityUploadBox = document.getElementById('activityUploadBox');
-        const performanceUploadBox = document.getElementById('performanceUploadBox');
-        const activityFileInput = document.getElementById('activityFileInput');
-        const performanceFileInput = document.getElementById('performanceFileInput');
-        const activityFileName = document.getElementById('activityFileName');
-        const performanceFileName = document.getElementById('performanceFileName');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const uploadStatus = document.getElementById('uploadStatus');
-        const alertsContainer = document.getElementById('alertsContainer');
-        const leaderboardSection = document.getElementById('leaderboardSection');
-        const allEmployeesSection = document.getElementById('allEmployeesSection');
-        const leaderboardContainer = document.getElementById('leaderboardContainer');
-        const previewCount = document.getElementById('previewCount');
-        const allCountBadge = document.getElementById('allCountBadge');
-        const allTableBody = document.getElementById('allTableBody');
-        const downloadPngBtn = document.getElementById('downloadPngBtn');
-        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const loadingText = document.getElementById('loadingText');
+<!-- ============ كود الصفحة الرئيسي ============ -->
+<script type="module">
+import { auth, DB } from './database.js';
 
-        const levelFilter = document.getElementById('levelFilter');
-        const levelFilterTable = document.getElementById('levelFilterTable');
-        const periodFilter = document.getElementById('periodFilter');
-        const monthFilter = document.getElementById('monthFilter');
-        const weekFilter = document.getElementById('weekFilter');
-        const weekFilterGroup = document.getElementById('weekFilterGroup');
-        const quarterFilter = document.getElementById('quarterFilter');
-        const quarterFilterGroup = document.getElementById('quarterFilterGroup');
+// ============================================================
+// CLOUDINARY CONFIG
+// ============================================================
+const CLOUDINARY_CONFIG = {
+    cloudName: 'so9u5deh',
+    baseUrl: 'https://res.cloudinary.com/so9u5deh/image/upload',
+    format: 'webp',
+};
 
-        const searchFilter = document.getElementById('searchFilter');
-        const groupFilter = document.getElementById('groupFilter');
-        const completedFilter = document.getElementById('completedFilter');
-        const passRateFilter = document.getElementById('passRateFilter');
-        const noCodeFilter = document.getElementById('noCodeFilter');
-        const coursesMin = document.getElementById('coursesMin');
-        const coursesMax = document.getElementById('coursesMax');
-        const indexMin = document.getElementById('indexMin');
-        const indexMax = document.getElementById('indexMax');
-        const statusFilter = document.getElementById('statusFilter');
-        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+// ============================================================
+// CACHE CONFIG
+// ============================================================
+const CACHE_KEY = 'lobster_top10_cache_v1';
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
-        const saveCacheBtn = document.getElementById('saveCacheBtn');
-        const clearCacheBtn = document.getElementById('clearCacheBtn');
-        const cacheInfoBadge = document.getElementById('cacheInfoBadge');
-        const cacheInfoText = document.getElementById('cacheInfoText');
+// ============================================================
+// LEVEL CONFIG
+// ============================================================
+const LEVEL_GROUPS = {
+    employees: ['R&F', '5%', 'KPs', 'Supervisor'],
+    managers:  ['GM', 'Director', 'HODs', 'AHODs']
+};
 
-        const modalOverlay = document.getElementById('modalOverlay');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
-        const modalCloseBtn = document.getElementById('modalCloseBtn');
+const LEVEL_COLORS = {
+    'GM':          { color: '#7C3AED', bg: '#EDE9FE' },
+    'Director':    { color: '#0B3B82', bg: '#DBEAFE' },
+    'HODs':        { color: '#0891B2', bg: '#CFFAFE' },
+    'AHODs':       { color: '#0E7490', bg: '#CFFAFE' },
+    'KPs':         { color: '#D97706', bg: '#FEF3C7' },
+    'Supervisor':  { color: '#B45309', bg: '#FEF3C7' },
+    'R&F':         { color: '#059669', bg: '#D1FAE5' },
+    '5%':          { color: '#65A30D', bg: '#ECFCCB' }
+};
 
-        // ============================================================
-        // HELPERS
-        // ============================================================
-        function showToast(message, type = 'success') {
-            document.querySelector('.toast')?.remove();
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast?.remove(), 3500);
-        }
+function getLevelColorStyle(level) {
+    if (!level) return { color: '#64748B', bg: '#F1F5F9' };
+    const key = Object.keys(LEVEL_COLORS).find(k =>
+        k.toLowerCase() === String(level).toLowerCase().trim()
+    );
+    return key ? LEVEL_COLORS[key] : { color: '#64748B', bg: '#F1F5F9' };
+}
 
-        function setLoading(show, text = null) {
-            if (text) loadingText.textContent = text;
-            loadingOverlay.classList.toggle('active', show);
-        }
+function isInLevelGroup(level, group) {
+    if (group === 'all') return true;
+    const levels = LEVEL_GROUPS[group] || [];
+    if (!level || String(level).trim() === '') return group === 'employees';
+    const normalized = String(level).toLowerCase().trim();
+    return levels.some(l => l.toLowerCase() === normalized);
+}
 
-        function escapeHtml(text) {
-            if (text === null || text === undefined) return '-';
-            return String(text)
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
+// ============================================================
+// TRANSLATIONS
+// ============================================================
+const TRANSLATIONS = {
+    ar: {
+        tabUpload: 'رفع الملفات',
+        tabLeaderboard: 'لوحة الأوائل',
+        tabAllEmployees: 'كل الموظفين',
+        refresh: 'تحديث',
+        uploadTitle: 'رفع ملفات LobsterInk',
+        waitingFiles: 'في انتظار الملفات',
+        waitingOther: 'في انتظار الملف الآخر',
+        readyAnalyze: 'جاهز للتحليل',
+        activityReport: 'Learner Activity Report',
+        performanceReport: 'Assessment Performance Report',
+        dragDrop: 'اسحب الملف هنا أو اضغط للاختيار',
+        analyzeBtn: 'تحليل الملفات',
+        analyzing: 'جاري التحليل...',
+        resetBtn: 'مسح الكل',
+        top10Title: 'لوحة الأوائل - Top 10',
+        period: 'الفترة:',
+        monthly: 'شهري',
+        weekly: 'أسبوعي',
+        quarterly: 'ربع سنوي',
+        halfYearly: 'نصف سنوي',
+        yearly: 'سنوي',
+        month: 'الشهر:',
+        week: 'الأسبوع:',
+        quarter: 'الربع:',
+        q1: 'Q1 (يناير - مارس)',
+        q2: 'Q2 (أبريل - يونيو)',
+        q3: 'Q3 (يوليو - سبتمبر)',
+        q4: 'Q4 (أكتوبر - ديسمبر)',
+        week1: 'الأسبوع الأول',
+        week2: 'الأسبوع الثاني',
+        week3: 'الأسبوع الثالث',
+        week4: 'الأسبوع الرابع',
+        noData: 'لا توجد بيانات',
+        uploadHint: 'ارفع الملفات واضغط "تحليل الملفات"',
+        downloadPng: 'تحميل كصورة PNG (1920×1080)',
+        downloadPdf: 'تحميل كـ PDF',
+        allEmployeesTitle: 'كل الموظفين',
+        search: 'بحث:',
+        department: 'القسم:',
+        all: 'الكل',
+        completedCourses: 'خلص كورسات',
+        passRateAbove: 'معدل نجاح > 50%',
+        noCode: 'بدون كود صحيح',
+        courses: 'الكورسات:',
+        index: 'الـ Index %:',
+        status: 'الحالة:',
+        active: 'نشط',
+        inactive: 'غير نشط',
+        resetFilters: 'مسح الفلاتر',
+        rank: 'الترتيب',
+        code: 'الكود',
+        name: 'الاسم',
+        level: 'المستوى',
+        levelAll: 'الكل',
+        levelEmployees: 'موظفين',
+        levelManagers: 'مديرين ومساعدين',
+        coursesStarted: 'كورسات بدأها',
+        coursesCompleted: 'كورسات خلصها',
+        lessons: 'دروس',
+        assessments: 'اختبارات',
+        passed: 'ناجحة',
+        passRate: 'نسبة النجاح',
+        avgScore: 'متوسط الدرجات',
+        noCodeAlert: 'موظفين بدون كود صحيح',
+        missingFirebase: 'موظفين مش موجودين في Firebase',
+        allGood: 'كل البيانات سليمة',
+        allGoodMsg: '✅ كل الموظفين عندهم أكواد صحيحة ومربوطين بـ Firebase',
+        viewList: 'عرض القائمة',
+        downloadList: 'تحميل القائمة',
+        previewTitle: 'معاينة',
+        monthNames: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+        weekNames: ['الأول','الثاني','الثالث','الرابع'],
+        leaderboardTitle: 'أعلى 10 متدربين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
+        leaderboardTitleEmployees: 'أعلى 10 موظفين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
+        leaderboardTitleManagers: 'أعلى 10 مديرين ومساعدين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
+        yearLabel: 'سنة',
+        weekLabel: 'الأسبوع',
+        quarterLabel: 'الربع',
+        employee: 'موظف',
+        learner: 'متدرب',
+        unknown: 'غير معروف',
+        undefinedDept: 'غير محدد',
+        noResults: 'لا توجد نتائج مطابقة',
+        noCodeWarning: 'بدون كود',
+        saveCache: 'حفظ الكاش',
+        clearCache: 'حذف الكاش',
+        cacheSaved: '✅ تم حفظ الكاش بنجاح',
+        cacheCleared: '🗑️ تم حذف الكاش',
+        cacheRestored: '📦 تم استرجاع البيانات من الكاش',
+        cacheExpired: '⏰ انتهت صلاحية الكاش',
+        cacheActive: 'نشط',
+        cacheExpiredShort: 'منتهي',
+        cacheNone: 'لا يوجد كاش',
+        cacheSavedAt: 'آخر حفظ:',
+        cacheHoursLeft: 'متبقي:',
+        hours: 'ساعة',
+        coursesFilterLabel: 'الكورسات:',
+        indexFilterLabel: 'الـ Index %:',
+        lessonsFilterLabel: 'الدروس:',
+        testsFilterLabel: 'الاختبارات:',
+        allOption: 'الكل',
+        zeroOption: '0',
+        range1to5: '1 - 5',
+        range6to10: '6 - 10',
+        range11to20: '11 - 20',
+        range21to50: '21 - 50',
+        rangeAbove50: 'أكثر من 50',
+        range1to10: '1 - 10',
+        range11to30: '11 - 30',
+        range31to60: '31 - 60',
+        range61to100: '61 - 100',
+        rangeAbove100: 'أكثر من 100',
+        rangeAbove20: 'أكثر من 20',
+        pctZero: '0%',
+        pct1to20: '1% - 20%',
+        pct21to50: '21% - 50%',
+        pct51to75: '51% - 75%',
+        pct76to100: '76% - 100%',
+    },
+    en: {
+        tabUpload: 'Upload Files',
+        tabLeaderboard: 'Leaderboard',
+        tabAllEmployees: 'All Employees',
+        refresh: 'Refresh',
+        uploadTitle: 'Upload LobsterInk Files',
+        waitingFiles: 'Waiting for files',
+        waitingOther: 'Waiting for other file',
+        readyAnalyze: 'Ready to analyze',
+        activityReport: 'Learner Activity Report',
+        performanceReport: 'Assessment Performance Report',
+        dragDrop: 'Drag file here or click to select',
+        analyzeBtn: 'Analyze Files',
+        analyzing: 'Analyzing...',
+        resetBtn: 'Reset All',
+        top10Title: 'Top 10 Leaderboard',
+        period: 'Period:',
+        monthly: 'Monthly',
+        weekly: 'Weekly',
+        quarterly: 'Quarterly',
+        halfYearly: 'Half-Yearly',
+        yearly: 'Yearly',
+        month: 'Month:',
+        week: 'Week:',
+        quarter: 'Quarter:',
+        q1: 'Q1 (Jan - Mar)',
+        q2: 'Q2 (Apr - Jun)',
+        q3: 'Q3 (Jul - Sep)',
+        q4: 'Q4 (Oct - Dec)',
+        week1: 'Week 1',
+        week2: 'Week 2',
+        week3: 'Week 3',
+        week4: 'Week 4',
+        noData: 'No Data',
+        uploadHint: 'Upload files and click "Analyze Files"',
+        downloadPng: 'Download PNG (1920×1080)',
+        downloadPdf: 'Download PDF',
+        allEmployeesTitle: 'All Employees',
+        search: 'Search:',
+        department: 'Department:',
+        all: 'All',
+        completedCourses: 'Completed Courses',
+        passRateAbove: 'Pass Rate > 50%',
+        noCode: 'No Valid Code',
+        courses: 'Courses:',
+        index: 'Index %:',
+        status: 'Status:',
+        active: 'Active',
+        inactive: 'Inactive',
+        resetFilters: 'Reset Filters',
+        rank: 'Rank',
+        code: 'Code',
+        name: 'Name',
+        level: 'Level',
+        levelAll: 'All',
+        levelEmployees: 'Employees',
+        levelManagers: 'Managers & Assistants',
+        coursesStarted: 'Started',
+        coursesCompleted: 'Completed',
+        lessons: 'Lessons',
+        assessments: 'Assessments',
+        passed: 'Passed',
+        passRate: 'Pass Rate',
+        avgScore: 'Avg Score',
+        noCodeAlert: 'Employees without valid code',
+        missingFirebase: 'Employees not in Firebase',
+        allGood: 'All data is valid',
+        allGoodMsg: '✅ All employees have valid codes and are linked to Firebase',
+        viewList: 'View List',
+        downloadList: 'Download List',
+        previewTitle: 'Preview',
+        monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+        weekNames: ['First','Second','Third','Fourth'],
+        leaderboardTitle: 'Top 10 Learners on LobsterInk Platform',
+        leaderboardTitleEmployees: 'Top 10 Employees on LobsterInk Platform',
+        leaderboardTitleManagers: 'Top 10 Managers & Assistants on LobsterInk Platform',
+        yearLabel: 'Year',
+        weekLabel: 'Week',
+        quarterLabel: 'Quarter',
+        employee: 'employees',
+        learner: 'learners',
+        unknown: 'Unknown',
+        undefinedDept: 'Not specified',
+        noResults: 'No matching results',
+        noCodeWarning: 'No Code',
+        saveCache: 'Save Cache',
+        clearCache: 'Clear Cache',
+        cacheSaved: '✅ Cache saved successfully',
+        cacheCleared: '🗑️ Cache cleared',
+        cacheRestored: '📦 Data restored from cache',
+        cacheExpired: '⏰ Cache expired',
+        cacheActive: 'Active',
+        cacheExpiredShort: 'Expired',
+        cacheNone: 'No cache',
+        cacheSavedAt: 'Saved:',
+        cacheHoursLeft: 'Left:',
+        hours: 'h',
+        coursesFilterLabel: 'Courses:',
+        indexFilterLabel: 'Index %:',
+        lessonsFilterLabel: 'Lessons:',
+        testsFilterLabel: 'Assessments:',
+        allOption: 'All',
+        zeroOption: '0',
+        range1to5: '1 - 5',
+        range6to10: '6 - 10',
+        range11to20: '11 - 20',
+        range21to50: '21 - 50',
+        rangeAbove50: 'Above 50',
+        range1to10: '1 - 10',
+        range11to30: '11 - 30',
+        range31to60: '31 - 60',
+        range61to100: '61 - 100',
+        rangeAbove100: 'Above 100',
+        rangeAbove20: 'Above 20',
+        pctZero: '0%',
+        pct1to20: '1% - 20%',
+        pct21to50: '21% - 50%',
+        pct51to75: '51% - 75%',
+        pct76to100: '76% - 100%',
+    }
+};
 
-        function escapeAttr(text) {
-            if (!text) return '';
-            return String(text).trim().replace(/"/g, '&quot;');
-        }
+let currentLang = localStorage.getItem('lang') || 'ar';
+function t(key) {
+    return TRANSLATIONS[currentLang][key] || key;
+}
 
-        function getInitials(name) {
-            if (!name) return '?';
-            const parts = String(name).trim().split(/\s+/);
-            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-            return String(name).substring(0, 2).toUpperCase();
-        }
+// ============================================================
+// GLOBALS
+// ============================================================
+let allEmployees = [];
+let employeesMap = new Map();
+let activityData = null;
+let performanceData = null;
+let mergedData = [];
+let rankedData = [];
+let filteredRankedData = [];
+let top10Data = [];
+let invalidIds = [];
+let missingInFirebase = [];
+let isAnalyzing = false;
+let currentTab = 'upload';
 
-        function getAvatarColor(name) {
-            const colors = ['#EF4444','#F59E0B','#10B981','#3B82F6','#8B5CF6','#EC4899','#14B8A6','#F97316','#6366F1','#06B6D4','#E11D48','#D97706','#059669','#2563EB','#7C3AED'];
-            let hash = 0;
-            const str = String(name || '');
-            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            return colors[Math.abs(hash) % colors.length];
-        }
+const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+let currentYear = new Date().getFullYear();
 
-        function isValidEmployeeCode(str) {
-            if (!str) return false;
-            const s = String(str).trim();
-            if (/^\d+$/.test(s)) return true;
-            if (/^L&D\d+$/i.test(s)) return true;
-            return false;
-        }
+// ============================================================
+// THRESHOLDS PER PERIOD
+// ============================================================
+function getPeriodThresholds(period) {
+    switch (period) {
+        case 'year':    return { cc: 120, ac: 120, lc: 360 };
+        case 'half':    return { cc: 60,  ac: 60,  lc: 180 };
+        case 'quarter': return { cc: 30,  ac: 30,  lc: 90 };
+        case 'month':   return { cc: 10,  ac: 10,  lc: 30 };
+        case 'week':    return { cc: 10,  ac: 10,  lc: 30 };
+        default:        return { cc: 10,  ac: 10,  lc: 30 };
+    }
+}
 
-        function extractCode(colA) {
-            if (colA === null || colA === undefined) return '';
-            return String(colA).trim();
-        }
+// ============================================================
+// DOM REFS
+// ============================================================
+const activityUploadBox = document.getElementById('activityUploadBox');
+const performanceUploadBox = document.getElementById('performanceUploadBox');
+const activityFileInput = document.getElementById('activityFileInput');
+const performanceFileInput = document.getElementById('performanceFileInput');
+const activityFileName = document.getElementById('activityFileName');
+const performanceFileName = document.getElementById('performanceFileName');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const resetBtn = document.getElementById('resetBtn');
+const uploadStatus = document.getElementById('uploadStatus');
+const alertsContainer = document.getElementById('alertsContainer');
+const leaderboardSection = document.getElementById('leaderboardSection');
+const allEmployeesSection = document.getElementById('allEmployeesSection');
+const leaderboardContainer = document.getElementById('leaderboardContainer');
+const previewCount = document.getElementById('previewCount');
+const allCountBadge = document.getElementById('allCountBadge');
+const allTableBody = document.getElementById('allTableBody');
+const downloadPngBtn = document.getElementById('downloadPngBtn');
+const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+const loadingInline = document.getElementById('loadingInline');
+const loadingText = document.getElementById('loadingText');
 
-        // ============================================================
-        // CLOUDINARY IMAGE HELPERS
-        // ============================================================
-        function buildCloudinaryUrl(employeeId) {
-            if (!employeeId) return null;
-            const cleanId = String(employeeId).trim();
-            if (!isValidEmployeeCode(cleanId)) return null;
-            return `${CLOUDINARY_CONFIG.baseUrl}/${encodeURIComponent(cleanId)}.${CLOUDINARY_CONFIG.format}`;
-        }
+const levelFilter = document.getElementById('levelFilter');
+const levelFilterTable = document.getElementById('levelFilterTable');
+const periodFilter = document.getElementById('periodFilter');
+const monthFilter = document.getElementById('monthFilter');
+const weekFilter = document.getElementById('weekFilter');
+const weekFilterGroup = document.getElementById('weekFilterGroup');
+const quarterFilter = document.getElementById('quarterFilter');
+const quarterFilterGroup = document.getElementById('quarterFilterGroup');
 
-        function getEmployeePhoto(emp, employeeId) {
-            if (emp?.photoUrl) return emp.photoUrl;
-            if (emp?.photo) return emp.photo;
-            if (emp?.image) return emp.image;
-            return buildCloudinaryUrl(employeeId);
-        }
+const searchFilter = document.getElementById('searchFilter');
+const groupFilter = document.getElementById('groupFilter');
+const completedFilter = document.getElementById('completedFilter');
+const passRateFilter = document.getElementById('passRateFilter');
+const noCodeFilter = document.getElementById('noCodeFilter');
 
-        // ============================================================
-        // INDEX HELPERS
-        // ============================================================
-        function formatIndexPercent(index) {
-            return (index * 100).toFixed(2) + '%';
-        }
+// الفلاتر الجديدة (القوائم المنسدلة)
+const coursesFilter = document.getElementById('coursesFilter');
+const indexFilter = document.getElementById('indexFilter');
+const lessonsFilter = document.getElementById('lessonsFilter');
+const testsFilter = document.getElementById('testsFilter');
 
-        function getIndexColorStyle(index) {
-            if (index >= 0.5) return { color: '#10B981', bg: '#D1FAE5' };
-            if (index >= 0.2) return { color: '#F59E0B', bg: '#FEF3C7' };
-            if (index >= 0.05) return { color: '#6366F1', bg: '#E0E7FF' };
-            if (index > 0) return { color: '#EF4444', bg: '#FEE2E2' };
-            return { color: '#64748B', bg: '#F1F5F9' };
-        }
+const statusFilter = document.getElementById('statusFilter');
+const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
-        // ============================================================
-        // 🆕 CACHE MANAGER
-        // ============================================================
-        function getCacheInfo() {
-            try {
-                const raw = localStorage.getItem(CACHE_KEY);
-                if (!raw) return { exists: false };
-                const obj = JSON.parse(raw);
-                if (!obj || !obj._savedAt) return { exists: false };
-                const age = Date.now() - obj._savedAt;
-                const remaining = CACHE_DURATION_MS - age;
-                return {
-                    exists: true,
-                    savedAt: obj._savedAt,
-                    age,
-                    remaining,
-                    expired: remaining <= 0,
-                    data: obj
-                };
-            } catch (e) {
-                return { exists: false };
-            }
-        }
+const saveCacheBtn = document.getElementById('saveCacheBtn');
+const clearCacheBtn = document.getElementById('clearCacheBtn');
+const cacheInfoBadge = document.getElementById('cacheInfoBadge');
+const cacheInfoText = document.getElementById('cacheInfoText');
 
-        function updateCacheBadge() {
-            const info = getCacheInfo();
-            cacheInfoBadge.classList.remove('active', 'expired');
-            
-            if (!info.exists) {
-                cacheInfoBadge.classList.remove('active', 'expired');
-                cacheInfoText.textContent = t('cacheNone');
-                return;
-            }
-            
-            const savedDate = new Date(info.savedAt);
-            const hoursLeft = Math.max(0, Math.floor(info.remaining / (60 * 60 * 1000)));
-            const timeStr = savedDate.toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US', {
-                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-            });
-            
-            if (info.expired) {
-                cacheInfoBadge.classList.add('expired');
-                cacheInfoText.textContent = `${t('cacheExpiredShort')} (${timeStr})`;
-            } else {
-                cacheInfoBadge.classList.add('active');
-                cacheInfoText.textContent = `${t('cacheActive')} • ${hoursLeft}${t('hours')} • ${timeStr}`;
-            }
-        }
+const modalOverlay = document.getElementById('modalOverlay');
+const modalTitle = document.getElementById('modalTitle');
+const modalBody = document.getElementById('modalBody');
+const modalCloseBtn = document.getElementById('modalCloseBtn');
 
-        function saveCache(showToastMsg = true) {
-            try {
-                const info = getCacheInfo();
-                // لو الكاش لسه نشط ومش عايزين نحدّثه، نكتفي
-                const cacheData = {
-                    _savedAt: Date.now(),
-                    // بيانات الموظفين
-                    allEmployees: allEmployees,
-                    // بيانات الملفات
-                    activityData: activityData,
-                    performanceData: performanceData,
-                    // نتائج التحليل
-                    mergedData: mergedData,
-                    rankedData: rankedData,
-                    top10Data: top10Data,
-                    invalidIds: invalidIds,
-                    missingInFirebase: missingInFirebase,
-                    // إعدادات الفلاتر
-                    filters: {
-                        levelFilter: levelFilter.value,
-                        levelFilterTable: levelFilterTable.value,
-                        periodFilter: periodFilter.value,
-                        monthFilter: monthFilter.value,
-                        weekFilter: weekFilter.value,
-                        quarterFilter: quarterFilter.value,
-                        searchFilter: searchFilter.value,
-                        groupFilter: groupFilter.value,
-                        completedFilter: completedFilter.checked,
-                        passRateFilter: passRateFilter.checked,
-                        noCodeFilter: noCodeFilter.checked,
-                        coursesMin: coursesMin.value,
-                        coursesMax: coursesMax.value,
-                        indexMin: indexMin.value,
-                        indexMax: indexMax.value,
-                        statusFilter: statusFilter.value
-                    },
-                    currentYear: currentYear
-                };
-                
-                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-                updateCacheBadge();
-                
-                if (showToastMsg) {
-                    showToast(t('cacheSaved'), 'success');
-                }
-                return true;
-            } catch (e) {
-                console.error('❌ Cache save failed:', e);
-                if (showToastMsg) showToast('❌ فشل حفظ الكاش', 'error');
-                return false;
-            }
-        }
+const leaderboardTabCount = document.getElementById('leaderboardTabCount');
+const allTabCount = document.getElementById('allTabCount');
 
-        function clearCache(showToastMsg = true) {
-            try {
-                localStorage.removeItem(CACHE_KEY);
-                updateCacheBadge();
-                if (showToastMsg) showToast(t('cacheCleared'), 'info');
-                return true;
-            } catch (e) {
-                console.error('❌ Cache clear failed:', e);
-                return false;
-            }
-        }
+// ============================================================
+// ⭐ SWITCH TAB
+// ============================================================
+window.switchTab = function(tabName) {
+    currentTab = tabName;
 
-        function loadFromCache() {
-            const info = getCacheInfo();
-            if (!info.exists || info.expired) {
-                if (info.exists && info.expired) {
-                    console.log('⏰ Cache expired');
-                }
-                return false;
-            }
-            
-            try {
-                const data = info.data;
-                
-                // استرجاع الموظفين
-                allEmployees = data.allEmployees || [];
-                employeesMap.clear();
-                allEmployees.forEach(emp => {
-                    if (emp && emp.id !== undefined && emp.id !== null) {
-                        employeesMap.set(String(emp.id).trim(), emp);
-                    }
-                });
-                
-                // استرجاع الملفات ونتائج التحليل
-                activityData = data.activityData || null;
-                performanceData = data.performanceData || null;
-                mergedData = data.mergedData || [];
-                rankedData = data.rankedData || [];
-                top10Data = data.top10Data || [];
-                invalidIds = data.invalidIds || [];
-                missingInFirebase = data.missingInFirebase || [];
-                
-                // استرجاع الفلاتر
-                if (data.filters) {
-                    const f = data.filters;
-                    if (f.levelFilter) levelFilter.value = f.levelFilter;
-                    if (f.levelFilterTable) levelFilterTable.value = f.levelFilterTable;
-                    if (f.periodFilter) periodFilter.value = f.periodFilter;
-                    if (f.monthFilter) monthFilter.value = f.monthFilter;
-                    if (f.weekFilter) weekFilter.value = f.weekFilter;
-                    if (f.quarterFilter) quarterFilter.value = f.quarterFilter;
-                    if (f.searchFilter) searchFilter.value = f.searchFilter;
-                    if (f.groupFilter) groupFilter.value = f.groupFilter;
-                    completedFilter.checked = !!f.completedFilter;
-                    passRateFilter.checked = !!f.passRateFilter;
-                    noCodeFilter.checked = !!f.noCodeFilter;
-                    if (f.coursesMin) coursesMin.value = f.coursesMin;
-                    if (f.coursesMax) coursesMax.value = f.coursesMax;
-                    if (f.indexMin) indexMin.value = f.indexMin;
-                    if (f.indexMax) indexMax.value = f.indexMax;
-                    if (f.statusFilter) statusFilter.value = f.statusFilter;
-                }
-                
-                console.log(`📦 Cache restored: ${allEmployees.length} employees, ${rankedData.length} ranked`);
-                updateFilterCheckboxStyles();
-                
-                // إعادة الرندر لو فيه بيانات
-                if (rankedData.length > 0) {
-                    applyLevelFilterToLeaderboard();
-                    renderAllEmployeesTable();
-                    renderAlerts();
-                    leaderboardSection.style.display = 'block';
-                    allEmployeesSection.style.display = 'block';
-                    downloadPngBtn.disabled = false;
-                    downloadPdfBtn.disabled = false;
-                    
-                    // استرجاع اسم الملفات لو موجودة
-                    if (activityData && activityData.length > 0) {
-                        activityUploadBox.classList.add('has-file');
-                        activityFileName.textContent = `✅ ${activityData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
-                    }
-                    if (performanceData && performanceData.length > 0) {
-                        performanceUploadBox.classList.add('has-file');
-                        performanceFileName.textContent = `✅ ${performanceData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
-                    }
-                    updateAnalyzeButton();
-                }
-                
-                return true;
-            } catch (e) {
-                console.error('❌ Cache restore failed:', e);
-                return false;
-            }
-        }
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
-        // ============================================================
-        // LANGUAGE
-        // ============================================================
-        function applyLanguage() {
-            document.documentElement.lang = currentLang;
-            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-            document.body.classList.toggle('lang-en', currentLang === 'en');
+    const content = document.getElementById(`tab-${tabName}`);
+    const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
 
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (TRANSLATIONS[currentLang][key] !== undefined) {
-                    el.textContent = TRANSLATIONS[currentLang][key];
-                }
-            });
+    if (content) content.classList.add('active');
+    if (btn) btn.classList.add('active');
 
-            const searchInput = document.getElementById('searchFilter');
-            if (searchInput) {
-                searchInput.placeholder = currentLang === 'ar' ? 'الاسم أو الكود...' : 'Name or code...';
-            }
-            document.querySelectorAll('input[type="number"]').forEach(inp => {
-                if (inp.placeholder === 'من' || inp.placeholder === 'From') {
-                    inp.placeholder = currentLang === 'ar' ? 'من' : 'From';
-                } else if (inp.placeholder === 'إلى' || inp.placeholder === 'To') {
-                    inp.placeholder = currentLang === 'ar' ? 'إلى' : 'To';
-                }
-            });
-
-            populateMonthFilter();
-            populateGroupFilter();
-            updateCacheBadge();
-
-            if (top10Data.length > 0) {
-                renderLeaderboard(top10Data);
-                renderAllEmployeesTable();
-                renderAlerts();
-            }
-        }
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'ar' ? 'en' : 'ar';
-            localStorage.setItem('lang', currentLang);
-            renderNavbar();
-            applyLanguage();
-            showToast(currentLang === 'ar' ? '🇸🇦 تم تغيير اللغة للعربية' : '🇬🇧 Language switched to English', 'success');
-        }
-
-        // ============================================================
-        // LOAD EMPLOYEES
-        // ============================================================
-        async function loadEmployees(forceRefresh = false) {
-            try {
-                if (forceRefresh) await DB.refresh('employees');
-                const result = await DB.getAll('employees');
-                allEmployees = result || [];
-                employeesMap.clear();
-                allEmployees.forEach(emp => {
-                    if (emp && emp.id !== undefined && emp.id !== null) {
-                        employeesMap.set(String(emp.id).trim(), emp);
-                    }
-                });
-                console.log(`👥 Loaded ${allEmployees.length} employees`);
-                return allEmployees;
-            } catch (error) {
-                console.error('❌ Failed to load employees:', error);
-                allEmployees = [];
-                employeesMap.clear();
-                showToast(currentLang === 'ar' ? '⚠️ فشل تحميل بيانات الموظفين' : '⚠️ Failed to load employees', 'warning');
-                return [];
-            }
-        }
-
-        function findEmployeeById(empId) {
-            if (!empId) return null;
-            return employeesMap.get(String(empId).trim()) || null;
-        }
-
-        // ============================================================
-        // UPLOAD HANDLERS
-        // ============================================================
-        function setupUploadBox(box, input, fileNameEl, onFileSelected) {
-            box.addEventListener('click', () => input.click());
-            box.addEventListener('dragover', (e) => { e.preventDefault(); box.classList.add('dragover'); });
-            box.addEventListener('dragleave', () => box.classList.remove('dragover'));
-            box.addEventListener('drop', (e) => {
-                e.preventDefault(); box.classList.remove('dragover');
-                const file = e.dataTransfer.files[0];
-                if (file) handleFile(file, box, fileNameEl, onFileSelected);
-            });
-            input.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) handleFile(file, box, fileNameEl, onFileSelected);
-            });
-        }
-
-        async function handleFile(file, box, fileNameEl, onFileSelected) {
-            const validExt = /\.(xlsx|xls)$/i.test(file.name);
-            if (!validExt) {
-                showToast(currentLang === 'ar' ? '⚠️ الملف لازم يكون Excel (.xlsx أو .xls)' : '⚠️ File must be Excel (.xlsx or .xls)', 'warning');
-                return;
-            }
-            try {
-                setLoading(true, currentLang === 'ar' ? 'جاري قراءة الملف...' : 'Reading file...');
-                const data = await readExcelFile(file);
-                box.classList.add('has-file');
-                fileNameEl.textContent = `✅ ${file.name} (${data.length} ${currentLang === 'ar' ? 'صف' : 'rows'})`;
-                onFileSelected(data, file.name);
-                showToast(`✅ ${currentLang === 'ar' ? 'تم قراءة' : 'Loaded'} ${file.name}`, 'success');
-            } catch (error) {
-                console.error('❌ File read failed:', error);
-                showToast(currentLang === 'ar' ? '❌ فشل قراءة الملف' : '❌ Failed to read file', 'error');
-                box.classList.remove('has-file');
-                fileNameEl.textContent = '';
-            } finally {
-                setLoading(false);
-                updateAnalyzeButton();
-            }
-        }
-
-        function readExcelFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-                        const rows = jsonData.slice(1).filter(row => row && row.some(cell => cell !== '' && cell !== null && cell !== undefined));
-                        resolve(rows);
-                    } catch (err) { reject(err); }
-                };
-                reader.onerror = reject;
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        // ============================================================
-        // ANALYZE
-        // ============================================================
-        function updateAnalyzeButton() {
-            const hasActivity = !!activityData;
-            const hasPerformance = !!performanceData;
-            analyzeBtn.disabled = !(hasActivity && hasPerformance);
-            if (hasActivity && hasPerformance) {
-                uploadStatus.textContent = t('readyAnalyze');
-                uploadStatus.style.background = '#D1FAE5';
-                uploadStatus.style.color = '#065F46';
-            } else if (hasActivity || hasPerformance) {
-                uploadStatus.textContent = t('waitingOther');
-                uploadStatus.style.background = '#FEF3C7';
-                uploadStatus.style.color = '#92400E';
-            } else {
-                uploadStatus.textContent = t('waitingFiles');
-                uploadStatus.style.background = '';
-                uploadStatus.style.color = '';
-            }
-        }
-
-        async function analyzeFiles() {
-            if (isAnalyzing) return;
-            if (!activityData || !performanceData) {
-                showToast(currentLang === 'ar' ? '⚠️ لازم ترفع الملفين الأول' : '⚠️ Please upload both files first', 'warning');
-                return;
-            }
-            if (activityData.length !== performanceData.length) {
-                showToast(`❌ ${currentLang === 'ar' ? 'عدد الصفوف مختلف!' : 'Row count mismatch!'}`, 'error');
-                renderAlert('danger', 
-                    currentLang === 'ar' ? '❌ عدد الصفوف مختلف' : '❌ Row count mismatch',
-                    currentLang === 'ar' 
-                        ? `ملف Activity فيه <strong>${activityData.length}</strong> صف، وملف Performance فيه <strong>${performanceData.length}</strong> صف.`
-                        : `Activity file has <strong>${activityData.length}</strong> rows, Performance file has <strong>${performanceData.length}</strong> rows.`
-                );
-                return;
-            }
-            isAnalyzing = true;
-            analyzeBtn.disabled = true;
-            analyzeBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('analyzing')}`;
-            try {
-                setLoading(true, currentLang === 'ar' ? 'جاري تحليل البيانات...' : 'Analyzing data...');
-                mergedData = mergeFiles(activityData, performanceData);
-                const currentPeriod = periodFilter.value;
-                calculateIndexes(mergedData, currentPeriod);
-                rankedData = calculateFinalRank(mergedData);
-                applyLevelFilterToLeaderboard();
-                collectAlerts();
-                populateGroupFilter();
-                renderAllEmployeesTable();
-                renderAlerts();
-                leaderboardSection.style.display = 'block';
-                allEmployeesSection.style.display = 'block';
-                downloadPngBtn.disabled = false;
-                downloadPdfBtn.disabled = false;
-                showToast(`✅ ${currentLang === 'ar' ? 'تم التحليل بنجاح' : 'Analysis complete'} - ${rankedData.length} ${t('employee')}`, 'success');
-                leaderboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-                // 🆕 حفظ الكاش تلقائياً بعد التحليل
-                saveCache(false);
-            } catch (error) {
-                console.error('❌ Analysis failed:', error);
-                showToast(currentLang === 'ar' ? '❌ حدث خطأ أثناء التحليل' : '❌ Analysis error', 'error');
-            } finally {
-                isAnalyzing = false;
-                analyzeBtn.disabled = false;
-                analyzeBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('analyzeBtn')}`;
-                setLoading(false);
-            }
-        }
-
-        // ============================================================
-        // MERGE
-        // ============================================================
-        function mergeFiles(activityRows, performanceRows) {
-            const merged = [];
-            for (let i = 0; i < activityRows.length; i++) {
-                const a = activityRows[i];
-                const p = performanceRows[i];
-                const code = extractCode(a[0]);
-                const fullName = String(a[1] || '').trim();
-                const group = String(a[2] || '').trim();
-                const coursesStarted = Number(a[3]) || 0;
-                const coursesCompleted = Number(a[4]) || 0;
-                const lessonsCompleted = Number(a[5]) || 0;
-                const assessmentsCompleted = Number(a[6]) || 0;
-                const initialAttempts = Number(p[3]) || 0;
-                const initialPassRate = Number(p[4]) || 0;
-                const avgAttemptsOverall = Number(p[5]) || 0;
-                const overallPassRate = Number(p[6]) || 0;
-                const assessmentsPassed = Number(p[7]) || 0;
-                const assessmentsTaken = Number(p[8]) || 0;
-                const avgHighScore = Number(p[9]) || 0;
-                const avgOverallScore = Number(p[10]) || 0;
-                const isValidCode = isValidEmployeeCode(code);
-                merged.push({
-                    rowIndex: i + 2, code, fullName, group,
-                    coursesStarted, coursesCompleted, lessonsCompleted, assessmentsCompleted,
-                    initialAttempts, initialPassRate, avgAttemptsOverall, overallPassRate,
-                    assessmentsPassed, assessmentsTaken, avgHighScore, avgOverallScore,
-                    isValidCode,
-                    completionRate: 0, lessonsPerCourse: 0, assessPassRate: 0,
-                    attemptsEfficiency: 0, index: 0, rank: 0
-                });
-            }
-            return merged;
-        }
-
-        // ============================================================
-        // CALCULATE INDEXES
-        // ============================================================
-        function calculateIndexes(data, period = 'month') {
-            const thresholds = getPeriodThresholds(period);
-            let maxCoursesCompleted = 0, maxLessonsCompleted = 0;
-            data.forEach(d => {
-                if (d.coursesCompleted > maxCoursesCompleted) maxCoursesCompleted = d.coursesCompleted;
-                if (d.lessonsCompleted > maxLessonsCompleted) maxLessonsCompleted = d.lessonsCompleted;
-            });
-
-            data.forEach(d => {
-                d.completionRate = d.coursesStarted > 0 ? Math.min(d.coursesCompleted / d.coursesStarted, 1) : 0;
-                d.lessonsPerCourse = d.coursesStarted > 0 ? d.lessonsCompleted / d.coursesStarted : 0;
-                d.assessPassRate = d.assessmentsCompleted > 0 ? d.assessmentsPassed / d.assessmentsCompleted : 0;
-                d.attemptsEfficiency = d.avgAttemptsOverall > 0 ? 1 / (1 + d.avgAttemptsOverall) : 0;
-
-                const comp = d.completionRate > 1 ? d.completionRate / 100 : d.completionRate;
-                const ap = d.assessPassRate > 1 ? d.assessPassRate / 100 : d.assessPassRate;
-                const score = d.avgOverallScore > 1 ? d.avgOverallScore / 100 : d.avgOverallScore;
-                const initpass = d.initialPassRate > 1 ? d.initialPassRate / 100 : d.initialPassRate;
-                const attEff = d.attemptsEfficiency > 1 ? d.attemptsEfficiency / 100 : d.attemptsEfficiency;
-
-                const cov = d.coursesCompleted > 0 ? Math.min(1, d.assessmentsCompleted / d.coursesCompleted) : 0;
-                const ccN = maxCoursesCompleted > 0 ? Math.log(1 + d.coursesCompleted) / Math.log(1 + maxCoursesCompleted) : 0;
-                const lcN = maxLessonsCompleted > 0 ? Math.log(1 + d.lessonsCompleted) / Math.log(1 + maxLessonsCompleted) : 0;
-
-                const baseScore =
-                    0.15 * comp + 0.15 * ap + 0.25 * score + 0.10 * initpass +
-                    0.10 * attEff + 0.10 * cov + 0.10 * ccN + 0.05 * lcN;
-
-                const progressFactor =
-                    Math.min(1, d.coursesCompleted / thresholds.cc) *
-                    Math.min(1, d.assessmentsCompleted / thresholds.ac) *
-                    Math.min(1, d.lessonsCompleted / thresholds.lc);
-
-                d.index = baseScore * progressFactor;
-            });
-        }
-
-        // ============================================================
-        // FINAL RANK
-        // ============================================================
-        function calculateFinalRank(data) {
-            const sorted = [...data].sort((a, b) => {
-                if (b.index !== a.index) return b.index - a.index;
-                if (b.avgOverallScore !== a.avgOverallScore) return b.avgOverallScore - a.avgOverallScore;
-                if (b.assessPassRate !== a.assessPassRate) return b.assessPassRate - a.assessPassRate;
-                if (b.coursesCompleted !== a.coursesCompleted) return b.coursesCompleted - a.coursesCompleted;
-                if (b.attemptsEfficiency !== a.attemptsEfficiency) return b.attemptsEfficiency - a.attemptsEfficiency;
-                return String(a.code || '').localeCompare(String(b.code || ''));
-            });
-            sorted.forEach((item, idx) => { item.rank = idx + 1; });
-            return sorted;
-        }
-
-        // ============================================================
-        // APPLY LEVEL FILTER + RE-RANK
-        // ============================================================
-        function applyLevelFilterToLeaderboard() {
-            if (!rankedData.length) return;
-            const levelGroup = levelFilter.value || 'all';
-            
-            const filtered = rankedData.filter(d => {
-                const emp = d.isValidCode ? findEmployeeById(d.code) : null;
-                const empLevel = emp?.level || emp?.Level || '';
-                return isInLevelGroup(empLevel, levelGroup);
-            });
-            
-            filteredRankedData = calculateFinalRank(filtered);
-            top10Data = filteredRankedData.slice(0, 10);
-            
+    if (tabName === 'leaderboard' && top10Data.length > 0) {
+        setTimeout(() => {
             renderLeaderboard(top10Data);
-            previewCount.textContent = `${top10Data.length} ${t('learner')}`;
-        }
+        }, 50);
+    }
 
-        // ============================================================
-        // COLLECT ALERTS
-        // ============================================================
-        function collectAlerts() {
-            invalidIds = [];
-            missingInFirebase = [];
-            rankedData.forEach(d => {
-                if (!d.isValidCode) {
-                    invalidIds.push({ rowIndex: d.rowIndex, code: d.code || '(empty)', name: d.fullName || '(no name)', data: d });
-                }
-                if (d.isValidCode) {
-                    const emp = findEmployeeById(d.code);
-                    if (!emp) missingInFirebase.push({ rowIndex: d.rowIndex, code: d.code, name: d.fullName || '(no name)', data: d });
-                }
-            });
-        }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
-        // ============================================================
-        // RESET
-        // ============================================================
-        function resetAll() {
-            activityData = null; performanceData = null;
-            mergedData = []; rankedData = []; filteredRankedData = []; top10Data = [];
-            invalidIds = []; missingInFirebase = [];
-            activityFileInput.value = ''; performanceFileInput.value = '';
-            activityFileName.textContent = ''; performanceFileName.textContent = '';
-            activityUploadBox.classList.remove('has-file');
-            performanceUploadBox.classList.remove('has-file');
-            uploadStatus.textContent = t('waitingFiles');
-            uploadStatus.style.background = ''; uploadStatus.style.color = '';
-            alertsContainer.innerHTML = '';
-            leaderboardSection.style.display = 'none';
-            allEmployeesSection.style.display = 'none';
-            downloadPngBtn.disabled = true; downloadPdfBtn.disabled = true;
-            updateAnalyzeButton();
-            showToast(currentLang === 'ar' ? '🗑️ تم مسح كل البيانات' : '🗑️ All data cleared', 'info');
-        }
+function updateTabCounts() {
+    if (leaderboardTabCount) leaderboardTabCount.textContent = top10Data.length || 0;
+    if (allTabCount) allTabCount.textContent = rankedData.length || 0;
+}
 
-        // ============================================================
-        // RENDER ALERTS
-        // ============================================================
-        function renderAlerts() {
-            let html = '';
-            if (invalidIds.length > 0) {
-                html += `
-                    <div class="alert-card">
-                        <div class="alert-title">
-                            <i class="fas fa-exclamation-triangle"></i> 
-                            ${t('noCodeAlert')} (${invalidIds.length})
-                        </div>
-                        <div class="alert-list">
-                            ${invalidIds.slice(0, 30).map(x => `<span>${currentLang === 'ar' ? 'صف' : 'Row'} ${x.rowIndex}: ${escapeHtml(x.code)} - ${escapeHtml(x.name)}</span>`).join('')}
-                            ${invalidIds.length > 30 ? `<span>... +${invalidIds.length - 30}</span>` : ''}
-                        </div>
-                        <div class="alert-actions">
-                            <button class="btn-view" onclick="window.__viewInvalidIds()"><i class="fas fa-eye"></i> ${t('viewList')}</button>
-                            <button class="btn-view" onclick="window.__downloadInvalidIds()"><i class="fas fa-download"></i> ${t('downloadList')}</button>
-                        </div>
-                    </div>`;
+// ============================================================
+// HELPERS
+// ============================================================
+function showToast(message, type = 'success') {
+    document.querySelector('.toast')?.remove();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast?.remove(), 3500);
+}
+
+function setLoading(show, text = null) {
+    if (text) loadingText.textContent = text;
+    loadingInline.classList.toggle('active', show);
+}
+
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '-';
+    return String(text)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function escapeAttr(text) {
+    if (!text) return '';
+    return String(text).trim().replace(/"/g, '&quot;');
+}
+
+function getInitials(name) {
+    if (!name) return '?';
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return String(name).substring(0, 2).toUpperCase();
+}
+
+function getAvatarColor(name) {
+    const colors = ['#EF4444','#F59E0B','#10B981','#3B82F6','#8B5CF6','#EC4899','#14B8A6','#F97316','#6366F1','#06B6D4','#E11D48','#D97706','#059669','#2563EB','#7C3AED'];
+    let hash = 0;
+    const str = String(name || '');
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+}
+
+function isValidEmployeeCode(str) {
+    if (!str) return false;
+    const s = String(str).trim();
+    if (/^\d+$/.test(s)) return true;
+    if (/^L&D\d+$/i.test(s)) return true;
+    return false;
+}
+
+function extractCode(colA) {
+    if (colA === null || colA === undefined) return '';
+    return String(colA).trim();
+}
+
+// ============================================================
+// CLOUDINARY IMAGE HELPERS
+// ============================================================
+function buildCloudinaryUrl(employeeId) {
+    if (!employeeId) return null;
+    const cleanId = String(employeeId).trim();
+    if (!isValidEmployeeCode(cleanId)) return null;
+    return `${CLOUDINARY_CONFIG.baseUrl}/${encodeURIComponent(cleanId)}.${CLOUDINARY_CONFIG.format}`;
+}
+
+function getEmployeePhoto(emp, employeeId) {
+    if (emp?.photoUrl) return emp.photoUrl;
+    if (emp?.photo) return emp.photo;
+    if (emp?.image) return emp.image;
+    return buildCloudinaryUrl(employeeId);
+}
+
+// ============================================================
+// INDEX HELPERS
+// ============================================================
+function formatIndexPercent(index) {
+    return (index * 100).toFixed(2) + '%';
+}
+
+function getIndexColorStyle(index) {
+    if (index >= 0.5) return { color: '#10B981', bg: '#D1FAE5' };
+    if (index >= 0.2) return { color: '#F59E0B', bg: '#FEF3C7' };
+    if (index >= 0.05) return { color: '#6366F1', bg: '#E0E7FF' };
+    if (index > 0) return { color: '#EF4444', bg: '#FEE2E2' };
+    return { color: '#64748B', bg: '#F1F5F9' };
+}
+
+// ============================================================
+// CACHE MANAGER
+// ============================================================
+function getCacheInfo() {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return { exists: false };
+        const obj = JSON.parse(raw);
+        if (!obj || !obj._savedAt) return { exists: false };
+        const age = Date.now() - obj._savedAt;
+        const remaining = CACHE_DURATION_MS - age;
+        return {
+            exists: true,
+            savedAt: obj._savedAt,
+            age,
+            remaining,
+            expired: remaining <= 0,
+            data: obj
+        };
+    } catch (e) {
+        return { exists: false };
+    }
+}
+
+function updateCacheBadge() {
+    const info = getCacheInfo();
+    cacheInfoBadge.classList.remove('active', 'expired');
+
+    if (!info.exists) {
+        cacheInfoText.textContent = t('cacheNone');
+        return;
+    }
+
+    const savedDate = new Date(info.savedAt);
+    const hoursLeft = Math.max(0, Math.floor(info.remaining / (60 * 60 * 1000)));
+    const timeStr = savedDate.toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US', {
+        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+
+    if (info.expired) {
+        cacheInfoBadge.classList.add('expired');
+        cacheInfoText.textContent = `${t('cacheExpiredShort')} (${timeStr})`;
+    } else {
+        cacheInfoBadge.classList.add('active');
+        cacheInfoText.textContent = `${t('cacheActive')} • ${hoursLeft}${t('hours')} • ${timeStr}`;
+    }
+}
+
+function saveCache(showToastMsg = true) {
+    try {
+        const cacheData = {
+            _savedAt: Date.now(),
+            allEmployees: allEmployees,
+            activityData: activityData,
+            performanceData: performanceData,
+            mergedData: mergedData,
+            rankedData: rankedData,
+            top10Data: top10Data,
+            invalidIds: invalidIds,
+            missingInFirebase: missingInFirebase,
+            filters: {
+                levelFilter: levelFilter.value,
+                levelFilterTable: levelFilterTable.value,
+                periodFilter: periodFilter.value,
+                monthFilter: monthFilter.value,
+                weekFilter: weekFilter.value,
+                quarterFilter: quarterFilter.value,
+                searchFilter: searchFilter.value,
+                groupFilter: groupFilter.value,
+                completedFilter: completedFilter.checked,
+                passRateFilter: passRateFilter.checked,
+                noCodeFilter: noCodeFilter.checked,
+                coursesFilter: coursesFilter.value,
+                indexFilter: indexFilter.value,
+                lessonsFilter: lessonsFilter.value,
+                testsFilter: testsFilter.value,
+                statusFilter: statusFilter.value
+            },
+            currentYear: currentYear
+        };
+
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        updateCacheBadge();
+
+        if (showToastMsg) showToast(t('cacheSaved'), 'success');
+        return true;
+    } catch (e) {
+        console.error('❌ Cache save failed:', e);
+        if (showToastMsg) showToast('❌ فشل حفظ الكاش', 'error');
+        return false;
+    }
+}
+
+function clearCache(showToastMsg = true) {
+    try {
+        localStorage.removeItem(CACHE_KEY);
+        updateCacheBadge();
+        if (showToastMsg) showToast(t('cacheCleared'), 'info');
+        return true;
+    } catch (e) {
+        console.error('❌ Cache clear failed:', e);
+        return false;
+    }
+}
+
+function loadFromCache() {
+    const info = getCacheInfo();
+    if (!info.exists || info.expired) return false;
+
+    try {
+        const data = info.data;
+
+        allEmployees = data.allEmployees || [];
+        employeesMap.clear();
+        allEmployees.forEach(emp => {
+            if (emp && emp.id !== undefined && emp.id !== null) {
+                employeesMap.set(String(emp.id).trim(), emp);
             }
-            if (missingInFirebase.length > 0) {
-                html += `
-                    <div class="alert-card danger">
-                        <div class="alert-title">
-                            <i class="fas fa-user-slash"></i> 
-                            ${t('missingFirebase')} (${missingInFirebase.length})
-                        </div>
-                        <div class="alert-list">
-                            ${missingInFirebase.slice(0, 30).map(x => `<span>${currentLang === 'ar' ? 'كود' : 'Code'} ${escapeHtml(x.code)}: ${escapeHtml(x.name)}</span>`).join('')}
-                            ${missingInFirebase.length > 30 ? `<span>... +${missingInFirebase.length - 30}</span>` : ''}
-                        </div>
-                        <div class="alert-actions">
-                            <button class="btn-view" onclick="window.__viewMissingFirebase()"><i class="fas fa-eye"></i> ${t('viewList')}</button>
-                            <button class="btn-view" onclick="window.__downloadMissingFirebase()"><i class="fas fa-download"></i> ${t('downloadList')}</button>
-                        </div>
-                    </div>`;
-            }
-            if (invalidIds.length === 0 && missingInFirebase.length === 0) {
-                html += `
-                    <div class="alert-card success">
-                        <div class="alert-title"><i class="fas fa-check-circle"></i> ${t('allGood')}</div>
-                        <div class="alert-list"><span>${t('allGoodMsg')}</span></div>
-                    </div>`;
-            }
-            alertsContainer.innerHTML = html;
-        }
-
-        function renderAlert(type, title, message) {
-            const className = type === 'danger' ? 'danger' : type === 'info' ? 'info' : '';
-            alertsContainer.innerHTML = `
-                <div class="alert-card ${className}">
-                    <div class="alert-title">${title}</div>
-                    <div class="alert-list">${message}</div>
-                </div>`;
-        }
-
-        // ============================================================
-        // VIEW MODAL
-        // ============================================================
-        function openModal(title, contentHtml) {
-            modalTitle.textContent = title;
-            modalBody.innerHTML = contentHtml;
-            modalOverlay.classList.add('active');
-        }
-
-        function closeModal() {
-            modalOverlay.classList.remove('active');
-        }
-
-        modalCloseBtn.addEventListener('click', closeModal);
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) closeModal();
         });
 
-        window.__viewInvalidIds = function() {
-            const rows = invalidIds.map(x => {
-                const d = x.data;
-                const idxStyle = getIndexColorStyle(d.index);
-                return `<tr>
-                    <td>${x.rowIndex}</td>
-                    <td class="id-cell">${escapeHtml(x.code)}</td>
-                    <td class="name-cell">${escapeHtml(x.name)}</td>
-                    <td>${d.coursesStarted}</td>
-                    <td>${d.coursesCompleted}</td>
-                    <td>${d.lessonsCompleted}</td>
-                    <td>${d.assessmentsCompleted}</td>
-                    <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">${formatIndexPercent(d.index)}</span></td>
-                </tr>`;
-            }).join('');
-            openModal(
-                `${t('noCodeAlert')} (${invalidIds.length})`,
-                `<div class="table-wrapper"><table class="data-table"><thead><tr>
-                    <th>${currentLang === 'ar' ? 'الصف' : 'Row'}</th>
-                    <th>${t('code')}</th>
-                    <th>${t('name')}</th>
-                    <th>${t('coursesStarted')}</th>
-                    <th>${t('coursesCompleted')}</th>
-                    <th>${t('lessons')}</th>
-                    <th>${t('assessments')}</th>
-                    <th>${t('index')}</th>
-                </tr></thead><tbody>${rows}</tbody></table></div>`
-            );
-        };
+        activityData = data.activityData || null;
+        performanceData = data.performanceData || null;
+        mergedData = data.mergedData || [];
+        rankedData = data.rankedData || [];
+        top10Data = data.top10Data || [];
+        invalidIds = data.invalidIds || [];
+        missingInFirebase = data.missingInFirebase || [];
 
-        window.__viewMissingFirebase = function() {
-            const rows = missingInFirebase.map(x => {
-                const d = x.data;
-                const idxStyle = getIndexColorStyle(d.index);
-                return `<tr>
-                    <td>${x.rowIndex}</td>
-                    <td class="id-cell">${escapeHtml(x.code)}</td>
-                    <td class="name-cell">${escapeHtml(x.name)}</td>
-                    <td>${d.coursesStarted}</td>
-                    <td>${d.coursesCompleted}</td>
-                    <td>${d.lessonsCompleted}</td>
-                    <td>${d.assessmentsCompleted}</td>
-                    <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">${formatIndexPercent(d.index)}</span></td>
-                </tr>`;
-            }).join('');
-            openModal(
-                `${t('missingFirebase')} (${missingInFirebase.length})`,
-                `<div class="table-wrapper"><table class="data-table"><thead><tr>
-                    <th>${currentLang === 'ar' ? 'الصف' : 'Row'}</th>
-                    <th>${t('code')}</th>
-                    <th>${t('name')}</th>
-                    <th>${t('coursesStarted')}</th>
-                    <th>${t('coursesCompleted')}</th>
-                    <th>${t('lessons')}</th>
-                    <th>${t('assessments')}</th>
-                    <th>${t('index')}</th>
-                </tr></thead><tbody>${rows}</tbody></table></div>`
-            );
-        };
-
-        window.__downloadInvalidIds = function() { downloadCSV(invalidIds, 'invalid_ids.csv'); };
-        window.__downloadMissingFirebase = function() { downloadCSV(missingInFirebase, 'missing_in_firebase.csv'); };
-
-        function downloadCSV(list, filename) {
-            const headers = ['Row', 'Code', 'Name', 'CoursesStarted', 'CoursesCompleted', 'Lessons', 'Assessments', 'Index (%)'];
-            const rows = list.map(x => {
-                const d = x.data;
-                return [x.rowIndex, x.code, x.name, d.coursesStarted, d.coursesCompleted, d.lessonsCompleted, d.assessmentsCompleted, (d.index * 100).toFixed(2) + '%'];
-            });
-            const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
-            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-            showToast(currentLang === 'ar' ? '✅ تم تحميل الملف' : '✅ File downloaded', 'success');
+        if (data.filters) {
+            const f = data.filters;
+            if (f.levelFilter) levelFilter.value = f.levelFilter;
+            if (f.levelFilterTable) levelFilterTable.value = f.levelFilterTable;
+            if (f.periodFilter) periodFilter.value = f.periodFilter;
+            if (f.monthFilter) monthFilter.value = f.monthFilter;
+            if (f.weekFilter) weekFilter.value = f.weekFilter;
+            if (f.quarterFilter) quarterFilter.value = f.quarterFilter;
+            if (f.searchFilter) searchFilter.value = f.searchFilter;
+            if (f.groupFilter) groupFilter.value = f.groupFilter;
+            completedFilter.checked = !!f.completedFilter;
+            passRateFilter.checked = !!f.passRateFilter;
+            noCodeFilter.checked = !!f.noCodeFilter;
+            
+            // الفلاتر الجديدة
+            if (f.coursesFilter) coursesFilter.value = f.coursesFilter;
+            if (f.indexFilter) indexFilter.value = f.indexFilter;
+            if (f.lessonsFilter) lessonsFilter.value = f.lessonsFilter;
+            if (f.testsFilter) testsFilter.value = f.testsFilter;
+            
+            if (f.statusFilter) statusFilter.value = f.statusFilter;
         }
 
-        // ============================================================
-        // RENDER LEADERBOARD
-        // ============================================================
-        function renderLeaderboard(data) {
-            if (!data || data.length === 0) {
-                leaderboardContainer.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><h3>${t('noData')}</h3></div>`;
-                return;
-            }
+        updateFilterCheckboxStyles();
 
-            let itemsHtml = '';
-            data.forEach(d => {
-                const rankClass = d.rank === 1 ? 'gold' : d.rank === 2 ? 'silver' : d.rank === 3 ? 'bronze' : '';
-                const medal = d.rank <= 3 ? RANK_EMOJIS[d.rank - 1] : `#${d.rank}`;
-                const avatarRing = d.rank === 1 ? 'gold-ring' : d.rank === 2 ? 'silver-ring' : d.rank === 3 ? 'bronze-ring' : '';
-                const emp = d.isValidCode ? findEmployeeById(d.code) : null;
-                const displayName = emp?.fullName || emp?.name || d.fullName || t('unknown');
-                const displayGroup = emp?.department || d.group || t('undefinedDept');
-                const photoUrl = getEmployeePhoto(emp, d.code);
-                const initials = getInitials(displayName);
-                const avatarColor = getAvatarColor(displayName);
-
-                // ✅ الموظف بدون كود صحيح: نستخدم fallback بالأحرف الأولى بدون صورة
-                let avatarHtml = '';
-                if (photoUrl) {
-                    avatarHtml = `
-                        <img src="${escapeAttr(photoUrl)}" alt="${escapeAttr(displayName)}" 
-                            crossorigin="anonymous" referrerpolicy="no-referrer" loading="eager"
-                            style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;border-radius:50%;"
-                            onerror="this.onerror=null; this.style.display='none'; const fb=this.parentElement.querySelector('.fallback'); if(fb) fb.style.display='flex';"
-                        />
-                        <span class="fallback" style="background:${avatarColor};display:none;">${initials}</span>
-                    `;
-                } else {
-                    avatarHtml = `<span class="fallback" style="background:${avatarColor};display:flex;">${initials}</span>`;
-                }
-
-                const noCodeBadge = !d.isValidCode 
-                    ? `<div class="no-code-warning"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</div>` 
-                    : '';
-
-                itemsHtml += `
-                    <div class="leaderboard-item">
-                        <div class="rank ${rankClass}"><span class="medal">${medal}</span></div>
-                        <div class="avatar ${avatarRing}">${avatarHtml}</div>
-                        <div class="info">
-                            <div class="name">${escapeHtml(displayName)}${d.rank <= 3 ? '<span class="verified"><i class="fas fa-star"></i></span>' : ''}</div>
-                            <div class="department"><i class="fas fa-building"></i> <span>${escapeHtml(displayGroup)}</span></div>
-                            ${noCodeBadge}
-                        </div>
-                    </div>`;
-            });
-
-            const period = periodFilter.value;
-            const month = parseInt(monthFilter.value);
-            const week = parseInt(weekFilter.value);
-            const quarter = parseInt(quarterFilter.value);
-            const monthName = TRANSLATIONS[currentLang].monthNames[month];
-            const year = currentYear;
-            const weekName = TRANSLATIONS[currentLang].weekNames[week - 1];
-            const quarterLabel = `Q${quarter}`;
-            const levelGroup = levelFilter.value;
-
-            let titleText;
-            if (levelGroup === 'employees') {
-                titleText = t('leaderboardTitleEmployees');
-            } else if (levelGroup === 'managers') {
-                titleText = t('leaderboardTitleManagers');
-            } else {
-                titleText = t('leaderboardTitle');
-            }
-
-            let periodLabel = '';
-            if (period === 'month') periodLabel = `${monthName} ${year}`;
-            else if (period === 'week') periodLabel = `${monthName} ${year} - ${t('weekLabel')} ${weekName}`;
-            else if (period === 'quarter') periodLabel = `${year} - ${t('quarterLabel')} ${quarterLabel}`;
-            else if (period === 'half') periodLabel = `${year} - ${currentLang === 'ar' ? 'نصف سنوي' : 'Half-Yearly'}`;
-            else periodLabel = `${year}`;
-
-            leaderboardContainer.innerHTML = `
-                <div class="leaderboard-card" id="leaderboardCard" dir="${currentLang === 'ar' ? 'rtl' : 'ltr'}">
-                    <div class="leaderboard-header">
-                        <div class="trophy-icon">🏆</div>
-                        <h1>${titleText}</h1>
-                        <p style="font-size:0.9rem;color:#64748B;font-weight:600;margin-top:4px;">${periodLabel}</p>
-                    </div>
-                    <div class="leaderboard-body">${itemsHtml}</div>
-                </div>`;
-        }
-
-        // ============================================================
-        // RENDER ALL TABLE
-        // ============================================================
-        function renderAllEmployeesTable() {
-            const filtered = applyFilters(rankedData);
-            allCountBadge.textContent = `${filtered.length} ${t('employee')}`;
-            if (filtered.length === 0) {
-                allTableBody.innerHTML = `<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--gray);">
-                    <i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:10px;color:#CBD5E1;"></i>
-                    ${t('noResults')}
-                </td></tr>`;
-                return;
-            }
-            let html = '';
-            filtered.forEach(d => {
-                const rankClass = d.rank === 1 ? 'gold' : d.rank === 2 ? 'silver' : d.rank === 3 ? 'bronze' : '';
-                const emp = d.isValidCode ? findEmployeeById(d.code) : null;
-                const displayName = emp?.fullName || emp?.name || d.fullName || t('unknown');
-                const displayGroup = emp?.department || d.group || t('undefinedDept');
-                const codeDisplay = d.isValidCode 
-                    ? escapeHtml(d.code) 
-                    : `<span class="no-data">${escapeHtml(d.code || '(empty)')}</span>`;
-                const passRate = (d.assessPassRate * 100).toFixed(1);
-                const avgScore = d.avgOverallScore.toFixed(1);
-
-                const empLevel = emp?.level || emp?.Level || '';
-                const levelStyle = getLevelColorStyle(empLevel);
-                const levelDisplay = empLevel 
-                    ? `<span class="level-badge" style="color:${levelStyle.color};background:${levelStyle.bg};">${escapeHtml(empLevel)}</span>`
-                    : (!d.isValidCode 
-                        ? `<span class="level-badge" style="color:#92400E;background:#FEF3C7;"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</span>`
-                        : `<span class="no-data">-</span>`);
-
-                const indexVal = formatIndexPercent(d.index);
-                const idxStyle = getIndexColorStyle(d.index);
-
-                let passRateColor = 'var(--dark)';
-                if (d.assessPassRate >= 0.75) passRateColor = 'var(--success)';
-                else if (d.assessPassRate >= 0.5) passRateColor = '#F59E0B';
-                else if (d.assessPassRate > 0) passRateColor = 'var(--danger)';
-
-                const rowClass = !d.isValidCode ? 'no-code-row' : '';
-
-                html += `
-                    <tr class="${rowClass}">
-                        <td><span class="rank-badge ${rankClass}">${d.rank}</span></td>
-                        <td class="id-cell">${codeDisplay}</td>
-                        <td class="name-cell">${escapeHtml(displayName)}</td>
-                        <td><span class="group-cell">${escapeHtml(displayGroup)}</span></td>
-                        <td>${levelDisplay}</td>
-                        <td>${d.coursesStarted}</td>
-                        <td>${d.coursesCompleted}</td>
-                        <td>${d.lessonsCompleted}</td>
-                        <td>${d.assessmentsCompleted}</td>
-                        <td>${d.assessmentsPassed}</td>
-                        <td style="font-weight:700;color:${passRateColor};">${passRate}%</td>
-                        <td>${avgScore}</td>
-                        <td>
-                            <span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">
-                                ${indexVal}
-                            </span>
-                        </td>
-                    </tr>`;
-            });
-            allTableBody.innerHTML = html;
-        }
-
-        // ============================================================
-        // FILTERS
-        // ============================================================
-        function applyFilters(data) {
-            const levelGroup = levelFilterTable.value || 'all';
-            const search = (searchFilter.value || '').trim().toLowerCase();
-            const group = groupFilter.value;
-            const onlyCompleted = completedFilter.checked;
-            const onlyPassRate = passRateFilter.checked;
-            const onlyNoCode = noCodeFilter.checked;
-            const cMin = coursesMin.value !== '' ? Number(coursesMin.value) : null;
-            const cMax = coursesMax.value !== '' ? Number(coursesMax.value) : null;
-            const iMinRaw = indexMin.value !== '' ? Number(indexMin.value) : null;
-            const iMaxRaw = indexMax.value !== '' ? Number(indexMax.value) : null;
-            const iMin = iMinRaw !== null ? iMinRaw / 100 : null;
-            const iMax = iMaxRaw !== null ? iMaxRaw / 100 : null;
-            const status = statusFilter.value;
-
-            return data.filter(d => {
-                const emp = d.isValidCode ? findEmployeeById(d.code) : null;
-                const empLevel = emp?.level || emp?.Level || '';
-                
-                // ✅ فلتر المستوى (الموظف بدون كود = "موظفين" افتراضياً)
-                if (!isInLevelGroup(empLevel, levelGroup)) return false;
-                
-                // ✅ فلتر "بدون كود صحيح"
-                if (onlyNoCode && d.isValidCode) return false;
-
-                if (search) {
-                    const displayName = (emp?.fullName || emp?.name || d.fullName || '').toLowerCase();
-                    const codeStr = String(d.code || '').toLowerCase();
-                    if (!displayName.includes(search) && !codeStr.includes(search)) return false;
-                }
-                if (group) {
-                    const displayGroup = emp?.department || d.group || '';
-                    if (displayGroup !== group) return false;
-                }
-                if (onlyCompleted && d.coursesCompleted <= 0) return false;
-                if (onlyPassRate && d.assessPassRate <= 0.5) return false;
-                if (cMin !== null && d.coursesCompleted < cMin) return false;
-                if (cMax !== null && d.coursesCompleted > cMax) return false;
-                if (iMin !== null && d.index < iMin) return false;
-                if (iMax !== null && d.index > iMax) return false;
-                if (status === 'active') {
-                    if (!(d.coursesStarted > 0 || d.lessonsCompleted > 0 || d.assessmentsCompleted > 0)) return false;
-                } else if (status === 'inactive') {
-                    if (d.coursesStarted > 0 || d.lessonsCompleted > 0 || d.assessmentsCompleted > 0) return false;
-                }
-                return true;
-            });
-        }
-
-        function populateGroupFilter() {
-            const groups = new Set();
-            rankedData.forEach(d => {
-                const emp = d.isValidCode ? findEmployeeById(d.code) : null;
-                const displayGroup = emp?.department || d.group || '';
-                if (displayGroup) groups.add(displayGroup);
-            });
-            const sortedGroups = Array.from(groups).sort();
-            const currentValue = groupFilter.value;
-            groupFilter.innerHTML = `<option value="">${t('all')}</option>`;
-            sortedGroups.forEach(g => {
-                const option = document.createElement('option');
-                option.value = g;
-                option.textContent = g;
-                groupFilter.appendChild(option);
-            });
-            if (currentValue && sortedGroups.includes(currentValue)) {
-                groupFilter.value = currentValue;
-            }
-        }
-
-        function resetFilters() {
-            levelFilterTable.value = 'all';
-            searchFilter.value = '';
-            groupFilter.value = '';
-            completedFilter.checked = false;
-            passRateFilter.checked = false;
-            noCodeFilter.checked = false;
-            coursesMin.value = '';
-            coursesMax.value = '';
-            indexMin.value = '';
-            indexMax.value = '';
-            statusFilter.value = '';
-            updateFilterCheckboxStyles();
+        if (rankedData.length > 0) {
+            populateGroupFilter();
+            applyLevelFilterToLeaderboard();
             renderAllEmployeesTable();
-        }
+            renderAlerts();
+            downloadPngBtn.disabled = false;
+            downloadPdfBtn.disabled = false;
+            updateTabCounts();
 
-        function updateFilterCheckboxStyles() {
-            document.querySelectorAll('.filter-checkbox').forEach(label => {
-                const cb = label.querySelector('input[type="checkbox"]');
-                if (cb) label.classList.toggle('active', cb.checked);
-            });
-        }
-
-        function setupFilters() {
-            let searchTimeout;
-            searchFilter.addEventListener('input', () => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(renderAllEmployeesTable, 300);
-            });
-            ['change', 'input'].forEach(evt => {
-                levelFilterTable.addEventListener(evt, renderAllEmployeesTable);
-                groupFilter.addEventListener(evt, renderAllEmployeesTable);
-                completedFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
-                passRateFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
-                noCodeFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
-                coursesMin.addEventListener(evt, renderAllEmployeesTable);
-                coursesMax.addEventListener(evt, renderAllEmployeesTable);
-                indexMin.addEventListener(evt, renderAllEmployeesTable);
-                indexMax.addEventListener(evt, renderAllEmployeesTable);
-                statusFilter.addEventListener(evt, renderAllEmployeesTable);
-            });
-            resetFiltersBtn.addEventListener('click', resetFilters);
-
-            levelFilter.addEventListener('change', () => {
-                applyLevelFilterToLeaderboard();
-                renderAllEmployeesTable();
-            });
-        }
-
-        // ============================================================
-        // DOWNLOAD PNG
-        // ============================================================
-        async function downloadAsPNG() {
-            const card = document.getElementById('leaderboardCard');
-            if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
-            setLoading(true, currentLang === 'ar' ? 'جاري تحضير الصورة...' : 'Preparing image...');
-            try {
-                if (typeof htmlToImage === 'undefined') {
-                    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
-                }
-                await document.fonts.ready;
-                const images = card.querySelectorAll('img');
-                await Promise.all(Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 5000); });
-                }));
-                const dataUrl = await htmlToImage.toPng(card, {
-                    pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
-                    style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
-                });
-                const link = document.createElement('a');
-                link.download = `leaderboard_${new Date().toISOString().split('T')[0]}.png`;
-                link.href = dataUrl;
-                link.click();
-                showToast(currentLang === 'ar' ? '✅ تم تحميل الصورة' : '✅ Image downloaded', 'success');
-            } catch (error) {
-                console.error('❌ PNG error:', error);
-                showToast(currentLang === 'ar' ? '❌ فشل تحميل الصورة' : '❌ Image failed', 'error');
-            } finally { setLoading(false); }
-        }
-
-        // ============================================================
-        // DOWNLOAD PDF
-        // ============================================================
-        async function downloadAsPDF() {
-            const card = document.getElementById('leaderboardCard');
-            if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
-            setLoading(true, currentLang === 'ar' ? 'جاري تحضير PDF...' : 'Preparing PDF...');
-            try {
-                if (typeof htmlToImage === 'undefined') {
-                    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
-                }
-                if (typeof window.jspdf === 'undefined') {
-                    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-                }
-                await document.fonts.ready;
-                const images = card.querySelectorAll('img');
-                await Promise.all(Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 5000); });
-                }));
-                const dataUrl = await htmlToImage.toPng(card, {
-                    pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
-                    style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
-                });
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('l', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const img = new Image();
-                img.src = dataUrl;
-                await new Promise(resolve => { img.onload = resolve; });
-                const pdfHeight = (img.height * pdfWidth) / img.width;
-                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`leaderboard_${new Date().toISOString().split('T')[0]}.pdf`);
-                showToast(currentLang === 'ar' ? '✅ تم تحميل PDF' : '✅ PDF downloaded', 'success');
-            } catch (error) {
-                console.error('❌ PDF error:', error);
-                showToast(currentLang === 'ar' ? '❌ فشل تحميل PDF' : '❌ PDF failed', 'error');
-            } finally { setLoading(false); }
-        }
-
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-
-        // ============================================================
-        // NAVBAR
-        // ============================================================
-        function renderNavbar() {
-            const isAr = currentLang === 'ar';
-            navbarContainer.innerHTML = `
-                <nav class="navbar">
-                    <div class="logo">
-                        <div class="logo-icon"><i class="fas fa-trophy"></i></div>
-                        <div>
-                            <h1>${isAr ? 'منصة LobsterInk' : 'LobsterInk Platform'}</h1>
-                            <div class="subtitle">${isAr ? 'لوحة الأوائل - Top 10' : 'Top 10 Leaderboard'}</div>
-                        </div>
-                    </div>
-                    <div class="nav-actions">
-                        <button id="langBtn" class="btn-nav btn-lang">
-                            <i class="fas fa-globe"></i> ${isAr ? 'English' : 'العربية'}
-                        </button>
-                        <button id="refreshDataBtn" class="btn-nav btn-refresh">
-                            <i class="fas fa-sync-alt"></i> ${isAr ? 'تحديث' : 'Refresh'}
-                        </button>
-                        <a href="index.html" class="btn-nav btn-home">
-                            <i class="fas fa-home"></i> ${isAr ? 'الرئيسية' : 'Home'}
-                        </a>
-                        <button id="logoutBtn" class="btn-nav btn-logout">
-                            <i class="fas fa-sign-out-alt"></i> ${isAr ? 'خروج' : 'Logout'}
-                        </button>
-                    </div>
-                </nav>`;
-            document.getElementById('langBtn')?.addEventListener('click', toggleLanguage);
-            document.getElementById('refreshDataBtn')?.addEventListener('click', async () => {
-                setLoading(true, currentLang === 'ar' ? 'جاري تحديث البيانات...' : 'Refreshing...');
-                await loadEmployees(true);
-                setLoading(false);
-                showToast(currentLang === 'ar' ? '🔄 تم تحديث قائمة الموظفين' : '🔄 Refreshed', 'success');
-            });
-            document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            });
-        }
-
-        // ============================================================
-        // INIT
-        // ============================================================
-        function populateMonthFilter() {
-            monthFilter.innerHTML = '';
-            for (let m = 0; m < 12; m++) {
-                const option = document.createElement('option');
-                option.value = m;
-                option.textContent = `${TRANSLATIONS[currentLang].monthNames[m]} ${currentYear}`;
-                if (m === new Date().getMonth()) option.selected = true;
-                monthFilter.appendChild(option);
+            if (activityData && activityData.length > 0) {
+                activityUploadBox.classList.add('has-file');
+                activityFileName.textContent = `✅ ${activityData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
             }
-        }
-
-        function updateFilterDisplay() {
-            const period = periodFilter.value;
-            weekFilterGroup.style.display = period === 'week' ? 'flex' : 'none';
-            quarterFilterGroup.style.display = period === 'quarter' ? 'flex' : 'none';
-            
-            if (mergedData.length > 0) {
-                const currentPeriod = periodFilter.value;
-                calculateIndexes(mergedData, currentPeriod);
-                rankedData = calculateFinalRank(mergedData);
-                applyLevelFilterToLeaderboard();
-                renderAllEmployeesTable();
+            if (performanceData && performanceData.length > 0) {
+                performanceUploadBox.classList.add('has-file');
+                performanceFileName.textContent = `✅ ${performanceData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
             }
+            updateAnalyzeButton();
         }
 
-        async function init() {
-            renderNavbar();
-            populateMonthFilter();
-            updateFilterDisplay();
-            setupUploadBox(activityUploadBox, activityFileInput, activityFileName, (data) => { activityData = data; });
-            setupUploadBox(performanceUploadBox, performanceFileInput, performanceFileName, (data) => { performanceData = data; });
-            analyzeBtn.addEventListener('click', analyzeFiles);
-            resetBtn.addEventListener('click', resetAll);
-            periodFilter.addEventListener('change', updateFilterDisplay);
-            monthFilter.addEventListener('change', updateFilterDisplay);
-            weekFilter.addEventListener('change', updateFilterDisplay);
-            quarterFilter.addEventListener('change', updateFilterDisplay);
-            setupFilters();
-            downloadPngBtn.addEventListener('click', downloadAsPNG);
-            downloadPdfBtn.addEventListener('click', downloadAsPDF);
+        return true;
+    } catch (e) {
+        console.error('❌ Cache restore failed:', e);
+        return false;
+    }
+}
 
-            // 🆕 Cache buttons
-            saveCacheBtn.addEventListener('click', () => saveCache(true));
-            clearCacheBtn.addEventListener('click', () => {
-                if (confirm(currentLang === 'ar' 
-                    ? '⚠️ هل تريد حذف الكاش؟ سيتم مسح كل البيانات المحفوظة.'
-                    : '⚠️ Delete cache? All saved data will be cleared.')) {
-                    clearCache(true);
-                }
-            });
+// ============================================================
+// LANGUAGE
+// ============================================================
+function applyLanguage() {
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    document.body.classList.toggle('lang-en', currentLang === 'en');
 
-            applyLanguage();
+    const langBtnText = document.getElementById('langBtnText');
+    if (langBtnText) langBtnText.textContent = currentLang === 'ar' ? 'English' : 'العربية';
 
-            // 🆕 محاولة تحميل الكاش أولاً
-            const cacheLoaded = loadFromCache();
-            
-            if (cacheLoaded) {
-                showToast(t('cacheRestored'), 'info');
-                updateCacheBadge();
-                // تحديث قائمة الموظفين من Firebase في الخلفية (بدون إعادة تحميل)
-                loadEmployees(false).catch(() => {});
-            } else {
-                // لا يوجد كاش → حمّل من Firebase
-                setLoading(true, currentLang === 'ar' ? 'جاري تحميل بيانات الموظفين...' : 'Loading employees...');
-                await loadEmployees();
-                setLoading(false);
-                updateCacheBadge();
-            }
-            
-            console.log('🏆 Page ready!');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (TRANSLATIONS[currentLang][key] !== undefined) {
+            el.textContent = TRANSLATIONS[currentLang][key];
         }
+    });
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                await init();
-            } else {
-                window.location.href = 'login.html';
+    const searchInput = document.getElementById('searchFilter');
+    if (searchInput) {
+        searchInput.placeholder = currentLang === 'ar' ? 'الاسم أو الكود...' : 'Name or code...';
+    }
+
+    populateMonthFilter();
+    populateGroupFilter();
+    updateCacheBadge();
+
+    if (top10Data.length > 0) {
+        renderLeaderboard(top10Data);
+        renderAllEmployeesTable();
+        renderAlerts();
+    }
+
+    updateTabCounts();
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === 'ar' ? 'en' : 'ar';
+    localStorage.setItem('lang', currentLang);
+    applyLanguage();
+    showToast(currentLang === 'ar' ? '🇸🇦 تم تغيير اللغة للعربية' : '🇬🇧 Language switched to English', 'success');
+}
+
+// ============================================================
+// LOAD EMPLOYEES
+// ============================================================
+async function loadEmployees(forceRefresh = false) {
+    try {
+        if (forceRefresh) await DB.refresh('employees');
+        const result = await DB.getAll('employees');
+        allEmployees = result || [];
+        employeesMap.clear();
+        allEmployees.forEach(emp => {
+            if (emp && emp.id !== undefined && emp.id !== null) {
+                employeesMap.set(String(emp.id).trim(), emp);
             }
         });
-    </script>
+        console.log(`👥 Loaded ${allEmployees.length} employees`);
+        return allEmployees;
+    } catch (error) {
+        console.error('❌ Failed to load employees:', error);
+        allEmployees = [];
+        employeesMap.clear();
+        showToast(currentLang === 'ar' ? '⚠️ فشل تحميل بيانات الموظفين' : '⚠️ Failed to load employees', 'warning');
+        return [];
+    }
+}
+
+function findEmployeeById(empId) {
+    if (!empId) return null;
+    return employeesMap.get(String(empId).trim()) || null;
+}
+
+// ============================================================
+// UPLOAD HANDLERS
+// ============================================================
+function setupUploadBox(box, input, fileNameEl, onFileSelected) {
+    box.addEventListener('click', () => input.click());
+    box.addEventListener('dragover', (e) => { e.preventDefault(); box.classList.add('dragover'); });
+    box.addEventListener('dragleave', () => box.classList.remove('dragover'));
+    box.addEventListener('drop', (e) => {
+        e.preventDefault(); box.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) handleFile(file, box, fileNameEl, onFileSelected);
+    });
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleFile(file, box, fileNameEl, onFileSelected);
+    });
+}
+
+async function handleFile(file, box, fileNameEl, onFileSelected) {
+    const validExt = /\.(xlsx|xls)$/i.test(file.name);
+    if (!validExt) {
+        showToast(currentLang === 'ar' ? '⚠️ الملف لازم يكون Excel (.xlsx أو .xls)' : '⚠️ File must be Excel (.xlsx or .xls)', 'warning');
+        return;
+    }
+    try {
+        setLoading(true, currentLang === 'ar' ? 'جاري قراءة الملف...' : 'Reading file...');
+        const data = await readExcelFile(file);
+        box.classList.add('has-file');
+        fileNameEl.textContent = `✅ ${file.name} (${data.length} ${currentLang === 'ar' ? 'صف' : 'rows'})`;
+        onFileSelected(data, file.name);
+        showToast(`✅ ${currentLang === 'ar' ? 'تم قراءة' : 'Loaded'} ${file.name}`, 'success');
+    } catch (error) {
+        console.error('❌ File read failed:', error);
+        showToast(currentLang === 'ar' ? '❌ فشل قراءة الملف' : '❌ Failed to read file', 'error');
+        box.classList.remove('has-file');
+        fileNameEl.textContent = '';
+    } finally {
+        setLoading(false);
+        updateAnalyzeButton();
+    }
+}
+
+function readExcelFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+                const rows = jsonData.slice(1).filter(row => row && row.some(cell => cell !== '' && cell !== null && cell !== undefined));
+                resolve(rows);
+            } catch (err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// ============================================================
+// ANALYZE
+// ============================================================
+function updateAnalyzeButton() {
+    const hasActivity = !!activityData;
+    const hasPerformance = !!performanceData;
+    analyzeBtn.disabled = !(hasActivity && hasPerformance);
+    if (hasActivity && hasPerformance) {
+        uploadStatus.textContent = t('readyAnalyze');
+        uploadStatus.style.background = '#D1FAE5';
+        uploadStatus.style.color = '#065F46';
+    } else if (hasActivity || hasPerformance) {
+        uploadStatus.textContent = t('waitingOther');
+        uploadStatus.style.background = '#FEF3C7';
+        uploadStatus.style.color = '#92400E';
+    } else {
+        uploadStatus.textContent = t('waitingFiles');
+        uploadStatus.style.background = '';
+        uploadStatus.style.color = '';
+    }
+}
+
+async function analyzeFiles() {
+    if (isAnalyzing) return;
+    if (!activityData || !performanceData) {
+        showToast(currentLang === 'ar' ? '⚠️ لازم ترفع الملفين الأول' : '⚠️ Please upload both files first', 'warning');
+        return;
+    }
+    if (activityData.length !== performanceData.length) {
+        showToast(`❌ ${currentLang === 'ar' ? 'عدد الصفوف مختلف!' : 'Row count mismatch!'}`, 'error');
+        renderAlert('danger',
+            currentLang === 'ar' ? '❌ عدد الصفوف مختلف' : '❌ Row count mismatch',
+            currentLang === 'ar'
+                ? `ملف Activity فيه <strong>${activityData.length}</strong> صف، وملف Performance فيه <strong>${performanceData.length}</strong> صف.`
+                : `Activity file has <strong>${activityData.length}</strong> rows, Performance file has <strong>${performanceData.length}</strong> rows.`
+        );
+        return;
+    }
+    isAnalyzing = true;
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('analyzing')}`;
+    try {
+        setLoading(true, currentLang === 'ar' ? 'جاري تحليل البيانات...' : 'Analyzing data...');
+        mergedData = mergeFiles(activityData, performanceData);
+        const currentPeriod = periodFilter.value;
+        calculateIndexes(mergedData, currentPeriod);
+        rankedData = calculateFinalRank(mergedData);
+        applyLevelFilterToLeaderboard();
+        collectAlerts();
+        populateGroupFilter();
+        renderAllEmployeesTable();
+        renderAlerts();
+        downloadPngBtn.disabled = false;
+        downloadPdfBtn.disabled = false;
+        updateTabCounts();
+        showToast(`✅ ${currentLang === 'ar' ? 'تم التحليل بنجاح' : 'Analysis complete'} - ${rankedData.length} ${t('employee')}`, 'success');
+
+        switchTab('leaderboard');
+
+        saveCache(false);
+    } catch (error) {
+        console.error('❌ Analysis failed:', error);
+        showToast(currentLang === 'ar' ? '❌ حدث خطأ أثناء التحليل' : '❌ Analysis error', 'error');
+    } finally {
+        isAnalyzing = false;
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('analyzeBtn')}`;
+        setLoading(false);
+    }
+}
+
+// ============================================================
+// MERGE
+// ============================================================
+function mergeFiles(activityRows, performanceRows) {
+    const merged = [];
+    for (let i = 0; i < activityRows.length; i++) {
+        const a = activityRows[i];
+        const p = performanceRows[i];
+        const code = extractCode(a[0]);
+        const fullName = String(a[1] || '').trim();
+        const group = String(a[2] || '').trim();
+        const coursesStarted = Number(a[3]) || 0;
+        const coursesCompleted = Number(a[4]) || 0;
+        const lessonsCompleted = Number(a[5]) || 0;
+        const assessmentsCompleted = Number(a[6]) || 0;
+        const initialAttempts = Number(p[3]) || 0;
+        const initialPassRate = Number(p[4]) || 0;
+        const avgAttemptsOverall = Number(p[5]) || 0;
+        const overallPassRate = Number(p[6]) || 0;
+        const assessmentsPassed = Number(p[7]) || 0;
+        const assessmentsTaken = Number(p[8]) || 0;
+        const avgHighScore = Number(p[9]) || 0;
+        const avgOverallScore = Number(p[10]) || 0;
+        const isValidCode = isValidEmployeeCode(code);
+        merged.push({
+            rowIndex: i + 2, code, fullName, group,
+            coursesStarted, coursesCompleted, lessonsCompleted, assessmentsCompleted,
+            initialAttempts, initialPassRate, avgAttemptsOverall, overallPassRate,
+            assessmentsPassed, assessmentsTaken, avgHighScore, avgOverallScore,
+            isValidCode,
+            completionRate: 0, lessonsPerCourse: 0, assessPassRate: 0,
+            attemptsEfficiency: 0, index: 0, rank: 0
+        });
+    }
+    return merged;
+}
+
+// ============================================================
+// CALCULATE INDEXES
+// ============================================================
+function calculateIndexes(data, period = 'month') {
+    const thresholds = getPeriodThresholds(period);
+    let maxCoursesCompleted = 0, maxLessonsCompleted = 0;
+    data.forEach(d => {
+        if (d.coursesCompleted > maxCoursesCompleted) maxCoursesCompleted = d.coursesCompleted;
+        if (d.lessonsCompleted > maxLessonsCompleted) maxLessonsCompleted = d.lessonsCompleted;
+    });
+
+    data.forEach(d => {
+        d.completionRate = d.coursesStarted > 0 ? Math.min(d.coursesCompleted / d.coursesStarted, 1) : 0;
+        d.lessonsPerCourse = d.coursesStarted > 0 ? d.lessonsCompleted / d.coursesStarted : 0;
+        d.assessPassRate = d.assessmentsCompleted > 0 ? d.assessmentsPassed / d.assessmentsCompleted : 0;
+        d.attemptsEfficiency = d.avgAttemptsOverall > 0 ? 1 / (1 + d.avgAttemptsOverall) : 0;
+
+        const comp = d.completionRate > 1 ? d.completionRate / 100 : d.completionRate;
+        const ap = d.assessPassRate > 1 ? d.assessPassRate / 100 : d.assessPassRate;
+        const score = d.avgOverallScore > 1 ? d.avgOverallScore / 100 : d.avgOverallScore;
+        const initpass = d.initialPassRate > 1 ? d.initialPassRate / 100 : d.initialPassRate;
+        const attEff = d.attemptsEfficiency > 1 ? d.attemptsEfficiency / 100 : d.attemptsEfficiency;
+
+        const cov = d.coursesCompleted > 0 ? Math.min(1, d.assessmentsCompleted / d.coursesCompleted) : 0;
+        const ccN = maxCoursesCompleted > 0 ? Math.log(1 + d.coursesCompleted) / Math.log(1 + maxCoursesCompleted) : 0;
+        const lcN = maxLessonsCompleted > 0 ? Math.log(1 + d.lessonsCompleted) / Math.log(1 + maxLessonsCompleted) : 0;
+
+        const baseScore =
+            0.15 * comp + 0.15 * ap + 0.25 * score + 0.10 * initpass +
+            0.10 * attEff + 0.10 * cov + 0.10 * ccN + 0.05 * lcN;
+
+        const progressFactor =
+            Math.min(1, d.coursesCompleted / thresholds.cc) *
+            Math.min(1, d.assessmentsCompleted / thresholds.ac) *
+            Math.min(1, d.lessonsCompleted / thresholds.lc);
+
+        d.index = baseScore * progressFactor;
+    });
+}
+
+// ============================================================
+// FINAL RANK
+// ============================================================
+function calculateFinalRank(data) {
+    const sorted = [...data].sort((a, b) => {
+        if (b.index !== a.index) return b.index - a.index;
+        if (b.avgOverallScore !== a.avgOverallScore) return b.avgOverallScore - a.avgOverallScore;
+        if (b.assessPassRate !== a.assessPassRate) return b.assessPassRate - a.assessPassRate;
+        if (b.coursesCompleted !== a.coursesCompleted) return b.coursesCompleted - a.coursesCompleted;
+        if (b.attemptsEfficiency !== a.attemptsEfficiency) return b.attemptsEfficiency - a.attemptsEfficiency;
+        return String(a.code || '').localeCompare(String(b.code || ''));
+    });
+    sorted.forEach((item, idx) => { item.rank = idx + 1; });
+    return sorted;
+}
+
+// ============================================================
+// APPLY LEVEL FILTER + RE-RANK
+// ============================================================
+function applyLevelFilterToLeaderboard() {
+    if (!rankedData.length) return;
+    const levelGroup = levelFilter.value || 'all';
+
+    const filtered = rankedData.filter(d => {
+        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const empLevel = emp?.level || emp?.Level || '';
+        return isInLevelGroup(empLevel, levelGroup);
+    });
+
+    filteredRankedData = calculateFinalRank(filtered);
+    top10Data = filteredRankedData.slice(0, 10);
+
+    renderLeaderboard(top10Data);
+    previewCount.textContent = `${top10Data.length} ${t('learner')}`;
+    updateTabCounts();
+}
+
+// ============================================================
+// COLLECT ALERTS
+// ============================================================
+function collectAlerts() {
+    invalidIds = [];
+    missingInFirebase = [];
+    rankedData.forEach(d => {
+        if (!d.isValidCode) {
+            invalidIds.push({ rowIndex: d.rowIndex, code: d.code || '(empty)', name: d.fullName || '(no name)', data: d });
+        }
+        if (d.isValidCode) {
+            const emp = findEmployeeById(d.code);
+            if (!emp) missingInFirebase.push({ rowIndex: d.rowIndex, code: d.code, name: d.fullName || '(no name)', data: d });
+        }
+    });
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetAll() {
+    activityData = null; performanceData = null;
+    mergedData = []; rankedData = []; filteredRankedData = []; top10Data = [];
+    invalidIds = []; missingInFirebase = [];
+    activityFileInput.value = ''; performanceFileInput.value = '';
+    activityFileName.textContent = ''; performanceFileName.textContent = '';
+    activityUploadBox.classList.remove('has-file');
+    performanceUploadBox.classList.remove('has-file');
+    uploadStatus.textContent = t('waitingFiles');
+    uploadStatus.style.background = ''; uploadStatus.style.color = '';
+    alertsContainer.innerHTML = '';
+    downloadPngBtn.disabled = true; downloadPdfBtn.disabled = true;
+    updateAnalyzeButton();
+    updateTabCounts();
+    renderLeaderboard([]);
+    allTableBody.innerHTML = '';
+    showToast(currentLang === 'ar' ? '🗑️ تم مسح كل البيانات' : '🗑️ All data cleared', 'info');
+    switchTab('upload');
+}
+
+// ============================================================
+// RENDER ALERTS
+// ============================================================
+function renderAlerts() {
+    let html = '';
+    if (invalidIds.length > 0) {
+        html += `
+            <div class="alert-card">
+                <div class="alert-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ${t('noCodeAlert')} (${invalidIds.length})
+                </div>
+                <div class="alert-list">
+                    ${invalidIds.slice(0, 30).map(x => `<span>${currentLang === 'ar' ? 'صف' : 'Row'} ${x.rowIndex}: ${escapeHtml(x.code)} - ${escapeHtml(x.name)}</span>`).join('')}
+                    ${invalidIds.length > 30 ? `<span>... +${invalidIds.length - 30}</span>` : ''}
+                </div>
+                <div class="alert-actions">
+                    <button onclick="window.__viewInvalidIds()"><i class="fas fa-eye"></i> ${t('viewList')}</button>
+                    <button onclick="window.__downloadInvalidIds()"><i class="fas fa-download"></i> ${t('downloadList')}</button>
+                </div>
+            </div>`;
+    }
+    if (missingInFirebase.length > 0) {
+        html += `
+            <div class="alert-card danger">
+                <div class="alert-title">
+                    <i class="fas fa-user-slash"></i>
+                    ${t('missingFirebase')} (${missingInFirebase.length})
+                </div>
+                <div class="alert-list">
+                    ${missingInFirebase.slice(0, 30).map(x => `<span>${currentLang === 'ar' ? 'كود' : 'Code'} ${escapeHtml(x.code)}: ${escapeHtml(x.name)}</span>`).join('')}
+                    ${missingInFirebase.length > 30 ? `<span>... +${missingInFirebase.length - 30}</span>` : ''}
+                </div>
+                <div class="alert-actions">
+                    <button onclick="window.__viewMissingFirebase()"><i class="fas fa-eye"></i> ${t('viewList')}</button>
+                    <button onclick="window.__downloadMissingFirebase()"><i class="fas fa-download"></i> ${t('downloadList')}</button>
+                </div>
+            </div>`;
+    }
+    if (invalidIds.length === 0 && missingInFirebase.length === 0) {
+        html += `
+            <div class="alert-card success">
+                <div class="alert-title"><i class="fas fa-check-circle"></i> ${t('allGood')}</div>
+                <div class="alert-list"><span>${t('allGoodMsg')}</span></div>
+            </div>`;
+    }
+    alertsContainer.innerHTML = html;
+}
+
+function renderAlert(type, title, message) {
+    const className = type === 'danger' ? 'danger' : type === 'info' ? 'info' : '';
+    alertsContainer.innerHTML = `
+        <div class="alert-card ${className}">
+            <div class="alert-title">${title}</div>
+            <div class="alert-list">${message}</div>
+        </div>`;
+}
+
+// ============================================================
+// VIEW MODAL
+// ============================================================
+function openModal(title, contentHtml) {
+    modalTitle.textContent = title;
+    modalBody.innerHTML = contentHtml;
+    modalOverlay.classList.add('active');
+}
+
+function closeModal() {
+    modalOverlay.classList.remove('active');
+}
+
+modalCloseBtn.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+});
+
+window.__viewInvalidIds = function() {
+    const rows = invalidIds.map(x => {
+        const d = x.data;
+        const idxStyle = getIndexColorStyle(d.index);
+        return `<tr>
+            <td>${x.rowIndex}</td>
+            <td class="id-cell">${escapeHtml(x.code)}</td>
+            <td class="name-cell">${escapeHtml(x.name)}</td>
+            <td>${d.coursesStarted}</td>
+            <td>${d.coursesCompleted}</td>
+            <td>${d.lessonsCompleted}</td>
+            <td>${d.assessmentsCompleted}</td>
+            <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">${formatIndexPercent(d.index)}</span></td>
+        </tr>`;
+    }).join('');
+    openModal(
+        `${t('noCodeAlert')} (${invalidIds.length})`,
+        `<div class="table-wrapper"><table class="data-table"><thead><tr>
+            <th>${currentLang === 'ar' ? 'الصف' : 'Row'}</th>
+            <th>${t('code')}</th>
+            <th>${t('name')}</th>
+            <th>${t('coursesStarted')}</th>
+            <th>${t('coursesCompleted')}</th>
+            <th>${t('lessons')}</th>
+            <th>${t('assessments')}</th>
+            <th>${t('index')}</th>
+        </tr></thead><tbody>${rows}</tbody></table></div>`
+    );
+};
+
+window.__viewMissingFirebase = function() {
+    const rows = missingInFirebase.map(x => {
+        const d = x.data;
+        const idxStyle = getIndexColorStyle(d.index);
+        return `<tr>
+            <td>${x.rowIndex}</td>
+            <td class="id-cell">${escapeHtml(x.code)}</td>
+            <td class="name-cell">${escapeHtml(x.name)}</td>
+            <td>${d.coursesStarted}</td>
+            <td>${d.coursesCompleted}</td>
+            <td>${d.lessonsCompleted}</td>
+            <td>${d.assessmentsCompleted}</td>
+            <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">${formatIndexPercent(d.index)}</span></td>
+        </tr>`;
+    }).join('');
+    openModal(
+        `${t('missingFirebase')} (${missingInFirebase.length})`,
+        `<div class="table-wrapper"><table class="data-table"><thead><tr>
+            <th>${currentLang === 'ar' ? 'الصف' : 'Row'}</th>
+            <th>${t('code')}</th>
+            <th>${t('name')}</th>
+            <th>${t('coursesStarted')}</th>
+            <th>${t('coursesCompleted')}</th>
+            <th>${t('lessons')}</th>
+            <th>${t('assessments')}</th>
+            <th>${t('index')}</th>
+        </tr></thead><tbody>${rows}</tbody></table></div>`
+    );
+};
+
+window.__downloadInvalidIds = function() { downloadCSV(invalidIds, 'invalid_ids.csv'); };
+window.__downloadMissingFirebase = function() { downloadCSV(missingInFirebase, 'missing_in_firebase.csv'); };
+
+function downloadCSV(list, filename) {
+    const headers = ['Row', 'Code', 'Name', 'CoursesStarted', 'CoursesCompleted', 'Lessons', 'Assessments', 'Index (%)'];
+    const rows = list.map(x => {
+        const d = x.data;
+        return [x.rowIndex, x.code, x.name, d.coursesStarted, d.coursesCompleted, d.lessonsCompleted, d.assessmentsCompleted, (d.index * 100).toFixed(2) + '%'];
+    });
+    const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    showToast(currentLang === 'ar' ? '✅ تم تحميل الملف' : '✅ File downloaded', 'success');
+}
+
+// ============================================================
+// RENDER LEADERBOARD
+// ============================================================
+function renderLeaderboard(data) {
+    if (!data || data.length === 0) {
+        leaderboardContainer.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><h3>${t('noData')}</h3><p>${t('uploadHint')}</p></div>`;
+        return;
+    }
+
+    let itemsHtml = '';
+    data.forEach(d => {
+        const rankClass = d.rank === 1 ? 'gold' : d.rank === 2 ? 'silver' : d.rank === 3 ? 'bronze' : '';
+        const medal = d.rank <= 3 ? RANK_EMOJIS[d.rank - 1] : `#${d.rank}`;
+        const avatarRing = d.rank === 1 ? 'gold-ring' : d.rank === 2 ? 'silver-ring' : d.rank === 3 ? 'bronze-ring' : '';
+        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const displayName = emp?.fullName || emp?.name || d.fullName || t('unknown');
+        const displayGroup = emp?.department || d.group || t('undefinedDept');
+        const photoUrl = getEmployeePhoto(emp, d.code);
+        const initials = getInitials(displayName);
+        const avatarColor = getAvatarColor(displayName);
+
+        let avatarHtml = '';
+        if (photoUrl) {
+            avatarHtml = `
+                <img src="${escapeAttr(photoUrl)}" alt="${escapeAttr(displayName)}"
+                    crossorigin="anonymous" referrerpolicy="no-referrer" loading="eager"
+                    style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;border-radius:50%;"
+                    onerror="this.onerror=null; this.style.display='none'; const fb=this.parentElement.querySelector('.fallback'); if(fb) fb.style.display='flex';"
+                />
+                <span class="fallback" style="background:${avatarColor};display:none;">${initials}</span>
+            `;
+        } else {
+            avatarHtml = `<span class="fallback" style="background:${avatarColor};display:flex;">${initials}</span>`;
+        }
+
+        const noCodeBadge = !d.isValidCode
+            ? `<div class="no-code-warning"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</div>`
+            : '';
+
+        itemsHtml += `
+            <div class="leaderboard-item">
+                <div class="rank ${rankClass}"><span class="medal">${medal}</span></div>
+                <div class="avatar ${avatarRing}">${avatarHtml}</div>
+                <div class="info">
+                    <div class="name">${escapeHtml(displayName)}${d.rank <= 3 ? '<span class="verified"><i class="fas fa-star"></i></span>' : ''}</div>
+                    <div class="department"><i class="fas fa-building"></i> <span>${escapeHtml(displayGroup)}</span></div>
+                    ${noCodeBadge}
+                </div>
+            </div>`;
+    });
+
+    const period = periodFilter.value;
+    const month = parseInt(monthFilter.value);
+    const week = parseInt(weekFilter.value);
+    const quarter = parseInt(quarterFilter.value);
+    const monthName = TRANSLATIONS[currentLang].monthNames[month];
+    const year = currentYear;
+    const weekName = TRANSLATIONS[currentLang].weekNames[week - 1];
+    const quarterLabel = `Q${quarter}`;
+    const levelGroup = levelFilter.value;
+
+    let titleText;
+    if (levelGroup === 'employees') {
+        titleText = t('leaderboardTitleEmployees');
+    } else if (levelGroup === 'managers') {
+        titleText = t('leaderboardTitleManagers');
+    } else {
+        titleText = t('leaderboardTitle');
+    }
+
+    let periodLabel = '';
+    if (period === 'month') periodLabel = `${monthName} ${year}`;
+    else if (period === 'week') periodLabel = `${monthName} ${year} - ${t('weekLabel')} ${weekName}`;
+    else if (period === 'quarter') periodLabel = `${year} - ${t('quarterLabel')} ${quarterLabel}`;
+    else if (period === 'half') periodLabel = `${year} - ${currentLang === 'ar' ? 'نصف سنوي' : 'Half-Yearly'}`;
+    else periodLabel = `${year}`;
+
+    // ✅ الحل النهائي لمشكلة الاتجاه
+    leaderboardContainer.innerHTML = `
+        <div class="leaderboard-card" id="leaderboardCard" dir="${currentLang === 'ar' ? 'rtl' : 'ltr'}">
+            <div class="leaderboard-header">
+                <div class="trophy-icon">🏆</div>
+                <h1>${titleText}</h1>
+                <p style="font-size:0.9rem;color:#64748B;font-weight:600;margin-top:4px;">${periodLabel}</p>
+            </div>
+            <div class="leaderboard-body">${itemsHtml}</div>
+        </div>`;
+}
+
+// ============================================================
+// RENDER ALL TABLE
+// ============================================================
+function renderAllEmployeesTable() {
+    const filtered = applyFilters(rankedData);
+    allCountBadge.textContent = `${filtered.length} ${t('employee')}`;
+    allTabCount.textContent = rankedData.length;
+    if (filtered.length === 0) {
+        allTableBody.innerHTML = `<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--gray);">
+            <i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:10px;color:#CBD5E1;"></i>
+            ${t('noResults')}
+        </td></tr>`;
+        return;
+    }
+    let html = '';
+    filtered.forEach(d => {
+        const rankClass = d.rank === 1 ? 'gold' : d.rank === 2 ? 'silver' : d.rank === 3 ? 'bronze' : '';
+        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const displayName = emp?.fullName || emp?.name || d.fullName || t('unknown');
+        const displayGroup = emp?.department || d.group || t('undefinedDept');
+        const codeDisplay = d.isValidCode
+            ? escapeHtml(d.code)
+            : `<span class="no-data">${escapeHtml(d.code || '(empty)')}</span>`;
+        const passRate = (d.assessPassRate * 100).toFixed(1);
+        const avgScore = d.avgOverallScore.toFixed(1);
+
+        const empLevel = emp?.level || emp?.Level || '';
+        const levelStyle = getLevelColorStyle(empLevel);
+        const levelDisplay = empLevel
+            ? `<span class="level-badge" style="color:${levelStyle.color};background:${levelStyle.bg};">${escapeHtml(empLevel)}</span>`
+            : (!d.isValidCode
+                ? `<span class="level-badge" style="color:#92400E;background:#FEF3C7;"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</span>`
+                : `<span class="no-data">-</span>`);
+
+        const indexVal = formatIndexPercent(d.index);
+        const idxStyle = getIndexColorStyle(d.index);
+
+        let passRateColor = 'var(--dark)';
+        if (d.assessPassRate >= 0.75) passRateColor = 'var(--success)';
+        else if (d.assessPassRate >= 0.5) passRateColor = '#F59E0B';
+        else if (d.assessPassRate > 0) passRateColor = 'var(--danger)';
+
+        const rowClass = !d.isValidCode ? 'no-code-row' : '';
+
+        html += `
+            <tr class="${rowClass}">
+                <td><span class="rank-badge ${rankClass}">${d.rank}</span></td>
+                <td class="id-cell">${codeDisplay}</td>
+                <td class="name-cell">${escapeHtml(displayName)}</td>
+                <td><span class="group-cell">${escapeHtml(displayGroup)}</span></td>
+                <td>${levelDisplay}</td>
+                <td>${d.coursesStarted}</td>
+                <td>${d.coursesCompleted}</td>
+                <td>${d.lessonsCompleted}</td>
+                <td>${d.assessmentsCompleted}</td>
+                <td>${d.assessmentsPassed}</td>
+                <td style="font-weight:700;color:${passRateColor};">${passRate}%</td>
+                <td>${avgScore}</td>
+                <td>
+                    <span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">
+                        ${indexVal}
+                    </span>
+                </td>
+            </tr>`;
+    });
+    allTableBody.innerHTML = html;
+}
+
+// ============================================================
+// FILTERS (تم التعديل لتدعم القوائم المنسدلة)
+// ============================================================
+function applyFilters(data) {
+    const levelGroup = levelFilterTable.value || 'all';
+    const search = (searchFilter.value || '').trim().toLowerCase();
+    const group = groupFilter.value;
+    const onlyCompleted = completedFilter.checked;
+    const onlyPassRate = passRateFilter.checked;
+    const onlyNoCode = noCodeFilter.checked;
+    const status = statusFilter.value;
+
+    const cFilter = coursesFilter.value;
+    const iFilter = indexFilter.value;
+    const lFilter = lessonsFilter.value;
+    const tFilter = testsFilter.value;
+
+    return data.filter(d => {
+        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const empLevel = emp?.level || emp?.Level || '';
+
+        if (!isInLevelGroup(empLevel, levelGroup)) return false;
+        if (onlyNoCode && d.isValidCode) return false;
+
+        // البحث (الاسم أو الكود فقط)
+        if (search) {
+            const displayName = (emp?.fullName || emp?.name || d.fullName || '').toLowerCase();
+            const codeStr = String(d.code || '').toLowerCase();
+            if (!displayName.includes(search) && !codeStr.includes(search)) return false;
+        }
+        
+        if (group) {
+            const displayGroup = emp?.department || d.group || '';
+            if (displayGroup !== group) return false;
+        }
+        if (onlyCompleted && d.coursesCompleted <= 0) return false;
+        if (onlyPassRate && d.assessPassRate <= 0.5) return false;
+
+        // فلتر الكورسات
+        if (cFilter) {
+            const c = d.coursesCompleted;
+            if (cFilter === '0' && c !== 0) return false;
+            if (cFilter === '1-5' && (c < 1 || c > 5)) return false;
+            if (cFilter === '6-10' && (c < 6 || c > 10)) return false;
+            if (cFilter === '11-20' && (c < 11 || c > 20)) return false;
+            if (cFilter === '21-50' && (c < 21 || c > 50)) return false;
+            if (cFilter === '50+' && c <= 50) return false;
+        }
+
+        // فلتر الـ Index
+        if (iFilter) {
+            const idx = d.index * 100;
+            if (iFilter === '0' && idx !== 0) return false;
+            if (iFilter === '1-20' && (idx < 1 || idx > 20)) return false;
+            if (iFilter === '21-50' && (idx < 21 || idx > 50)) return false;
+            if (iFilter === '51-75' && (idx < 51 || idx > 75)) return false;
+            if (iFilter === '76-100' && (idx < 76 || idx > 100)) return false;
+        }
+
+        // فلتر الدروس
+        if (lFilter) {
+            const l = d.lessonsCompleted;
+            if (lFilter === '0' && l !== 0) return false;
+            if (lFilter === '1-10' && (l < 1 || l > 10)) return false;
+            if (lFilter === '11-30' && (l < 11 || l > 30)) return false;
+            if (lFilter === '31-60' && (l < 31 || l > 60)) return false;
+            if (lFilter === '61-100' && (l < 61 || l > 100)) return false;
+            if (lFilter === '100+' && l <= 100) return false;
+        }
+
+        // فلتر الاختبارات
+        if (tFilter) {
+            const t = d.assessmentsCompleted;
+            if (tFilter === '0' && t !== 0) return false;
+            if (tFilter === '1-5' && (t < 1 || t > 5)) return false;
+            if (tFilter === '6-10' && (t < 6 || t > 10)) return false;
+            if (tFilter === '11-20' && (t < 11 || t > 20)) return false;
+            if (tFilter === '20+' && t <= 20) return false;
+        }
+
+        if (status === 'active') {
+            if (!(d.coursesStarted > 0 || d.lessonsCompleted > 0 || d.assessmentsCompleted > 0)) return false;
+        } else if (status === 'inactive') {
+            if (d.coursesStarted > 0 || d.lessonsCompleted > 0 || d.assessmentsCompleted > 0) return false;
+        }
+        return true;
+    });
+}
+
+function populateGroupFilter() {
+    const groups = new Set();
+    
+    // بنجيب الأقسام من rankedData (لو موجود)، أو من allData لو لسه محملش
+    const sourceData = rankedData.length > 0 ? rankedData : (mergedData.length > 0 ? mergedData : []);
+    
+    sourceData.forEach(d => {
+        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const displayGroup = emp?.department || d.group || '';
+        if (displayGroup && displayGroup.trim() !== '') {
+            groups.add(displayGroup.trim());
+        }
+    });
+
+    const sortedGroups = Array.from(groups).sort();
+    const currentValue = groupFilter.value;
+    
+    // تحديث القائمة
+    groupFilter.innerHTML = `<option value="">${t('all')}</option>`;
+    sortedGroups.forEach(g => {
+        const option = document.createElement('option');
+        option.value = g;
+        option.textContent = g;
+        groupFilter.appendChild(option);
+    });
+    
+    // الحفاظ على القيمة المختارة سابقاً
+    if (currentValue && sortedGroups.includes(currentValue)) {
+        groupFilter.value = currentValue;
+    }
+}
+
+function resetFilters() {
+    levelFilterTable.value = 'all';
+    searchFilter.value = '';
+    groupFilter.value = '';
+    completedFilter.checked = false;
+    passRateFilter.checked = false;
+    noCodeFilter.checked = false;
+    
+    coursesFilter.value = '';
+    indexFilter.value = '';
+    lessonsFilter.value = '';
+    testsFilter.value = '';
+    
+    statusFilter.value = '';
+    updateFilterCheckboxStyles();
+    renderAllEmployeesTable();
+}
+
+function updateFilterCheckboxStyles() {
+    document.querySelectorAll('.filter-checkbox').forEach(label => {
+        const cb = label.querySelector('input[type="checkbox"]');
+        if (cb) label.classList.toggle('active', cb.checked);
+    });
+}
+
+function setupFilters() {
+    let searchTimeout;
+    searchFilter.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(renderAllEmployeesTable, 300);
+    });
+    ['change', 'input'].forEach(evt => {
+        levelFilterTable.addEventListener(evt, renderAllEmployeesTable);
+        groupFilter.addEventListener(evt, renderAllEmployeesTable);
+        completedFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
+        passRateFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
+        noCodeFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
+        
+        coursesFilter.addEventListener(evt, renderAllEmployeesTable);
+        indexFilter.addEventListener(evt, renderAllEmployeesTable);
+        lessonsFilter.addEventListener(evt, renderAllEmployeesTable);
+        testsFilter.addEventListener(evt, renderAllEmployeesTable);
+        
+        statusFilter.addEventListener(evt, renderAllEmployeesTable);
+    });
+    resetFiltersBtn.addEventListener('click', resetFilters);
+
+    levelFilter.addEventListener('change', () => {
+        applyLevelFilterToLeaderboard();
+        renderAllEmployeesTable();
+    });
+}
+
+// ============================================================
+// DOWNLOAD PNG
+// ============================================================
+async function downloadAsPNG() {
+    const card = document.getElementById('leaderboardCard');
+    if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
+    setLoading(true, currentLang === 'ar' ? 'جاري تحضير الصورة...' : 'Preparing image...');
+    try {
+        if (typeof htmlToImage === 'undefined') {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
+        }
+        await document.fonts.ready;
+        const images = card.querySelectorAll('img');
+        await Promise.all(Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 5000); });
+        }));
+        const dataUrl = await htmlToImage.toPng(card, {
+            pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
+            style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
+        });
+        const link = document.createElement('a');
+        link.download = `leaderboard_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = dataUrl;
+        link.click();
+        showToast(currentLang === 'ar' ? '✅ تم تحميل الصورة' : '✅ Image downloaded', 'success');
+    } catch (error) {
+        console.error('❌ PNG error:', error);
+        showToast(currentLang === 'ar' ? '❌ فشل تحميل الصورة' : '❌ Image failed', 'error');
+    } finally { setLoading(false); }
+}
+
+// ============================================================
+// DOWNLOAD PDF
+// ============================================================
+async function downloadAsPDF() {
+    const card = document.getElementById('leaderboardCard');
+    if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
+    setLoading(true, currentLang === 'ar' ? 'جاري تحضير PDF...' : 'Preparing PDF...');
+    try {
+        if (typeof htmlToImage === 'undefined') {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
+        }
+        if (typeof window.jspdf === 'undefined') {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+        }
+        await document.fonts.ready;
+        const images = card.querySelectorAll('img');
+        await Promise.all(Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 5000); });
+        }));
+        const dataUrl = await htmlToImage.toPng(card, {
+            pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
+            style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
+        });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise(resolve => { img.onload = resolve; });
+        const pdfHeight = (img.height * pdfWidth) / img.width;
+        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`leaderboard_${new Date().toISOString().split('T')[0]}.pdf`);
+        showToast(currentLang === 'ar' ? '✅ تم تحميل PDF' : '✅ PDF downloaded', 'success');
+    } catch (error) {
+        console.error('❌ PDF error:', error);
+        showToast(currentLang === 'ar' ? '❌ فشل تحميل PDF' : '❌ PDF failed', 'error');
+    } finally { setLoading(false); }
+}
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+// ============================================================
+// NAVBAR ACTIONS
+// ============================================================
+document.getElementById('langBtn')?.addEventListener('click', toggleLanguage);
+document.getElementById('refreshDataBtn')?.addEventListener('click', async () => {
+    setLoading(true, currentLang === 'ar' ? 'جاري تحديث البيانات...' : 'Refreshing...');
+    await loadEmployees(true);
+    setLoading(false);
+    showToast(currentLang === 'ar' ? '🔄 تم تحديث قائمة الموظفين' : '🔄 Refreshed', 'success');
+});
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    window.logout();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+function populateMonthFilter() {
+    monthFilter.innerHTML = '';
+    for (let m = 0; m < 12; m++) {
+        const option = document.createElement('option');
+        option.value = m;
+        option.textContent = `${TRANSLATIONS[currentLang].monthNames[m]} ${currentYear}`;
+        if (m === new Date().getMonth()) option.selected = true;
+        monthFilter.appendChild(option);
+    }
+}
+
+function updateFilterDisplay() {
+    const period = periodFilter.value;
+    weekFilterGroup.style.display = period === 'week' ? 'flex' : 'none';
+    quarterFilterGroup.style.display = period === 'quarter' ? 'flex' : 'none';
+
+    if (mergedData.length > 0) {
+        const currentPeriod = periodFilter.value;
+        calculateIndexes(mergedData, currentPeriod);
+        rankedData = calculateFinalRank(mergedData);
+        applyLevelFilterToLeaderboard();
+        renderAllEmployeesTable();
+    }
+}
+
+async function init() {
+    populateMonthFilter();
+    updateFilterDisplay();
+    setupUploadBox(activityUploadBox, activityFileInput, activityFileName, (data) => { activityData = data; });
+    setupUploadBox(performanceUploadBox, performanceFileInput, performanceFileName, (data) => { performanceData = data; });
+    analyzeBtn.addEventListener('click', analyzeFiles);
+    resetBtn.addEventListener('click', resetAll);
+    periodFilter.addEventListener('change', updateFilterDisplay);
+    monthFilter.addEventListener('change', updateFilterDisplay);
+    weekFilter.addEventListener('change', updateFilterDisplay);
+    quarterFilter.addEventListener('change', updateFilterDisplay);
+    setupFilters();
+    downloadPngBtn.addEventListener('click', downloadAsPNG);
+    downloadPdfBtn.addEventListener('click', downloadAsPDF);
+
+    saveCacheBtn.addEventListener('click', () => saveCache(true));
+    clearCacheBtn.addEventListener('click', () => {
+        if (confirm(currentLang === 'ar'
+            ? '⚠️ هل تريد حذف الكاش؟ سيتم مسح كل البيانات المحفوظة.'
+            : '⚠️ Delete cache? All saved data will be cleared.')) {
+            clearCache(true);
+        }
+    });
+
+    applyLanguage();
+
+    const cacheLoaded = loadFromCache();
+
+    if (cacheLoaded) {
+        showToast(t('cacheRestored'), 'info');
+        updateCacheBadge();
+        loadEmployees(false).catch(() => {});
+    } else {
+        setLoading(true, currentLang === 'ar' ? 'جاري تحميل بيانات الموظفين...' : 'Loading employees...');
+        await loadEmployees();
+        setLoading(false);
+        updateCacheBadge();
+    }
+
+    updateTabCounts();
+
+    console.log('🏆 Page ready!');
+}
+
+// ✅ التهيئة بعد تأكيد تسجيل الدخول
+window.addEventListener('authReady', () => {
+    init();
+});
+</script>
 
 </body>
 </html>
