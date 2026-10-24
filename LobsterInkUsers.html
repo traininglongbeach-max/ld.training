@@ -4,33 +4,125 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inactive Lobster Ink Users</title>
+
+<!-- ⭐ أيقونات الموقع (Favicon) -->
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#052c65">
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<!-- ⭐ نظام الحماية - الطبقة 1 -->
+<script type="module" src="auth-guard.js"></script>
+<script type="module" src="database.js"></script>
+
 <style>
   :root{
-    --primary:#1e40af; --primary-light:#3b82f6; --accent:#0ea5e9;
+    --primary:#052c65; --primary-light:#3b82f6; --accent:#0ea5e9;
     --bg:#f1f5f9; --card:#ffffff; --danger:#dc2626; --success:#16a34a;
-    --purple:#7c3aed;
+    --purple:#052c65;
+
+    /* ألوان الهيدر الجديد (L&D) */
+    --hdr-navy: #1e3a5f;
+    --hdr-green: #2b7a4b;
+    --hdr-blue: #4299e1;
+    --hdr-red: #e53e3e;
   }
   *{font-family:'Segoe UI', Tahoma, sans-serif;}
-  body{background:linear-gradient(135deg,#eef2ff 0%, #f1f5f9 100%); min-height:100vh; margin:0;}
+  body{background:linear-gradient(135deg,#eef2ff 0%, #f1f5f9 100%); min-height:100vh; margin:0; padding-top:0;}
   body.lang-en{direction:ltr;}
-  .header{
-    background:linear-gradient(135deg,#1e40af 0%, #0ea5e9 100%);
-    color:#fff; padding:2rem 0; box-shadow:0 4px 20px rgba(30,64,175,.25);
+
+  /* ============ ⭐ الهيدر الجديد (L&D Style) ============ */
+  .navbar {
+    background: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 999;
   }
-  .header h1{font-weight:700; margin:0; font-size:1.8rem;}
-  .header p{margin:.3rem 0 0; opacity:.9;}
-  .header .top-bar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;}
-  .lang-switch{
-    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.4);
-    color:#fff; border-radius:30px; padding:.5rem 1.2rem; font-weight:700;
-    cursor:pointer; transition:.3s; display:flex; align-items:center; gap:.5rem;
+  .navbar .logo h2 { color: var(--hdr-navy); font-size: 1.3rem; margin: 0; font-weight: 800; }
+  .navbar .logo span { color: var(--hdr-green); }
+  .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .nav-links a, .nav-links button {
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-size: 0.85rem;
+    transition: 0.3s;
+    font-family: inherit;
   }
-  .lang-switch:hover{background:rgba(255,255,255,.3); color:#fff;}
+  .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+  .nav-links .home { background: var(--hdr-green); color: white; }
+  .nav-links .refresh { background: var(--hdr-blue); color: white; }
+  .nav-links .logout { background: var(--hdr-red); color: white; }
+  .nav-links .lang-switch-nav { background: #6b7280; color: white; }
+
+  /* ============ ⭐ شارة الدور ============ */
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: 1px solid transparent;
+  }
+  .role-badge.viewer { background: #e6fffa; color: #234e52; border-color: #b2f5ea; }
+  .role-badge.admin  { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+
+  /* شاشة التحميل */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(255, 255, 255, 0.92);
+    display: none; justify-content: center; align-items: center;
+    z-index: 9999; flex-direction: column;
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-overlay .loader {
+    width: 60px; height: 60px;
+    border: 6px solid #e2e8f0;
+    border-top: 6px solid var(--hdr-green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .loading-overlay .loading-text { font-size: 1.1rem; color: var(--hdr-navy); font-weight: 500; }
+
+  /* ============ ⭐ الفوتر ============ */
+  .footer {
+    text-align: center;
+    padding: 2rem;
+    color: #718096;
+    margin-top: 2rem;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  /* ============ الهيدر الأصلي (Sub-header تحت الـ Navbar) ============ */
+  .page-title-bar{
+    background:linear-gradient(135deg,#052c65 0%, #052c65 100%);
+    color:#fff; padding:1.5rem 0; box-shadow:0 4px 20px rgba(30,64,175,.25);
+  }
+  .page-title-bar h1{font-weight:700; margin:0; font-size:1.6rem;text-align: center;}
+  .page-title-bar p{margin:.3rem 0 0; opacity:.9; font-size:.9rem;text-align: center;}
+
   .main-container{max-width:1400px; margin:auto; padding:2rem 1rem;}
   .card{border:none; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.06);}
   .upload-zone{
@@ -56,26 +148,26 @@
   .stat-card.success .num{color:var(--success);}
   .filter-box{background:#fff; border-radius:16px; padding:1.2rem; box-shadow:0 4px 20px rgba(0,0,0,.06);}
   .table thead th{
-    background:#1e40af; color:#fff; font-weight:600; white-space:nowrap;
+    background:#052c65; color:#fff; font-weight:600; white-space:nowrap;
     position:sticky; top:0; z-index:5;
   }
   .table tbody tr:hover{background:#eff6ff;}
   .table td{vertical-align:middle; font-size:.9rem;}
-  .badge-dept{background:#dbeafe; color:#1e40af; padding:.3rem .7rem; border-radius:20px; font-weight:600; font-size:.78rem;}
+  .badge-dept{background:#dbeafe; color:#052c65; padding:.3rem .7rem; border-radius:20px; font-weight:600; font-size:.78rem;}
   .no-activity{color:var(--danger); font-weight:600;}
   .btn-copy{background:var(--primary); color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
   .btn-copy:hover{background:#1e3a8a; color:#fff;}
   .btn-export{background:var(--success); color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
   .btn-export:hover{background:#15803d; color:#fff;}
-  .btn-save{background:#7c3aed; color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
-  .btn-save:hover{background:#6d28d9; color:#fff;}
+  .btn-save{background:#052c65; color:#fff; border:none; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-save:hover{background:#052c65; color:#fff;}
   .btn-clear-cache{background:#fef3c7; color:#92400e; border:1px solid #fbbf24; border-radius:10px; padding:.5rem 1rem; font-weight:600;}
   .btn-clear-cache:hover{background:#fbbf24; color:#78350f;}
   .table-wrapper{max-height:600px; overflow:auto; border-radius:12px;}
   .toast-msg{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
     background:#1e293b; color:#fff; padding:.8rem 1.5rem; border-radius:10px;
-    opacity:0; transition:.3s; z-index:999; font-weight:600;
+    opacity:0; transition:.3s; z-index:9999; font-weight:600;
   }
   .toast-msg.show{opacity:1;}
   .empty-state{text-align:center; padding:3rem 1rem; color:#94a3b8;}
@@ -98,14 +190,14 @@
     padding:.6rem 1rem; border-radius:10px; font-weight:600; font-size:.9rem;
   }
   .info-message{
-    background:#eff6ff; border:1px solid #93c5fd; color:#1e40af;
+    background:#eff6ff; border:1px solid #93c5fd; color:#052c65;
     padding:.8rem 1rem; border-radius:10px; font-size:.9rem; margin-bottom:1rem;
   }
   .info-message i{font-size:1.1rem; margin-left:.4rem;}
   body.lang-en .info-message i{margin-left:0; margin-right:.4rem;}
 
   .cache-banner{
-    background:linear-gradient(135deg,#7c3aed 0%, #a855f7 100%);
+    background:linear-gradient(135deg,#052c65 0%, #052c65 100%);
     color:#fff; padding:.8rem 1.2rem; border-radius:12px;
     font-weight:600; margin-bottom:1rem; display:flex;
     align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
@@ -149,10 +241,10 @@
   .tab-btn i{font-size:1.2rem;}
   .tab-btn:hover{
     background:#eff6ff;
-    color:#1e40af;
+    color:#052c65;
   }
   .tab-btn.active{
-    background:linear-gradient(135deg,#1e40af 0%, #0ea5e9 100%);
+    background:linear-gradient(135deg,#052c65 0%, #052c65 100%);
     color:#fff;
     box-shadow:0 4px 14px rgba(30,64,175,.35);
   }
@@ -174,25 +266,23 @@
   }
   .analysis-card .card-header{
     background:#fff; padding:1rem 1.2rem;
-    font-weight:700; color:#1e40af; font-size:1rem;
-    border-bottom:2px solid #1e40af;
+    font-weight:700; color:#052c65; font-size:1rem;
+    border-bottom:2px solid #052c65;
     display:flex; align-items:center; gap:.5rem;
   }
   .analysis-card .card-body{
     padding:1.2rem;
   }
 
-  /* ===== الشارت ===== */
   .chart-wrapper{
     position:relative;
     height:420px;
     width:100%;
   }
 
-  /* ===== جدول ملخص الإدارات ===== */
   .dept-summary-inner{
-    max-width:500px;         /* 🔹 تحديد عرض أقصى */
-    margin: 0 auto;          /* 🔹 في الوسط */
+    max-width:500px;
+    margin: 0 auto;
   }
 
   #deptSummaryTable{
@@ -203,7 +293,7 @@
     border:1px solid #e2e8f0;
   }
   #deptSummaryTable thead th{
-    background:#1e40af;
+    background:#052c65;
     color:#fff;
     position:static;
     padding:.5rem .75rem;
@@ -232,11 +322,10 @@
     font-size:.9rem;
   }
 
-  /* ===== صندوق الإجمالي ===== */
   .dept-summary-total{
     max-width:500px;
     margin: .5rem auto 0;
-    background:#1e40af;
+    background:#052c65;
     color:#fff;
     font-weight:700;
     padding:.55rem 1rem;
@@ -249,11 +338,11 @@
   .dept-summary-total span:last-child{font-size:1.05rem;}
 
   .print-header{
-    display:none; padding:1.5rem 0; border-bottom:3px double #1e40af;
+    display:none; padding:1.5rem 0; border-bottom:3px double #052c65;
     margin-bottom:1.5rem; text-align:center;
   }
   .print-header h2{
-    margin:0; color:#1e40af; font-size:1.8rem; font-weight:800;
+    margin:0; color:#052c65; font-size:1.8rem; font-weight:800;
     text-align:center; letter-spacing:.5px;
   }
   .print-header .info{
@@ -261,19 +350,19 @@
     text-align:center; line-height:1.7;
   }
   .print-header .count-badge{
-    display:inline-block; background:#1e40af; color:#fff;
+    display:inline-block; background:#052c65; color:#fff;
     padding:.5rem 1.5rem; border-radius:25px; font-weight:700;
     margin-top:1rem; font-size:1rem;
   }
   .print-header .explain{
     margin-top:1rem; padding:.8rem 1rem; background:#f1f5f9;
-    border-right:4px solid #1e40af; border-radius:8px;
+    border-right:4px solid #052c65; border-radius:8px;
     font-size:.9rem; color:#334155; text-align:right; line-height:1.8;
   }
   body.lang-en .print-header .explain{
-    border-right:none; border-left:4px solid #1e40af; text-align:left;
+    border-right:none; border-left:4px solid #052c65; text-align:left;
   }
-  .print-header .explain strong{color:#1e40af;}
+  .print-header .explain strong{color:#052c65;}
 
   @media (max-width:576px){
     .tab-btn{min-width:140px; font-size:.9rem; padding:.75rem .8rem;}
@@ -286,7 +375,7 @@
   @media print{
     @page { size: A4 landscape; margin: 12mm 10mm; }
     body{background:#fff !important; font-size:11px !important;}
-    .no-print, .header, .filter-box, .upload-zone,
+    .no-print, .navbar, .footer, .page-title-bar, .filter-box, .upload-zone,
     .actions-bar, #uploadSection, .stat-card.danger,
     .stat-card.success, .row.g-3.mb-4, .btn-delete,
     .deleted-info, .info-message, .cache-banner,
@@ -298,7 +387,7 @@
     table.table{width:100% !important; table-layout:auto !important; border-collapse:collapse !important; page-break-inside:auto !important;}
     .table thead{display:table-header-group !important;}
     .table thead th{
-      background:#1e40af !important; color:#fff !important;
+      background:#052c65 !important; color:#fff !important;
       position:static !important; top:auto !important;
       -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
       padding:6px 8px !important; font-size:11px !important; border:none !important;
@@ -318,18 +407,33 @@
 </head>
 <body>
 
-<div class="header no-print">
+<!-- ⭐ شاشة التحميل -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader"></div>
+  <div class="loading-text">⏳ جاري التحقق من الصلاحيات...</div>
+</div>
+
+<!-- ⭐ الهيدر الجديد (Navbar) -->
+<div class="navbar no-print">
+  <div class="logo">
+    <h2>🎓 <span>L&D</span> Management System</h2>
+  </div>
+  <div class="nav-links">
+    <span class="role-badge viewer" id="roleBadge">👤 User</span>
+    <button class="lang-switch-nav" onclick="toggleLang()">
+      <i class="bi bi-translate"></i> <span id="langBtnText">English</span>
+    </button>
+    <a href="index.html" class="home">🏠 Home</a>
+    <button onclick="window.refreshPage()" class="refresh">🔄 Refresh</button>
+    <button onclick="window.logout()" class="logout">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- Sub-header الأصلي (عنوان الصفحة) -->
+<div class="page-title-bar no-print">
   <div class="main-container" style="padding-top:0;padding-bottom:0;">
-    <div class="top-bar">
-      <div>
-        <h1><i class="bi bi-person-x-fill"></i> <span id="pageTitle">Inactive Lobster Ink Users</span></h1>
-        <p id="pageSubtitle">تحليل شامل لآخر نشاط الموظفين حسب الإدارة والشهر</p>
-      </div>
-      <button class="lang-switch" onclick="toggleLang()">
-        <i class="bi bi-translate"></i>
-        <span id="langBtnText">English</span>
-      </button>
-    </div>
+    <h1><i class="bi bi-person-x-fill"></i> <span id="pageTitle">Inactive Lobster Ink Users</span></h1>
+    <p id="pageSubtitle">تحليل شامل لآخر نشاط الموظفين حسب الإدارة والشهر</p>
   </div>
 </div>
 
@@ -499,12 +603,7 @@
     <!-- ===== التاب 2: تحليل الإدارات ===== -->
     <div id="tabContentAnalysis" class="tab-content">
 
-      <!-- ===== الشارت (فوق بعرض كامل) ===== -->
       <div class="analysis-card">
-        <div class="card-header">
-          <i class="bi bi-graph-up-arrow"></i>
-          <span id="lblDeptChart">الرسم البياني - الموظفون غير النشطين</span>
-        </div>
         <div class="card-body">
           <div class="chart-wrapper">
             <canvas id="deptChart"></canvas>
@@ -512,12 +611,7 @@
         </div>
       </div>
 
-      <!-- ===== الجدول (تحت الشارت - أصغر وفي الوسط) ===== -->
       <div class="analysis-card">
-        <div class="card-header">
-          <i class="bi bi-table"></i>
-          <span id="lblDeptSummaryTable">ملخص الإدارات - الموظفون غير النشطين</span>
-        </div>
         <div class="card-body">
 
           <div class="dept-summary-inner">
@@ -533,7 +627,6 @@
             </table>
           </div>
 
-          <!-- الإجمالي (خارج الجدول، بنفس العرض) -->
           <div class="dept-summary-total">
             <span id="tdSummaryTotal">الإجمالي</span>
             <span id="tdSummaryTotalCount">0</span>
@@ -550,10 +643,99 @@
 
 <div class="toast-msg" id="toast"></div>
 
+<!-- ⭐ الفوتر -->
+<div class="footer no-print">
+  <p style="margin:0;">© 2026 Learning & Development Management System</p>
+</div>
+
+<!-- ============ ⭐ نظام الحماية (مصادقة فقط) ============ -->
+<script type="module">
+import { auth } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firestoreDb = getFirestore(getApp());
+
+async function checkAdminRole(user) {
+  try {
+    const userDocRef = doc(firestoreDb, 'users', user.uid);
+    const userSnap = await getDoc(userDocRef);
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      const role = (data.role || data.userType || data.type || '').toLowerCase();
+      if (role === 'admin' || role === 'administrator' || data.isAdmin === true) return true;
+    }
+    const storedRole = (localStorage.getItem('userRole') || localStorage.getItem('role') || '').toLowerCase();
+    if (storedRole === 'admin' || storedRole === 'administrator') return true;
+    if (user.getIdTokenResult) {
+      const tokenResult = await user.getIdTokenResult();
+      if (tokenResult.claims.admin === true || tokenResult.claims.role === 'admin') return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('⚠️ Could not determine admin role:', e);
+    return false;
+  }
+}
+
+function applyRoleBadge(isAdmin) {
+  const badge = document.getElementById('roleBadge');
+  if (!badge) return;
+  if (isAdmin) {
+    badge.className = 'role-badge admin';
+    badge.textContent = '👑 Admin';
+  } else {
+    badge.className = 'role-badge viewer';
+    badge.textContent = '👤 User';
+  }
+}
+
+function showLoading(show, text) {
+  const overlay = document.getElementById('loadingOverlay');
+  if (!overlay) return;
+  if (show) {
+    if (text) overlay.querySelector('.loading-text').textContent = text;
+    overlay.classList.add('show');
+  } else {
+    overlay.classList.remove('show');
+  }
+}
+
+window.logout = async () => {
+  try {
+    showLoading(true, '⏳ جاري تسجيل الخروج...');
+    await signOut(auth);
+    window.location.href = 'login.html';
+  } catch (e) {
+    console.error('Logout failed:', e);
+    window.location.href = 'login.html';
+  }
+};
+
+window.refreshPage = () => {
+  window.location.reload();
+};
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    showLoading(true, '⏳ جاري التحقق من الصلاحيات...');
+    const isAdmin = await checkAdminRole(user);
+    window.__isAdmin = isAdmin;
+    window.__currentUser = user;
+    applyRoleBadge(isAdmin);
+    showLoading(false);
+    console.log(isAdmin ? '👑 Admin logged in' : '👤 User logged in');
+    window.dispatchEvent(new CustomEvent('authReady', { detail: { isAdmin, user } }));
+  } else {
+    window.location.href = 'login.html';
+  }
+});
+</script>
+
+<!-- ============ كود الصفحة الرئيسي ============ -->
 <script>
-// =============================================
-// ==== تسجيل Chart.js DataLabels Plugin ====
-// =============================================
+// تسجيل Chart.js DataLabels Plugin
 if (typeof ChartDataLabels !== 'undefined'){
   Chart.register(ChartDataLabels);
 }
@@ -678,8 +860,8 @@ const I18N = {
     monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
     tabEmployeesText: 'Employees List',
     tabAnalysisText: 'Departments Analysis',
-    lblDeptChart: 'Inactive Employees',
-    lblDeptSummaryTable: 'Departments Summary - Inactive Employees',
+    lblDeptChart: 'Chart - Inactive Employees',
+    lblDeptSummaryTable: '',
     thSummaryDept: 'Department',
     thSummaryCount: 'Inactive Employees ',
     tdSummaryTotal: 'Total',
@@ -694,22 +876,14 @@ function t(key, ...args){
   return typeof val === 'function' ? val(...args) : val;
 }
 
-// =============================================
-// ==== تبديل التاب ====
-// =============================================
 function switchTab(tab){
   currentTab = tab;
-
   document.getElementById('tabBtnEmployees').classList.toggle('active', tab === 'employees');
   document.getElementById('tabBtnAnalysis').classList.toggle('active', tab === 'analysis');
-
   document.getElementById('tabContentEmployees').classList.toggle('active', tab === 'employees');
   document.getElementById('tabContentAnalysis').classList.toggle('active', tab === 'analysis');
-
   if (tab === 'analysis' && allData.length){
-    setTimeout(() => {
-      buildDeptSummary();
-    }, 50);
+    setTimeout(() => { buildDeptSummary(); }, 50);
   }
 }
 
@@ -793,7 +967,6 @@ let deletedIds = new Set();
 let rowCounter = 0;
 let deptChartInstance = null;
 
-// ==== رفع الملف ====
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 
@@ -806,6 +979,7 @@ uploadZone.addEventListener('drop', e => {
 });
 fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
 
+// ✅ رفع ملف جديد - متاح للجميع
 function changeFile(){
   document.getElementById('dashboard').style.display='none';
   document.getElementById('uploadSection').style.display='block';
@@ -814,6 +988,7 @@ function changeFile(){
   deletedIds.clear();
   updateDeletedInfo();
   switchTab('employees');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function handleFile(file){
@@ -828,7 +1003,6 @@ function handleFile(file){
   reader.readAsArrayBuffer(file);
 }
 
-// ==== تحويل التواريخ ====
 function parseDate(val){
   if (!val || val === '') return null;
   if (val instanceof Date) return isNaN(val) ? null : val;
@@ -847,12 +1021,10 @@ function parseDate(val){
   return isNaN(d) ? null : d;
 }
 
-// ==== الترتيب الأبجدي الإنجليزي ====
 function sortAlphaEnglish(a, b){
   return String(a).localeCompare(String(b), 'en', { numeric:true, sensitivity:'base' });
 }
 
-// ==== معالجة الصفوف ====
 function processRows(rows){
   deletedIds.clear();
   rowCounter = 0;
@@ -884,7 +1056,6 @@ function processRows(rows){
     now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
 
   document.getElementById('statTotal').textContent = allData.length;
-
   document.getElementById('uploadSection').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
@@ -902,7 +1073,6 @@ function rebuildDeptFilter(){
   document.getElementById('statDepts').textContent = depts.length;
 }
 
-// ==== الفلاتر ====
 document.getElementById('deptFilter').addEventListener('change', applyFilters);
 document.getElementById('monthFilter').addEventListener('change', applyFilters);
 document.getElementById('viewMode').addEventListener('change', applyFilters);
@@ -1017,7 +1187,6 @@ function renderTable(){
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s){ return String(s||'').replace(/'/g,"\\'"); }
 
-// ==== الحذف والاستعادة ====
 function deleteRow(id, name){
   if (!confirm(t('deletedConfirm', name))) return;
   deletedIds.add(id);
@@ -1046,7 +1215,6 @@ function updateDeletedInfo(){
   }
 }
 
-// ==== رسالة توضيحية ====
 function updateInfoMessage(){
   const monthVal = document.getElementById('monthFilter').value;
   const mode = document.getElementById('viewMode').value;
@@ -1073,13 +1241,9 @@ function getMonthName(m){
   return I18N[currentLang].monthNames[parseInt(m,10)-1] || m;
 }
 
-// =============================================
-// ==== بناء الشارت + الجدول ====
-// =============================================
 function buildDeptSummary(){
   const monthVal = document.getElementById('monthFilter').value;
 
-  // تجميع عدد غير النشطين حسب الإدارة
   const deptMap = {};
   allData.forEach(r => {
     if (deletedIds.has(r._id)) return;
@@ -1089,14 +1253,12 @@ function buildDeptSummary(){
     }
   });
 
-  // ترتيب تنازلي حسب العدد
   const sorted = Object.entries(deptMap)
     .map(([dept, count]) => ({ dept, count }))
     .sort((a, b) => b.count - a.count || sortAlphaEnglish(a.dept, b.dept));
 
   const total = sorted.reduce((s, x) => s + x.count, 0);
 
-  // بناء الجدول
   const tbody = document.getElementById('deptSummaryBody');
   if (!sorted.length){
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding:2rem;">${t('emptyTitle')}</td></tr>`;
@@ -1112,7 +1274,6 @@ function buildDeptSummary(){
 
   document.getElementById('tdSummaryTotalCount').textContent = total;
 
-  // بناء الشارت
   const canvas = document.getElementById('deptChart');
   if (!canvas) return;
 
@@ -1126,10 +1287,7 @@ function buildDeptSummary(){
   const ctx = canvas.getContext('2d');
   const labels = sorted.map(x => x.dept);
   const values = sorted.map(x => x.count);
-  const colors = labels.map((_, i) => {
-    const palette = ['#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000','#e80000'];
-    return palette[i % palette.length];
-  });
+  const colors = labels.map(() => '#e80000');
 
   deptChartInstance = new Chart(ctx, {
     type: 'bar',
@@ -1146,26 +1304,16 @@ function buildDeptSummary(){
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: {
-        padding: { top: 40 }
-      },
+      layout: { padding: { top: 40 } },
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `${ctx.parsed.y}`
-          }
-        },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y}` } },
         datalabels: {
           anchor: 'end',
           align: 'top',
           offset: 4,
           color: '#1e293b',
-          font: {
-            weight: 'bold',
-            size: 13,
-            family: "'Segoe UI', Tahoma, sans-serif"
-          },
+          font: { weight: 'bold', size: 13, family: "'Segoe UI', Tahoma, sans-serif" },
           formatter: (value) => value,
           textAlign: 'center'
         }
@@ -1177,12 +1325,7 @@ function buildDeptSummary(){
           grid: { color: '#e2e8f0' }
         },
         x: {
-          ticks: {
-            autoSkip: false,
-            maxRotation: 45,
-            minRotation: 0,
-            font: { size: 11 }
-          },
+          ticks: { autoSkip: false, maxRotation: 45, minRotation: 0, font: { size: 11 } },
           grid: { display: false }
         }
       }
@@ -1190,7 +1333,6 @@ function buildDeptSummary(){
   });
 }
 
-// ==== نسخ ====
 function copyList(){
   if (!filteredData.length){ toast(t('toastNoDataCopy')); return; }
   const dept = document.getElementById('deptFilter').value || t('allDepts');
@@ -1239,7 +1381,6 @@ function fmtDatePlain(iso){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// ==== تصدير Excel ====
 function exportExcel(){
   if (!filteredData.length){ toast(t('toastNoDataExport')); return; }
   const monthVal = document.getElementById('monthFilter').value;
@@ -1264,7 +1405,6 @@ function exportExcel(){
   toast(t('toastExported'));
 }
 
-// ==== Print Header ====
 function updatePrintHeader(){
   const dept = document.getElementById('deptFilter').value || t('allDepts');
   const monthVal = document.getElementById('monthFilter').value;
@@ -1284,8 +1424,7 @@ function updatePrintHeader(){
   infoTxt += ` &nbsp;|&nbsp; ${modeTxt}`;
 
   document.getElementById('printInfo').innerHTML = infoTxt;
-  document.getElementById('printCount').textContent =
-    `${t('printCount')}: ${filteredData.length}`;
+  document.getElementById('printCount').textContent = `${t('printCount')}: ${filteredData.length}`;
 
   let explainHtml = '';
   if (monthVal && mode === 'inactive'){
@@ -1305,9 +1444,6 @@ function updatePrintHeader(){
   document.getElementById('printExplain').innerHTML = explainHtml;
 }
 
-// =============================================
-// ==== الكاش ====
-// =============================================
 function saveToCache(showToast){
   if (!allData.length){
     if (showToast) toast(t('toastNoData'));
@@ -1346,10 +1482,7 @@ function loadFromCache(){
     if (!data || data.version !== 3) { clearCache(true); return false; }
 
     const age = Date.now() - (data.savedAt || 0);
-    if (age > CACHE_TTL){
-      clearCache(true);
-      return false;
-    }
+    if (age > CACHE_TTL){ clearCache(true); return false; }
 
     allData = data.allData || [];
     deletedIds = new Set(data.deletedIds || []);
@@ -1387,6 +1520,7 @@ function loadFromCache(){
   }
 }
 
+// ✅ أي مستخدم مسجل دخول يمكنه مسح الكاش
 function clearCache(silent){
   localStorage.removeItem(CACHE_KEY);
   document.getElementById('cacheBanner').style.display = 'none';
@@ -1421,8 +1555,8 @@ function updateCacheBanner(savedAt){
   document.getElementById('cacheBanner').style.display = 'flex';
 }
 
-// ==== تشغيل ====
-window.addEventListener('DOMContentLoaded', () => {
+// ✅ التهيئة بعد تأكيد تسجيل الدخول
+window.addEventListener('authReady', () => {
   applyLang();
   switchTab('employees');
   const loaded = loadFromCache();
@@ -1438,7 +1572,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ==== Toast ====
 let toastTimer;
 function toast(msg){
   const el = document.getElementById('toast');
