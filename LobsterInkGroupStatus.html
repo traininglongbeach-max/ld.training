@@ -4,18 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lobster Ink - Group Status Dashboard</title>
-    
+
+    <!-- ⭐ أيقونات الموقع (Favicon) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#052c65">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
+    <!-- ⭐ نظام الحماية - الطبقة 1 -->
+    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="database.js"></script>
+
     <style>
         :root {
-            --primary: #1e293b;
-            --primary-light: #334155;
-            --accent: #3b82f6;
+            /* ⭐ الأزرق الجديد (بدل الفاتح) */
+            --primary: #052c65;
+            --primary-light: #0a3d8f;
+            --accent: #052c65;
+            --accent-hover: #0a3d8f;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
@@ -25,6 +38,12 @@
             --text-muted: #64748b;
             --border: #e2e8f0;
             --excel: #217346;
+
+            /* ألوان الهيدر الجديد (L&D) */
+            --hdr-navy: #1e3a5f;
+            --hdr-green: #2b7a4b;
+            --hdr-blue: #4299e1;
+            --hdr-red: #e53e3e;
         }
 
         * {
@@ -37,16 +56,93 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
-            padding: 20px;
+            padding: 0;
             line-height: 1.5;
+        }
+
+        /* ============ ⭐ الهيدر الجديد (Navbar) ============ */
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .navbar .logo h2 { color: var(--hdr-navy); font-size: 1.3rem; margin: 0; font-weight: 800; }
+        .navbar .logo span { color: var(--hdr-green); }
+        .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+        .nav-links a, .nav-links button {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.85rem;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+        .nav-links a:hover, .nav-links button:hover { transform: translateY(-2px); opacity: 0.9; }
+        .nav-links .home { background: var(--hdr-green); color: white; }
+        .nav-links .refresh { background: var(--hdr-blue); color: white; }
+        .nav-links .logout { background: var(--hdr-red); color: white; }
+
+        /* ============ ⭐ شارة الدور ============ */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: 1px solid transparent;
+        }
+        .role-badge.viewer { background: #e6fffa; color: #234e52; border-color: #b2f5ea; }
+        .role-badge.admin  { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+
+        /* شاشة التحميل */
+        .loading-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255, 255, 255, 0.92);
+            display: none; justify-content: center; align-items: center;
+            z-index: 9999; flex-direction: column;
+        }
+        .loading-overlay.show { display: flex; }
+        .loading-overlay .loader {
+            width: 60px; height: 60px;
+            border: 6px solid #e2e8f0;
+            border-top: 6px solid var(--hdr-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-overlay .loading-text { font-size: 1.1rem; color: var(--hdr-navy); font-weight: 500; }
+
+        /* ============ ⭐ الفوتر ============ */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+            margin-top: 2rem;
+            background: white;
+            border-top: 1px solid #e2e8f0;
         }
 
         .dashboard-container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
 
-        /* --- Header --- */
+        /* --- Header (Sub) --- */
         .header {
             display: flex;
             justify-content: space-between;
@@ -310,7 +406,7 @@
 
         .search-box input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(5, 44, 101, 0.1);
         }
 
         .filter-select {
@@ -421,7 +517,7 @@
         }
 
         .btn-restore:hover {
-            background-color: #2563eb;
+            background-color: var(--accent-hover);
             transform: translateY(-1px);
         }
 
@@ -580,10 +676,6 @@
             margin-right: 10px;
         }
 
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-
         /* --- Toast Notification --- */
         .toast {
             position: fixed;
@@ -602,7 +694,7 @@
             transform: translateY(100px);
             opacity: 0;
             transition: all 0.3s ease;
-            z-index: 1000;
+            z-index: 10000;
         }
 
         .toast.show {
@@ -644,9 +736,33 @@
                 align-items: stretch;
             }
         }
+
+        @media print {
+            .navbar, .footer, .upload-section, .cache-section, .filters-section,
+            .delete-section, .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
+
+<!-- ⭐ شاشة التحميل -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader"></div>
+  <div class="loading-text">⏳ جاري التحقق من الصلاحيات...</div>
+</div>
+
+<!-- ⭐ الهيدر الجديد (Navbar) -->
+<div class="navbar no-print">
+  <div class="logo">
+    <h2>🎓 <span>L&D</span> Management System</h2>
+  </div>
+  <div class="nav-links">
+    <span class="role-badge viewer" id="roleBadge">👤 User</span>
+    <a href="index.html" class="home">🏠 Home</a>
+    <button onclick="window.refreshPage()" class="refresh">🔄 Refresh</button>
+    <button onclick="window.logout()" class="logout">🚪 Logout</button>
+  </div>
+</div>
 
 <div class="dashboard-container">
     
@@ -724,7 +840,6 @@
             <option value="medium">Medium Activity (40-70%)</option>
             <option value="low">Low Activity (<40%)</option>
         </select>
-        <!-- *** زر تصدير Excel *** -->
         <button class="btn-export" id="exportBtn">
             <i class="fa-solid fa-file-excel"></i> Export to Excel
         </button>
@@ -783,10 +898,101 @@
     <span id="toastMessage">Department deleted successfully</span>
 </div>
 
+<!-- ⭐ الفوتر -->
+<div class="footer no-print">
+  <p style="margin:0;">© 2026 Learning & Development Management System</p>
+</div>
+
+<!-- ============ ⭐ نظام الحماية (مصادقة فقط) ============ -->
+<script type="module">
+import { auth } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firestoreDb = getFirestore(getApp());
+
+async function checkAdminRole(user) {
+  try {
+    const userDocRef = doc(firestoreDb, 'users', user.uid);
+    const userSnap = await getDoc(userDocRef);
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      const role = (data.role || data.userType || data.type || '').toLowerCase();
+      if (role === 'admin' || role === 'administrator' || data.isAdmin === true) return true;
+    }
+    const storedRole = (localStorage.getItem('userRole') || localStorage.getItem('role') || '').toLowerCase();
+    if (storedRole === 'admin' || storedRole === 'administrator') return true;
+    if (user.getIdTokenResult) {
+      const tokenResult = await user.getIdTokenResult();
+      if (tokenResult.claims.admin === true || tokenResult.claims.role === 'admin') return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('⚠️ Could not determine admin role:', e);
+    return false;
+  }
+}
+
+function applyRoleBadge(isAdmin) {
+  const badge = document.getElementById('roleBadge');
+  if (!badge) return;
+  if (isAdmin) {
+    badge.className = 'role-badge admin';
+    badge.textContent = '👑 Admin';
+  } else {
+    badge.className = 'role-badge viewer';
+    badge.textContent = '👤 User';
+  }
+}
+
+function showLoading(show, text) {
+  const overlay = document.getElementById('loadingOverlay');
+  if (!overlay) return;
+  if (show) {
+    if (text) overlay.querySelector('.loading-text').textContent = text;
+    overlay.classList.add('show');
+  } else {
+    overlay.classList.remove('show');
+  }
+}
+
+window.logout = async () => {
+  try {
+    showLoading(true, '⏳ جاري تسجيل الخروج...');
+    await signOut(auth);
+    window.location.href = 'login.html';
+  } catch (e) {
+    console.error('Logout failed:', e);
+    window.location.href = 'login.html';
+  }
+};
+
+window.refreshPage = () => {
+  window.location.reload();
+};
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    showLoading(true, '⏳ جاري التحقق من الصلاحيات...');
+    const isAdmin = await checkAdminRole(user);
+    window.__isAdmin = isAdmin;
+    window.__currentUser = user;
+    applyRoleBadge(isAdmin);
+    showLoading(false);
+    console.log(isAdmin ? '👑 Admin logged in' : '👤 User logged in');
+    window.dispatchEvent(new CustomEvent('authReady', { detail: { isAdmin, user } }));
+  } else {
+    window.location.href = 'login.html';
+  }
+});
+</script>
+
+<!-- ============ كود الصفحة الرئيسي ============ -->
 <script>
     // --- 1. الثوابت والمتغيرات ---
     const CACHE_KEY = 'lobster_ink_dashboard_cache';
-    const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
+    const CACHE_DURATION = 24 * 60 * 60 * 1000;
 
     const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', dateOptions);
@@ -886,6 +1092,7 @@
         }
     }
 
+    // ✅ أي مستخدم مسجل دخول يمكنه مسح الكاش
     function clearCache() {
         if (!localStorage.getItem(CACHE_KEY)) {
             showToast('No cache to clear', 'warning');
@@ -1391,7 +1598,7 @@
                         }
                     },
                     tooltip: {
-                        backgroundColor: '#1e293b',
+                        backgroundColor: '#052c65',
                         titleFont: { family: 'Inter', size: 14 },
                         bodyFont: { family: 'Inter', size: 13 },
                         padding: 10,
@@ -1477,8 +1684,8 @@
     clearCacheBtn.addEventListener('click', clearCache);
     exportBtn.addEventListener('click', exportToExcel);
 
-    // --- 18. تحميل الكاش عند فتح الصفحة ---
-    window.addEventListener('load', () => {
+    // --- 18. التهيئة بعد تأكيد تسجيل الدخول ✅ ---
+    window.addEventListener('authReady', () => {
         updateCacheStatus();
         const loaded = loadFromCache();
         
