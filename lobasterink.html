@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 10 LobsterInk </title>
+    <title>Top 10 LobsterInk</title>
 
-    <!-- ⭐ أيقونات الموقع -->
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -17,6 +16,7 @@
 
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
+    <script type="module" src="trainee-db.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -44,7 +44,6 @@
             --radius: 16px;
             --transition: all 0.3s ease;
 
-            /* ألوان الهيدر الجديد (L&D) */
             --hdr-navy: #1e3a5f;
             --hdr-green: #2b7a4b;
             --hdr-blue: #4299e1;
@@ -60,7 +59,6 @@
 
         body.lang-en { direction: ltr; }
 
-        /* ============ ⭐ الهيدر الجديد (Navbar) ============ */
         .app-navbar {
             background: white;
             padding: 1rem 2rem;
@@ -99,7 +97,6 @@
         .app-navbar .nav-links .logout { background: var(--hdr-red); color: white; }
         .app-navbar .nav-links .lang-switch-nav { background: #6b7280; color: white; }
 
-        /* ============ ⭐ شارة الدور ============ */
         .role-badge {
             display: inline-flex;
             align-items: center;
@@ -113,7 +110,6 @@
         .role-badge.viewer { background: #e6fffa; color: #234e52; border-color: #b2f5ea; }
         .role-badge.admin  { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
 
-        /* شاشة التحميل */
         .loading-overlay {
             position: fixed; inset: 0;
             background: rgba(255, 255, 255, 0.92);
@@ -133,7 +129,6 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-overlay .loading-text { font-size: 1.1rem; color: var(--hdr-navy); font-weight: 500; }
 
-        /* ============ ⭐ الفوتر ============ */
         .app-footer {
             text-align: center;
             padding: 2rem;
@@ -145,7 +140,6 @@
 
         .container { max-width: 1600px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; padding: 0 20px; }
 
-        /* ============ ⭐ التابات المدمجة في النافبار ============ */
         .nav-tabs {
             display: flex;
             gap: 4px;
@@ -329,7 +323,6 @@
         .empty-state i { font-size: 4rem; color: #CBD5E1; margin-bottom: 15px; }
         .empty-state h3 { font-size: 1.1rem; color: var(--dark); margin-bottom: 6px; }
 
-        /* ✅ تعديل الاتجاه للكارد */
         .leaderboard-card {
             width: 100%; min-height: 400px; background: #F8FAFC;
             padding: 30px 35px; border-radius: var(--radius); display: flex;
@@ -373,7 +366,7 @@
             border: 4px solid #E2E8F0; background: #F1F5F9; display: flex;
             align-items: center; justify-content: center; font-size: 2rem;
             color: #64748B; margin-bottom: 8px; position: relative; transition: var(--transition);
-            direction: ltr; /* ثابت */
+            direction: ltr;
         }
         .leaderboard-item .avatar img {
             width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;
@@ -599,7 +592,6 @@
 </head>
 <body>
 
-<!-- ⭐ شاشة التحميل -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loader"></div>
     <div class="loading-text">⏳ جاري التحقق من الصلاحيات...</div>
@@ -622,20 +614,18 @@
     </div>
 </div>
 
-<!-- ⭐ الهيدر الجديد (Navbar) مع التابات مدمجة -->
 <div class="app-navbar no-print">
     <div class="logo">
         <h2>🎓 <span>L&D</span> Management System</h2>
     </div>
-    
+
     <div class="nav-links">
         <span class="role-badge viewer" id="roleBadge">👤 User</span>
-        
+
         <button class="lang-switch-nav" id="langBtn">
             <i class="fas fa-globe"></i> <span id="langBtnText">English</span>
         </button>
-        
-        <!-- ⭐ التابات المدمجة -->
+
         <div class="nav-tabs">
             <button class="tab-btn active" data-tab="upload" onclick="switchTab('upload')">
                 <i class="fas fa-cloud-upload-alt"></i>
@@ -664,7 +654,6 @@
 <div id="app">
     <div class="container">
 
-        <!-- ============ TAB 1: UPLOAD ============ -->
         <div id="tab-upload" class="tab-content active">
             <div class="section">
                 <div class="section-header">
@@ -721,7 +710,6 @@
             </div>
         </div>
 
-        <!-- ============ TAB 2: LEADERBOARD ============ -->
         <div id="tab-leaderboard" class="tab-content">
             <div class="section" id="leaderboardSection">
                 <div class="section-header">
@@ -738,6 +726,7 @@
                         <select id="levelFilter">
                             <option value="all" data-i18n="levelAll">الكل</option>
                             <option value="employees" data-i18n="levelEmployees">موظفين</option>
+                            <option value="trainees" data-i18n="levelTrainees">متدربين</option>
                             <option value="managers" data-i18n="levelManagers">مديرين ومساعدين</option>
                         </select>
                     </div>
@@ -797,7 +786,6 @@
             </div>
         </div>
 
-        <!-- ============ TAB 3: ALL EMPLOYEES ============ -->
         <div id="tab-allEmployees" class="tab-content">
             <div class="section" id="allEmployeesSection">
                 <div class="section-header">
@@ -814,6 +802,7 @@
                         <select id="levelFilterTable">
                             <option value="all" data-i18n="levelAll">الكل</option>
                             <option value="employees" data-i18n="levelEmployees">موظفين</option>
+                            <option value="trainees" data-i18n="levelTrainees">متدربين</option>
                             <option value="managers" data-i18n="levelManagers">مديرين ومساعدين</option>
                         </select>
                     </div>
@@ -840,8 +829,7 @@
                         <input type="checkbox" id="noCodeFilter">
                         <span data-i18n="noCode">بدون كود صحيح</span>
                     </label>
-                    
-<!-- الكورسات -->
+
 <div class="filter-group">
     <label data-i18n="coursesFilterLabel">الكورسات:</label>
     <select id="coursesFilter">
@@ -855,7 +843,6 @@
     </select>
 </div>
 
-<!-- الـ Index -->
 <div class="filter-group">
     <label data-i18n="indexFilterLabel">الـ Index %:</label>
     <select id="indexFilter">
@@ -868,7 +855,6 @@
     </select>
 </div>
 
-<!-- الدروس -->
 <div class="filter-group">
     <label data-i18n="lessonsFilterLabel">الدروس:</label>
     <select id="lessonsFilter">
@@ -882,7 +868,6 @@
     </select>
 </div>
 
-<!-- الاختبارات -->
 <div class="filter-group">
     <label data-i18n="testsFilterLabel">الاختبارات:</label>
     <select id="testsFilter">
@@ -903,7 +888,7 @@
                             <option value="inactive" data-i18n="inactive">غير نشط</option>
                         </select>
                     </div>
-                    
+
                     <button class="btn btn-secondary" id="resetFiltersBtn" style="padding:6px 14px;font-size:0.8rem;">
                         <i class="fas fa-times"></i>
                         <span data-i18n="resetFilters">مسح الفلاتر</span>
@@ -915,6 +900,7 @@
                         <thead>
                             <tr>
                                 <th data-i18n="rank">الترتيب</th>
+                                <th data-i18n="type">النوع</th>
                                 <th data-i18n="code">الكود</th>
                                 <th data-i18n="name">الاسم</th>
                                 <th data-i18n="department">القسم</th>
@@ -938,12 +924,10 @@
     </div>
 </div>
 
-<!-- ⭐ الفوتر -->
 <div class="app-footer no-print">
     <p style="margin:0;">© 2026 Learning & Development Management System</p>
 </div>
 
-<!-- ============ ⭐ نظام الحماية ============ -->
 <script type="module">
 import { auth } from './database.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
@@ -1026,28 +1010,19 @@ onAuthStateChanged(auth, async (user) => {
 });
 </script>
 
-<!-- ============ كود الصفحة الرئيسي ============ -->
 <script type="module">
 import { auth, DB } from './database.js';
+import { TraineeDB } from './trainee-db.js';
 
-// ============================================================
-// CLOUDINARY CONFIG
-// ============================================================
 const CLOUDINARY_CONFIG = {
     cloudName: 'so9u5deh',
     baseUrl: 'https://res.cloudinary.com/so9u5deh/image/upload',
     format: 'webp',
 };
 
-// ============================================================
-// CACHE CONFIG
-// ============================================================
-const CACHE_KEY = 'lobster_top10_cache_v1';
+const CACHE_KEY = 'lobster_top10_cache_v2';
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
-// ============================================================
-// LEVEL CONFIG
-// ============================================================
 const LEVEL_GROUPS = {
     employees: ['R&F', '5%', 'KPs', 'Supervisor'],
     managers:  ['GM', 'Director', 'HODs', 'AHODs']
@@ -1072,17 +1047,34 @@ function getLevelColorStyle(level) {
     return key ? LEVEL_COLORS[key] : { color: '#64748B', bg: '#F1F5F9' };
 }
 
-function isInLevelGroup(level, group) {
+function isInLevelGroup(level, group, source) {
     if (group === 'all') return true;
-    const levels = LEVEL_GROUPS[group] || [];
-    if (!level || String(level).trim() === '') return group === 'employees';
-    const normalized = String(level).toLowerCase().trim();
-    return levels.some(l => l.toLowerCase() === normalized);
+    
+    // ✅ لو عايز المتدربين
+    if (group === 'trainees') return source === 'trainee';
+    
+    // ✅ لو عايز الموظفين (بنستبعد المديرين والمساعدين هنا)
+    if (group === 'employees') {
+        if (source !== 'employee') return false; 
+        const managers = LEVEL_GROUPS['managers'] || [];
+        if (!level || String(level).trim() === '') return true; // لو مفيش level نفترض إنه موظف عادي
+        const normalized = String(level).toLowerCase().trim();
+        // لو الـ level بتاعه من ضمن المديرين، يبقى مش موظف عادي
+        return !managers.some(l => l.toLowerCase() === normalized);
+    }
+    
+    // ✅ لو عايز المديرين والمساعدين
+    if (group === 'managers') {
+        if (source !== 'employee') return false;
+        const managers = LEVEL_GROUPS['managers'] || [];
+        if (!level || String(level).trim() === '') return false;
+        const normalized = String(level).toLowerCase().trim();
+        return managers.some(l => l.toLowerCase() === normalized);
+    }
+    
+    return true;
 }
 
-// ============================================================
-// TRANSLATIONS
-// ============================================================
 const TRANSLATIONS = {
     ar: {
         tabUpload: 'رفع الملفات',
@@ -1135,11 +1127,13 @@ const TRANSLATIONS = {
         inactive: 'غير نشط',
         resetFilters: 'مسح الفلاتر',
         rank: 'الترتيب',
+        type: 'النوع',
         code: 'الكود',
         name: 'الاسم',
         level: 'المستوى',
         levelAll: 'الكل',
         levelEmployees: 'موظفين',
+        levelTrainees: 'متدربين',
         levelManagers: 'مديرين ومساعدين',
         coursesStarted: 'كورسات بدأها',
         coursesCompleted: 'كورسات خلصها',
@@ -1160,6 +1154,7 @@ const TRANSLATIONS = {
         leaderboardTitle: 'أعلى 10 متدربين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
         leaderboardTitleEmployees: 'أعلى 10 موظفين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
         leaderboardTitleManagers: 'أعلى 10 مديرين ومساعدين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
+        leaderboardTitleTrainees: 'أعلى 10 متدربين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
         yearLabel: 'سنة',
         weekLabel: 'الأسبوع',
         quarterLabel: 'الربع',
@@ -1255,11 +1250,13 @@ const TRANSLATIONS = {
         inactive: 'Inactive',
         resetFilters: 'Reset Filters',
         rank: 'Rank',
+        type: 'Type',
         code: 'Code',
         name: 'Name',
         level: 'Level',
         levelAll: 'All',
         levelEmployees: 'Employees',
+        levelTrainees: 'Trainees',
         levelManagers: 'Managers & Assistants',
         coursesStarted: 'Started',
         coursesCompleted: 'Completed',
@@ -1280,6 +1277,7 @@ const TRANSLATIONS = {
         leaderboardTitle: 'Top 10 Learners on LobsterInk Platform',
         leaderboardTitleEmployees: 'Top 10 Employees on LobsterInk Platform',
         leaderboardTitleManagers: 'Top 10 Managers & Assistants on LobsterInk Platform',
+        leaderboardTitleTrainees: 'Top 10 Trainees on LobsterInk Platform',
         yearLabel: 'Year',
         weekLabel: 'Week',
         quarterLabel: 'Quarter',
@@ -1331,9 +1329,6 @@ function t(key) {
     return TRANSLATIONS[currentLang][key] || key;
 }
 
-// ============================================================
-// GLOBALS
-// ============================================================
 let allEmployees = [];
 let employeesMap = new Map();
 let activityData = null;
@@ -1350,9 +1345,6 @@ let currentTab = 'upload';
 const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 let currentYear = new Date().getFullYear();
 
-// ============================================================
-// THRESHOLDS PER PERIOD
-// ============================================================
 function getPeriodThresholds(period) {
     switch (period) {
         case 'year':    return { cc: 120, ac: 120, lc: 360 };
@@ -1364,9 +1356,6 @@ function getPeriodThresholds(period) {
     }
 }
 
-// ============================================================
-// DOM REFS
-// ============================================================
 const activityUploadBox = document.getElementById('activityUploadBox');
 const performanceUploadBox = document.getElementById('performanceUploadBox');
 const activityFileInput = document.getElementById('activityFileInput');
@@ -1403,7 +1392,6 @@ const completedFilter = document.getElementById('completedFilter');
 const passRateFilter = document.getElementById('passRateFilter');
 const noCodeFilter = document.getElementById('noCodeFilter');
 
-// الفلاتر الجديدة (القوائم المنسدلة)
 const coursesFilter = document.getElementById('coursesFilter');
 const indexFilter = document.getElementById('indexFilter');
 const lessonsFilter = document.getElementById('lessonsFilter');
@@ -1425,9 +1413,6 @@ const modalCloseBtn = document.getElementById('modalCloseBtn');
 const leaderboardTabCount = document.getElementById('leaderboardTabCount');
 const allTabCount = document.getElementById('allTabCount');
 
-// ============================================================
-// ⭐ SWITCH TAB
-// ============================================================
 window.switchTab = function(tabName) {
     currentTab = tabName;
 
@@ -1454,9 +1439,6 @@ function updateTabCounts() {
     if (allTabCount) allTabCount.textContent = rankedData.length || 0;
 }
 
-// ============================================================
-// HELPERS
-// ============================================================
 function showToast(message, type = 'success') {
     document.querySelector('.toast')?.remove();
     const toast = document.createElement('div');
@@ -1512,9 +1494,6 @@ function extractCode(colA) {
     return String(colA).trim();
 }
 
-// ============================================================
-// CLOUDINARY IMAGE HELPERS
-// ============================================================
 function buildCloudinaryUrl(employeeId) {
     if (!employeeId) return null;
     const cleanId = String(employeeId).trim();
@@ -1529,9 +1508,6 @@ function getEmployeePhoto(emp, employeeId) {
     return buildCloudinaryUrl(employeeId);
 }
 
-// ============================================================
-// INDEX HELPERS
-// ============================================================
 function formatIndexPercent(index) {
     return (index * 100).toFixed(2) + '%';
 }
@@ -1544,9 +1520,6 @@ function getIndexColorStyle(index) {
     return { color: '#64748B', bg: '#F1F5F9' };
 }
 
-// ============================================================
-// CACHE MANAGER
-// ============================================================
 function getCacheInfo() {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
@@ -1596,7 +1569,7 @@ function saveCache(showToastMsg = true) {
     try {
         const cacheData = {
             _savedAt: Date.now(),
-            allEmployees: allEmployees,
+            allEmployees: allEmployees.map(e => ({ ...e })),  // ✅ نسخة مع __source
             activityData: activityData,
             performanceData: performanceData,
             mergedData: mergedData,
@@ -1658,9 +1631,20 @@ function loadFromCache() {
 
         allEmployees = data.allEmployees || [];
         employeesMap.clear();
-        allEmployees.forEach(emp => {
+
+        // ✅ ضيف الموظفين أولاً (أولوية)
+        allEmployees.filter(e => e.__source === 'employee').forEach(emp => {
             if (emp && emp.id !== undefined && emp.id !== null) {
-                employeesMap.set(String(emp.id).trim(), emp);
+                employeesMap.set(String(emp.id).trim(), { ...emp, __source: 'employee' });
+            }
+        });
+        // ✅ بعدين المتدربين (لو الكود مش موجود)
+        allEmployees.filter(e => e.__source === 'trainee').forEach(trn => {
+            if (trn && trn.id !== undefined && trn.id !== null) {
+                const key = String(trn.id).trim();
+                if (!employeesMap.has(key)) {
+                    employeesMap.set(key, { ...trn, __source: 'trainee' });
+                }
             }
         });
 
@@ -1685,13 +1669,12 @@ function loadFromCache() {
             completedFilter.checked = !!f.completedFilter;
             passRateFilter.checked = !!f.passRateFilter;
             noCodeFilter.checked = !!f.noCodeFilter;
-            
-            // الفلاتر الجديدة
+
             if (f.coursesFilter) coursesFilter.value = f.coursesFilter;
             if (f.indexFilter) indexFilter.value = f.indexFilter;
             if (f.lessonsFilter) lessonsFilter.value = f.lessonsFilter;
             if (f.testsFilter) testsFilter.value = f.testsFilter;
-            
+
             if (f.statusFilter) statusFilter.value = f.statusFilter;
         }
 
@@ -1724,9 +1707,6 @@ function loadFromCache() {
     }
 }
 
-// ============================================================
-// LANGUAGE
-// ============================================================
 function applyLanguage() {
     document.documentElement.lang = currentLang;
     document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
@@ -1767,27 +1747,43 @@ function toggleLanguage() {
     showToast(currentLang === 'ar' ? '🇸🇦 تم تغيير اللغة للعربية' : '🇬🇧 Language switched to English', 'success');
 }
 
-// ============================================================
-// LOAD EMPLOYEES
-// ============================================================
 async function loadEmployees(forceRefresh = false) {
     try {
         if (forceRefresh) await DB.refresh('employees');
-        const result = await DB.getAll('employees');
-        allEmployees = result || [];
+        const empsResult = await DB.getAll('employees');
+        const employees = empsResult || [];
+
+        if (forceRefresh) await TraineeDB.refresh('trainees');
+        const trnsResult = await TraineeDB.getAll('trainees');
+        const trainees = trnsResult || [];
+
+        allEmployees = [
+            ...employees.map(e => ({ ...e, __source: 'employee' })),
+            ...trainees.map(t => ({ ...t, __source: 'trainee' }))
+        ];
+
         employeesMap.clear();
-        allEmployees.forEach(emp => {
+        employees.forEach(emp => {
             if (emp && emp.id !== undefined && emp.id !== null) {
-                employeesMap.set(String(emp.id).trim(), emp);
+                employeesMap.set(String(emp.id).trim(), { ...emp, __source: 'employee' });
             }
         });
-        console.log(`👥 Loaded ${allEmployees.length} employees`);
+        trainees.forEach(trn => {
+            if (trn && trn.id !== undefined && trn.id !== null) {
+                const key = String(trn.id).trim();
+                if (!employeesMap.has(key)) {
+                    employeesMap.set(key, { ...trn, __source: 'trainee' });
+                }
+            }
+        });
+
+        console.log(`👥 Loaded ${employees.length} employees + ${trainees.length} trainees (${employeesMap.size} unique in map)`);
         return allEmployees;
     } catch (error) {
-        console.error('❌ Failed to load employees:', error);
+        console.error('❌ Failed to load employees/trainees:', error);
         allEmployees = [];
         employeesMap.clear();
-        showToast(currentLang === 'ar' ? '⚠️ فشل تحميل بيانات الموظفين' : '⚠️ Failed to load employees', 'warning');
+        showToast(currentLang === 'ar' ? '⚠️ فشل تحميل البيانات' : '⚠️ Failed to load data', 'warning');
         return [];
     }
 }
@@ -1797,9 +1793,6 @@ function findEmployeeById(empId) {
     return employeesMap.get(String(empId).trim()) || null;
 }
 
-// ============================================================
-// UPLOAD HANDLERS
-// ============================================================
 function setupUploadBox(box, input, fileNameEl, onFileSelected) {
     box.addEventListener('click', () => input.click());
     box.addEventListener('dragover', (e) => { e.preventDefault(); box.classList.add('dragover'); });
@@ -1857,9 +1850,6 @@ function readExcelFile(file) {
     });
 }
 
-// ============================================================
-// ANALYZE
-// ============================================================
 function updateAnalyzeButton() {
     const hasActivity = !!activityData;
     const hasPerformance = !!performanceData;
@@ -1928,9 +1918,6 @@ async function analyzeFiles() {
     }
 }
 
-// ============================================================
-// MERGE
-// ============================================================
 function mergeFiles(activityRows, performanceRows) {
     const merged = [];
     for (let i = 0; i < activityRows.length; i++) {
@@ -1965,9 +1952,6 @@ function mergeFiles(activityRows, performanceRows) {
     return merged;
 }
 
-// ============================================================
-// CALCULATE INDEXES
-// ============================================================
 function calculateIndexes(data, period = 'month') {
     const thresholds = getPeriodThresholds(period);
     let maxCoursesCompleted = 0, maxLessonsCompleted = 0;
@@ -2005,9 +1989,6 @@ function calculateIndexes(data, period = 'month') {
     });
 }
 
-// ============================================================
-// FINAL RANK
-// ============================================================
 function calculateFinalRank(data) {
     const sorted = [...data].sort((a, b) => {
         if (b.index !== a.index) return b.index - a.index;
@@ -2021,9 +2002,6 @@ function calculateFinalRank(data) {
     return sorted;
 }
 
-// ============================================================
-// APPLY LEVEL FILTER + RE-RANK
-// ============================================================
 function applyLevelFilterToLeaderboard() {
     if (!rankedData.length) return;
     const levelGroup = levelFilter.value || 'all';
@@ -2031,7 +2009,8 @@ function applyLevelFilterToLeaderboard() {
     const filtered = rankedData.filter(d => {
         const emp = d.isValidCode ? findEmployeeById(d.code) : null;
         const empLevel = emp?.level || emp?.Level || '';
-        return isInLevelGroup(empLevel, levelGroup);
+        const empSource = emp?.__source || 'employee';
+        return isInLevelGroup(empLevel, levelGroup, empSource);
     });
 
     filteredRankedData = calculateFinalRank(filtered);
@@ -2042,9 +2021,6 @@ function applyLevelFilterToLeaderboard() {
     updateTabCounts();
 }
 
-// ============================================================
-// COLLECT ALERTS
-// ============================================================
 function collectAlerts() {
     invalidIds = [];
     missingInFirebase = [];
@@ -2059,9 +2035,6 @@ function collectAlerts() {
     });
 }
 
-// ============================================================
-// RESET
-// ============================================================
 function resetAll() {
     activityData = null; performanceData = null;
     mergedData = []; rankedData = []; filteredRankedData = []; top10Data = [];
@@ -2082,9 +2055,6 @@ function resetAll() {
     switchTab('upload');
 }
 
-// ============================================================
-// RENDER ALERTS
-// ============================================================
 function renderAlerts() {
     let html = '';
     if (invalidIds.length > 0) {
@@ -2140,9 +2110,6 @@ function renderAlert(type, title, message) {
         </div>`;
 }
 
-// ============================================================
-// VIEW MODAL
-// ============================================================
 function openModal(title, contentHtml) {
     modalTitle.textContent = title;
     modalBody.innerHTML = contentHtml;
@@ -2236,9 +2203,6 @@ function downloadCSV(list, filename) {
     showToast(currentLang === 'ar' ? '✅ تم تحميل الملف' : '✅ File downloaded', 'success');
 }
 
-// ============================================================
-// RENDER LEADERBOARD
-// ============================================================
 function renderLeaderboard(data) {
     if (!data || data.length === 0) {
         leaderboardContainer.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><h3>${t('noData')}</h3><p>${t('uploadHint')}</p></div>`;
@@ -2300,6 +2264,8 @@ function renderLeaderboard(data) {
     let titleText;
     if (levelGroup === 'employees') {
         titleText = t('leaderboardTitleEmployees');
+    } else if (levelGroup === 'trainees') {
+        titleText = t('leaderboardTitleTrainees');
     } else if (levelGroup === 'managers') {
         titleText = t('leaderboardTitleManagers');
     } else {
@@ -2313,7 +2279,6 @@ function renderLeaderboard(data) {
     else if (period === 'half') periodLabel = `${year} - ${currentLang === 'ar' ? 'نصف سنوي' : 'Half-Yearly'}`;
     else periodLabel = `${year}`;
 
-    // ✅ الحل النهائي لمشكلة الاتجاه
     leaderboardContainer.innerHTML = `
         <div class="leaderboard-card" id="leaderboardCard" dir="${currentLang === 'ar' ? 'rtl' : 'ltr'}">
             <div class="leaderboard-header">
@@ -2325,15 +2290,12 @@ function renderLeaderboard(data) {
         </div>`;
 }
 
-// ============================================================
-// RENDER ALL TABLE
-// ============================================================
 function renderAllEmployeesTable() {
     const filtered = applyFilters(rankedData);
     allCountBadge.textContent = `${filtered.length} ${t('employee')}`;
     allTabCount.textContent = rankedData.length;
     if (filtered.length === 0) {
-        allTableBody.innerHTML = `<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--gray);">
+        allTableBody.innerHTML = `<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--gray);">
             <i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:10px;color:#CBD5E1;"></i>
             ${t('noResults')}
         </td></tr>`;
@@ -2369,9 +2331,15 @@ function renderAllEmployeesTable() {
 
         const rowClass = !d.isValidCode ? 'no-code-row' : '';
 
+        const empSource = emp?.__source || 'employee';
+        const typeCell = empSource === 'trainee'
+            ? `<td style="font-size:15px;" title="${currentLang === 'ar' ? 'متدرب' : 'Trainee'}">Trainee</td>`
+            : `<td style="font-size:15px;" title="${currentLang === 'ar' ? 'موظف' : 'Employee'}">Employee</td>`;
+
         html += `
             <tr class="${rowClass}">
                 <td><span class="rank-badge ${rankClass}">${d.rank}</span></td>
+                ${typeCell}
                 <td class="id-cell">${codeDisplay}</td>
                 <td class="name-cell">${escapeHtml(displayName)}</td>
                 <td><span class="group-cell">${escapeHtml(displayGroup)}</span></td>
@@ -2393,9 +2361,6 @@ function renderAllEmployeesTable() {
     allTableBody.innerHTML = html;
 }
 
-// ============================================================
-// FILTERS (تم التعديل لتدعم القوائم المنسدلة)
-// ============================================================
 function applyFilters(data) {
     const levelGroup = levelFilterTable.value || 'all';
     const search = (searchFilter.value || '').trim().toLowerCase();
@@ -2413,17 +2378,25 @@ function applyFilters(data) {
     return data.filter(d => {
         const emp = d.isValidCode ? findEmployeeById(d.code) : null;
         const empLevel = emp?.level || emp?.Level || '';
+        // ✅ الحل: لو emp مش موجود، نعتبره "بدون كود" — لكن لو موجود ومفيهوش __source،
+        // نحاول نلاقيه في allEmployees
+        let empSource = emp?.__source;
+        if (!empSource && emp) {
+            // محاولة أخيرة: نبحث في allEmployees
+            const fallback = allEmployees.find(e => String(e.id).trim() === String(emp.id).trim());
+            empSource = fallback?.__source || 'employee';
+        }
+        empSource = empSource || 'employee';
 
-        if (!isInLevelGroup(empLevel, levelGroup)) return false;
+        if (!isInLevelGroup(empLevel, levelGroup, empSource)) return false;
         if (onlyNoCode && d.isValidCode) return false;
 
-        // البحث (الاسم أو الكود فقط)
         if (search) {
             const displayName = (emp?.fullName || emp?.name || d.fullName || '').toLowerCase();
             const codeStr = String(d.code || '').toLowerCase();
             if (!displayName.includes(search) && !codeStr.includes(search)) return false;
         }
-        
+
         if (group) {
             const displayGroup = emp?.department || d.group || '';
             if (displayGroup !== group) return false;
@@ -2431,7 +2404,6 @@ function applyFilters(data) {
         if (onlyCompleted && d.coursesCompleted <= 0) return false;
         if (onlyPassRate && d.assessPassRate <= 0.5) return false;
 
-        // فلتر الكورسات
         if (cFilter) {
             const c = d.coursesCompleted;
             if (cFilter === '0' && c !== 0) return false;
@@ -2442,7 +2414,6 @@ function applyFilters(data) {
             if (cFilter === '50+' && c <= 50) return false;
         }
 
-        // فلتر الـ Index
         if (iFilter) {
             const idx = d.index * 100;
             if (iFilter === '0' && idx !== 0) return false;
@@ -2452,7 +2423,6 @@ function applyFilters(data) {
             if (iFilter === '76-100' && (idx < 76 || idx > 100)) return false;
         }
 
-        // فلتر الدروس
         if (lFilter) {
             const l = d.lessonsCompleted;
             if (lFilter === '0' && l !== 0) return false;
@@ -2463,7 +2433,6 @@ function applyFilters(data) {
             if (lFilter === '100+' && l <= 100) return false;
         }
 
-        // فلتر الاختبارات
         if (tFilter) {
             const t = d.assessmentsCompleted;
             if (tFilter === '0' && t !== 0) return false;
@@ -2484,10 +2453,9 @@ function applyFilters(data) {
 
 function populateGroupFilter() {
     const groups = new Set();
-    
-    // بنجيب الأقسام من rankedData (لو موجود)، أو من allData لو لسه محملش
+
     const sourceData = rankedData.length > 0 ? rankedData : (mergedData.length > 0 ? mergedData : []);
-    
+
     sourceData.forEach(d => {
         const emp = d.isValidCode ? findEmployeeById(d.code) : null;
         const displayGroup = emp?.department || d.group || '';
@@ -2498,8 +2466,7 @@ function populateGroupFilter() {
 
     const sortedGroups = Array.from(groups).sort();
     const currentValue = groupFilter.value;
-    
-    // تحديث القائمة
+
     groupFilter.innerHTML = `<option value="">${t('all')}</option>`;
     sortedGroups.forEach(g => {
         const option = document.createElement('option');
@@ -2507,8 +2474,7 @@ function populateGroupFilter() {
         option.textContent = g;
         groupFilter.appendChild(option);
     });
-    
-    // الحفاظ على القيمة المختارة سابقاً
+
     if (currentValue && sortedGroups.includes(currentValue)) {
         groupFilter.value = currentValue;
     }
@@ -2521,12 +2487,12 @@ function resetFilters() {
     completedFilter.checked = false;
     passRateFilter.checked = false;
     noCodeFilter.checked = false;
-    
+
     coursesFilter.value = '';
     indexFilter.value = '';
     lessonsFilter.value = '';
     testsFilter.value = '';
-    
+
     statusFilter.value = '';
     updateFilterCheckboxStyles();
     renderAllEmployeesTable();
@@ -2551,12 +2517,12 @@ function setupFilters() {
         completedFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
         passRateFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
         noCodeFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
-        
+
         coursesFilter.addEventListener(evt, renderAllEmployeesTable);
         indexFilter.addEventListener(evt, renderAllEmployeesTable);
         lessonsFilter.addEventListener(evt, renderAllEmployeesTable);
         testsFilter.addEventListener(evt, renderAllEmployeesTable);
-        
+
         statusFilter.addEventListener(evt, renderAllEmployeesTable);
     });
     resetFiltersBtn.addEventListener('click', resetFilters);
@@ -2567,9 +2533,6 @@ function setupFilters() {
     });
 }
 
-// ============================================================
-// DOWNLOAD PNG
-// ============================================================
 async function downloadAsPNG() {
     const card = document.getElementById('leaderboardCard');
     if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
@@ -2599,9 +2562,6 @@ async function downloadAsPNG() {
     } finally { setLoading(false); }
 }
 
-// ============================================================
-// DOWNLOAD PDF
-// ============================================================
 async function downloadAsPDF() {
     const card = document.getElementById('leaderboardCard');
     if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
@@ -2649,23 +2609,17 @@ function loadScript(src) {
     });
 }
 
-// ============================================================
-// NAVBAR ACTIONS
-// ============================================================
 document.getElementById('langBtn')?.addEventListener('click', toggleLanguage);
 document.getElementById('refreshDataBtn')?.addEventListener('click', async () => {
     setLoading(true, currentLang === 'ar' ? 'جاري تحديث البيانات...' : 'Refreshing...');
     await loadEmployees(true);
     setLoading(false);
-    showToast(currentLang === 'ar' ? '🔄 تم تحديث قائمة الموظفين' : '🔄 Refreshed', 'success');
+    showToast(currentLang === 'ar' ? '🔄 تم تحديث قائمة الموظفين والمتدربين' : '🔄 Refreshed employees & trainees', 'success');
 });
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     window.logout();
 });
 
-// ============================================================
-// INIT
-// ============================================================
 function populateMonthFilter() {
     monthFilter.innerHTML = '';
     for (let m = 0; m < 12; m++) {
@@ -2717,6 +2671,8 @@ async function init() {
 
     applyLanguage();
 
+    localStorage.removeItem('lobster_top10_cache_v1');
+
     const cacheLoaded = loadFromCache();
 
     if (cacheLoaded) {
@@ -2724,7 +2680,7 @@ async function init() {
         updateCacheBadge();
         loadEmployees(false).catch(() => {});
     } else {
-        setLoading(true, currentLang === 'ar' ? 'جاري تحميل بيانات الموظفين...' : 'Loading employees...');
+        setLoading(true, currentLang === 'ar' ? 'جاري تحميل البيانات...' : 'Loading data...');
         await loadEmployees();
         setLoading(false);
         updateCacheBadge();
@@ -2735,7 +2691,6 @@ async function init() {
     console.log('🏆 Page ready!');
 }
 
-// ✅ التهيئة بعد تأكيد تسجيل الدخول
 window.addEventListener('authReady', () => {
     init();
 });
