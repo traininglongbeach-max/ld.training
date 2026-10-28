@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Birthdays - L&D Management System</title>
+    <title>Birthdays - L&D Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <meta name="theme-color" content="#0B3B82">
-    
-    <!-- السكريبتات بنظام Modules للاتصال بالفيربيز -->
+
     <script type="module" src="auth-guard.js"></script>
     <script type="module" src="database.js"></script>
+    <script type="module" src="trainee-db.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -24,7 +24,6 @@
             padding-bottom: 30px;
         }
 
-        /* تنسيق شريط التنقل الجديد */
         .navbar {
             background: white;
             padding: 1rem 2rem;
@@ -34,9 +33,9 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
-            position: sticky;     
-            top: 0;               
-            z-index: 999;         
+            position: sticky;
+            top: 0;
+            z-index: 999;
         }
         .logo h2 { color: #1e3a5f; }
         .logo span { color: #2b7a4b; }
@@ -88,6 +87,53 @@
             opacity: 0.9;
         }
 
+        .tabs-container {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 0 20px;
+            gap: 0;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: #718096;
+            border-bottom: 3px solid transparent;
+            transition: 0.3s;
+            font-family: 'Tajawal', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: #2b7a4b;
+            background: rgba(43, 122, 75, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #2b7a4b;
+            border-bottom-color: #2b7a4b;
+            background: white;
+        }
+
+        .tab-btn i {
+            font-size: 1.1rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .controls {
             padding: 20px;
             background: #f8f9fa;
@@ -127,7 +173,7 @@
             outline: none;
             transition: 0.3s;
         }
-        
+
         select:focus, input:focus {
             border-color: #2b7a4b;
         }
@@ -172,7 +218,7 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.06);
             transition: transform 0.2s;
             border: 1px solid #e2e8f0;
-            height: 520px; 
+            height: 520px;
             display: flex;
             flex-direction: column;
         }
@@ -275,7 +321,6 @@
             font-weight: 500;
         }
 
-
         .empty-state {
             text-align: center;
             padding: 40px;
@@ -287,18 +332,6 @@
             font-size: 60px;
             margin-bottom: 15px;
             color: #cbd5e0;
-        }
-
-        .stats {
-            background: #e6fffa;
-            color: #234e52;
-            padding: 12px;
-            margin: 15px 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1rem;
-            border: 1px solid #b2f5ea;
         }
 
         @media (max-width: 768px) {
@@ -315,17 +348,19 @@
             .card-image {
                 height: 250px;
             }
+            .tab-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- شاشة التحميل -->
     <div id="loadingScreen" style="text-align:center; padding:150px; font-size:1.5rem; color:#1e3a5f; font-weight:bold;">
-        ⏳ Fetching birthday records from server...
+        ⏳ Loading birthday records...
     </div>
 
-    <!-- المحتوى الرئيسي (مخفي حتى يتم التحميل) -->
     <div id="mainContent" style="display: none;">
         <div class="navbar">
             <div class="logo"><h2>🎓 Learning & Development <span>System</span></h2></div>
@@ -338,7 +373,17 @@
 
         <div class="container">
             <div class="header">
-                <h1><i class="fas fa-birthday-cake"></i> Employee Birthdays</h1>
+                <h1><i class="fas fa-birthday-cake"></i> Birthdays</h1>
+                <p>Employees & Trainees</p>
+            </div>
+
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="employees" onclick="window.switchTab('employees')">
+                    <i class="fas fa-users"></i> Employees
+                </button>
+                <button class="tab-btn" data-tab="trainees" onclick="window.switchTab('trainees')">
+                    <i class="fas fa-user-graduate"></i> Trainees
+                </button>
             </div>
 
             <div class="controls">
@@ -365,14 +410,20 @@
 
                 <div class="control-group">
                     <button class="search-btn tomorrow-btn" onclick="window.showTomorrowBirthdays()">
-                        <i class="fas fa-calendar-day"></i> Show Tomorrow's Birthdays
+                        <i class="fas fa-calendar-day"></i> Tomorrow's Birthdays
                     </button>
                 </div>
             </div>
 
-            <div class="results">
-                <div id="employeesGrid" class="employees-grid">
-                    <!-- Data will be populated here -->
+            <div id="employeesTab" class="tab-content active">
+                <div class="results">
+                    <div id="employeesGrid" class="employees-grid"></div>
+                </div>
+            </div>
+
+            <div id="traineesTab" class="tab-content">
+                <div class="results">
+                    <div id="traineesGrid" class="employees-grid"></div>
                 </div>
             </div>
         </div>
@@ -380,17 +431,24 @@
 
     <script type="module">
         import { auth, DB } from './database.js';
+        import { TraineeDB } from './trainee-db.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-        let employees = []; 
-        let activeEmpIds = new Set(); 
-        let fullEmpDataMap = new Map(); 
-        
-        const BDAY_CACHE_KEY = 'BirthdaysApp_DataCache';
-        const COLLECTION_KEY = 'employee_birthdays_final';
+        // ========== Data ==========
+        let employeeBirthdays = [];        // employee_birthdays_final
+        let activeEmpIds = new Set();      // Active employees
+        let fullEmpDataMap = new Map();    // employees lookup
 
-        // ===== دالة إزالة التكرار =====
-        function deduplicateEmployees(data) {
+        let traineeBirthdays = [];         // trainee_birthdays
+        let activeTraineeIds = new Set();  // Active trainees
+        let fullTraineeDataMap = new Map();// trainees lookup
+
+        let currentTab = 'employees';
+
+        const BDAY_CACHE_KEY = 'BirthdaysApp_DataCache_v2';
+
+        // ===== Helpers =====
+        function deduplicateBirthdays(data) {
             const map = new Map();
             data.forEach(emp => {
                 const code = String(emp.code || emp.id || '').trim();
@@ -401,121 +459,167 @@
             return Array.from(map.values());
         }
 
-        // ===== 1. دالة التحميل الذكية من الذاكرة أو الفايربيز =====
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== Smart Load =====
         async function loadSavedData() {
             const cachedData = localStorage.getItem(BDAY_CACHE_KEY);
             if (cachedData) {
                 try {
                     const parsed = JSON.parse(cachedData);
-                    employees = parsed.birthdays || [];
-                    activeEmpIds = new Set(parsed.activeIds || []);
+                    employeeBirthdays = parsed.employeeBirthdays || [];
+                    activeEmpIds = new Set(parsed.activeEmpIds || []);
                     if (parsed.fullEmpData) fullEmpDataMap = new Map(parsed.fullEmpData);
-                    console.log("✅ تم تحميل البيانات من الكاش المحلي بنجاح (0 Reads)");
+
+                    traineeBirthdays = parsed.traineeBirthdays || [];
+                    activeTraineeIds = new Set(parsed.activeTraineeIds || []);
+                    if (parsed.fullTraineeData) fullTraineeDataMap = new Map(parsed.fullTraineeData);
+
+                    console.log("✅ Loaded data from local cache (0 Reads)");
                     return;
                 } catch (e) {
-                    console.error("خطأ في قراءة الكاش:", e);
+                    console.error("Cache read error:", e);
                 }
             }
             await fetchFromServerAndCache();
         }
 
-        // ===== 2. سحب البيانات من السيرفر وتخزينها =====
+        // ===== Fetch from server =====
         async function fetchFromServerAndCache() {
             try {
                 await DB.init();
-                const [bdayData, empData] = await Promise.all([
-                    DB.getAll(COLLECTION_KEY),
-                    DB.getAll('employees')
+                await TraineeDB.init();
+
+                const [
+                    empBdayData, empData,
+                    trnBdayData, trnData
+                ] = await Promise.all([
+                    DB.getAll('employee_birthdays_final').catch(() => []),
+                    DB.getAll('employees').catch(() => []),
+                    TraineeDB.getAll('trainee_birthdays').catch(() => []),
+                    TraineeDB.getAll('trainees').catch(() => [])
                 ]);
-                
-                // ✅ إزالة التكرار من بيانات أعياد الميلاد
-                employees = deduplicateEmployees(bdayData || []);
-                
-                const activeIds = [];
+
+                // Employees
+                employeeBirthdays = deduplicateBirthdays(empBdayData || []);
+                const empActiveIds = [];
                 const empMapForCache = [];
                 if (empData) {
                     empData.forEach(e => {
-                        let empCode = String(e.id).trim();
-                        if (e.status !== 'Left') {
-                            activeIds.push(empCode);
-                        }
-                        fullEmpDataMap.set(empCode, e);
-                        empMapForCache.push([empCode, e]);
+                        let code = String(e.id).trim();
+                        if (e.status !== 'Left') empActiveIds.push(code);
+                        fullEmpDataMap.set(code, e);
+                        empMapForCache.push([code, e]);
                     });
                 }
-                activeEmpIds = new Set(activeIds);
-                
+                activeEmpIds = new Set(empActiveIds);
+
+                // Trainees
+                traineeBirthdays = deduplicateBirthdays(trnBdayData || []);
+                const trnActiveIds = [];
+                const trnMapForCache = [];
+                if (trnData) {
+                    trnData.forEach(t => {
+                        let code = String(t.id).trim();
+                        if (t.status !== 'Left') trnActiveIds.push(code);
+                        fullTraineeDataMap.set(code, t);
+                        trnMapForCache.push([code, t]);
+                    });
+                }
+                activeTraineeIds = new Set(trnActiveIds);
+
+                // Save to cache
                 localStorage.setItem(BDAY_CACHE_KEY, JSON.stringify({
-                    birthdays: employees,
-                    activeIds: activeIds,
-                    fullEmpData: empMapForCache
+                    employeeBirthdays,
+                    activeEmpIds: Array.from(activeEmpIds),
+                    fullEmpData: empMapForCache,
+                    traineeBirthdays,
+                    activeTraineeIds: Array.from(activeTraineeIds),
+                    fullTraineeData: trnMapForCache
                 }));
-                console.log(`✅ Loaded ${employees.length} unique birthdays from Firebase`);
+
+                console.log(`✅ Loaded ${employeeBirthdays.length} employee birthdays + ${traineeBirthdays.length} trainee birthdays from Firebase`);
             } catch (error) {
                 console.error("❌ Error loading data:", error);
-                alert("حدث خطأ أثناء جلب البيانات، سيتم محاولة استخدام آخر داتا محفوظة.");
+                alert("Error loading data. Will try to use last saved data.");
             }
         }
 
-        // ===== 3. زر تحديث البيانات (إجبار النظام على الاتصال بالفايربيز) =====
+        // ===== Refresh button =====
         window.refreshData = async () => {
             document.getElementById('loadingScreen').style.display = 'block';
             document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('loadingScreen').innerHTML = '⏳ جاري تحديث البيانات من السيرفر...';
-            
+            document.getElementById('loadingScreen').innerHTML = '⏳ Refreshing data from server...';
+
             localStorage.removeItem(BDAY_CACHE_KEY);
-            localStorage.removeItem(COLLECTION_KEY);
-            localStorage.removeItem('employees');
-            localStorage.removeItem(COLLECTION_KEY + '_timestamp');
-            localStorage.removeItem('employees_timestamp');
-            
+
+            try {
+                await DB.refresh('employee_birthdays_final').catch(() => {});
+                await DB.refresh('employees').catch(() => {});
+                await TraineeDB.refresh('trainee_birthdays').catch(() => {});
+                await TraineeDB.refresh('trainees').catch(() => {});
+            } catch (e) {
+                console.warn('Refresh partial error:', e);
+            }
+
             await fetchFromServerAndCache();
-            
+
             document.getElementById('loadingScreen').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
             showTodayBirthdays();
-            alert("✅ تم تحديث البيانات من السيرفر بنجاح!");
+            alert("✅ Data refreshed successfully from server!");
         };
 
-        // ===== 4. الدالة الذكية والمحدثة لتحميل الصور من Cloudinary مباشرة =====
-        function loadEmployeePhoto(imgElement, employeeCode, cloudPhotoUrl) {
+        // ===== Tab switch =====
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === tab + 'Tab');
+            });
+            const month = parseInt(document.getElementById('monthSelect').value);
+            const day = parseInt(document.getElementById('daySelect').value);
+            performSearch(month, day);
+        };
+
+        // ===== Photo loader =====
+        function loadPersonPhoto(imgElement, code, cloudPhotoUrl) {
             function showDefaultPlaceholder() {
                 if (imgElement.parentElement) {
                     imgElement.parentElement.innerHTML = `
                         <div class="no-image">
                             <i class="fas fa-user-circle"></i>
-                            <span>${employeeCode}</span>
+                            <span>${code}</span>
                         </div>
                     `;
                 }
             }
 
-            // البحث المباشر في حساب كلاوديناري الخاص بك (باستخدام رقم الموظف)
             function checkCloudinaryDirectly() {
                 const exts = ['webp', 'jpg', 'jpeg', 'png', 'JPG', 'PNG', 'JPEG'];
                 let i = 0;
                 function tryNext() {
-                    if (i >= exts.length) {
-                        showDefaultPlaceholder();
-                        return;
-                    }
-                    const url = `https://res.cloudinary.com/so9u5deh/image/upload/${employeeCode}.${exts[i]}`;
+                    if (i >= exts.length) { showDefaultPlaceholder(); return; }
+                    const url = `https://res.cloudinary.com/so9u5deh/image/upload/${code}.${exts[i]}`;
                     const testImg = new Image();
                     testImg.onload = function() {
                         imgElement.src = url;
                         imgElement.style.display = 'block';
                         if (imgElement.parentElement) imgElement.parentElement.classList.add('has-image');
                     };
-                    testImg.onerror = function() {
-                        i++;
-                        tryNext();
-                    };
+                    testImg.onerror = function() { i++; tryNext(); };
                     testImg.src = url;
                 }
                 tryNext();
             }
 
-            // 1. أولاً نجرب الرابط المحفوظ في الداتا بيز إذا كان موجوداً
             if (cloudPhotoUrl && cloudPhotoUrl !== 'undefined' && cloudPhotoUrl.trim() !== '') {
                 const cloudImg = new Image();
                 cloudImg.onload = function() {
@@ -523,16 +627,14 @@
                     imgElement.style.display = 'block';
                     if (imgElement.parentElement) imgElement.parentElement.classList.add('has-image');
                 };
-                cloudImg.onerror = function() {
-                    checkCloudinaryDirectly();
-                };
+                cloudImg.onerror = function() { checkCloudinaryDirectly(); };
                 cloudImg.src = cloudPhotoUrl;
             } else {
-                // 2. إذا لم يكن محفوظاً في الداتا بيز، ابحث عنه في Cloudinary برقم الموظف
                 checkCloudinaryDirectly();
             }
         }
 
+        // ===== Search =====
         window.searchSpecificDate = () => {
             const month = parseInt(document.getElementById('monthSelect').value);
             const day = parseInt(document.getElementById('daySelect').value);
@@ -552,38 +654,40 @@
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(today.getDate() + 1);
-            
             const month = tomorrow.getMonth() + 1;
             const day = tomorrow.getDate();
-            
             document.getElementById('monthSelect').value = month;
             document.getElementById('daySelect').value = day;
             performSearch(month, day);
         };
 
         function performSearch(month, day) {
+            if (currentTab === 'employees') {
+                performEmployeeSearch(month, day);
+            } else {
+                performTraineeSearch(month, day);
+            }
+        }
+
+        // ===== Employee search =====
+        function performEmployeeSearch(month, day) {
             const grid = document.getElementById('employeesGrid');
-            const statsDiv = document.getElementById('stats');
-            
-            if (employees.length === 0) {
+
+            if (employeeBirthdays.length === 0) {
                 if (grid) {
                     grid.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-database"></i>
-                            <p>No birthday data available in the system.</p>
-                            <p style="font-size: 13px; margin-top: 8px;">Please ask the administrator to import the birthdays data.</p>
+                            <p>No employee birthday data available in the system.</p>
                         </div>
                     `;
                 }
-                if (statsDiv) statsDiv.style.display = 'none';
                 return;
             }
-            
-            const filtered = employees.filter(emp => {
+
+            const filtered = employeeBirthdays.filter(emp => {
                 let empCode = String(emp.code || emp.id || '').trim();
-                if (activeEmpIds.size > 0 && !activeEmpIds.has(empCode)) {
-                    return false; 
-                }
+                if (activeEmpIds.size > 0 && !activeEmpIds.has(empCode)) return false;
 
                 let empMonth = emp.month || emp.Month;
                 let empDay = emp.day || emp.Day;
@@ -591,79 +695,95 @@
                 if (empMonth !== undefined && empDay !== undefined) {
                     return parseInt(empMonth) === month && parseInt(empDay) === day;
                 }
-                
                 return false;
             });
 
-            // ✅ إزالة التكرار: الاحتفاظ بأول ظهور فقط لكل كود موظف
-            const uniqueEmployees = [];
-            const seenIds = new Set();
+            const unique = [];
+            const seen = new Set();
             for (const emp of filtered) {
-                const empCode = String(emp.code || emp.id || '').trim();
-                if (!seenIds.has(empCode)) {
-                    seenIds.add(empCode);
-                    uniqueEmployees.push(emp);
-                }
+                const code = String(emp.code || emp.id || '').trim();
+                if (!seen.has(code)) { seen.add(code); unique.push(emp); }
             }
 
-            displayResults(uniqueEmployees, month, day);
+            displayEmployees(unique, month, day);
         }
 
-        function displayResults(employeesList, month, day) {
-            const grid = document.getElementById('employeesGrid');
-            const statsDiv = document.getElementById('stats');
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            
-            if (!grid) return;
-            
-            // ✅ حماية إضافية من التكرار
-            const uniqueList = [];
-            const seen = new Set();
-            for (const emp of employeesList) {
-                const empCode = String(emp.code || emp.id || '').trim();
-                if (!seen.has(empCode)) {
-                    seen.add(empCode);
-                    uniqueList.push(emp);
+        // ===== Trainee search =====
+        function performTraineeSearch(month, day) {
+            const grid = document.getElementById('traineesGrid');
+
+            if (traineeBirthdays.length === 0) {
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-database"></i>
+                            <p>No trainee birthday data available in the system.</p>
+                        </div>
+                    `;
                 }
-            }
-            
-            if (uniqueList.length === 0) {
-                grid.innerHTML = `<div class="empty-state"><i class="fas fa-sad-tear"></i><p>No active employee birthdays found on ${monthNames[month-1]} ${day}</p></div>`;
-                if (statsDiv) statsDiv.style.display = 'none';
                 return;
             }
 
-            if (statsDiv) {
-                statsDiv.style.display = 'block';
-                statsDiv.innerHTML = `🎉 ${uniqueList.length} active employee(s) celebrating on ${monthNames[month-1]} ${day} 🎉`;
+            const filtered = traineeBirthdays.filter(trn => {
+                let trnCode = String(trn.code || trn.id || '').trim();
+                if (activeTraineeIds.size > 0 && !activeTraineeIds.has(trnCode)) return false;
+
+                let trnMonth = trn.month || trn.Month;
+                let trnDay = trn.day || trn.Day;
+
+                if (trnMonth !== undefined && trnDay !== undefined) {
+                    return parseInt(trnMonth) === month && parseInt(trnDay) === day;
+                }
+                return false;
+            });
+
+            const unique = [];
+            const seen = new Set();
+            for (const trn of filtered) {
+                const code = String(trn.code || trn.id || '').trim();
+                if (!seen.has(code)) { seen.add(code); unique.push(trn); }
+            }
+
+            displayTrainees(unique, month, day);
+        }
+
+        // ===== Display employees =====
+        function displayEmployees(employeesList, month, day) {
+            const grid = document.getElementById('employeesGrid');
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+            if (!grid) return;
+
+            if (employeesList.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-sad-tear"></i><p>No active employee birthdays on ${monthNames[month-1]} ${day}</p></div>`;
+                return;
             }
 
             grid.innerHTML = '';
-            
-            uniqueList.forEach(emp => {
+
+            employeesList.forEach(emp => {
                 const empCode = String(emp.code || emp.id).trim();
                 const fullData = fullEmpDataMap.get(empCode) || {};
                 const cloudPhotoUrl = fullData.photoUrl || null;
 
                 const card = document.createElement('div');
                 card.className = 'employee-card';
-                
+
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'card-image';
-                
+
                 const img = document.createElement('img');
                 img.alt = empCode;
                 img.style.display = 'none';
                 imageDiv.appendChild(img);
-                
+
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'card-info';
-                
+
                 let ageString = '';
                 let empYear = emp.year || emp.Year;
                 if(empYear && !isNaN(parseInt(empYear))) {
-                    const currentYear = new Date().getFullYear();
-                    const age = currentYear - parseInt(empYear);
+                    const age = new Date().getFullYear() - parseInt(empYear);
                     ageString = ` <span style="color:#718096; font-size:0.9rem;">(${age}y)</span>`;
                 }
 
@@ -672,7 +792,7 @@
                     <div class="employee-detail">
                         <i class="fas fa-building"></i>
                         <span class="detail-label">Department:</span>
-                        <span class="detail-value">${escapeHtml(emp.department || emp.Dep || emp.department) || 'Not specified'}</span>
+                        <span class="detail-value">${escapeHtml(emp.department || emp.Dep) || 'Not specified'}</span>
                     </div>
                     <div class="employee-detail">
                         <i class="fas fa-briefcase"></i>
@@ -680,21 +800,75 @@
                         <span class="detail-value">${escapeHtml(emp.position || emp.Position) || 'Not specified'}</span>
                     </div>
                 `;
-                
+
                 card.appendChild(imageDiv);
                 card.appendChild(infoDiv);
                 grid.appendChild(card);
-                
-                // تمرير الرابط الخاص بـ Cloudinary للبحث عن الصورة
-                loadEmployeePhoto(img, empCode, cloudPhotoUrl);
+
+                loadPersonPhoto(img, empCode, cloudPhotoUrl);
             });
         }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        // ===== Display trainees =====
+        function displayTrainees(traineesList, month, day) {
+            const grid = document.getElementById('traineesGrid');
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+            if (!grid) return;
+
+            if (traineesList.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-sad-tear"></i><p>No active trainee birthdays on ${monthNames[month-1]} ${day}</p></div>`;
+                return;
+            }
+
+            grid.innerHTML = '';
+
+            traineesList.forEach(trn => {
+                const trnCode = String(trn.code || trn.id).trim();
+                const fullData = fullTraineeDataMap.get(trnCode) || {};
+                const cloudPhotoUrl = fullData.photoUrl || null;
+
+                const card = document.createElement('div');
+                card.className = 'employee-card';
+
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'card-image';
+
+                const img = document.createElement('img');
+                img.alt = trnCode;
+                img.style.display = 'none';
+                imageDiv.appendChild(img);
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'card-info';
+
+                let ageString = '';
+                let trnYear = trn.year || trn.Year;
+                if(trnYear && !isNaN(parseInt(trnYear))) {
+                    const age = new Date().getFullYear() - parseInt(trnYear);
+                    ageString = ` <span style="color:#718096; font-size:0.9rem;">(${age}y)</span>`;
+                }
+
+                infoDiv.innerHTML = `
+                    <div class="employee-name"><i class="fas fa-user-graduate"></i> ${escapeHtml(trn.name || trn.fullName || trn.Full_Name)}${ageString}</div>
+                    <div class="employee-detail">
+                        <i class="fas fa-building"></i>
+                        <span class="detail-label">Department:</span>
+                        <span class="detail-value">${escapeHtml(trn.department || trn.Dep) || 'Not specified'}</span>
+                    </div>
+                    <div class="employee-detail">
+                        <i class="fas fa-briefcase"></i>
+                        <span class="detail-label">Position:</span>
+                        <span class="detail-value">${escapeHtml(trn.position || trn.Position) || 'Not specified'}</span>
+                    </div>
+                `;
+
+                card.appendChild(imageDiv);
+                card.appendChild(infoDiv);
+                grid.appendChild(card);
+
+                loadPersonPhoto(img, trnCode, cloudPhotoUrl);
+            });
         }
 
         window.logout = async () => {
@@ -702,7 +876,7 @@
             window.location.href = 'login.html';
         };
 
-        // ================== المصادقة والتهيئة ==================
+        // ===== Auth =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 await loadSavedData();
