@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0B3B82">
 
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -43,7 +42,6 @@
             --shadow-hover: 0 15px 50px rgba(11, 59, 130, 0.25);
             --radius: 16px;
             --transition: all 0.3s ease;
-
             --hdr-navy: #1e3a5f;
             --hdr-green: #2b7a4b;
             --hdr-blue: #4299e1;
@@ -56,8 +54,6 @@
             padding: 0;
             transition: background 0.3s ease;
         }
-
-        body.lang-en { direction: ltr; }
 
         .app-navbar {
             background: white;
@@ -95,16 +91,11 @@
         .app-navbar .nav-links .home { background: var(--hdr-green); color: white; }
         .app-navbar .nav-links .refresh { background: var(--hdr-blue); color: white; }
         .app-navbar .nav-links .logout { background: var(--hdr-red); color: white; }
-        .app-navbar .nav-links .lang-switch-nav { background: #6b7280; color: white; }
 
         .role-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            font-weight: bold;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.3rem 0.8rem; border-radius: 1rem;
+            font-size: 0.75rem; font-weight: bold;
             border: 1px solid transparent;
         }
         .role-badge.viewer { background: #e6fffa; color: #234e52; border-color: #b2f5ea; }
@@ -130,95 +121,49 @@
         .loading-overlay .loading-text { font-size: 1.1rem; color: var(--hdr-navy); font-weight: 500; }
 
         .app-footer {
-            text-align: center;
-            padding: 2rem;
-            color: #718096;
-            margin-top: 2rem;
-            background: white;
-            border-top: 1px solid #e2e8f0;
+            text-align: center; padding: 2rem; color: #718096;
+            margin-top: 2rem; background: white; border-top: 1px solid #e2e8f0;
         }
 
         .container { max-width: 1600px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; padding: 0 20px; }
 
         .nav-tabs {
-            display: flex;
-            gap: 4px;
-            background: #F1F5F9;
-            padding: 4px;
-            border-radius: 2rem;
-            border: 1px solid #E2E8F0;
-            margin: 0 4px;
+            display: flex; gap: 4px; background: #F1F5F9;
+            padding: 4px; border-radius: 2rem;
+            border: 1px solid #E2E8F0; margin: 0 4px;
         }
         .nav-tabs .tab-btn {
-            flex: 0 1 auto;
-            min-width: auto;
-            background: transparent;
-            border: none;
-            border-radius: 2rem;
-            padding: 6px 14px;
-            font-weight: 700;
-            font-size: 0.8rem;
-            color: #64748B;
-            cursor: pointer;
+            flex: 0 1 auto; min-width: auto;
+            background: transparent; border: none;
+            border-radius: 2rem; padding: 6px 14px;
+            font-weight: 700; font-size: 0.8rem;
+            color: #64748B; cursor: pointer;
             transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-family: inherit;
-            white-space: nowrap;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; font-family: inherit; white-space: nowrap;
         }
-        .nav-tabs .tab-btn:hover {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-        }
-        .nav-tabs .tab-btn.active {
-            background: var(--primary-gradient);
-            color: white;
-            box-shadow: 0 2px 8px rgba(11, 59, 130, 0.25);
-        }
-        .nav-tabs .tab-btn .badge-count {
-            background: rgba(255,255,255,0.3);
-            padding: 1px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 900;
-        }
-        .nav-tabs .tab-btn:not(.active) .badge-count {
-            background: white;
-            color: #64748B;
-        }
+        .nav-tabs .tab-btn:hover { background: white; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .nav-tabs .tab-btn.active { background: var(--primary-gradient); color: white; box-shadow: 0 2px 8px rgba(11, 59, 130, 0.25); }
+        .nav-tabs .tab-btn .badge-count { background: rgba(255,255,255,0.3); padding: 1px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 900; }
+        .nav-tabs .tab-btn:not(.active) .badge-count { background: white; color: #64748B; }
 
         .tab-content { display: none; animation: fadeInTab 0.3s ease; }
         .tab-content.active { display: block; }
-        @keyframes fadeInTab {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
         .section {
             background: var(--white); border-radius: var(--radius); padding: 25px;
             box-shadow: var(--shadow); border: 1px solid rgba(11, 59, 130, 0.06);
             animation: fadeInUp 0.4s ease;
         }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .section-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #F1F5F9;
             flex-wrap: wrap; gap: 8px;
         }
-        .section-header h2 {
-            font-size: 1.4rem; font-weight: 800; color: var(--dark);
-            display: flex; align-items: center; gap: 10px;
-        }
-        .count-badge {
-            background: #F1F5F9; color: var(--gray); padding: 4px 14px;
-            border-radius: 20px; font-size: 0.75rem; font-weight: 700;
-        }
+        .section-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        .count-badge { background: #F1F5F9; color: var(--gray); padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
 
         .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         .upload-box {
@@ -232,56 +177,38 @@
         .upload-box.has-file .upload-icon { color: var(--success); }
         .upload-box h3 { font-size: 1rem; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
         .upload-box p { font-size: 0.75rem; color: var(--gray); margin-bottom: 10px; }
-        .upload-box .file-name {
-            font-size: 0.8rem; color: var(--success); font-weight: 700;
-            margin-top: 8px; word-break: break-all;
-        }
+        .upload-box .file-name { font-size: 0.8rem; color: var(--success); font-weight: 700; margin-top: 8px; word-break: break-all; }
         .upload-box input[type="file"] { display: none; }
 
         .alerts-container { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
         .alert-card {
-            background: #FEF3C7; border-right: 4px solid var(--warning);
+            background: #FEF3C7; border-left: 4px solid var(--warning);
             border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; color: #92400E;
             animation: fadeInUp 0.3s ease;
         }
         .alert-card.danger { background: #FEE2E2; border-color: var(--danger); color: #991B1B; }
         .alert-card.success { background: #D1FAE5; border-color: var(--success); color: #065F46; }
         .alert-card.info { background: #DBEAFE; border-color: #3B82F6; color: #1E40AF; }
-        .alert-card .alert-title {
-            font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
-        }
+        .alert-card .alert-title { font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
         .alert-card .alert-list { max-height: 200px; overflow-y: auto; font-size: 0.8rem; line-height: 1.6; }
-        .alert-card .alert-list span {
-            display: inline-block; background: rgba(255,255,255,0.6);
-            padding: 2px 8px; border-radius: 6px; margin: 2px; font-weight: 600;
-        }
+        .alert-card .alert-list span { display: inline-block; background: rgba(255,255,255,0.6); padding: 2px 8px; border-radius: 6px; margin: 2px; font-weight: 600; }
         .alert-card .alert-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
-        .alert-card .alert-actions button {
-            padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer;
-            font-weight: 700; font-size: 0.75rem; transition: var(--transition);
-            background: var(--primary); color: white;
-        }
+        .alert-card .alert-actions button { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.75rem; transition: var(--transition); background: var(--primary); color: white; }
         .alert-card .alert-actions button:hover { background: var(--primary-light); }
 
         .filter-bar {
             display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
             padding: 15px 20px; background: linear-gradient(135deg, #F1F5F9, #F8FAFC);
-            border-radius: 12px; align-items: center;
-            border: 1px solid #E2E8F0;
+            border-radius: 12px; align-items: center; border: 1px solid #E2E8F0;
         }
         .filter-group { display: flex; align-items: center; gap: 8px; }
-        .filter-group label {
-            font-weight: 700; font-size: 0.8rem; color: var(--gray); white-space: nowrap;
-        }
+        .filter-group label { font-weight: 700; font-size: 0.8rem; color: var(--gray); white-space: nowrap; }
         .filter-bar select, .filter-bar input[type="text"] {
             padding: 7px 14px; border: 2px solid #E2E8F0; border-radius: 10px;
             font-size: 0.8rem; background: white; outline: none;
             transition: var(--transition); font-family: 'Tajawal', sans-serif; color: var(--dark);
         }
-        .filter-bar select:focus, .filter-bar input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(11, 59, 130, 0.1);
-        }
+        .filter-bar select:focus, .filter-bar input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(11, 59, 130, 0.1); }
         .filter-bar input[type="text"] { width: 150px; }
         .filter-checkbox {
             display: flex; align-items: center; gap: 6px; font-size: 0.8rem;
@@ -290,28 +217,17 @@
             border: 2px solid #E2E8F0; transition: var(--transition);
         }
         .filter-checkbox:hover { border-color: var(--primary); }
-        .filter-checkbox input[type="checkbox"] {
-            width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;
-        }
+        .filter-checkbox input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
         .filter-checkbox.active { border-color: var(--primary); background: #EFF6FF; }
 
         .filter-bar .level-filter {
             background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-            border: 2px solid var(--gold);
-            border-radius: 12px;
-            padding: 4px 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            border: 2px solid var(--gold); border-radius: 12px;
+            padding: 4px 6px; display: flex; align-items: center; gap: 6px;
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
         }
-        .filter-bar .level-filter label {
-            color: #92400E; font-weight: 800; font-size: 0.8rem; padding-right: 6px;
-        }
-        .filter-bar .level-filter select {
-            background: white; border: 2px solid #F59E0B;
-            font-weight: 800; color: #92400E; padding: 6px 12px;
-        }
+        .filter-bar .level-filter label { color: #92400E; font-weight: 800; font-size: 0.8rem; padding-right: 6px; }
+        .filter-bar .level-filter select { background: white; border: 2px solid #F59E0B; font-weight: 800; color: #92400E; padding: 6px 12px; }
 
         #leaderboardContainer {
             width: 100%; min-height: 400px; background: #F8FAFC;
@@ -328,24 +244,16 @@
             padding: 30px 35px; border-radius: var(--radius); display: flex;
             flex-direction: column; position: relative; overflow: hidden;
             border: 1px solid #E2E8F0; font-family: 'Tajawal', 'Arial', sans-serif;
-            direction: rtl;
+            direction: ltr;
         }
-        body.lang-en .leaderboard-card { direction: ltr !important; }
 
         .leaderboard-header {
             text-align: center; padding-bottom: 15px;
             border-bottom: 3px solid #F59E0B; position: relative; z-index: 1; margin-bottom: 15px;
         }
         .leaderboard-header .trophy-icon { font-size: 2.2rem; margin-bottom: 3px; color: #F59E0B; }
-        .leaderboard-header h1 {
-            color: #1E293B; font-size: 1.2rem; font-weight: 900;
-            letter-spacing: 0.5px; line-height: 1.8;
-        }
-        .leaderboard-body {
-            flex: 1; padding: 8px 0; display: grid;
-            grid-template-columns: repeat(5, 1fr); gap: 12px;
-            position: relative; z-index: 1;
-        }
+        .leaderboard-header h1 { color: #1E293B; font-size: 1.2rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1.8; }
+        .leaderboard-body { flex: 1; padding: 8px 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; position: relative; z-index: 1; }
         .leaderboard-item {
             display: flex; flex-direction: column; align-items: center;
             padding: 14px 10px 12px; border-radius: 14px; background: #FFFFFF;
@@ -368,24 +276,13 @@
             color: #64748B; margin-bottom: 8px; position: relative; transition: var(--transition);
             direction: ltr;
         }
-        .leaderboard-item .avatar img {
-            width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;
-            border-radius: 50%;
-        }
+        .leaderboard-item .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; border-radius: 50%; }
         .leaderboard-item .avatar.gold-ring { border-color: #F59E0B; box-shadow: 0 0 30px rgba(245, 158, 11, 0.25); }
         .leaderboard-item .avatar.silver-ring { border-color: #94A3B8; }
         .leaderboard-item .avatar.bronze-ring { border-color: #D97706; }
-        .leaderboard-item .avatar .fallback {
-            font-weight: 700; font-size: 1.8rem; color: white;
-            width: 100%; height: 100%; display: flex;
-            align-items: center; justify-content: center;
-        }
+        .leaderboard-item .avatar .fallback { font-weight: 700; font-size: 1.8rem; color: white; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .leaderboard-item .info { color: #1E293B; width: 100%; }
-        .leaderboard-item .info .name {
-            font-weight: 800; font-size: 0.9rem; color: #0B3B82;
-            display: flex; align-items: center; justify-content: center; gap: 4px;
-            word-break: break-word;
-        }
+        .leaderboard-item .info .name { font-weight: 800; font-size: 0.9rem; color: #0B3B82; display: flex; align-items: center; justify-content: center; gap: 4px; word-break: break-word; }
         .leaderboard-item .info .name .verified { font-size: 0.6rem; color: #F59E0B; }
         .leaderboard-item .info .department {
             font-size: 0.65rem; color: #64748B; margin-top: 8px;
@@ -401,54 +298,25 @@
         }
 
         .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #E2E8F0; }
-        .data-table {
-            width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 0.85rem;
-        }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 0.85rem; }
         .data-table thead { background: #F1F5F9; position: sticky; top: 0; z-index: 10; }
-        .data-table th {
-            padding: 12px 10px; text-align: center; font-weight: 800;
-            color: var(--dark); font-size: 0.75rem; white-space: nowrap;
-            border-bottom: 2px solid #E2E8F0;
-        }
-        .data-table td {
-            padding: 10px; text-align: center;
-            border-bottom: 1px solid #F1F5F9; color: var(--dark);
-        }
+        .data-table th { padding: 12px 10px; text-align: center; font-weight: 800; color: var(--dark); font-size: 0.75rem; white-space: nowrap; border-bottom: 2px solid #E2E8F0; }
+        .data-table td { padding: 10px; text-align: center; border-bottom: 1px solid #F1F5F9; color: var(--dark); }
         .data-table tbody tr:hover { background: #F8FAFC; }
         .data-table tbody tr.no-code-row { background: #FEF9F3; }
         .data-table tbody tr.no-code-row:hover { background: #FEF3C7; }
-        .data-table .rank-badge {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 30px; height: 30px; border-radius: 50%;
-            background: var(--primary); color: white; font-weight: 800; font-size: 0.75rem;
-        }
+        .data-table .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: white; font-weight: 800; font-size: 0.75rem; }
         .data-table .rank-badge.gold { background: var(--gold-gradient); }
         .data-table .rank-badge.silver { background: var(--silver-gradient); }
         .data-table .rank-badge.bronze { background: var(--bronze-gradient); }
         .data-table .id-cell { font-family: monospace; font-weight: 700; color: var(--primary); }
-        .data-table .name-cell { text-align: right; font-weight: 700; }
-        body.lang-en .data-table .name-cell { text-align: left; }
-        .data-table .group-cell {
-            font-size: 0.75rem; background: #F1F5F9; padding: 3px 10px;
-            border-radius: 10px; display: inline-block;
-        }
-        .data-table .level-badge {
-            font-size: 0.7rem; font-weight: 800;
-            padding: 3px 10px; border-radius: 8px;
-            display: inline-block; white-space: nowrap;
-        }
-        .data-table .index-cell {
-            font-weight: 800; padding: 4px 10px;
-            border-radius: 6px; display: inline-block; min-width: 60px;
-        }
+        .data-table .name-cell { text-align: left; font-weight: 700; }
+        .data-table .group-cell { font-size: 0.75rem; background: #F1F5F9; padding: 3px 10px; border-radius: 10px; display: inline-block; }
+        .data-table .level-badge { font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 8px; display: inline-block; white-space: nowrap; }
+        .data-table .index-cell { font-weight: 800; padding: 4px 10px; border-radius: 6px; display: inline-block; min-width: 60px; }
         .data-table .no-data { color: var(--danger); font-size: 0.7rem; font-weight: 700; }
 
-        .btn {
-            border: none; border-radius: 12px; padding: 12px 24px; cursor: pointer;
-            font-weight: 700; transition: var(--transition); display: inline-flex;
-            align-items: center; gap: 8px; font-size: 0.9rem;
-            justify-content: center; font-family: 'Tajawal', sans-serif;
-        }
+        .btn { border: none; border-radius: 12px; padding: 12px 24px; cursor: pointer; font-weight: 700; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; justify-content: center; font-family: 'Tajawal', sans-serif; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(11, 59, 130, 0.15); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
         .btn-primary { background: var(--primary-gradient); color: white; }
@@ -456,97 +324,38 @@
         .btn-secondary { background: #F1F5F9; color: var(--dark); }
         .btn-danger { background: var(--danger); color: white; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
-        .download-actions {
-            display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;
-            padding-top: 15px; border-top: 2px solid #F1F5F9;
-        }
+        .download-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; padding-top: 15px; border-top: 2px solid #F1F5F9; }
         .download-actions .btn { flex: 1; min-width: 140px; }
 
-        .cache-actions {
-            display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;
-            padding-top: 15px; border-top: 2px dashed #E2E8F0;
-            align-items: center;
-        }
+        .cache-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #E2E8F0; align-items: center; }
         .cache-actions .btn { min-width: 140px; }
+        .cache-info-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; }
+        .cache-info-badge.active { background: #D1FAE5; color: #065F46; border-color: #10B981; }
+        .cache-info-badge.expired { background: #FEE2E2; color: #991B1B; border-color: #EF4444; }
 
-        .cache-info-badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            font-size: 0.7rem; font-weight: 700;
-            padding: 4px 10px; border-radius: 8px;
-            background: #F1F5F9; color: #64748B;
-            border: 1px solid #E2E8F0;
-        }
-        .cache-info-badge.active {
-            background: #D1FAE5; color: #065F46; border-color: #10B981;
-        }
-        .cache-info-badge.expired {
-            background: #FEE2E2; color: #991B1B; border-color: #EF4444;
-        }
-
-        .btn-nav {
-            padding: 8px 16px; border: none; border-radius: 10px; cursor: pointer;
-            font-weight: 700; transition: var(--transition); display: inline-flex;
-            align-items: center; gap: 6px; font-size: 0.85rem; text-decoration: none;
-        }
+        .btn-nav { padding: 8px 16px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; text-decoration: none; }
         .btn-nav:hover { transform: translateY(-2px); }
         .btn-cache-save { background: linear-gradient(135deg, #6366F1, #4F46E5); color: white; }
         .btn-cache-clear { background: linear-gradient(135deg, #F97316, #EA580C); color: white; }
 
-        .toast {
-            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            background: var(--dark); color: white; padding: 12px 24px;
-            border-radius: 14px; font-weight: 700; z-index: 10001;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: calc(100vw - 30px); text-align: center;
-            animation: toastIn .3s ease;
-        }
+        .toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 12px 24px; border-radius: 14px; font-weight: 700; z-index: 10001; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: calc(100vw - 30px); text-align: center; animation: toastIn .3s ease; }
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
         .toast.warning { background: var(--gold); }
         .toast.info { background: #3B82F6; }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translate(-50%, 20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
+        @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
-        .loading-inline {
-            position: fixed; inset: 0; background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(4px); display: none; align-items: center;
-            justify-content: center; z-index: 10000;
-        }
+        .loading-inline { position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .loading-inline.active { display: flex; }
-        .loading-box {
-            background: var(--white); padding: 25px 40px; border-radius: var(--radius);
-            box-shadow: var(--shadow-hover); text-align: center;
-            color: var(--primary); font-weight: 700;
-        }
-        .loading-box .spinner {
-            width: 40px; height: 40px; margin: 0 auto 12px;
-            border: 4px solid var(--light-gray); border-top-color: var(--primary);
-            border-radius: 50%; animation: spin 0.8s linear infinite;
-        }
+        .loading-box { background: var(--white); padding: 25px 40px; border-radius: var(--radius); box-shadow: var(--shadow-hover); text-align: center; color: var(--primary); font-weight: 700; }
+        .loading-box .spinner { width: 40px; height: 40px; margin: 0 auto 12px; border: 4px solid var(--light-gray); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
 
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px); display: none; align-items: center;
-            justify-content: center; z-index: 10001; padding: 20px;
-        }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 20px; }
         .modal-overlay.active { display: flex; }
-        .modal-box {
-            background: var(--white); border-radius: var(--radius); max-width: 1200px;
-            width: 100%; max-height: 90vh; overflow: hidden; display: flex;
-            flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-        }
-        .modal-header {
-            padding: 18px 25px; background: var(--primary-gradient); color: white;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .modal-box { background: var(--white); border-radius: var(--radius); max-width: 1200px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+        .modal-header { padding: 18px 25px; background: var(--primary-gradient); color: white; display: flex; justify-content: space-between; align-items: center; }
         .modal-header h3 { font-size: 1.1rem; font-weight: 800; }
-        .modal-header .close-btn {
-            background: rgba(255,255,255,0.2); border: none; color: white;
-            width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-            font-size: 1.1rem; transition: var(--transition);
-        }
+        .modal-header .close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; transition: var(--transition); }
         .modal-header .close-btn:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
         .modal-body { padding: 20px; overflow-y: auto; }
 
@@ -567,7 +376,6 @@
             .app-navbar { padding: 12px 16px; flex-direction: column; align-items: stretch; }
             .app-navbar .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
             .nav-tabs { order: 10; width: 100%; justify-content: center; margin-top: 8px; margin: 8px 0 0 0; }
-            .nav-tabs .tab-btn span[data-i18n] { display: inline-block; }
             .section { padding: 18px; }
             .leaderboard-body { grid-template-columns: repeat(3, 1fr); gap: 8px; }
             .leaderboard-item .avatar { width: 75px; height: 75px; }
@@ -584,30 +392,27 @@
             .leaderboard-item .info .name { font-size: 0.7rem; }
             .leaderboard-item .info .department { font-size: 0.55rem; }
         }
-
-        @media print {
-            .app-navbar, .app-footer, .no-print { display: none !important; }
-        }
+        @media print { .app-navbar, .app-footer, .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loader"></div>
-    <div class="loading-text">⏳ جاري التحقق من الصلاحيات...</div>
+    <div class="loading-text">⏳ Verifying permissions...</div>
 </div>
 
 <div class="loading-inline" id="loadingInline">
     <div class="loading-box">
         <div class="spinner"></div>
-        <div id="loadingText">جاري التحميل...</div>
+        <div id="loadingText">Loading...</div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <div class="modal-header">
-            <h3 id="modalTitle">معاينة</h3>
+            <h3 id="modalTitle">Preview</h3>
             <button class="close-btn" id="modalCloseBtn"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body" id="modalBody"></div>
@@ -622,29 +427,25 @@
     <div class="nav-links">
         <span class="role-badge viewer" id="roleBadge">👤 User</span>
 
-        <button class="lang-switch-nav" id="langBtn">
-            <i class="fas fa-globe"></i> <span id="langBtnText">English</span>
-        </button>
-
         <div class="nav-tabs">
             <button class="tab-btn active" data-tab="upload" onclick="switchTab('upload')">
                 <i class="fas fa-cloud-upload-alt"></i>
-                <span data-i18n="tabUpload">رفع الملفات</span>
+                <span>Upload Files</span>
             </button>
             <button class="tab-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
                 <i class="fas fa-crown"></i>
-                <span data-i18n="tabLeaderboard">لوحة الأوائل</span>
+                <span>Leaderboard</span>
                 <span class="badge-count" id="leaderboardTabCount">0</span>
             </button>
             <button class="tab-btn" data-tab="allEmployees" onclick="switchTab('allEmployees')">
                 <i class="fas fa-users"></i>
-                <span data-i18n="tabAllEmployees">كل الموظفين</span>
+                <span>All Records</span>
                 <span class="badge-count" id="allTabCount">0</span>
             </button>
         </div>
 
         <button id="refreshDataBtn" class="refresh">
-            <i class="fas fa-sync-alt"></i> <span data-i18n="refresh">تحديث</span>
+            <i class="fas fa-sync-alt"></i> Refresh
         </button>
         <a href="index.html" class="home">🏠 Home</a>
         <button id="logoutBtn" class="logout">🚪 Logout</button>
@@ -654,29 +455,30 @@
 <div id="app">
     <div class="container">
 
+        <!-- TAB 1: UPLOAD -->
         <div id="tab-upload" class="tab-content active">
             <div class="section">
                 <div class="section-header">
                     <h2>
                         <i class="fas fa-cloud-upload-alt" style="color:var(--primary);"></i>
-                        <span data-i18n="uploadTitle">رفع ملفات LobsterInk</span>
+                        <span>Upload LobsterInk Files</span>
                     </h2>
-                    <span class="count-badge" id="uploadStatus" data-i18n="waitingFiles">في انتظار الملفات</span>
+                    <span class="count-badge" id="uploadStatus">Waiting for files</span>
                 </div>
 
                 <div class="upload-grid">
                     <div class="upload-box" id="activityUploadBox">
                         <div class="upload-icon"><i class="fas fa-file-excel"></i></div>
-                        <h3 data-i18n="activityReport">Learner Activity Report</h3>
-                        <p data-i18n="dragDrop">اسحب الملف هنا أو اضغط للاختيار</p>
+                        <h3>Learner Activity Report</h3>
+                        <p>Drag file here or click to select</p>
                         <div class="file-name" id="activityFileName"></div>
                         <input type="file" id="activityFileInput" accept=".xlsx,.xls">
                     </div>
 
                     <div class="upload-box" id="performanceUploadBox">
                         <div class="upload-icon"><i class="fas fa-file-excel"></i></div>
-                        <h3 data-i18n="performanceReport">Assessment Performance Report</h3>
-                        <p data-i18n="dragDrop">اسحب الملف هنا أو اضغط للاختيار</p>
+                        <h3>Assessment Performance Report</h3>
+                        <p>Drag file here or click to select</p>
                         <div class="file-name" id="performanceFileName"></div>
                         <input type="file" id="performanceFileInput" accept=".xlsx,.xls">
                     </div>
@@ -685,24 +487,24 @@
                 <div class="btn-group">
                     <button class="btn btn-primary" id="analyzeBtn" disabled>
                         <i class="fas fa-calculator"></i>
-                        <span data-i18n="analyzeBtn">تحليل الملفات</span>
+                        <span>Analyze Files</span>
                     </button>
                     <button class="btn btn-secondary" id="resetBtn">
                         <i class="fas fa-eraser"></i>
-                        <span data-i18n="resetBtn">مسح الكل</span>
+                        <span>Reset All</span>
                     </button>
                 </div>
 
                 <div class="cache-actions">
                     <span class="cache-info-badge" id="cacheInfoBadge">
                         <i class="fas fa-database"></i>
-                        <span id="cacheInfoText">لا يوجد كاش</span>
+                        <span id="cacheInfoText">No cache</span>
                     </span>
                     <button class="btn btn-nav btn-cache-save" id="saveCacheBtn" style="padding:8px 16px;font-size:0.8rem;">
-                        <i class="fas fa-save"></i> <span data-i18n="saveCache">حفظ الكاش</span>
+                        <i class="fas fa-save"></i> Save Cache
                     </button>
                     <button class="btn btn-nav btn-cache-clear" id="clearCacheBtn" style="padding:8px 16px;font-size:0.8rem;">
-                        <i class="fas fa-trash-can"></i> <span data-i18n="clearCache">حذف الكاش</span>
+                        <i class="fas fa-trash-can"></i> Clear Cache
                     </button>
                 </div>
 
@@ -710,57 +512,58 @@
             </div>
         </div>
 
+        <!-- TAB 2: LEADERBOARD -->
         <div id="tab-leaderboard" class="tab-content">
             <div class="section" id="leaderboardSection">
                 <div class="section-header">
                     <h2>
                         <i class="fas fa-crown" style="color:var(--gold);"></i>
-                        <span data-i18n="top10Title">لوحة الأوائل - Top 10</span>
+                        <span>Top 10 Leaderboard</span>
                     </h2>
                     <span class="count-badge" id="previewCount">0</span>
                 </div>
 
                 <div class="filter-bar">
                     <div class="filter-group level-filter">
-                        <label><i class="fas fa-user-tie"></i> <span data-i18n="level">المستوى:</span></label>
+                        <label><i class="fas fa-user-tie"></i> Level:</label>
                         <select id="levelFilter">
-                            <option value="all" data-i18n="levelAll">الكل</option>
-                            <option value="employees" data-i18n="levelEmployees">موظفين</option>
-                            <option value="trainees" data-i18n="levelTrainees">متدربين</option>
-                            <option value="managers" data-i18n="levelManagers">مديرين ومساعدين</option>
+                            <option value="all">All</option>
+                            <option value="employees">Employees</option>
+                            <option value="learners">Trainees</option>
+                            <option value="managers">Managers & Assistants</option>
                         </select>
                     </div>
 
                     <div class="filter-group">
-                        <label><i class="fas fa-calendar-alt"></i> <span data-i18n="period">الفترة:</span></label>
+                        <label><i class="fas fa-calendar-alt"></i> Period:</label>
                         <select id="periodFilter">
-                            <option value="month" data-i18n="monthly">شهري</option>
-                            <option value="week" data-i18n="weekly">أسبوعي</option>
-                            <option value="quarter" data-i18n="quarterly">ربع سنوي</option>
-                            <option value="half" data-i18n="halfYearly">نصف سنوي</option>
-                            <option value="year" data-i18n="yearly">سنوي</option>
+                            <option value="month">Monthly</option>
+                            <option value="week">Weekly</option>
+                            <option value="quarter">Quarterly</option>
+                            <option value="half">Half-Yearly</option>
+                            <option value="year">Yearly</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label><i class="fas fa-calendar"></i> <span data-i18n="month">الشهر:</span></label>
+                        <label><i class="fas fa-calendar"></i> Month:</label>
                         <select id="monthFilter"></select>
                     </div>
                     <div class="filter-group" id="weekFilterGroup" style="display:none;">
-                        <label><i class="fas fa-calendar-week"></i> <span data-i18n="week">الأسبوع:</span></label>
+                        <label><i class="fas fa-calendar-week"></i> Week:</label>
                         <select id="weekFilter">
-                            <option value="1" data-i18n="week1">الأسبوع الأول</option>
-                            <option value="2" data-i18n="week2">الأسبوع الثاني</option>
-                            <option value="3" data-i18n="week3">الأسبوع الثالث</option>
-                            <option value="4" data-i18n="week4">الأسبوع الرابع</option>
+                            <option value="1">Week 1</option>
+                            <option value="2">Week 2</option>
+                            <option value="3">Week 3</option>
+                            <option value="4">Week 4</option>
                         </select>
                     </div>
                     <div class="filter-group" id="quarterFilterGroup" style="display:none;">
-                        <label><i class="fas fa-calendar-quarter"></i> <span data-i18n="quarter">الربع:</span></label>
+                        <label><i class="fas fa-calendar-quarter"></i> Quarter:</label>
                         <select id="quarterFilter">
-                            <option value="1" data-i18n="q1">Q1 (يناير - مارس)</option>
-                            <option value="2" data-i18n="q2">Q2 (أبريل - يونيو)</option>
-                            <option value="3" data-i18n="q3">Q3 (يوليو - سبتمبر)</option>
-                            <option value="4" data-i18n="q4">Q4 (أكتوبر - ديسمبر)</option>
+                            <option value="1">Q1 (Jan - Mar)</option>
+                            <option value="2">Q2 (Apr - Jun)</option>
+                            <option value="3">Q3 (Jul - Sep)</option>
+                            <option value="4">Q4 (Oct - Dec)</option>
                         </select>
                     </div>
                 </div>
@@ -768,130 +571,136 @@
                 <div id="leaderboardContainer">
                     <div class="empty-state">
                         <i class="fas fa-trophy"></i>
-                        <h3 data-i18n="noData">لا توجد بيانات</h3>
-                        <p data-i18n="uploadHint">ارفع الملفات واضغط "تحليل الملفات"</p>
+                        <h3>No Data</h3>
+                        <p>Upload files and click "Analyze Files"</p>
                     </div>
                 </div>
 
                 <div class="download-actions">
                     <button class="btn btn-success" id="downloadPngBtn" disabled>
                         <i class="fas fa-image"></i>
-                        <span data-i18n="downloadPng">تحميل كصورة PNG (1920×1080)</span>
+                        <span>Download PNG </span>
                     </button>
                     <button class="btn btn-primary" id="downloadPdfBtn" disabled>
                         <i class="fas fa-file-pdf"></i>
-                        <span data-i18n="downloadPdf">تحميل كـ PDF</span>
+                        <span>Download PDF</span>
+                    </button>
+                    <button class="btn" id="downloadExcelBtn" disabled
+                        style="background: linear-gradient(135deg,#16A34A,#15803D);color:#fff;">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Export Excel </span>
                     </button>
                 </div>
             </div>
         </div>
 
+        <!-- TAB 3: ALL RECORDS -->
         <div id="tab-allEmployees" class="tab-content">
             <div class="section" id="allEmployeesSection">
                 <div class="section-header">
                     <h2>
                         <i class="fas fa-users" style="color:var(--primary);"></i>
-                        <span data-i18n="allEmployeesTitle">كل الموظفين</span>
+                        <span>All Records</span>
                     </h2>
                     <span class="count-badge" id="allCountBadge">0</span>
                 </div>
 
                 <div class="filter-bar">
                     <div class="filter-group level-filter">
-                        <label><i class="fas fa-user-tie"></i> <span data-i18n="level">المستوى:</span></label>
+                        <label><i class="fas fa-user-tie"></i> Level:</label>
                         <select id="levelFilterTable">
-                            <option value="all" data-i18n="levelAll">الكل</option>
-                            <option value="employees" data-i18n="levelEmployees">موظفين</option>
-                            <option value="trainees" data-i18n="levelTrainees">متدربين</option>
-                            <option value="managers" data-i18n="levelManagers">مديرين ومساعدين</option>
+                            <option value="all">All</option>
+                            <option value="employees">Employees</option>
+                            <option value="learners">Learners</option>
+                            <option value="managers">Managers & Assistants</option>
                         </select>
                     </div>
 
                     <div class="filter-group">
-                        <label><i class="fas fa-search"></i> <span data-i18n="search">بحث:</span></label>
-                        <input type="text" id="searchFilter" placeholder="الاسم أو الكود...">
+                        <label><i class="fas fa-search"></i> Search:</label>
+                        <input type="text" id="searchFilter" placeholder="Name or code...">
                     </div>
                     <div class="filter-group">
-                        <label><i class="fas fa-building"></i> <span data-i18n="department">القسم:</span></label>
+                        <label><i class="fas fa-building"></i> Department:</label>
                         <select id="groupFilter">
-                            <option value="" data-i18n="all">الكل</option>
+                            <option value="">All</option>
                         </select>
                     </div>
                     <label class="filter-checkbox" id="completedFilterLabel">
                         <input type="checkbox" id="completedFilter">
-                        <span data-i18n="completedCourses">خلص كورسات</span>
+                        <span>Completed Courses</span>
                     </label>
                     <label class="filter-checkbox" id="passRateFilterLabel">
                         <input type="checkbox" id="passRateFilter">
-                        <span data-i18n="passRateAbove">معدل نجاح > 50%</span>
+                        <span>Pass Rate > 50%</span>
                     </label>
                     <label class="filter-checkbox" id="noCodeFilterLabel">
                         <input type="checkbox" id="noCodeFilter">
-                        <span data-i18n="noCode">بدون كود صحيح</span>
+                        <span>No Valid Code</span>
                     </label>
 
-<div class="filter-group">
-    <label data-i18n="coursesFilterLabel">الكورسات:</label>
-    <select id="coursesFilter">
-        <option value="" data-i18n="allOption">الكل</option>
-        <option value="0" data-i18n="zeroOption">0</option>
-        <option value="1-5" data-i18n="range1to5">1 - 5</option>
-        <option value="6-10" data-i18n="range6to10">6 - 10</option>
-        <option value="11-20" data-i18n="range11to20">11 - 20</option>
-        <option value="21-50" data-i18n="range21to50">21 - 50</option>
-        <option value="50+" data-i18n="rangeAbove50">أكثر من 50</option>
-    </select>
-</div>
-
-<div class="filter-group">
-    <label data-i18n="indexFilterLabel">الـ Index %:</label>
-    <select id="indexFilter">
-        <option value="" data-i18n="allOption">الكل</option>
-        <option value="0" data-i18n="pctZero">0%</option>
-        <option value="1-20" data-i18n="pct1to20">1% - 20%</option>
-        <option value="21-50" data-i18n="pct21to50">21% - 50%</option>
-        <option value="51-75" data-i18n="pct51to75">51% - 75%</option>
-        <option value="76-100" data-i18n="pct76to100">76% - 100%</option>
-    </select>
-</div>
-
-<div class="filter-group">
-    <label data-i18n="lessonsFilterLabel">الدروس:</label>
-    <select id="lessonsFilter">
-        <option value="" data-i18n="allOption">الكل</option>
-        <option value="0" data-i18n="zeroOption">0</option>
-        <option value="1-10" data-i18n="range1to10">1 - 10</option>
-        <option value="11-30" data-i18n="range11to30">11 - 30</option>
-        <option value="31-60" data-i18n="range31to60">31 - 60</option>
-        <option value="61-100" data-i18n="range61to100">61 - 100</option>
-        <option value="100+" data-i18n="rangeAbove100">أكثر من 100</option>
-    </select>
-</div>
-
-<div class="filter-group">
-    <label data-i18n="testsFilterLabel">الاختبارات:</label>
-    <select id="testsFilter">
-        <option value="" data-i18n="allOption">الكل</option>
-        <option value="0" data-i18n="zeroOption">0</option>
-        <option value="1-5" data-i18n="range1to5">1 - 5</option>
-        <option value="6-10" data-i18n="range6to10">6 - 10</option>
-        <option value="11-20" data-i18n="range11to20">11 - 20</option>
-        <option value="20+" data-i18n="rangeAbove20">أكثر من 20</option>
-    </select>
-</div>
+                    <div class="filter-group">
+                        <label>Courses:</label>
+                        <select id="coursesFilter">
+                            <option value="">All</option>
+                            <option value="0">0</option>
+                            <option value="1-5">1 - 5</option>
+                            <option value="6-10">6 - 10</option>
+                            <option value="11-20">11 - 20</option>
+                            <option value="21-50">21 - 50</option>
+                            <option value="50+">Above 50</option>
+                        </select>
+                    </div>
 
                     <div class="filter-group">
-                        <label data-i18n="status">الحالة:</label>
+                        <label>Index %:</label>
+                        <select id="indexFilter">
+                            <option value="">All</option>
+                            <option value="0">0%</option>
+                            <option value="1-20">1% - 20%</option>
+                            <option value="21-50">21% - 50%</option>
+                            <option value="51-75">51% - 75%</option>
+                            <option value="76-100">76% - 100%</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Lessons:</label>
+                        <select id="lessonsFilter">
+                            <option value="">All</option>
+                            <option value="0">0</option>
+                            <option value="1-10">1 - 10</option>
+                            <option value="11-30">11 - 30</option>
+                            <option value="31-60">31 - 60</option>
+                            <option value="61-100">61 - 100</option>
+                            <option value="100+">Above 100</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Assessments:</label>
+                        <select id="testsFilter">
+                            <option value="">All</option>
+                            <option value="0">0</option>
+                            <option value="1-5">1 - 5</option>
+                            <option value="6-10">6 - 10</option>
+                            <option value="11-20">11 - 20</option>
+                            <option value="20+">Above 20</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Status:</label>
                         <select id="statusFilter">
-                            <option value="" data-i18n="all">الكل</option>
-                            <option value="active" data-i18n="active">نشط</option>
-                            <option value="inactive" data-i18n="inactive">غير نشط</option>
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
                         </select>
                     </div>
 
                     <button class="btn btn-secondary" id="resetFiltersBtn" style="padding:6px 14px;font-size:0.8rem;">
                         <i class="fas fa-times"></i>
-                        <span data-i18n="resetFilters">مسح الفلاتر</span>
+                        <span>Reset Filters</span>
                     </button>
                 </div>
 
@@ -899,20 +708,19 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th data-i18n="rank">الترتيب</th>
-                                <th data-i18n="type">النوع</th>
-                                <th data-i18n="code">الكود</th>
-                                <th data-i18n="name">الاسم</th>
-                                <th data-i18n="department">القسم</th>
-                                <th data-i18n="level">المستوى</th>
-                                <th data-i18n="coursesStarted">كورسات بدأها</th>
-                                <th data-i18n="coursesCompleted">كورسات خلصها</th>
-                                <th data-i18n="lessons">دروس</th>
-                                <th data-i18n="assessments">اختبارات</th>
-                                <th data-i18n="passed">ناجحة</th>
-                                <th data-i18n="passRate">نسبة النجاح</th>
-                                <th data-i18n="avgScore">متوسط الدرجات</th>
-                                <th data-i18n="index">الـ Index %</th>
+                                <th>Rank</th>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Level</th>
+                                <th>Courses Started</th>
+                                <th>Courses Completed</th>
+                                <th>Lessons</th>
+                                <th>Assessments</th>
+                                <th>Passed</th>
+                                <th>Pass Rate</th>
+                                <th>Avg Score</th>
+                                <th>Index %</th>
                             </tr>
                         </thead>
                         <tbody id="allTableBody"></tbody>
@@ -928,6 +736,7 @@
     <p style="margin:0;">© 2026 Learning & Development Management System</p>
 </div>
 
+<!-- ============ AUTH GUARD ============ -->
 <script type="module">
 import { auth } from './database.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
@@ -953,7 +762,7 @@ async function checkAdminRole(user) {
         }
         return false;
     } catch (e) {
-        console.warn('⚠️ Could not determine admin role:', e);
+        console.warn('Could not determine admin role:', e);
         return false;
     }
 }
@@ -983,7 +792,7 @@ function showLoading(show, text) {
 
 window.logout = async () => {
     try {
-        showLoading(true, '⏳ جاري تسجيل الخروج...');
+        showLoading(true, '⏳ Signing out...');
         await signOut(auth);
         window.location.href = 'login.html';
     } catch (e) {
@@ -996,7 +805,7 @@ window.refreshPage = () => { window.location.reload(); };
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        showLoading(true, '⏳ جاري التحقق من الصلاحيات...');
+        showLoading(true, '⏳ Verifying permissions...');
         const isAdmin = await checkAdminRole(user);
         window.__isAdmin = isAdmin;
         window.__currentUser = user;
@@ -1009,22 +818,93 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 </script>
-
+<!-- ============ MAIN PAGE SCRIPT ============ -->
 <script type="module">
 import { auth, DB } from './database.js';
 import { TraineeDB } from './trainee-db.js';
 
+// ============================================================
+// CLOUDINARY CONFIG
+// ============================================================
 const CLOUDINARY_CONFIG = {
     cloudName: 'so9u5deh',
     baseUrl: 'https://res.cloudinary.com/so9u5deh/image/upload',
     format: 'webp',
 };
 
+// ============================================================
+// CACHE CONFIG (IndexedDB)
+// ============================================================
 const CACHE_KEY = 'lobster_top10_cache_v2';
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
+const CACHE_DB_NAME = 'lobster_cache_db';
+const CACHE_DB_VERSION = 1;
+const CACHE_STORE = 'cache_store';
 
+// ⭐ Collection names
+const EMPLOYEES_COLLECTION = 'employees';
+const TRAINEES_COLLECTION  = 'trainees';   // ⚠️ غيّر الاسم لو مختلف في Firebase
+
+// ============================================================
+// INDEXEDDB HELPERS
+// ============================================================
+let _cacheDbPromise = null;
+
+function openCacheDB() {
+    if (_cacheDbPromise) return _cacheDbPromise;
+    _cacheDbPromise = new Promise((resolve, reject) => {
+        const req = indexedDB.open(CACHE_DB_NAME, CACHE_DB_VERSION);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(CACHE_STORE)) {
+                db.createObjectStore(CACHE_STORE);
+            }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => reject(e.target.error);
+    });
+    return _cacheDbPromise;
+}
+
+async function idbSet(key, value) {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(CACHE_STORE, 'readwrite');
+        const store = tx.objectStore(CACHE_STORE);
+        const req = store.put(value, key);
+        req.onsuccess = () => resolve(true);
+        req.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function idbGet(key) {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(CACHE_STORE, 'readonly');
+        const store = tx.objectStore(CACHE_STORE);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function idbDelete(key) {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(CACHE_STORE, 'readwrite');
+        const store = tx.objectStore(CACHE_STORE);
+        const req = store.delete(key);
+        req.onsuccess = () => resolve(true);
+        req.onerror = (e) => reject(e.target.error);
+    });
+}
+
+// ============================================================
+// LEVEL CONFIG
+// ============================================================
 const LEVEL_GROUPS = {
     employees: ['R&F', '5%', 'KPs', 'Supervisor'],
+    learners:  ['R&F'],
     managers:  ['GM', 'Director', 'HODs', 'AHODs']
 };
 
@@ -1047,290 +927,38 @@ function getLevelColorStyle(level) {
     return key ? LEVEL_COLORS[key] : { color: '#64748B', bg: '#F1F5F9' };
 }
 
-function isInLevelGroup(level, group, source) {
+function isInLevelGroup(level, group, code = null) {
     if (group === 'all') return true;
-    
-    // ✅ لو عايز المتدربين
-    if (group === 'trainees') return source === 'trainee';
-    
-    // ✅ لو عايز الموظفين (بنستبعد المديرين والمساعدين هنا)
-    if (group === 'employees') {
-        if (source !== 'employee') return false; 
-        const managers = LEVEL_GROUPS['managers'] || [];
-        if (!level || String(level).trim() === '') return true; // لو مفيش level نفترض إنه موظف عادي
-        const normalized = String(level).toLowerCase().trim();
-        // لو الـ level بتاعه من ضمن المديرين، يبقى مش موظف عادي
-        return !managers.some(l => l.toLowerCase() === normalized);
+
+    // ⭐ المتدربين = أي حد موجود في traineesMap فقط
+    if (group === 'learners') {
+        return code ? isLearnerCode(code) : false;
     }
-    
-    // ✅ لو عايز المديرين والمساعدين
-    if (group === 'managers') {
-        if (source !== 'employee') return false;
-        const managers = LEVEL_GROUPS['managers'] || [];
-        if (!level || String(level).trim() === '') return false;
-        const normalized = String(level).toLowerCase().trim();
-        return managers.some(l => l.toLowerCase() === normalized);
-    }
-    
-    return true;
+
+    // ⭐ باقي الفلاتر تستبعد المتدربين
+    if (code && isLearnerCode(code)) return false;
+
+    const levels = LEVEL_GROUPS[group] || [];
+    if (!level || String(level).trim() === '') return group === 'employees';
+    const normalized = String(level).toLowerCase().trim();
+    return levels.some(l => l.toLowerCase() === normalized);
 }
 
-const TRANSLATIONS = {
-    ar: {
-        tabUpload: 'رفع الملفات',
-        tabLeaderboard: 'لوحة الأوائل',
-        tabAllEmployees: 'كل الموظفين',
-        refresh: 'تحديث',
-        uploadTitle: 'رفع ملفات LobsterInk',
-        waitingFiles: 'في انتظار الملفات',
-        waitingOther: 'في انتظار الملف الآخر',
-        readyAnalyze: 'جاهز للتحليل',
-        activityReport: 'Learner Activity Report',
-        performanceReport: 'Assessment Performance Report',
-        dragDrop: 'اسحب الملف هنا أو اضغط للاختيار',
-        analyzeBtn: 'تحليل الملفات',
-        analyzing: 'جاري التحليل...',
-        resetBtn: 'مسح الكل',
-        top10Title: 'لوحة الأوائل - Top 10',
-        period: 'الفترة:',
-        monthly: 'شهري',
-        weekly: 'أسبوعي',
-        quarterly: 'ربع سنوي',
-        halfYearly: 'نصف سنوي',
-        yearly: 'سنوي',
-        month: 'الشهر:',
-        week: 'الأسبوع:',
-        quarter: 'الربع:',
-        q1: 'Q1 (يناير - مارس)',
-        q2: 'Q2 (أبريل - يونيو)',
-        q3: 'Q3 (يوليو - سبتمبر)',
-        q4: 'Q4 (أكتوبر - ديسمبر)',
-        week1: 'الأسبوع الأول',
-        week2: 'الأسبوع الثاني',
-        week3: 'الأسبوع الثالث',
-        week4: 'الأسبوع الرابع',
-        noData: 'لا توجد بيانات',
-        uploadHint: 'ارفع الملفات واضغط "تحليل الملفات"',
-        downloadPng: 'تحميل كصورة PNG (1920×1080)',
-        downloadPdf: 'تحميل كـ PDF',
-        allEmployeesTitle: 'كل الموظفين',
-        search: 'بحث:',
-        department: 'القسم:',
-        all: 'الكل',
-        completedCourses: 'خلص كورسات',
-        passRateAbove: 'معدل نجاح > 50%',
-        noCode: 'بدون كود صحيح',
-        courses: 'الكورسات:',
-        index: 'الـ Index %:',
-        status: 'الحالة:',
-        active: 'نشط',
-        inactive: 'غير نشط',
-        resetFilters: 'مسح الفلاتر',
-        rank: 'الترتيب',
-        type: 'النوع',
-        code: 'الكود',
-        name: 'الاسم',
-        level: 'المستوى',
-        levelAll: 'الكل',
-        levelEmployees: 'موظفين',
-        levelTrainees: 'متدربين',
-        levelManagers: 'مديرين ومساعدين',
-        coursesStarted: 'كورسات بدأها',
-        coursesCompleted: 'كورسات خلصها',
-        lessons: 'دروس',
-        assessments: 'اختبارات',
-        passed: 'ناجحة',
-        passRate: 'نسبة النجاح',
-        avgScore: 'متوسط الدرجات',
-        noCodeAlert: 'موظفين بدون كود صحيح',
-        missingFirebase: 'موظفين مش موجودين في Firebase',
-        allGood: 'كل البيانات سليمة',
-        allGoodMsg: '✅ كل الموظفين عندهم أكواد صحيحة ومربوطين بـ Firebase',
-        viewList: 'عرض القائمة',
-        downloadList: 'تحميل القائمة',
-        previewTitle: 'معاينة',
-        monthNames: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
-        weekNames: ['الأول','الثاني','الثالث','الرابع'],
-        leaderboardTitle: 'أعلى 10 متدربين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
-        leaderboardTitleEmployees: 'أعلى 10 موظفين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
-        leaderboardTitleManagers: 'أعلى 10 مديرين ومساعدين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
-        leaderboardTitleTrainees: 'أعلى 10 متدربين أداءً على منصة التعليم الإلكتروني (LobsterInk)',
-        yearLabel: 'سنة',
-        weekLabel: 'الأسبوع',
-        quarterLabel: 'الربع',
-        employee: 'موظف',
-        learner: 'متدرب',
-        unknown: 'غير معروف',
-        undefinedDept: 'غير محدد',
-        noResults: 'لا توجد نتائج مطابقة',
-        noCodeWarning: 'بدون كود',
-        saveCache: 'حفظ الكاش',
-        clearCache: 'حذف الكاش',
-        cacheSaved: '✅ تم حفظ الكاش بنجاح',
-        cacheCleared: '🗑️ تم حذف الكاش',
-        cacheRestored: '📦 تم استرجاع البيانات من الكاش',
-        cacheExpired: '⏰ انتهت صلاحية الكاش',
-        cacheActive: 'نشط',
-        cacheExpiredShort: 'منتهي',
-        cacheNone: 'لا يوجد كاش',
-        cacheSavedAt: 'آخر حفظ:',
-        cacheHoursLeft: 'متبقي:',
-        hours: 'ساعة',
-        coursesFilterLabel: 'الكورسات:',
-        indexFilterLabel: 'الـ Index %:',
-        lessonsFilterLabel: 'الدروس:',
-        testsFilterLabel: 'الاختبارات:',
-        allOption: 'الكل',
-        zeroOption: '0',
-        range1to5: '1 - 5',
-        range6to10: '6 - 10',
-        range11to20: '11 - 20',
-        range21to50: '21 - 50',
-        rangeAbove50: 'أكثر من 50',
-        range1to10: '1 - 10',
-        range11to30: '11 - 30',
-        range31to60: '31 - 60',
-        range61to100: '61 - 100',
-        rangeAbove100: 'أكثر من 100',
-        rangeAbove20: 'أكثر من 20',
-        pctZero: '0%',
-        pct1to20: '1% - 20%',
-        pct21to50: '21% - 50%',
-        pct51to75: '51% - 75%',
-        pct76to100: '76% - 100%',
-    },
-    en: {
-        tabUpload: 'Upload Files',
-        tabLeaderboard: 'Leaderboard',
-        tabAllEmployees: 'All Employees',
-        refresh: 'Refresh',
-        uploadTitle: 'Upload LobsterInk Files',
-        waitingFiles: 'Waiting for files',
-        waitingOther: 'Waiting for other file',
-        readyAnalyze: 'Ready to analyze',
-        activityReport: 'Learner Activity Report',
-        performanceReport: 'Assessment Performance Report',
-        dragDrop: 'Drag file here or click to select',
-        analyzeBtn: 'Analyze Files',
-        analyzing: 'Analyzing...',
-        resetBtn: 'Reset All',
-        top10Title: 'Top 10 Leaderboard',
-        period: 'Period:',
-        monthly: 'Monthly',
-        weekly: 'Weekly',
-        quarterly: 'Quarterly',
-        halfYearly: 'Half-Yearly',
-        yearly: 'Yearly',
-        month: 'Month:',
-        week: 'Week:',
-        quarter: 'Quarter:',
-        q1: 'Q1 (Jan - Mar)',
-        q2: 'Q2 (Apr - Jun)',
-        q3: 'Q3 (Jul - Sep)',
-        q4: 'Q4 (Oct - Dec)',
-        week1: 'Week 1',
-        week2: 'Week 2',
-        week3: 'Week 3',
-        week4: 'Week 4',
-        noData: 'No Data',
-        uploadHint: 'Upload files and click "Analyze Files"',
-        downloadPng: 'Download PNG (1920×1080)',
-        downloadPdf: 'Download PDF',
-        allEmployeesTitle: 'All Employees',
-        search: 'Search:',
-        department: 'Department:',
-        all: 'All',
-        completedCourses: 'Completed Courses',
-        passRateAbove: 'Pass Rate > 50%',
-        noCode: 'No Valid Code',
-        courses: 'Courses:',
-        index: 'Index %:',
-        status: 'Status:',
-        active: 'Active',
-        inactive: 'Inactive',
-        resetFilters: 'Reset Filters',
-        rank: 'Rank',
-        type: 'Type',
-        code: 'Code',
-        name: 'Name',
-        level: 'Level',
-        levelAll: 'All',
-        levelEmployees: 'Employees',
-        levelTrainees: 'Trainees',
-        levelManagers: 'Managers & Assistants',
-        coursesStarted: 'Started',
-        coursesCompleted: 'Completed',
-        lessons: 'Lessons',
-        assessments: 'Assessments',
-        passed: 'Passed',
-        passRate: 'Pass Rate',
-        avgScore: 'Avg Score',
-        noCodeAlert: 'Employees without valid code',
-        missingFirebase: 'Employees not in Firebase',
-        allGood: 'All data is valid',
-        allGoodMsg: '✅ All employees have valid codes and are linked to Firebase',
-        viewList: 'View List',
-        downloadList: 'Download List',
-        previewTitle: 'Preview',
-        monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
-        weekNames: ['First','Second','Third','Fourth'],
-        leaderboardTitle: 'Top 10 Learners on LobsterInk Platform',
-        leaderboardTitleEmployees: 'Top 10 Employees on LobsterInk Platform',
-        leaderboardTitleManagers: 'Top 10 Managers & Assistants on LobsterInk Platform',
-        leaderboardTitleTrainees: 'Top 10 Trainees on LobsterInk Platform',
-        yearLabel: 'Year',
-        weekLabel: 'Week',
-        quarterLabel: 'Quarter',
-        employee: 'employees',
-        learner: 'learners',
-        unknown: 'Unknown',
-        undefinedDept: 'Not specified',
-        noResults: 'No matching results',
-        noCodeWarning: 'No Code',
-        saveCache: 'Save Cache',
-        clearCache: 'Clear Cache',
-        cacheSaved: '✅ Cache saved successfully',
-        cacheCleared: '🗑️ Cache cleared',
-        cacheRestored: '📦 Data restored from cache',
-        cacheExpired: '⏰ Cache expired',
-        cacheActive: 'Active',
-        cacheExpiredShort: 'Expired',
-        cacheNone: 'No cache',
-        cacheSavedAt: 'Saved:',
-        cacheHoursLeft: 'Left:',
-        hours: 'h',
-        coursesFilterLabel: 'Courses:',
-        indexFilterLabel: 'Index %:',
-        lessonsFilterLabel: 'Lessons:',
-        testsFilterLabel: 'Assessments:',
-        allOption: 'All',
-        zeroOption: '0',
-        range1to5: '1 - 5',
-        range6to10: '6 - 10',
-        range11to20: '11 - 20',
-        range21to50: '21 - 50',
-        rangeAbove50: 'Above 50',
-        range1to10: '1 - 10',
-        range11to30: '11 - 30',
-        range31to60: '31 - 60',
-        range61to100: '61 - 100',
-        rangeAbove100: 'Above 100',
-        rangeAbove20: 'Above 20',
-        pctZero: '0%',
-        pct1to20: '1% - 20%',
-        pct21to50: '21% - 50%',
-        pct51to75: '51% - 75%',
-        pct76to100: '76% - 100%',
-    }
-};
+// ============================================================
+// MONTH / WEEK NAMES
+// ============================================================
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WEEK_NAMES = ['First','Second','Third','Fourth'];
 
-let currentLang = localStorage.getItem('lang') || 'ar';
-function t(key) {
-    return TRANSLATIONS[currentLang][key] || key;
-}
-
+// ============================================================
+// GLOBALS
+// ============================================================
 let allEmployees = [];
 let employeesMap = new Map();
+
+let allTrainees = [];
+let traineesMap = new Map();
+
 let activityData = null;
 let performanceData = null;
 let mergedData = [];
@@ -1345,6 +973,9 @@ let currentTab = 'upload';
 const RANK_EMOJIS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 let currentYear = new Date().getFullYear();
 
+// ============================================================
+// THRESHOLDS PER PERIOD
+// ============================================================
 function getPeriodThresholds(period) {
     switch (period) {
         case 'year':    return { cc: 120, ac: 120, lc: 360 };
@@ -1356,6 +987,9 @@ function getPeriodThresholds(period) {
     }
 }
 
+// ============================================================
+// DOM REFS
+// ============================================================
 const activityUploadBox = document.getElementById('activityUploadBox');
 const performanceUploadBox = document.getElementById('performanceUploadBox');
 const activityFileInput = document.getElementById('activityFileInput');
@@ -1374,6 +1008,7 @@ const allCountBadge = document.getElementById('allCountBadge');
 const allTableBody = document.getElementById('allTableBody');
 const downloadPngBtn = document.getElementById('downloadPngBtn');
 const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+const downloadExcelBtn = document.getElementById('downloadExcelBtn');
 const loadingInline = document.getElementById('loadingInline');
 const loadingText = document.getElementById('loadingText');
 
@@ -1413,6 +1048,9 @@ const modalCloseBtn = document.getElementById('modalCloseBtn');
 const leaderboardTabCount = document.getElementById('leaderboardTabCount');
 const allTabCount = document.getElementById('allTabCount');
 
+// ============================================================
+// SWITCH TAB
+// ============================================================
 window.switchTab = function(tabName) {
     currentTab = tabName;
 
@@ -1426,9 +1064,7 @@ window.switchTab = function(tabName) {
     if (btn) btn.classList.add('active');
 
     if (tabName === 'leaderboard' && top10Data.length > 0) {
-        setTimeout(() => {
-            renderLeaderboard(top10Data);
-        }, 50);
+        setTimeout(() => renderLeaderboard(top10Data), 50);
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1439,6 +1075,9 @@ function updateTabCounts() {
     if (allTabCount) allTabCount.textContent = rankedData.length || 0;
 }
 
+// ============================================================
+// HELPERS
+// ============================================================
 function showToast(message, type = 'success') {
     document.querySelector('.toast')?.remove();
     const toast = document.createElement('div');
@@ -1494,6 +1133,9 @@ function extractCode(colA) {
     return String(colA).trim();
 }
 
+// ============================================================
+// CLOUDINARY IMAGE HELPERS
+// ============================================================
 function buildCloudinaryUrl(employeeId) {
     if (!employeeId) return null;
     const cleanId = String(employeeId).trim();
@@ -1508,6 +1150,9 @@ function getEmployeePhoto(emp, employeeId) {
     return buildCloudinaryUrl(employeeId);
 }
 
+// ============================================================
+// INDEX HELPERS
+// ============================================================
 function formatIndexPercent(index) {
     return (index * 100).toFixed(2) + '%';
 }
@@ -1520,63 +1165,59 @@ function getIndexColorStyle(index) {
     return { color: '#64748B', bg: '#F1F5F9' };
 }
 
-function getCacheInfo() {
+// ============================================================
+// CACHE MANAGER (IndexedDB)
+// ============================================================
+async function getCacheInfo() {
     try {
-        const raw = localStorage.getItem(CACHE_KEY);
-        if (!raw) return { exists: false };
-        const obj = JSON.parse(raw);
+        const obj = await idbGet(CACHE_KEY);
         if (!obj || !obj._savedAt) return { exists: false };
         const age = Date.now() - obj._savedAt;
         const remaining = CACHE_DURATION_MS - age;
         return {
             exists: true,
             savedAt: obj._savedAt,
-            age,
-            remaining,
+            age, remaining,
             expired: remaining <= 0,
             data: obj
         };
     } catch (e) {
+        console.error('getCacheInfo failed:', e);
         return { exists: false };
     }
 }
 
-function updateCacheBadge() {
-    const info = getCacheInfo();
+async function updateCacheBadge() {
+    const info = await getCacheInfo();
     cacheInfoBadge.classList.remove('active', 'expired');
 
     if (!info.exists) {
-        cacheInfoText.textContent = t('cacheNone');
+        cacheInfoText.textContent = 'No cache';
         return;
     }
 
     const savedDate = new Date(info.savedAt);
     const hoursLeft = Math.max(0, Math.floor(info.remaining / (60 * 60 * 1000)));
-    const timeStr = savedDate.toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US', {
+    const timeStr = savedDate.toLocaleString('en-US', {
         day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     });
 
     if (info.expired) {
         cacheInfoBadge.classList.add('expired');
-        cacheInfoText.textContent = `${t('cacheExpiredShort')} (${timeStr})`;
+        cacheInfoText.textContent = `Expired (${timeStr})`;
     } else {
         cacheInfoBadge.classList.add('active');
-        cacheInfoText.textContent = `${t('cacheActive')} • ${hoursLeft}${t('hours')} • ${timeStr}`;
+        cacheInfoText.textContent = `Active • ${hoursLeft}h • ${timeStr}`;
     }
 }
 
-function saveCache(showToastMsg = true) {
+async function saveCache(showToastMsg = true) {
     try {
         const cacheData = {
             _savedAt: Date.now(),
-            allEmployees: allEmployees.map(e => ({ ...e })),  // ✅ نسخة مع __source
-            activityData: activityData,
-            performanceData: performanceData,
-            mergedData: mergedData,
-            rankedData: rankedData,
-            top10Data: top10Data,
-            invalidIds: invalidIds,
-            missingInFirebase: missingInFirebase,
+            allEmployees, allTrainees,
+            activityData, performanceData, mergedData,
+            rankedData, top10Data, invalidIds, missingInFirebase,
             filters: {
                 levelFilter: levelFilter.value,
                 levelFilterTable: levelFilterTable.value,
@@ -1595,35 +1236,40 @@ function saveCache(showToastMsg = true) {
                 testsFilter: testsFilter.value,
                 statusFilter: statusFilter.value
             },
-            currentYear: currentYear
+            currentYear
         };
-
-        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-        updateCacheBadge();
-
-        if (showToastMsg) showToast(t('cacheSaved'), 'success');
+        await idbSet(CACHE_KEY, cacheData);
+        await updateCacheBadge();
+        if (showToastMsg) showToast('✅ Cache saved successfully', 'success');
         return true;
     } catch (e) {
-        console.error('❌ Cache save failed:', e);
-        if (showToastMsg) showToast('❌ فشل حفظ الكاش', 'error');
+        console.error('Cache save failed:', e);
+        if (showToastMsg) {
+            if (e.name === 'QuotaExceededError') {
+                showToast('⚠️ Storage full — clear browser data', 'warning');
+            } else {
+                showToast('❌ Cache save failed', 'error');
+            }
+        }
         return false;
     }
 }
 
-function clearCache(showToastMsg = true) {
+async function clearCache(showToastMsg = true) {
     try {
-        localStorage.removeItem(CACHE_KEY);
-        updateCacheBadge();
-        if (showToastMsg) showToast(t('cacheCleared'), 'info');
+        await idbDelete(CACHE_KEY);
+        try { localStorage.removeItem(CACHE_KEY); } catch (_) {}
+        await updateCacheBadge();
+        if (showToastMsg) showToast('🗑️ Cache cleared', 'info');
         return true;
     } catch (e) {
-        console.error('❌ Cache clear failed:', e);
+        console.error('Cache clear failed:', e);
         return false;
     }
 }
 
-function loadFromCache() {
-    const info = getCacheInfo();
+async function loadFromCache() {
+    const info = await getCacheInfo();
     if (!info.exists || info.expired) return false;
 
     try {
@@ -1631,20 +1277,17 @@ function loadFromCache() {
 
         allEmployees = data.allEmployees || [];
         employeesMap.clear();
-
-        // ✅ ضيف الموظفين أولاً (أولوية)
-        allEmployees.filter(e => e.__source === 'employee').forEach(emp => {
+        allEmployees.forEach(emp => {
             if (emp && emp.id !== undefined && emp.id !== null) {
-                employeesMap.set(String(emp.id).trim(), { ...emp, __source: 'employee' });
+                employeesMap.set(String(emp.id).trim(), emp);
             }
         });
-        // ✅ بعدين المتدربين (لو الكود مش موجود)
-        allEmployees.filter(e => e.__source === 'trainee').forEach(trn => {
-            if (trn && trn.id !== undefined && trn.id !== null) {
-                const key = String(trn.id).trim();
-                if (!employeesMap.has(key)) {
-                    employeesMap.set(key, { ...trn, __source: 'trainee' });
-                }
+
+        allTrainees = data.allTrainees || [];
+        traineesMap.clear();
+        allTrainees.forEach(t => {
+            if (t && t.id !== undefined && t.id !== null) {
+                traineesMap.set(String(t.id).trim(), t);
             }
         });
 
@@ -1669,12 +1312,10 @@ function loadFromCache() {
             completedFilter.checked = !!f.completedFilter;
             passRateFilter.checked = !!f.passRateFilter;
             noCodeFilter.checked = !!f.noCodeFilter;
-
             if (f.coursesFilter) coursesFilter.value = f.coursesFilter;
             if (f.indexFilter) indexFilter.value = f.indexFilter;
             if (f.lessonsFilter) lessonsFilter.value = f.lessonsFilter;
             if (f.testsFilter) testsFilter.value = f.testsFilter;
-
             if (f.statusFilter) statusFilter.value = f.statusFilter;
         }
 
@@ -1687,112 +1328,97 @@ function loadFromCache() {
             renderAlerts();
             downloadPngBtn.disabled = false;
             downloadPdfBtn.disabled = false;
+            if (downloadExcelBtn) downloadExcelBtn.disabled = false;
             updateTabCounts();
 
             if (activityData && activityData.length > 0) {
                 activityUploadBox.classList.add('has-file');
-                activityFileName.textContent = `✅ ${activityData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
+                activityFileName.textContent = `✅ ${activityData.length} rows (from cache)`;
             }
             if (performanceData && performanceData.length > 0) {
                 performanceUploadBox.classList.add('has-file');
-                performanceFileName.textContent = `✅ ${performanceData.length} ${currentLang === 'ar' ? 'صف (من الكاش)' : 'rows (from cache)'}`;
+                performanceFileName.textContent = `✅ ${performanceData.length} rows (from cache)`;
             }
             updateAnalyzeButton();
         }
-
         return true;
     } catch (e) {
-        console.error('❌ Cache restore failed:', e);
+        console.error('Cache restore failed:', e);
         return false;
     }
 }
 
-function applyLanguage() {
-    document.documentElement.lang = currentLang;
-    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-    document.body.classList.toggle('lang-en', currentLang === 'en');
-
-    const langBtnText = document.getElementById('langBtnText');
-    if (langBtnText) langBtnText.textContent = currentLang === 'ar' ? 'English' : 'العربية';
-
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (TRANSLATIONS[currentLang][key] !== undefined) {
-            el.textContent = TRANSLATIONS[currentLang][key];
-        }
-    });
-
-    const searchInput = document.getElementById('searchFilter');
-    if (searchInput) {
-        searchInput.placeholder = currentLang === 'ar' ? 'الاسم أو الكود...' : 'Name or code...';
-    }
-
-    populateMonthFilter();
-    populateGroupFilter();
-    updateCacheBadge();
-
-    if (top10Data.length > 0) {
-        renderLeaderboard(top10Data);
-        renderAllEmployeesTable();
-        renderAlerts();
-    }
-
-    updateTabCounts();
-}
-
-function toggleLanguage() {
-    currentLang = currentLang === 'ar' ? 'en' : 'ar';
-    localStorage.setItem('lang', currentLang);
-    applyLanguage();
-    showToast(currentLang === 'ar' ? '🇸🇦 تم تغيير اللغة للعربية' : '🇬🇧 Language switched to English', 'success');
-}
-
+// ============================================================
+// LOAD EMPLOYEES & TRAINEES
+// ============================================================
 async function loadEmployees(forceRefresh = false) {
     try {
-        if (forceRefresh) await DB.refresh('employees');
-        const empsResult = await DB.getAll('employees');
-        const employees = empsResult || [];
-
-        if (forceRefresh) await TraineeDB.refresh('trainees');
-        const trnsResult = await TraineeDB.getAll('trainees');
-        const trainees = trnsResult || [];
-
-        allEmployees = [
-            ...employees.map(e => ({ ...e, __source: 'employee' })),
-            ...trainees.map(t => ({ ...t, __source: 'trainee' }))
-        ];
-
+        if (forceRefresh) await DB.refresh(EMPLOYEES_COLLECTION);
+        const result = await DB.getAll(EMPLOYEES_COLLECTION);
+        allEmployees = result || [];
         employeesMap.clear();
-        employees.forEach(emp => {
+        allEmployees.forEach(emp => {
             if (emp && emp.id !== undefined && emp.id !== null) {
-                employeesMap.set(String(emp.id).trim(), { ...emp, __source: 'employee' });
+                employeesMap.set(String(emp.id).trim(), emp);
             }
         });
-        trainees.forEach(trn => {
-            if (trn && trn.id !== undefined && trn.id !== null) {
-                const key = String(trn.id).trim();
-                if (!employeesMap.has(key)) {
-                    employeesMap.set(key, { ...trn, __source: 'trainee' });
-                }
-            }
-        });
-
-        console.log(`👥 Loaded ${employees.length} employees + ${trainees.length} trainees (${employeesMap.size} unique in map)`);
+        console.log(`👥 Loaded ${allEmployees.length} employees`);
         return allEmployees;
     } catch (error) {
-        console.error('❌ Failed to load employees/trainees:', error);
+        console.error('Failed to load employees:', error);
         allEmployees = [];
         employeesMap.clear();
-        showToast(currentLang === 'ar' ? '⚠️ فشل تحميل البيانات' : '⚠️ Failed to load data', 'warning');
+        showToast('⚠️ Failed to load employees', 'warning');
         return [];
     }
 }
 
-function findEmployeeById(empId) {
-    if (!empId) return null;
-    return employeesMap.get(String(empId).trim()) || null;
+async function loadTrainees(forceRefresh = false) {
+    try {
+        if (forceRefresh) await TraineeDB.refresh(TRAINEES_COLLECTION);
+        const result = await TraineeDB.getAll(TRAINEES_COLLECTION);
+        allTrainees = result || [];
+        traineesMap.clear();
+        allTrainees.forEach(t => {
+            if (t && t.id !== undefined && t.id !== null) {
+                traineesMap.set(String(t.id).trim(), t);
+            }
+        });
+        console.log(`🎓 Loaded ${allTrainees.length} trainees`);
+        return allTrainees;
+    } catch (error) {
+        console.error('Failed to load trainees:', error);
+        allTrainees = [];
+        traineesMap.clear();
+        showToast('⚠️ Failed to load trainees', 'warning');
+        return [];
+    }
 }
 
+// ⭐ دالة موحدة للبحث (موظفين ثم متدربين)
+function getPersonByCode(code) {
+    if (!code) return null;
+    const cleanCode = String(code).trim();
+
+    if (employeesMap.has(cleanCode)) {
+        return { person: employeesMap.get(cleanCode), source: 'employee' };
+    }
+    if (traineesMap.has(cleanCode)) {
+        return { person: traineesMap.get(cleanCode), source: 'trainee' };
+    }
+    return null;
+}
+
+// ⭐ هل الكود ده بتاع متدرب فقط (مش موجود في الموظفين)
+function isLearnerCode(code) {
+    if (!code) return false;
+    const cleanCode = String(code).trim();
+    return traineesMap.has(cleanCode) && !employeesMap.has(cleanCode);
+}
+
+// ============================================================
+// UPLOAD HANDLERS
+// ============================================================
 function setupUploadBox(box, input, fileNameEl, onFileSelected) {
     box.addEventListener('click', () => input.click());
     box.addEventListener('dragover', (e) => { e.preventDefault(); box.classList.add('dragover'); });
@@ -1811,19 +1437,19 @@ function setupUploadBox(box, input, fileNameEl, onFileSelected) {
 async function handleFile(file, box, fileNameEl, onFileSelected) {
     const validExt = /\.(xlsx|xls)$/i.test(file.name);
     if (!validExt) {
-        showToast(currentLang === 'ar' ? '⚠️ الملف لازم يكون Excel (.xlsx أو .xls)' : '⚠️ File must be Excel (.xlsx or .xls)', 'warning');
+        showToast('⚠️ File must be Excel (.xlsx or .xls)', 'warning');
         return;
     }
     try {
-        setLoading(true, currentLang === 'ar' ? 'جاري قراءة الملف...' : 'Reading file...');
+        setLoading(true, 'Reading file...');
         const data = await readExcelFile(file);
         box.classList.add('has-file');
-        fileNameEl.textContent = `✅ ${file.name} (${data.length} ${currentLang === 'ar' ? 'صف' : 'rows'})`;
+        fileNameEl.textContent = `✅ ${file.name} (${data.length} rows)`;
         onFileSelected(data, file.name);
-        showToast(`✅ ${currentLang === 'ar' ? 'تم قراءة' : 'Loaded'} ${file.name}`, 'success');
+        showToast(`✅ Loaded ${file.name}`, 'success');
     } catch (error) {
-        console.error('❌ File read failed:', error);
-        showToast(currentLang === 'ar' ? '❌ فشل قراءة الملف' : '❌ Failed to read file', 'error');
+        console.error('File read failed:', error);
+        showToast('❌ Failed to read file', 'error');
         box.classList.remove('has-file');
         fileNameEl.textContent = '';
     } finally {
@@ -1850,20 +1476,23 @@ function readExcelFile(file) {
     });
 }
 
+// ============================================================
+// ANALYZE
+// ============================================================
 function updateAnalyzeButton() {
     const hasActivity = !!activityData;
     const hasPerformance = !!performanceData;
     analyzeBtn.disabled = !(hasActivity && hasPerformance);
     if (hasActivity && hasPerformance) {
-        uploadStatus.textContent = t('readyAnalyze');
+        uploadStatus.textContent = 'Ready to analyze';
         uploadStatus.style.background = '#D1FAE5';
         uploadStatus.style.color = '#065F46';
     } else if (hasActivity || hasPerformance) {
-        uploadStatus.textContent = t('waitingOther');
+        uploadStatus.textContent = 'Waiting for other file';
         uploadStatus.style.background = '#FEF3C7';
         uploadStatus.style.color = '#92400E';
     } else {
-        uploadStatus.textContent = t('waitingFiles');
+        uploadStatus.textContent = 'Waiting for files';
         uploadStatus.style.background = '';
         uploadStatus.style.color = '';
     }
@@ -1872,24 +1501,21 @@ function updateAnalyzeButton() {
 async function analyzeFiles() {
     if (isAnalyzing) return;
     if (!activityData || !performanceData) {
-        showToast(currentLang === 'ar' ? '⚠️ لازم ترفع الملفين الأول' : '⚠️ Please upload both files first', 'warning');
+        showToast('⚠️ Please upload both files first', 'warning');
         return;
     }
     if (activityData.length !== performanceData.length) {
-        showToast(`❌ ${currentLang === 'ar' ? 'عدد الصفوف مختلف!' : 'Row count mismatch!'}`, 'error');
-        renderAlert('danger',
-            currentLang === 'ar' ? '❌ عدد الصفوف مختلف' : '❌ Row count mismatch',
-            currentLang === 'ar'
-                ? `ملف Activity فيه <strong>${activityData.length}</strong> صف، وملف Performance فيه <strong>${performanceData.length}</strong> صف.`
-                : `Activity file has <strong>${activityData.length}</strong> rows, Performance file has <strong>${performanceData.length}</strong> rows.`
+        showToast('❌ Row count mismatch!', 'error');
+        renderAlert('danger', '❌ Row count mismatch',
+            `Activity file has <strong>${activityData.length}</strong> rows, Performance file has <strong>${performanceData.length}</strong> rows.`
         );
         return;
     }
     isAnalyzing = true;
     analyzeBtn.disabled = true;
-    analyzeBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('analyzing')}`;
+    analyzeBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Analyzing...`;
     try {
-        setLoading(true, currentLang === 'ar' ? 'جاري تحليل البيانات...' : 'Analyzing data...');
+        setLoading(true, 'Analyzing data...');
         mergedData = mergeFiles(activityData, performanceData);
         const currentPeriod = periodFilter.value;
         calculateIndexes(mergedData, currentPeriod);
@@ -1901,23 +1527,25 @@ async function analyzeFiles() {
         renderAlerts();
         downloadPngBtn.disabled = false;
         downloadPdfBtn.disabled = false;
+        if (downloadExcelBtn) downloadExcelBtn.disabled = false;
         updateTabCounts();
-        showToast(`✅ ${currentLang === 'ar' ? 'تم التحليل بنجاح' : 'Analysis complete'} - ${rankedData.length} ${t('employee')}`, 'success');
-
+        showToast(`✅ Analysis complete - ${rankedData.length} records`, 'success');
         switchTab('leaderboard');
-
-        saveCache(false);
+        await saveCache(false);
     } catch (error) {
-        console.error('❌ Analysis failed:', error);
-        showToast(currentLang === 'ar' ? '❌ حدث خطأ أثناء التحليل' : '❌ Analysis error', 'error');
+        console.error('Analysis failed:', error);
+        showToast('❌ Analysis error', 'error');
     } finally {
         isAnalyzing = false;
         analyzeBtn.disabled = false;
-        analyzeBtn.innerHTML = `<i class="fas fa-calculator"></i> ${t('analyzeBtn')}`;
+        analyzeBtn.innerHTML = `<i class="fas fa-calculator"></i> Analyze Files`;
         setLoading(false);
     }
 }
 
+// ============================================================
+// MERGE
+// ============================================================
 function mergeFiles(activityRows, performanceRows) {
     const merged = [];
     for (let i = 0; i < activityRows.length; i++) {
@@ -1952,6 +1580,9 @@ function mergeFiles(activityRows, performanceRows) {
     return merged;
 }
 
+// ============================================================
+// CALCULATE INDEXES
+// ============================================================
 function calculateIndexes(data, period = 'month') {
     const thresholds = getPeriodThresholds(period);
     let maxCoursesCompleted = 0, maxLessonsCompleted = 0;
@@ -1989,6 +1620,9 @@ function calculateIndexes(data, period = 'month') {
     });
 }
 
+// ============================================================
+// FINAL RANK
+// ============================================================
 function calculateFinalRank(data) {
     const sorted = [...data].sort((a, b) => {
         if (b.index !== a.index) return b.index - a.index;
@@ -2002,25 +1636,31 @@ function calculateFinalRank(data) {
     return sorted;
 }
 
+// ============================================================
+// APPLY LEVEL FILTER + RE-RANK
+// ============================================================
 function applyLevelFilterToLeaderboard() {
     if (!rankedData.length) return;
     const levelGroup = levelFilter.value || 'all';
 
     const filtered = rankedData.filter(d => {
-        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const result = getPersonByCode(d.code);
+        const emp = result?.person;
         const empLevel = emp?.level || emp?.Level || '';
-        const empSource = emp?.__source || 'employee';
-        return isInLevelGroup(empLevel, levelGroup, empSource);
+        return isInLevelGroup(empLevel, levelGroup, d.code);
     });
 
     filteredRankedData = calculateFinalRank(filtered);
     top10Data = filteredRankedData.slice(0, 10);
 
     renderLeaderboard(top10Data);
-    previewCount.textContent = `${top10Data.length} ${t('learner')}`;
+    previewCount.textContent = `${top10Data.length} records`;
     updateTabCounts();
 }
 
+// ============================================================
+// COLLECT ALERTS
+// ============================================================
 function collectAlerts() {
     invalidIds = [];
     missingInFirebase = [];
@@ -2029,12 +1669,17 @@ function collectAlerts() {
             invalidIds.push({ rowIndex: d.rowIndex, code: d.code || '(empty)', name: d.fullName || '(no name)', data: d });
         }
         if (d.isValidCode) {
-            const emp = findEmployeeById(d.code);
-            if (!emp) missingInFirebase.push({ rowIndex: d.rowIndex, code: d.code, name: d.fullName || '(no name)', data: d });
+            const result = getPersonByCode(d.code);
+            if (!result) {
+                missingInFirebase.push({ rowIndex: d.rowIndex, code: d.code, name: d.fullName || '(no name)', data: d });
+            }
         }
     });
 }
 
+// ============================================================
+// RESET
+// ============================================================
 function resetAll() {
     activityData = null; performanceData = null;
     mergedData = []; rankedData = []; filteredRankedData = []; top10Data = [];
@@ -2043,18 +1688,22 @@ function resetAll() {
     activityFileName.textContent = ''; performanceFileName.textContent = '';
     activityUploadBox.classList.remove('has-file');
     performanceUploadBox.classList.remove('has-file');
-    uploadStatus.textContent = t('waitingFiles');
+    uploadStatus.textContent = 'Waiting for files';
     uploadStatus.style.background = ''; uploadStatus.style.color = '';
     alertsContainer.innerHTML = '';
     downloadPngBtn.disabled = true; downloadPdfBtn.disabled = true;
+    if (downloadExcelBtn) downloadExcelBtn.disabled = true;
     updateAnalyzeButton();
     updateTabCounts();
     renderLeaderboard([]);
     allTableBody.innerHTML = '';
-    showToast(currentLang === 'ar' ? '🗑️ تم مسح كل البيانات' : '🗑️ All data cleared', 'info');
+    showToast('🗑️ All data cleared', 'info');
     switchTab('upload');
 }
 
+// ============================================================
+// RENDER ALERTS
+// ============================================================
 function renderAlerts() {
     let html = '';
     if (invalidIds.length > 0) {
@@ -2062,15 +1711,15 @@ function renderAlerts() {
             <div class="alert-card">
                 <div class="alert-title">
                     <i class="fas fa-exclamation-triangle"></i>
-                    ${t('noCodeAlert')} (${invalidIds.length})
+                    Records without valid code (${invalidIds.length})
                 </div>
                 <div class="alert-list">
-                    ${invalidIds.slice(0, 30).map(x => `<span>${currentLang === 'ar' ? 'صف' : 'Row'} ${x.rowIndex}: ${escapeHtml(x.code)} - ${escapeHtml(x.name)}</span>`).join('')}
+                    ${invalidIds.slice(0, 30).map(x => `<span>Row ${x.rowIndex}: ${escapeHtml(x.code)} - ${escapeHtml(x.name)}</span>`).join('')}
                     ${invalidIds.length > 30 ? `<span>... +${invalidIds.length - 30}</span>` : ''}
                 </div>
                 <div class="alert-actions">
-                    <button onclick="window.__viewInvalidIds()"><i class="fas fa-eye"></i> ${t('viewList')}</button>
-                    <button onclick="window.__downloadInvalidIds()"><i class="fas fa-download"></i> ${t('downloadList')}</button>
+                    <button onclick="window.__viewInvalidIds()"><i class="fas fa-eye"></i> View List</button>
+                    <button onclick="window.__downloadInvalidIds()"><i class="fas fa-download"></i> Download List</button>
                 </div>
             </div>`;
     }
@@ -2079,23 +1728,23 @@ function renderAlerts() {
             <div class="alert-card danger">
                 <div class="alert-title">
                     <i class="fas fa-user-slash"></i>
-                    ${t('missingFirebase')} (${missingInFirebase.length})
+                    Records not in Firebase (Employees or Trainees) (${missingInFirebase.length})
                 </div>
                 <div class="alert-list">
-                    ${missingInFirebase.slice(0, 30).map(x => `<span>${currentLang === 'ar' ? 'كود' : 'Code'} ${escapeHtml(x.code)}: ${escapeHtml(x.name)}</span>`).join('')}
+                    ${missingInFirebase.slice(0, 30).map(x => `<span>Code ${escapeHtml(x.code)}: ${escapeHtml(x.name)}</span>`).join('')}
                     ${missingInFirebase.length > 30 ? `<span>... +${missingInFirebase.length - 30}</span>` : ''}
                 </div>
                 <div class="alert-actions">
-                    <button onclick="window.__viewMissingFirebase()"><i class="fas fa-eye"></i> ${t('viewList')}</button>
-                    <button onclick="window.__downloadMissingFirebase()"><i class="fas fa-download"></i> ${t('downloadList')}</button>
+                    <button onclick="window.__viewMissingFirebase()"><i class="fas fa-eye"></i> View List</button>
+                    <button onclick="window.__downloadMissingFirebase()"><i class="fas fa-download"></i> Download List</button>
                 </div>
             </div>`;
     }
     if (invalidIds.length === 0 && missingInFirebase.length === 0) {
         html += `
             <div class="alert-card success">
-                <div class="alert-title"><i class="fas fa-check-circle"></i> ${t('allGood')}</div>
-                <div class="alert-list"><span>${t('allGoodMsg')}</span></div>
+                <div class="alert-title"><i class="fas fa-check-circle"></i> All data is valid</div>
+                <div class="alert-list"><span>✅ All records have valid codes and are linked to Firebase</span></div>
             </div>`;
     }
     alertsContainer.innerHTML = html;
@@ -2110,6 +1759,9 @@ function renderAlert(type, title, message) {
         </div>`;
 }
 
+// ============================================================
+// VIEW MODAL
+// ============================================================
 function openModal(title, contentHtml) {
     modalTitle.textContent = title;
     modalBody.innerHTML = contentHtml;
@@ -2128,29 +1780,26 @@ modalOverlay.addEventListener('click', (e) => {
 window.__viewInvalidIds = function() {
     const rows = invalidIds.map(x => {
         const d = x.data;
-        const idxStyle = getIndexColorStyle(d.index);
+        const idxStyle = d ? getIndexColorStyle(d.index) : { color: '#64748B', bg: '#F1F5F9' };
         return `<tr>
             <td>${x.rowIndex}</td>
             <td class="id-cell">${escapeHtml(x.code)}</td>
             <td class="name-cell">${escapeHtml(x.name)}</td>
-            <td>${d.coursesStarted}</td>
-            <td>${d.coursesCompleted}</td>
-            <td>${d.lessonsCompleted}</td>
-            <td>${d.assessmentsCompleted}</td>
-            <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">${formatIndexPercent(d.index)}</span></td>
+            <td>${d?.coursesStarted ?? '-'}</td>
+            <td>${d?.coursesCompleted ?? '-'}</td>
+            <td>${d?.lessonsCompleted ?? '-'}</td>
+            <td>${d?.assessmentsCompleted ?? '-'}</td>
+            <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">
+                ${d ? formatIndexPercent(d.index) : '-'}
+            </span></td>
         </tr>`;
     }).join('');
     openModal(
-        `${t('noCodeAlert')} (${invalidIds.length})`,
+        `Records without valid code (${invalidIds.length})`,
         `<div class="table-wrapper"><table class="data-table"><thead><tr>
-            <th>${currentLang === 'ar' ? 'الصف' : 'Row'}</th>
-            <th>${t('code')}</th>
-            <th>${t('name')}</th>
-            <th>${t('coursesStarted')}</th>
-            <th>${t('coursesCompleted')}</th>
-            <th>${t('lessons')}</th>
-            <th>${t('assessments')}</th>
-            <th>${t('index')}</th>
+            <th>Row</th><th>Code</th><th>Name</th>
+            <th>Courses Started</th><th>Courses Completed</th>
+            <th>Lessons</th><th>Assessments</th><th>Index</th>
         </tr></thead><tbody>${rows}</tbody></table></div>`
     );
 };
@@ -2158,29 +1807,26 @@ window.__viewInvalidIds = function() {
 window.__viewMissingFirebase = function() {
     const rows = missingInFirebase.map(x => {
         const d = x.data;
-        const idxStyle = getIndexColorStyle(d.index);
+        const idxStyle = d ? getIndexColorStyle(d.index) : { color: '#64748B', bg: '#F1F5F9' };
         return `<tr>
             <td>${x.rowIndex}</td>
             <td class="id-cell">${escapeHtml(x.code)}</td>
             <td class="name-cell">${escapeHtml(x.name)}</td>
-            <td>${d.coursesStarted}</td>
-            <td>${d.coursesCompleted}</td>
-            <td>${d.lessonsCompleted}</td>
-            <td>${d.assessmentsCompleted}</td>
-            <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">${formatIndexPercent(d.index)}</span></td>
+            <td>${d?.coursesStarted ?? '-'}</td>
+            <td>${d?.coursesCompleted ?? '-'}</td>
+            <td>${d?.lessonsCompleted ?? '-'}</td>
+            <td>${d?.assessmentsCompleted ?? '-'}</td>
+            <td><span class="index-cell" style="color:${idxStyle.color};background:${idxStyle.bg};">
+                ${d ? formatIndexPercent(d.index) : '-'}
+            </span></td>
         </tr>`;
     }).join('');
     openModal(
-        `${t('missingFirebase')} (${missingInFirebase.length})`,
+        `Records not in Firebase (${missingInFirebase.length})`,
         `<div class="table-wrapper"><table class="data-table"><thead><tr>
-            <th>${currentLang === 'ar' ? 'الصف' : 'Row'}</th>
-            <th>${t('code')}</th>
-            <th>${t('name')}</th>
-            <th>${t('coursesStarted')}</th>
-            <th>${t('coursesCompleted')}</th>
-            <th>${t('lessons')}</th>
-            <th>${t('assessments')}</th>
-            <th>${t('index')}</th>
+            <th>Row</th><th>Code</th><th>Name</th>
+            <th>Courses Started</th><th>Courses Completed</th>
+            <th>Lessons</th><th>Assessments</th><th>Index</th>
         </tr></thead><tbody>${rows}</tbody></table></div>`
     );
 };
@@ -2191,8 +1837,15 @@ window.__downloadMissingFirebase = function() { downloadCSV(missingInFirebase, '
 function downloadCSV(list, filename) {
     const headers = ['Row', 'Code', 'Name', 'CoursesStarted', 'CoursesCompleted', 'Lessons', 'Assessments', 'Index (%)'];
     const rows = list.map(x => {
-        const d = x.data;
-        return [x.rowIndex, x.code, x.name, d.coursesStarted, d.coursesCompleted, d.lessonsCompleted, d.assessmentsCompleted, (d.index * 100).toFixed(2) + '%'];
+        const d = x.data || {};
+        return [
+            x.rowIndex, x.code, x.name,
+            d.coursesStarted ?? '-',
+            d.coursesCompleted ?? '-',
+            d.lessonsCompleted ?? '-',
+            d.assessmentsCompleted ?? '-',
+            d.index !== undefined ? (d.index * 100).toFixed(2) + '%' : '-'
+        ];
     });
     const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -2200,12 +1853,15 @@ function downloadCSV(list, filename) {
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
-    showToast(currentLang === 'ar' ? '✅ تم تحميل الملف' : '✅ File downloaded', 'success');
+    showToast('✅ File downloaded', 'success');
 }
 
+// ============================================================
+// RENDER LEADERBOARD
+// ============================================================
 function renderLeaderboard(data) {
     if (!data || data.length === 0) {
-        leaderboardContainer.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><h3>${t('noData')}</h3><p>${t('uploadHint')}</p></div>`;
+        leaderboardContainer.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><h3>No Data</h3><p>Upload files and click "Analyze Files"</p></div>`;
         return;
     }
 
@@ -2214,9 +1870,13 @@ function renderLeaderboard(data) {
         const rankClass = d.rank === 1 ? 'gold' : d.rank === 2 ? 'silver' : d.rank === 3 ? 'bronze' : '';
         const medal = d.rank <= 3 ? RANK_EMOJIS[d.rank - 1] : `#${d.rank}`;
         const avatarRing = d.rank === 1 ? 'gold-ring' : d.rank === 2 ? 'silver-ring' : d.rank === 3 ? 'bronze-ring' : '';
-        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
-        const displayName = emp?.fullName || emp?.name || d.fullName || t('unknown');
-        const displayGroup = emp?.department || d.group || t('undefinedDept');
+
+        const result = getPersonByCode(d.code);
+        const emp = result?.person;
+        const isTrainee = result?.source === 'trainee';
+
+        const displayName = emp?.fullName || emp?.name || d.fullName || 'Unknown';
+        const displayGroup = emp?.department || d.group || 'Not specified';
         const photoUrl = getEmployeePhoto(emp, d.code);
         const initials = getInitials(displayName);
         const avatarColor = getAvatarColor(displayName);
@@ -2236,7 +1896,11 @@ function renderLeaderboard(data) {
         }
 
         const noCodeBadge = !d.isValidCode
-            ? `<div class="no-code-warning"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</div>`
+            ? `<div class="no-code-warning"><i class="fas fa-exclamation-triangle"></i> No Code</div>`
+            : '';
+
+        const traineeBadge = isTrainee
+            ? `<div class="no-code-warning" style="background:#DBEAFE;color:#1E40AF;"><i class="fas fa-graduation-cap"></i> Trainee</div>`
             : '';
 
         itemsHtml += `
@@ -2247,6 +1911,7 @@ function renderLeaderboard(data) {
                     <div class="name">${escapeHtml(displayName)}${d.rank <= 3 ? '<span class="verified"><i class="fas fa-star"></i></span>' : ''}</div>
                     <div class="department"><i class="fas fa-building"></i> <span>${escapeHtml(displayGroup)}</span></div>
                     ${noCodeBadge}
+                    ${traineeBadge}
                 </div>
             </div>`;
     });
@@ -2255,32 +1920,32 @@ function renderLeaderboard(data) {
     const month = parseInt(monthFilter.value);
     const week = parseInt(weekFilter.value);
     const quarter = parseInt(quarterFilter.value);
-    const monthName = TRANSLATIONS[currentLang].monthNames[month];
+    const monthName = MONTH_NAMES[month] || '';
     const year = currentYear;
-    const weekName = TRANSLATIONS[currentLang].weekNames[week - 1];
+    const weekName = WEEK_NAMES[week - 1] || '';
     const quarterLabel = `Q${quarter}`;
     const levelGroup = levelFilter.value;
 
     let titleText;
     if (levelGroup === 'employees') {
-        titleText = t('leaderboardTitleEmployees');
-    } else if (levelGroup === 'trainees') {
-        titleText = t('leaderboardTitleTrainees');
+        titleText = 'Top 10 Employees on LobsterInk Platform';
+    } else if (levelGroup === 'learners') {
+        titleText = 'Top 10 Trainees on LobsterInk Platform';
     } else if (levelGroup === 'managers') {
-        titleText = t('leaderboardTitleManagers');
+        titleText = 'Top 10 Managers & Assistants on LobsterInk Platform';
     } else {
-        titleText = t('leaderboardTitle');
+        titleText = 'Top 10 Learners on LobsterInk Platform';
     }
 
     let periodLabel = '';
     if (period === 'month') periodLabel = `${monthName} ${year}`;
-    else if (period === 'week') periodLabel = `${monthName} ${year} - ${t('weekLabel')} ${weekName}`;
-    else if (period === 'quarter') periodLabel = `${year} - ${t('quarterLabel')} ${quarterLabel}`;
-    else if (period === 'half') periodLabel = `${year} - ${currentLang === 'ar' ? 'نصف سنوي' : 'Half-Yearly'}`;
+    else if (period === 'week') periodLabel = `${monthName} ${year} - Week ${weekName}`;
+    else if (period === 'quarter') periodLabel = `${year} - Quarter ${quarterLabel}`;
+    else if (period === 'half') periodLabel = `${year} - Half-Yearly`;
     else periodLabel = `${year}`;
 
     leaderboardContainer.innerHTML = `
-        <div class="leaderboard-card" id="leaderboardCard" dir="${currentLang === 'ar' ? 'rtl' : 'ltr'}">
+        <div class="leaderboard-card" id="leaderboardCard" dir="ltr">
             <div class="leaderboard-header">
                 <div class="trophy-icon">🏆</div>
                 <h1>${titleText}</h1>
@@ -2290,23 +1955,30 @@ function renderLeaderboard(data) {
         </div>`;
 }
 
+// ============================================================
+// RENDER ALL TABLE
+// ============================================================
 function renderAllEmployeesTable() {
     const filtered = applyFilters(rankedData);
-    allCountBadge.textContent = `${filtered.length} ${t('employee')}`;
+    allCountBadge.textContent = `${filtered.length} records`;
     allTabCount.textContent = rankedData.length;
     if (filtered.length === 0) {
-        allTableBody.innerHTML = `<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--gray);">
+        allTableBody.innerHTML = `<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--gray);">
             <i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:10px;color:#CBD5E1;"></i>
-            ${t('noResults')}
+            No matching results
         </td></tr>`;
         return;
     }
     let html = '';
     filtered.forEach(d => {
         const rankClass = d.rank === 1 ? 'gold' : d.rank === 2 ? 'silver' : d.rank === 3 ? 'bronze' : '';
-        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
-        const displayName = emp?.fullName || emp?.name || d.fullName || t('unknown');
-        const displayGroup = emp?.department || d.group || t('undefinedDept');
+
+        const result = getPersonByCode(d.code);
+        const emp = result?.person;
+        const isTrainee = result?.source === 'trainee';
+
+        const displayName = emp?.fullName || emp?.name || d.fullName || 'Unknown';
+        const displayGroup = emp?.department || d.group || 'Not specified';
         const codeDisplay = d.isValidCode
             ? escapeHtml(d.code)
             : `<span class="no-data">${escapeHtml(d.code || '(empty)')}</span>`;
@@ -2317,9 +1989,11 @@ function renderAllEmployeesTable() {
         const levelStyle = getLevelColorStyle(empLevel);
         const levelDisplay = empLevel
             ? `<span class="level-badge" style="color:${levelStyle.color};background:${levelStyle.bg};">${escapeHtml(empLevel)}</span>`
-            : (!d.isValidCode
-                ? `<span class="level-badge" style="color:#92400E;background:#FEF3C7;"><i class="fas fa-exclamation-triangle"></i> ${t('noCodeWarning')}</span>`
-                : `<span class="no-data">-</span>`);
+            : (isTrainee
+                ? `<span class="level-badge" style="color:#1E40AF;background:#DBEAFE;"><i class="fas fa-graduation-cap"></i> Trainee</span>`
+                : (!d.isValidCode
+                    ? `<span class="level-badge" style="color:#92400E;background:#FEF3C7;"><i class="fas fa-exclamation-triangle"></i> No Code</span>`
+                    : `<span class="no-data">-</span>`));
 
         const indexVal = formatIndexPercent(d.index);
         const idxStyle = getIndexColorStyle(d.index);
@@ -2331,15 +2005,9 @@ function renderAllEmployeesTable() {
 
         const rowClass = !d.isValidCode ? 'no-code-row' : '';
 
-        const empSource = emp?.__source || 'employee';
-        const typeCell = empSource === 'trainee'
-            ? `<td style="font-size:15px;" title="${currentLang === 'ar' ? 'متدرب' : 'Trainee'}">Trainee</td>`
-            : `<td style="font-size:15px;" title="${currentLang === 'ar' ? 'موظف' : 'Employee'}">Employee</td>`;
-
         html += `
             <tr class="${rowClass}">
                 <td><span class="rank-badge ${rankClass}">${d.rank}</span></td>
-                ${typeCell}
                 <td class="id-cell">${codeDisplay}</td>
                 <td class="name-cell">${escapeHtml(displayName)}</td>
                 <td><span class="group-cell">${escapeHtml(displayGroup)}</span></td>
@@ -2361,6 +2029,9 @@ function renderAllEmployeesTable() {
     allTableBody.innerHTML = html;
 }
 
+// ============================================================
+// FILTERS
+// ============================================================
 function applyFilters(data) {
     const levelGroup = levelFilterTable.value || 'all';
     const search = (searchFilter.value || '').trim().toLowerCase();
@@ -2376,19 +2047,11 @@ function applyFilters(data) {
     const tFilter = testsFilter.value;
 
     return data.filter(d => {
-        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const result = getPersonByCode(d.code);
+        const emp = result?.person;
         const empLevel = emp?.level || emp?.Level || '';
-        // ✅ الحل: لو emp مش موجود، نعتبره "بدون كود" — لكن لو موجود ومفيهوش __source،
-        // نحاول نلاقيه في allEmployees
-        let empSource = emp?.__source;
-        if (!empSource && emp) {
-            // محاولة أخيرة: نبحث في allEmployees
-            const fallback = allEmployees.find(e => String(e.id).trim() === String(emp.id).trim());
-            empSource = fallback?.__source || 'employee';
-        }
-        empSource = empSource || 'employee';
 
-        if (!isInLevelGroup(empLevel, levelGroup, empSource)) return false;
+        if (!isInLevelGroup(empLevel, levelGroup, d.code)) return false;
         if (onlyNoCode && d.isValidCode) return false;
 
         if (search) {
@@ -2453,11 +2116,11 @@ function applyFilters(data) {
 
 function populateGroupFilter() {
     const groups = new Set();
-
     const sourceData = rankedData.length > 0 ? rankedData : (mergedData.length > 0 ? mergedData : []);
 
     sourceData.forEach(d => {
-        const emp = d.isValidCode ? findEmployeeById(d.code) : null;
+        const result = getPersonByCode(d.code);
+        const emp = result?.person;
         const displayGroup = emp?.department || d.group || '';
         if (displayGroup && displayGroup.trim() !== '') {
             groups.add(displayGroup.trim());
@@ -2467,7 +2130,7 @@ function populateGroupFilter() {
     const sortedGroups = Array.from(groups).sort();
     const currentValue = groupFilter.value;
 
-    groupFilter.innerHTML = `<option value="">${t('all')}</option>`;
+    groupFilter.innerHTML = `<option value="">All</option>`;
     sortedGroups.forEach(g => {
         const option = document.createElement('option');
         option.value = g;
@@ -2487,12 +2150,10 @@ function resetFilters() {
     completedFilter.checked = false;
     passRateFilter.checked = false;
     noCodeFilter.checked = false;
-
     coursesFilter.value = '';
     indexFilter.value = '';
     lessonsFilter.value = '';
     testsFilter.value = '';
-
     statusFilter.value = '';
     updateFilterCheckboxStyles();
     renderAllEmployeesTable();
@@ -2517,26 +2178,26 @@ function setupFilters() {
         completedFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
         passRateFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
         noCodeFilter.addEventListener(evt, () => { updateFilterCheckboxStyles(); renderAllEmployeesTable(); });
-
         coursesFilter.addEventListener(evt, renderAllEmployeesTable);
         indexFilter.addEventListener(evt, renderAllEmployeesTable);
         lessonsFilter.addEventListener(evt, renderAllEmployeesTable);
         testsFilter.addEventListener(evt, renderAllEmployeesTable);
-
         statusFilter.addEventListener(evt, renderAllEmployeesTable);
     });
     resetFiltersBtn.addEventListener('click', resetFilters);
-
     levelFilter.addEventListener('change', () => {
         applyLevelFilterToLeaderboard();
         renderAllEmployeesTable();
     });
 }
 
+// ============================================================
+// DOWNLOAD PNG (1920x1080)
+// ============================================================
 async function downloadAsPNG() {
     const card = document.getElementById('leaderboardCard');
-    if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
-    setLoading(true, currentLang === 'ar' ? 'جاري تحضير الصورة...' : 'Preparing image...');
+    if (!card) { showToast('⚠️ No leaderboard', 'warning'); return; }
+    setLoading(true, 'Preparing image...');
     try {
         if (typeof htmlToImage === 'undefined') {
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
@@ -2547,25 +2208,66 @@ async function downloadAsPNG() {
             if (img.complete) return Promise.resolve();
             return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 5000); });
         }));
-        const dataUrl = await htmlToImage.toPng(card, {
-            pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
-            style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
+
+        const TARGET_WIDTH = 1920;
+        const TARGET_HEIGHT = 1080;
+        const rect = card.getBoundingClientRect();
+        const elWidth = Math.max(rect.width, 1);
+        const elHeight = Math.max(rect.height, 1);
+        const scaleForWidth = TARGET_WIDTH / elWidth;
+        const scaleForHeight = TARGET_HEIGHT / elHeight;
+        const pixelRatio = Math.min(Math.max(scaleForWidth, scaleForHeight, 2), 3);
+
+        const rawDataUrl = await htmlToImage.toPng(card, {
+            pixelRatio: pixelRatio,
+            backgroundColor: '#F8FAFC',
+            cacheBust: true,
+            useCORS: true,
+            style: { direction: 'ltr' }
         });
+
+        const finalDataUrl = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = TARGET_WIDTH;
+                canvas.height = TARGET_HEIGHT;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#F8FAFC';
+                ctx.fillRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+                const scale = Math.min(TARGET_WIDTH / img.width, TARGET_HEIGHT / img.height);
+                const drawW = img.width * scale;
+                const drawH = img.height * scale;
+                const offsetX = (TARGET_WIDTH - drawW) / 2;
+                const offsetY = (TARGET_HEIGHT - drawH) / 2;
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+                try { resolve(canvas.toDataURL('image/png')); } catch (e) { reject(e); }
+            };
+            img.onerror = reject;
+            img.src = rawDataUrl;
+        });
+
         const link = document.createElement('a');
-        link.download = `leaderboard_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = dataUrl;
+        link.download = `leaderboard_${new Date().toISOString().split('T')[0]}_1920x1080.png`;
+        link.href = finalDataUrl;
         link.click();
-        showToast(currentLang === 'ar' ? '✅ تم تحميل الصورة' : '✅ Image downloaded', 'success');
+        showToast('✅ Image downloaded (1920×1080)', 'success');
     } catch (error) {
-        console.error('❌ PNG error:', error);
-        showToast(currentLang === 'ar' ? '❌ فشل تحميل الصورة' : '❌ Image failed', 'error');
+        console.error('PNG error:', error);
+        showToast('❌ Image failed', 'error');
     } finally { setLoading(false); }
 }
 
+// ============================================================
+// DOWNLOAD PDF
+// ============================================================
 async function downloadAsPDF() {
     const card = document.getElementById('leaderboardCard');
-    if (!card) { showToast(currentLang === 'ar' ? '⚠️ لا توجد لوحة للتحميل' : '⚠️ No leaderboard', 'warning'); return; }
-    setLoading(true, currentLang === 'ar' ? 'جاري تحضير PDF...' : 'Preparing PDF...');
+    if (!card) { showToast('⚠️ No leaderboard', 'warning'); return; }
+    setLoading(true, 'Preparing PDF...');
     try {
         if (typeof htmlToImage === 'undefined') {
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js');
@@ -2581,7 +2283,7 @@ async function downloadAsPDF() {
         }));
         const dataUrl = await htmlToImage.toPng(card, {
             pixelRatio: 2, backgroundColor: '#F8FAFC', cacheBust: true, useCORS: true,
-            style: { direction: currentLang === 'ar' ? 'rtl' : 'ltr' }
+            style: { direction: 'ltr' }
         });
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('l', 'mm', 'a4');
@@ -2592,13 +2294,111 @@ async function downloadAsPDF() {
         const pdfHeight = (img.height * pdfWidth) / img.width;
         pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`leaderboard_${new Date().toISOString().split('T')[0]}.pdf`);
-        showToast(currentLang === 'ar' ? '✅ تم تحميل PDF' : '✅ PDF downloaded', 'success');
+        showToast('✅ PDF downloaded', 'success');
     } catch (error) {
-        console.error('❌ PDF error:', error);
-        showToast(currentLang === 'ar' ? '❌ فشل تحميل PDF' : '❌ PDF failed', 'error');
+        console.error('PDF error:', error);
+        showToast('❌ PDF failed', 'error');
     } finally { setLoading(false); }
 }
 
+// ============================================================
+// DOWNLOAD EXCEL (Filtered by Level)
+// ============================================================
+function downloadAsExcel() {
+    if (!rankedData || rankedData.length === 0) {
+        showToast('⚠️ No data to export', 'warning');
+        return;
+    }
+
+    let levelGroup, levelGroupLabel;
+    if (currentTab === 'leaderboard' || currentTab === 'upload') {
+        levelGroup = levelFilter.value || 'all';
+        levelGroupLabel = levelFilter.options[levelFilter.selectedIndex]?.textContent || 'All';
+    } else {
+        levelGroup = levelFilterTable.value || 'all';
+        levelGroupLabel = levelFilterTable.options[levelFilterTable.selectedIndex]?.textContent || 'All';
+    }
+
+    const filtered = rankedData.filter(d => {
+        const result = getPersonByCode(d.code);
+        const emp = result?.person;
+        const empLevel = emp?.level || emp?.Level || '';
+        return isInLevelGroup(empLevel, levelGroup, d.code);
+    });
+
+    if (filtered.length === 0) {
+        showToast('⚠️ No data matches the filter', 'warning');
+        return;
+    }
+
+    try {
+        setLoading(true, 'Preparing Excel...');
+
+        const rows = filtered.map((d, idx) => {
+            const result = getPersonByCode(d.code);
+            const emp = result?.person;
+            const isTrainee = result?.source === 'trainee';
+
+            const displayName  = emp?.fullName || emp?.name || d.fullName || 'Unknown';
+            const displayGroup = emp?.department || d.group || 'Not specified';
+            const empLevel     = emp?.level || emp?.Level || '';
+
+            return {
+                'Rank':              idx + 1,
+                'Code':              d.code || '',
+                'Name':              displayName,
+                'Department':        displayGroup,
+                'Level':             empLevel,
+                'Type':              isTrainee ? 'Trainee' : 'Employee',
+                'Courses Started':   d.coursesStarted,
+                'Courses Completed': d.coursesCompleted,
+                'Lessons Completed': d.lessonsCompleted,
+                'Assessments':       d.assessmentsCompleted,
+                'Assessments Passed':d.assessmentsPassed,
+                'Pass Rate %':       +(d.assessPassRate * 100).toFixed(2),
+                'Avg Score':         +d.avgOverallScore.toFixed(2),
+                'Index %':           +(d.index * 100).toFixed(2),
+                'Valid Code':        d.isValidCode ? 'Yes' : 'No'
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = [
+            { wch: 7 }, { wch: 12 }, { wch: 28 }, { wch: 22 }, { wch: 14 }, { wch: 12 },
+            { wch: 15 }, { wch: 17 }, { wch: 16 }, { wch: 12 }, { wch: 17 },
+            { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 12 },
+        ];
+
+        const meta = [
+            { 'Field': 'Exported At',   'Value': new Date().toLocaleString('en-US') },
+            { 'Field': 'Level Filter',  'Value': levelGroupLabel },
+            { 'Field': 'Period Filter', 'Value': periodFilter.value },
+            { 'Field': 'Total Rows',    'Value': filtered.length },
+            { 'Field': 'Year',          'Value': currentYear },
+        ];
+        const wsMeta = XLSX.utils.json_to_sheet(meta);
+        wsMeta['!cols'] = [{ wch: 18 }, { wch: 40 }];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Records');
+        XLSX.utils.book_append_sheet(wb, wsMeta, 'Filter Info');
+
+        const levelTag = (levelGroup || 'all').replace(/[^a-z0-9]/gi, '_');
+        const dateStr  = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `leaderboard_${levelTag}_${dateStr}.xlsx`);
+
+        showToast(`✅ Exported ${filtered.length} rows (filter: ${levelGroupLabel})`, 'success');
+    } catch (err) {
+        console.error('Excel export error:', err);
+        showToast('❌ Excel export failed', 'error');
+    } finally {
+        setLoading(false);
+    }
+}
+
+// ============================================================
+// SCRIPT LOADER
+// ============================================================
 function loadScript(src) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -2609,28 +2409,44 @@ function loadScript(src) {
     });
 }
 
-document.getElementById('langBtn')?.addEventListener('click', toggleLanguage);
+// ============================================================
+// NAVBAR ACTIONS
+// ============================================================
 document.getElementById('refreshDataBtn')?.addEventListener('click', async () => {
-    setLoading(true, currentLang === 'ar' ? 'جاري تحديث البيانات...' : 'Refreshing...');
-    await loadEmployees(true);
+    setLoading(true, 'Refreshing employees and trainees...');
+    await Promise.all([
+        loadEmployees(true).catch(() => {}),
+        loadTrainees(true).catch(() => {})
+    ]);
     setLoading(false);
-    showToast(currentLang === 'ar' ? '🔄 تم تحديث قائمة الموظفين والمتدربين' : '🔄 Refreshed employees & trainees', 'success');
+    if (rankedData.length > 0) {
+        applyLevelFilterToLeaderboard();
+        renderAllEmployeesTable();
+        renderAlerts();
+    }
+    showToast('🔄 Refreshed', 'success');
 });
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     window.logout();
 });
 
+// ============================================================
+// MONTH FILTER POPULATE
+// ============================================================
 function populateMonthFilter() {
     monthFilter.innerHTML = '';
     for (let m = 0; m < 12; m++) {
         const option = document.createElement('option');
         option.value = m;
-        option.textContent = `${TRANSLATIONS[currentLang].monthNames[m]} ${currentYear}`;
+        option.textContent = `${MONTH_NAMES[m]} ${currentYear}`;
         if (m === new Date().getMonth()) option.selected = true;
         monthFilter.appendChild(option);
     }
 }
 
+// ============================================================
+// UPDATE FILTER DISPLAY (period sub-filters)
+// ============================================================
 function updateFilterDisplay() {
     const period = periodFilter.value;
     weekFilterGroup.style.display = period === 'week' ? 'flex' : 'none';
@@ -2645,6 +2461,9 @@ function updateFilterDisplay() {
     }
 }
 
+// ============================================================
+// INIT
+// ============================================================
 async function init() {
     populateMonthFilter();
     updateFilterDisplay();
@@ -2659,38 +2478,48 @@ async function init() {
     setupFilters();
     downloadPngBtn.addEventListener('click', downloadAsPNG);
     downloadPdfBtn.addEventListener('click', downloadAsPDF);
+    if (downloadExcelBtn) downloadExcelBtn.addEventListener('click', downloadAsExcel);
 
-    saveCacheBtn.addEventListener('click', () => saveCache(true));
-    clearCacheBtn.addEventListener('click', () => {
-        if (confirm(currentLang === 'ar'
-            ? '⚠️ هل تريد حذف الكاش؟ سيتم مسح كل البيانات المحفوظة.'
-            : '⚠️ Delete cache? All saved data will be cleared.')) {
-            clearCache(true);
+    saveCacheBtn.addEventListener('click', async () => { await saveCache(true); });
+    clearCacheBtn.addEventListener('click', async () => {
+        if (confirm('⚠️ Delete cache? All saved data will be cleared.')) {
+            await clearCache(true);
         }
     });
 
-    applyLanguage();
-
-    localStorage.removeItem('lobster_top10_cache_v1');
-
-    const cacheLoaded = loadFromCache();
+    // ⭐ استرجاع الكاش
+    const cacheLoaded = await loadFromCache();
 
     if (cacheLoaded) {
-        showToast(t('cacheRestored'), 'info');
-        updateCacheBadge();
-        loadEmployees(false).catch(() => {});
+        showToast('📦 Data restored from cache', 'info');
+        await updateCacheBadge();
+        // لو الكاش مفيهوش employees أو trainees (نسخة قديمة)، حمّلهم
+        if (allEmployees.length === 0 || allTrainees.length === 0) {
+            await Promise.all([
+                loadEmployees(false).catch(() => {}),
+                loadTrainees(false).catch(() => {})
+            ]);
+            if (rankedData.length > 0) {
+                applyLevelFilterToLeaderboard();
+                renderAllEmployeesTable();
+                renderAlerts();
+            }
+        }
     } else {
-        setLoading(true, currentLang === 'ar' ? 'جاري تحميل البيانات...' : 'Loading data...');
-        await loadEmployees();
+        setLoading(true, 'Loading employees and trainees...');
+        await Promise.all([
+            loadEmployees().catch(() => {}),
+            loadTrainees().catch(() => {})
+        ]);
         setLoading(false);
-        updateCacheBadge();
+        await updateCacheBadge();
     }
 
     updateTabCounts();
-
     console.log('🏆 Page ready!');
 }
 
+// التهيئة بعد تأكيد تسجيل الدخول
 window.addEventListener('authReady', () => {
     init();
 });
