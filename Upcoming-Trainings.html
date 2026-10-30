@@ -158,6 +158,37 @@
         .training-card .card-actions .action-btn.edit-btn { background: #8b5cf6; color: white; }
         .training-card .card-footer { margin-top: 0.6rem; font-size: 0.65rem; color: #a0aec0; display: flex; justify-content: space-between; border-top: 1px solid #edf2f7; padding-top: 0.5rem; }
         
+        /* ===== Required Attendees Badge ===== */
+        .training-card .card-attendees {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            padding: 0.35rem 0.9rem;
+            border-radius: 1rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            max-width: 100%;
+        }
+        .training-card .card-attendees .attendees-icon { font-size: 0.95rem; }
+        .training-card .card-attendees .attendees-label {
+            color: #c2410c;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.68rem;
+            letter-spacing: 0.3px;
+        }
+        .training-card .card-attendees .attendees-value {
+            color: #1e3a5f;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .no-data { text-align: center; padding: 4rem 2rem; color: #a0aec0; font-size: 1.1rem; background: white; border-radius: 1.5rem; grid-column: 1 / -1; }
         .no-data .icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
         .footer { text-align: center; padding: 2rem; color: #718096; margin-top: 2rem; }
@@ -270,6 +301,13 @@
         }
         .form-group input:focus,
         .form-group select:focus { border-color: #2b7a4b; }
+
+        /* ⭐ حقل Required Category readonly */
+        .form-group input#f_category[readonly] {
+            background: #f7fafc;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
 
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
@@ -420,9 +458,14 @@
                 </div>
 
                 <div class="form-row">
+                    <!-- ⭐ Required Category: يُملأ تلقائياً من الكورس -->
                     <div class="form-group">
                         <label>🏷️ Required Category <span class="req">*</span></label>
-                        <input type="text" id="f_category" required placeholder="e.g. All Employees">
+                        <input type="text" id="f_category" required readonly
+                               placeholder="يُملأ تلقائياً عند اختيار الكورس">
+                        <div class="info-text" style="font-size:0.72rem; color:#2b7a4b; margin-top:0.3rem;">
+                            
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>📊 Status</label>
@@ -535,7 +578,7 @@
                 const snap = await getDocs(colRef);
                 
                 const sessions = [];
-                snap.forEach(docSnap => {
+                                snap.forEach(docSnap => {
                     const data = docSnap.data();
                     sessions.push({
                         id: docSnap.id,
@@ -869,7 +912,11 @@
                         </div>
                         <div class="card-topic">${s.topic}</div>
                         <div class="card-time">🕐 <span>${s.time}</span></div>
-                        <div class="card-category">🏷️ ${s.requiredCategory}</div>
+                        <div class="card-attendees">
+                            <span class="attendees-icon">👥</span>
+                            <span class="attendees-label">Required:</span>
+                            <span class="attendees-value">${s.requiredCategory || 'Not specified'}</span>
+                        </div>
                         <div class="card-day-diff">${getDayText(diff)}</div>
                         <div class="card-actions">${actionsHtml}</div>
                         <div class="card-footer">
@@ -948,8 +995,7 @@
             const progressWidth = completionRate;
 
             const sourceBadge = lastLoadSource === 'firebase' 
-                ? `<span class="cache-badge firebase">🔥 من Firestore (${cachedSessions.length} جلسة)</span>`
-                : `<span class="cache-badge cache">⚡ من الذاكرة المؤقتة (${cachedSessions.length} جلسة)</span>`;
+
 
             let contentHtml = '';
             if (cachedSessions.length === 0) {
@@ -995,7 +1041,7 @@
                             <p>View all scheduled training sessions organized by date</p>
                         </div>
                         <div style="display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap;">
-                            ${sourceBadge}
+                            
                             <button class="btn-add-session admin-only" onclick="window.openAddSession()">➕ Add Session</button>
                         </div>
                     </div>
@@ -1081,6 +1127,12 @@
             document.getElementById('sessionId').value = '';
             document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
             document.getElementById('f_status').value = 'scheduled';
+            
+            // ⭐ إعادة ضبط حالة Required Category (readonly للكورسات)
+            const categoryInput = document.getElementById('f_category');
+            categoryInput.readOnly = true;
+            categoryInput.value = '';
+            
             showNewTopicInput = false;
             document.getElementById('newTopicGroup').classList.remove('show');
             document.getElementById('f_topic').value = '';
@@ -1106,7 +1158,6 @@
             document.getElementById('sessionId').value = id;
             document.getElementById('f_date').value = session.date || '';
             document.getElementById('f_time').value = session.time || '';
-            document.getElementById('f_category').value = session.requiredCategory || '';
             document.getElementById('f_status').value = session.status || 'scheduled';
             
             // ⭐ تحميل المواضيع من offjob_courses
@@ -1117,6 +1168,7 @@
             
             // التحقق إن كان الموضوع موجوداً في القائمة
             const select = document.getElementById('f_topic_select');
+            const categoryInput = document.getElementById('f_category');
             let found = false;
             for (let opt of select.options) {
                 if (opt.value === session.topic) {
@@ -1134,11 +1186,20 @@
                 document.getElementById('btnNewTopic').classList.add('active');
                 document.getElementById('btnNewTopic').innerHTML = '↩ إلغاء الإضافة اليدوية';
                 select.value = '';
+                // ⭐ للموضوع اليدوي: اسمح بتعديل الفئة
+                categoryInput.readOnly = false;
+                categoryInput.value = session.requiredCategory || '';
             } else {
                 showNewTopicInput = false;
                 document.getElementById('newTopicGroup').classList.remove('show');
                 document.getElementById('btnNewTopic').classList.remove('active');
                 document.getElementById('btnNewTopic').innerHTML = '➕ إضافة موضوع جديد';
+                // ⭐ املأ الفئة تلقائياً من بيانات الكورس
+                window.handleTopicSelect();
+                // لو الكورس مالوش فئة، احتفظ بالفئة القديمة
+                if (!categoryInput.value) {
+                    categoryInput.value = session.requiredCategory || '';
+                }
             }
             
             document.getElementById('sessionModal').classList.add('show');
@@ -1150,22 +1211,28 @@
             showNewTopicInput = false;
         };
 
-        // ⭐ عند اختيار موضوع من القائمة
+        // ⭐ عند اختيار موضوع من القائمة — يملأ الفئة تلقائياً
         window.handleTopicSelect = () => {
             const select = document.getElementById('f_topic_select');
-            const selectedOption = select.options[select.selectedIndex];
-            
-            // تعبئة الفئة والجمهور المستهدف تلقائياً من Off Job
-            if (selectedOption && selectedOption.value) {
-                const category = selectedOption.dataset.category || '';
-                const audience = selectedOption.dataset.audience || '';
-                
-                if (category && !document.getElementById('f_category').value) {
-                    document.getElementById('f_category').value = category;
-                }
-                if (audience && !document.getElementById('f_category').value) {
-                    document.getElementById('f_category').value = audience;
-                }
+            const categoryInput = document.getElementById('f_category');
+            const selectedValue = select.value;
+
+            // لو مفيش اختيار → نظّف الحقل
+            if (!selectedValue) {
+                categoryInput.value = '';
+                return;
+            }
+
+            // البحث عن الكورس في القائمة المحلية (أكثر موثوقية من dataset)
+            const topic = offJobTopics.find(t => t.topic === selectedValue);
+
+            if (topic) {
+                // الأولوية: targetAudience ثم category
+                const category = topic.targetAudience || topic.category || '';
+                categoryInput.value = category;
+                console.log(`✅ تم ملء الفئة تلقائياً: "${category}" من الكورس "${topic.topic}"`);
+            } else {
+                categoryInput.value = '';
             }
         };
 
@@ -1174,6 +1241,7 @@
             const group = document.getElementById('newTopicGroup');
             const btn = document.getElementById('btnNewTopic');
             const select = document.getElementById('f_topic_select');
+            const categoryInput = document.getElementById('f_category');
             
             showNewTopicInput = !showNewTopicInput;
             
@@ -1182,12 +1250,18 @@
                 btn.classList.add('active');
                 btn.innerHTML = '↩ إلغاء الإضافة اليدوية';
                 select.value = '';
+                // ⭐ للموضوع الجديد: اسمح بتعديل الفئة يدوياً
+                categoryInput.readOnly = false;
+                categoryInput.value = '';
                 setTimeout(() => document.getElementById('f_topic').focus(), 100);
             } else {
                 group.classList.remove('show');
                 btn.classList.remove('active');
                 btn.innerHTML = '➕ إضافة موضوع جديد';
                 document.getElementById('f_topic').value = '';
+                // ⭐ رجّع readonly
+                categoryInput.readOnly = true;
+                categoryInput.value = '';
             }
         };
 
@@ -1213,6 +1287,13 @@
                 }
             }
 
+            // ⭐ التحقق من وجود فئة
+            const finalCategory = document.getElementById('f_category').value.trim();
+            if (!finalCategory) {
+                showToast('❌ Required Category فارغة — اختر كورساً له فئة محددة', 'error');
+                return;
+            }
+
             const saveBtn = document.getElementById('saveBtn');
             saveBtn.disabled = true;
             saveBtn.textContent = '⏳ Saving...';
@@ -1221,7 +1302,7 @@
                 topic: finalTopic,
                 date: document.getElementById('f_date').value,
                 time: document.getElementById('f_time').value.trim(),
-                required_category: document.getElementById('f_category').value.trim(),
+                required_category: finalCategory,
                 status: document.getElementById('f_status').value,
                 statusUpdatedAt: new Date().toISOString()
             };
@@ -1266,7 +1347,7 @@
                     
                     // ⭐ إذا كان موضوعاً جديداً، نضيفه إلى offjob_courses
                     if (showNewTopicInput) {
-                        await addTopicToOffJob(finalTopic, payload.required_category);
+                        await addTopicToOffJob(finalTopic, finalCategory);
                     }
                     
                     showToast('✅ Session added successfully', 'success');
@@ -1351,7 +1432,7 @@
                 
                 if (userSnap.exists()) {
                     const data = userSnap.data();
-                    const role = (data.role || data.userType || data.type || '').toLowerCase();
+                                        const role = (data.role || data.userType || data.type || '').toLowerCase();
                     if (role === 'admin' || role === 'administrator' || data.isAdmin === true) {
                         return true;
                     }
