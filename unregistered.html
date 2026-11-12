@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unregistered Lobster Ink Users</title>
+
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="theme-color" content="#052c65">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<script type="module" src="auth-guard.js"></script>
+<script type="module" src="database.js"></script>
+
+<style>
+  :root{
+    --primary:#052c65; --primary-light:#3b82f6;
+    --bg:#f1f5f9; --card:#ffffff; --danger:#dc2626; --success:#16a34a;
+    --warning:#f59e0b;
+    --hdr-navy:#1e3a5f; --hdr-green:#2b7a4b; --hdr-blue:#4299e1; --hdr-red:#e53e3e;
+  }
+  *{font-family:'Segoe UI', Tahoma, sans-serif;}
+  body{background:linear-gradient(135deg,#eef2ff 0%,#f1f5f9 100%); min-height:100vh; margin:0; padding-top:0;}
+  body.lang-en{direction:ltr;}
+
+  .navbar{background:white; padding:1rem 2rem; box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+    position:sticky; top:0; z-index:999;}
+  .navbar .logo h2{color:var(--hdr-navy); font-size:1.3rem; margin:0; font-weight:800;}
+  .navbar .logo span{color:var(--hdr-green);}
+  .nav-links{display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;}
+  .nav-links a, .nav-links button{text-decoration:none; padding:0.5rem 1rem; border-radius:2rem;
+    font-weight:500; cursor:pointer; border:none; font-size:0.85rem; transition:0.3s; font-family:inherit;}
+  .nav-links a:hover, .nav-links button:hover{transform:translateY(-2px); opacity:0.9;}
+  .nav-links .home{background:var(--hdr-green); color:white;}
+  .nav-links .refresh{background:var(--hdr-blue); color:white;}
+  .nav-links .logout{background:var(--hdr-red); color:white;}
+
+  .role-badge{display:inline-flex; align-items:center; gap:0.4rem; padding:0.3rem 0.8rem;
+    border-radius:1rem; font-size:0.75rem; font-weight:bold; border:1px solid transparent;}
+  .role-badge.viewer{background:#e6fffa; color:#234e52; border-color:#b2f5ea;}
+  .role-badge.admin{background:#fef3c7; color:#92400e; border-color:#fcd34d;}
+
+  .loading-overlay{position:fixed; inset:0; background:rgba(255,255,255,0.92);
+    display:none; justify-content:center; align-items:center; z-index:9999; flex-direction:column;}
+  .loading-overlay.show{display:flex;}
+  .loading-overlay .loader{width:60px; height:60px; border:6px solid #e2e8f0;
+    border-top:6px solid var(--hdr-green); border-radius:50%;
+    animation:spin 1s linear infinite; margin-bottom:1rem;}
+  @keyframes spin{0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
+  .loading-overlay .loading-text{font-size:1.1rem; color:var(--hdr-navy); font-weight:500;}
+
+  .footer{text-align:center; padding:2rem; color:#718096; margin-top:2rem;
+    background:white; border-top:1px solid #e2e8f0;}
+
+  .page-title-bar{background:linear-gradient(135deg,#052c65 0%,#052c65 100%);
+    color:#fff; padding:1.5rem 0; box-shadow:0 4px 20px rgba(30,64,175,.25);}
+  .page-title-bar h1{font-weight:700; margin:0; font-size:1.6rem; text-align:center;}
+  .page-title-bar p{margin:.3rem 0 0; opacity:.9; font-size:.9rem; text-align:center;}
+
+  .main-container{max-width:1400px; margin:auto; padding:2rem 1rem;}
+  .card{border:none; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.06);}
+
+  .upload-zone{border:2.5px dashed #93c5fd; border-radius:16px; background:#f8fafc;
+    padding:3rem 1rem; text-align:center; cursor:pointer; transition:.3s;}
+  .upload-zone:hover, .upload-zone.dragover{background:#eff6ff; border-color:var(--primary-light);}
+  .upload-zone i{font-size:3.5rem; color:var(--primary-light);}
+  .upload-zone h5{margin-top:1rem; color:#334155; font-weight:600;}
+  .upload-zone p{color:#64748b; margin:.3rem 0;}
+
+  .stat-card{background:#fff; border-radius:14px; padding:1.2rem; text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.05); border-left:4px solid var(--primary);}
+  .stat-card .num{font-size:2rem; font-weight:800; color:var(--primary); line-height:1;}
+  .stat-card .lbl{color:#64748b; font-size:.85rem; margin-top:.4rem;}
+  .stat-card.danger{border-left-color:var(--danger);}
+  .stat-card.danger .num{color:var(--danger);}
+  .stat-card.success{border-left-color:var(--success);}
+  .stat-card.success .num{color:var(--success);}
+  .stat-card.warning{border-left-color:var(--warning);}
+  .stat-card.warning .num{color:var(--warning);}
+
+  .filter-box{background:#fff; border-radius:16px; padding:1.2rem; box-shadow:0 4px 20px rgba(0,0,0,.06);}
+  .table thead th{background:#052c65; color:#fff; font-weight:600; white-space:nowrap;
+    position:sticky; top:0; z-index:5;}
+  .table tbody tr:hover{background:#eff6ff;}
+  .table td{vertical-align:middle; font-size:.9rem;}
+  .badge-dept{background:#dbeafe; color:#052c65; padding:.3rem .7rem; border-radius:20px;
+    font-weight:600; font-size:.78rem;}
+  .badge-level{background:#fef3c7; color:#92400e; padding:.2rem .6rem; border-radius:8px;
+    font-size:.72rem; font-weight:600;}
+  .badge-type-emp{background:#e0e7ff; color:#3730a3; padding:.2rem .6rem; border-radius:8px;
+    font-size:.72rem; font-weight:700;}
+  .badge-type-trn{background:#dbeafe; color:#1e40af; padding:.2rem .6rem; border-radius:8px;
+    font-size:.72rem; font-weight:700;}
+  .status-active{background:#dcfce7; color:#166534; padding:.35rem .8rem; border-radius:20px;
+    font-weight:700; font-size:.8rem;}
+  .status-inactive{background:#fee2e2; color:#991b1b; padding:.35rem .8rem; border-radius:20px;
+    font-weight:700; font-size:.8rem;}
+  .btn-copy{background:var(--primary); color:#fff; border:none; border-radius:10px;
+    padding:.5rem 1rem; font-weight:600;}
+  .btn-export{background:var(--success); color:#fff; border:none; border-radius:10px;
+    padding:.5rem 1rem; font-weight:600;}
+  .btn-save{background:#052c65; color:#fff; border:none; border-radius:10px;
+    padding:.5rem 1rem; font-weight:600;}
+  .btn-clear-cache{background:#fef3c7; color:#92400e; border:1px solid #fbbf24;
+    border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+  .btn-delete{background:#fee2e2; color:#991b1b; border:none; border-radius:8px;
+    padding:.35rem .6rem; font-weight:600; transition:.2s;}
+  .btn-delete:hover{background:#dc2626; color:#fff;}
+  .btn-restore{background:#fef3c7; color:#92400e; border:1px solid #fbbf24;
+    border-radius:10px; padding:.5rem 1rem; font-weight:600;}
+
+  .table-wrapper{max-height:600px; overflow:auto; border-radius:12px;}
+  .toast-msg{position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#1e293b; color:#fff; padding:.8rem 1.5rem; border-radius:10px;
+    opacity:0; transition:.3s; z-index:9999; font-weight:600;}
+  .toast-msg.show{opacity:1;}
+  .empty-state{text-align:center; padding:3rem 1rem; color:#94a3b8;}
+  .empty-state i{font-size:4rem;}
+
+  .deleted-info{background:#fef3c7; border:1px solid #fbbf24; color:#78350f;
+    padding:.6rem 1rem; border-radius:10px; font-weight:600; font-size:.9rem;}
+  .info-message{background:#eff6ff; border:1px solid #93c5fd; color:#052c65;
+    padding:.8rem 1rem; border-radius:10px; font-size:.9rem; margin-bottom:1rem;}
+  .info-message i{font-size:1.1rem; margin-right:.4rem;}
+  .info-message .filter-summary{margin-top:.5rem; padding-top:.5rem;
+    border-top:1px dashed #93c5fd; font-size:.82rem; opacity:.85;}
+  .excluded-note{background:#f1f5f9; border:1px solid #cbd5e1; color:#475569;
+    padding:.55rem .95rem; border-radius:10px; font-size:.82rem; margin-bottom:1rem;
+    display:inline-flex; align-items:center; gap:.5rem; line-height:1.6; flex-wrap:wrap;}
+  .excluded-note i{color:#64748b; font-size:.95rem;}
+  .excluded-note strong{color:#334155;}
+
+  .cache-banner{background:linear-gradient(135deg,#052c65 0%,#052c65 100%);
+    color:#fff; padding:.8rem 1.2rem; border-radius:12px; font-weight:600; margin-bottom:1rem;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
+    box-shadow:0 4px 12px rgba(124,58,237,.25);}
+  .cache-banner i{font-size:1.2rem; margin-right:.5rem;}
+  .cache-banner .time-left{background:rgba(255,255,255,.2); padding:.3rem .8rem;
+    border-radius:20px; font-size:.85rem;}
+
+  .tabs-wrapper{background:#fff; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.06);
+    padding:.5rem; margin-bottom:1.5rem; display:flex; gap:.4rem; flex-wrap:wrap;}
+  .tab-btn{flex:1; min-width:200px; background:transparent; border:none; border-radius:12px;
+    padding:.9rem 1.2rem; font-weight:700; font-size:1rem; color:#64748b; cursor:pointer;
+    transition:.3s; display:inline-flex; align-items:center; justify-content:center; gap:.55rem;}
+  .tab-btn i{font-size:1.2rem;}
+  .tab-btn:hover{background:#eff6ff; color:#052c65;}
+  .tab-btn.active{background:linear-gradient(135deg,#052c65 0%,#052c65 100%);
+    color:#fff; box-shadow:0 4px 14px rgba(30,64,175,.35);}
+  .tab-btn.active i{color:#fff;}
+
+  .tab-content{display:none; animation:fadeIn .3s ease;}
+  .tab-content.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  .analysis-card{background:#fff; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.06);
+    overflow:hidden; margin-bottom:1.5rem;}
+  .analysis-card .card-body{padding:1.2rem;}
+  .chart-wrapper{position:relative; height:420px; width:100%;}
+  .dept-summary-inner{max-width:500px; margin:0 auto;}
+  #deptSummaryTable{width:100%; margin:0; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;}
+  #deptSummaryTable thead th{background:#052c65; color:#fff; position:static;
+    padding:.5rem .75rem; font-size:.82rem; font-weight:600; border:none;}
+  #deptSummaryTable tbody td{padding:.4rem .75rem; font-size:.82rem; vertical-align:middle;
+    border-bottom:1px solid #e2e8f0; background:#fff;}
+  #deptSummaryTable tbody tr:last-child td{border-bottom:none;}
+  #deptSummaryTable tbody tr:hover td{background:#eff6ff;}
+  #deptSummaryTable tbody td:first-child{color:#64748b; font-weight:600; font-size:.78rem;}
+  #deptSummaryTable tbody td:last-child{text-align:center; font-weight:700; color:#dc2626; font-size:.9rem;}
+  .dept-summary-total{max-width:500px; margin:.5rem auto 0; background:#052c65; color:#fff;
+    font-weight:700; padding:.55rem 1rem; display:flex; justify-content:space-between;
+    align-items:center; border-radius:10px; font-size:.88rem;}
+  .dept-summary-total span:last-child{font-size:1.05rem;}
+
+  .print-header{display:none; padding:1.5rem 0; border-bottom:3px double #052c65;
+    margin-bottom:1.5rem; text-align:center;}
+  .print-header h2{margin:0; color:#052c65; font-size:1.8rem; font-weight:800;
+    text-align:center; letter-spacing:.5px;}
+  .print-header .info{margin-top:.8rem; color:#334155; font-size:1rem;
+    text-align:center; line-height:1.7;}
+  .print-header .count-badge{display:inline-block; background:#052c65; color:#fff;
+    padding:.5rem 1.5rem; border-radius:25px; font-weight:700; margin-top:1rem; font-size:1rem;}
+  .print-header .explain{margin-top:1rem; padding:.8rem 1rem; background:#f1f5f9;
+    border-left:4px solid #052c65; border-radius:8px; font-size:.9rem; color:#334155;
+    text-align:left; line-height:1.8;}
+  .print-header .explain strong{color:#052c65;}
+
+  .src-hint{background:#f8fafc; border:1px solid #e2e8f0; padding:.5rem .8rem;
+    border-radius:10px; font-size:.8rem; color:#475569; margin-bottom:.8rem;}
+  .src-hint i{color:var(--primary); margin-right:.3rem;}
+
+  /* ============ MODAL ============ */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 10001; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 16px;
+    max-width: 1200px; width: 100%; max-height: 90vh;
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .modal-header {
+    padding: 18px 25px; background: linear-gradient(135deg,#052c65,#1e3a5f);
+    color: white; display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header h3 { font-size: 1.1rem; font-weight: 800; margin: 0; }
+  .modal-header .close-btn {
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    font-size: 1rem; transition: 0.3s;
+  }
+  .modal-header .close-btn:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+  .modal-body { padding: 20px; overflow-y: auto; }
+
+  /* ============ ALERTS ============ */
+  .alerts-container {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .alert-card {
+    background: #FEF3C7; border-left: 4px solid var(--warning);
+    border-radius: 10px; padding: 12px 16px; font-size: .85rem; color: #92400E;
+    animation: fadeIn .3s ease;
+  }
+  .alert-card.danger { background: #FEE2E2; border-color: var(--danger); color: #991B1B; }
+  .alert-card.success { background: #D1FAE5; border-color: var(--success); color: #065F46; }
+  .alert-card .alert-title {
+    font-weight: 800; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .alert-card .alert-list {
+    max-height: 180px; overflow-y: auto; font-size: .8rem; line-height: 1.6;
+  }
+  .alert-card .alert-list span {
+    display: inline-block; background: rgba(255,255,255,0.6);
+    padding: 2px 8px; border-radius: 6px; margin: 2px; font-weight: 600;
+  }
+  .alert-card .alert-actions {
+    margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .alert-card .alert-actions button {
+    padding: 6px 14px; border: none; border-radius: 8px;
+    cursor: pointer; font-weight: 700; font-size: .75rem;
+    background: var(--primary); color: white; transition: 0.2s;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .alert-card .alert-actions button:hover { background: var(--primary-light); }
+
+  @media (max-width:576px){
+    .tab-btn{min-width:140px; font-size:.9rem; padding:.75rem .8rem;}
+    .tab-btn i{font-size:1rem;}
+    .chart-wrapper{height:340px;}
+    .dept-summary-inner{max-width:100%;}
+    .dept-summary-total{max-width:100%;}
+  }
+
+  @media print{
+    @page { size: A4 landscape; margin: 12mm 10mm; }
+    body{background:#fff !important; font-size:11px !important;}
+    .no-print, .navbar, .footer, .page-title-bar, .filter-box, .upload-zone,
+    .actions-bar, #uploadSection, .stat-card.danger, .stat-card.success, .stat-card.warning,
+    .row.g-3, .btn-delete, .deleted-info, .info-message, .excluded-note, .cache-banner,
+    .tabs-wrapper, .src-hint, th.col-delete, td.col-delete {display:none !important;}
+    .main-container{padding:0 !important; max-width:100% !important; margin:0 !important;}
+    .card{box-shadow:none !important; border-radius:0 !important; border:none !important;
+      overflow:visible !important;}
+    .table-wrapper{max-height:none !important; height:auto !important;
+      overflow:visible !important; border-radius:0 !important;}
+    table.table{width:100% !important; table-layout:auto !important;
+      border-collapse:collapse !important; page-break-inside:auto !important;}
+    .table thead{display:table-header-group !important;}
+    .table thead th{background:#052c65 !important; color:#fff !important;
+      position:static !important; top:auto !important;
+      -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+      padding:6px 8px !important; font-size:11px !important; border:none !important;}
+    .table tbody tr{page-break-inside:avoid !important; break-inside:avoid !important;}
+    .table tbody td{padding:5px 8px !important; font-size:11px !important;
+      border-bottom:1px solid #e2e8f0 !important;}
+    .table tbody tr:hover{background:transparent !important;}
+    .badge-dept, .status-active, .status-inactive, .badge-level, .badge-type-emp, .badge-type-trn{
+      -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+      font-size:10px !important; padding:2px 6px !important;}
+    .print-header{display:block !important; text-align:center !important;
+      page-break-after:avoid !important; break-after:avoid !important;}
+    .print-header, .print-header *{page-break-inside:avoid !important; break-inside:avoid !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader"></div>
+  <div class="loading-text">⏳ Verifying permissions...</div>
+</div>
+
+<div class="navbar no-print">
+  <div class="logo">
+    <h2>🎓 <span>L&D</span> Management System</h2>
+  </div>
+  <div class="nav-links">
+    <span class="role-badge viewer" id="roleBadge">👤 User</span>
+    <a href="index.html" class="home">🏠 Home</a>
+    <button onclick="window.refreshPage()" class="refresh">🔄 Refresh</button>
+    <button onclick="window.logout()" class="logout">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="page-title-bar no-print">
+  <div class="main-container" style="padding-top:0;padding-bottom:0;">
+    <h1><i class="bi bi-person-plus-fill"></i> <span id="pageTitle">Unregistered Lobster Ink Users</span></h1>
+    <p id="pageSubtitle"></p>
+  </div>
+</div>
+
+<div class="main-container">
+
+  <div id="cacheBanner" class="cache-banner no-print" style="display:none;">
+    <div>
+      <i class="bi bi-cloud-check-fill"></i>
+      <span id="cacheBannerText">Restored previously uploaded file</span>
+    </div>
+    <div class="time-left" id="cacheTimeLeft">—</div>
+  </div>
+
+  <!-- Upload -->
+  <div id="uploadSection">
+    <div class="upload-zone" id="uploadZone">
+      <i class="bi bi-cloud-arrow-up-fill"></i>
+      <h5 id="uploadTitle">Drag Lobster Ink file here or click to select</h5>
+      <p id="uploadHint">Supports .xlsx, .xls and .csv — only the code column is read</p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+    <div class="src-hint mt-3">
+      <i class="bi bi-database-fill"></i>
+      <span id="srcHintText">
+        Codes will be compared against employees and trainees in Firebase.
+        Resigned + A&G dept are excluded automatically.
+        Excluded levels (Director, HODs, AHODs, 5%) are shown only if registered.
+      </span>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" style="display:none;">
+
+    <div class="row g-3 mb-3 no-print">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="num" id="statTotal">0</div>
+          <div class="lbl" id="lblTotal">Total in Firebase</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card success">
+          <div class="num" id="statRegistered">0</div>
+          <div class="lbl" id="lblRegistered">Registered on Platform</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card danger">
+          <div class="num" id="statUnregistered">0</div>
+          <div class="lbl" id="lblUnregistered">Unregistered on Platform</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card warning">
+          <div class="num" id="statFiltered">0</div>
+          <div class="lbl" id="lblFiltered">Displayed Results</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="excludedNote" class="excluded-note no-print" style="display:none;">
+      <i class="bi bi-info-circle-fill"></i>
+      <span id="excludedText"></span>
+    </div>
+
+    <div class="tabs-wrapper no-print">
+      <button class="tab-btn active" id="tabBtnList" onclick="switchTab('list')">
+        <i class="bi bi-list-ul"></i>
+        <span id="tabListText">Employees List</span>
+      </button>
+      <button class="tab-btn" id="tabBtnAnalysis" onclick="switchTab('analysis')">
+        <i class="bi bi-bar-chart-line-fill"></i>
+        <span id="tabAnalysisText">Departments Analysis</span>
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-box mb-4 no-print">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label fw-bold"><i class="bi bi-diagram-3"></i> <span id="lblDeptFilter">Department</span></label>
+          <select class="form-select" id="deptFilter">
+            <option value="">All Departments</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold"><i class="bi bi-layers"></i> <span id="lblLevelFilter">Level</span></label>
+          <select class="form-select" id="levelFilter">
+            <option value="">All Levels</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold"><i class="bi bi-person-badge"></i> <span id="lblTypeFilter">Type</span></label>
+          <select class="form-select" id="typeFilter">
+            <option value="" id="optAll">All</option>
+            <option value="employee" id="optEmp">Employee</option>
+            <option value="trainee" id="optTrn">Trainee</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold"><i class="bi bi-funnel"></i> <span id="lblViewMode">View Mode</span></label>
+          <select class="form-select" id="viewMode">
+            <option value="unregistered" id="optUnreg">Unregistered</option>
+            <option value="registered" id="optReg">Registered</option>
+            <option value="all" id="optAllMode">All</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold"><i class="bi bi-search"></i> <span id="lblSearch">Search</span></label>
+          <input type="text" class="form-control" id="searchFilter" placeholder="Name or code...">
+        </div>
+        <div class="col-md-1 d-grid">
+          <button class="btn btn-outline-secondary" onclick="resetFilters()" title="Reset">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 1: List -->
+    <div id="tabContentList" class="tab-content active">
+
+      <!-- ⭐ ALERTS -->
+      <div class="alerts-container no-print" id="alertsContainer"></div>
+
+      <div class="info-message no-print" id="infoMsg">
+        <i class="bi bi-info-circle-fill"></i>
+        <span id="infoText"></span>
+        <div id="filterSummary" class="filter-summary" style="display:none;"></div>
+      </div>
+
+      <div id="deletedInfo" class="deleted-info mb-3 no-print" style="display:none;">
+        <i class="bi bi-trash"></i>
+        <span id="deletedCount">0</span> <span id="deletedText">employees removed from table</span>
+        <button class="btn btn-sm btn-restore ms-2" onclick="restoreAll()">
+          <i class="bi bi-arrow-counterclockwise"></i> <span id="btnRestoreAll">Restore All</span>
+        </button>
+      </div>
+
+      <div class="actions-bar d-flex flex-wrap gap-2 mb-3 no-print">
+        <button class="btn btn-save" onclick="saveToCache(true)">
+          <i class="bi bi-save-fill"></i> <span id="btnSave">Save to Browser (24h)</span>
+        </button>
+        <button class="btn btn-clear-cache" onclick="clearCache()">
+          <i class="bi bi-trash3-fill"></i> <span id="btnClearCache">Clear Cache</span>
+        </button>
+        <button class="btn btn-copy" onclick="copyList()">
+          <i class="bi bi-clipboard-check"></i> <span id="btnCopy">Copy List</span>
+        </button>
+        <button class="btn btn-export" onclick="exportExcel()">
+          <i class="bi bi-file-earmark-excel"></i> <span id="btnExport">Export Excel</span>
+        </button>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+          <i class="bi bi-printer"></i> <span id="btnPrint">Print</span>
+        </button>
+        <button class="btn btn-outline-secondary ms-auto" onclick="changeFile()">
+          <i class="bi bi-upload"></i> <span id="btnNewFile">Upload New File</span>
+        </button>
+      </div>
+
+      <div class="print-header">
+        <h2>Unregistered Lobster Ink Users</h2>
+        <div class="info" id="printInfo"></div>
+        <div class="count-badge" id="printCount">Employees Count: 0</div>
+        <div class="explain" id="printExplain"></div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th id="thCode">Code</th>
+                <th id="thName">Name</th>
+                <th id="thDept">Department</th>
+                <th id="thLevel">Level</th>
+                <th id="thType">Type</th>
+                <th id="thStatus">Status</th>
+                <th class="col-delete no-print" style="width:60px;" id="thDelete">Delete</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <i class="bi bi-inbox"></i>
+          <h5 class="mt-3" id="emptyTitle">No matching results</h5>
+          <p id="emptyHint">Try changing the filters</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Analysis -->
+    <div id="tabContentAnalysis" class="tab-content">
+      <div class="analysis-card">
+        <div class="card-body">
+          <div class="chart-wrapper">
+            <canvas id="deptChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="analysis-card">
+        <div class="card-body">
+          <div class="dept-summary-inner">
+            <table class="table mb-0" id="deptSummaryTable">
+              <thead>
+                <tr>
+                  <th style="width:55px;">#</th>
+                  <th id="thSummaryDept">Department</th>
+                  <th id="thSummaryCount" style="text-align:center; width:110px;">Count</th>
+                </tr>
+              </thead>
+              <tbody id="deptSummaryBody"></tbody>
+            </table>
+          </div>
+          <div class="dept-summary-total">
+            <span id="tdSummaryTotal">Total</span>
+            <span id="tdSummaryTotalCount">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<div class="footer no-print">
+  <p style="margin:0;">© 2026 Learning & Development Management System</p>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalTitle">Preview</h3>
+      <button class="close-btn" id="modalCloseBtn"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ============ AUTH GUARD ============ -->
+<script type="module">
+import { auth } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firestoreDb = getFirestore(getApp());
+
+async function checkAdminRole(user) {
+  try {
+    const userDocRef = doc(firestoreDb, 'users', user.uid);
+    const userSnap = await getDoc(userDocRef);
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      const role = (data.role || data.userType || data.type || '').toLowerCase();
+      if (role === 'admin' || role === 'administrator' || data.isAdmin === true) return true;
+    }
+    const storedRole = (localStorage.getItem('userRole') || localStorage.getItem('role') || '').toLowerCase();
+    if (storedRole === 'admin' || storedRole === 'administrator') return true;
+    if (user.getIdTokenResult) {
+      const tr = await user.getIdTokenResult();
+      if (tr.claims.admin === true || tr.claims.role === 'admin') return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('⚠️ Could not determine admin role:', e);
+    return false;
+  }
+}
+
+function applyRoleBadge(isAdmin) {
+  const badge = document.getElementById('roleBadge');
+  if (!badge) return;
+  if (isAdmin) { badge.className = 'role-badge admin'; badge.textContent = '👑 Admin'; }
+  else         { badge.className = 'role-badge viewer'; badge.textContent = '👤 User'; }
+}
+
+function showLoading(show, text) {
+  const overlay = document.getElementById('loadingOverlay');
+  if (!overlay) return;
+  if (show) {
+    if (text) overlay.querySelector('.loading-text').textContent = text;
+    overlay.classList.add('show');
+  } else overlay.classList.remove('show');
+}
+
+window.logout = async () => {
+  try { showLoading(true, '⏳ Signing out...'); await signOut(auth); window.location.href = 'login.html'; }
+  catch (e) { console.error(e); window.location.href = 'login.html'; }
+};
+window.refreshPage = () => window.location.reload();
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    showLoading(true, '⏳ Verifying permissions...');
+    const isAdmin = await checkAdminRole(user);
+    window.__isAdmin = isAdmin;
+    window.__currentUser = user;
+    applyRoleBadge(isAdmin);
+    showLoading(false);
+    window.dispatchEvent(new CustomEvent('authReady', { detail: { isAdmin, user } }));
+  } else {
+    window.location.href = 'login.html';
+  }
+});
+</script>
+
+<!-- ============ MAIN SCRIPT ============ -->
+<script type="module">
+import { DB } from './database.js';
+
+let TraineeDB = null;
+try {
+  const mod = await import('./trainee-db.js');
+  TraineeDB = mod.TraineeDB || null;
+  console.log('✅ trainee-db.js loaded');
+} catch (e) {
+  console.warn('⚠️ trainee-db.js not found — falling back to DB');
+}
+
+if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const EMPLOYEES_COLLECTION = 'employees';
+const TRAINEES_COLLECTION  = 'trainees';
+
+const EXCLUDED_DEPARTMENTS = ['A&G'];
+const EXCLUDED_LEVELS = ['Director', 'HODs', 'AHODs', '5%'];
+
+const CACHE_KEY = 'lobster_unregistered_v8';
+const CACHE_TTL = 24 * 60 * 60 * 1000;
+
+// ============================================================
+// STATE
+// ============================================================
+let allEmployees = [];
+let allTrainees  = [];
+let employeesMap = new Map();
+let traineesMap  = new Map();
+
+let activityCodes = new Set();
+let uploadedFileName = '';
+let codeDetailsMap = new Map();  // للعرض السريع لكل كود
+let rawExcelRows = [];           // ⭐ كل صفوف الملف كما هي (مع التكرار)
+let noCodeRows = [];
+
+let allRows      = [];
+let filteredRows = [];
+let deletedIds   = new Set();
+let currentTab   = 'list';
+let deptChartInstance = null;
+
+let excludedStats = { resigned: 0, dept: 0, level: 0 };
+
+// ⭐ Alerts state
+let invalidCodeRows = [];      // صفوف بدون كود صالح
+let missingInFirebase = [];    // أكواد صالحة لكن غير موجودة في Firebase
+
+// ============================================================
+// HELPERS
+// ============================================================
+function t(key, ...args){
+  const v = I18N[key];
+  return typeof v === 'function' ? v(...args) : v;
+}
+function setText(id, val){ const el = document.getElementById(id); if (el) el.textContent = val; }
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>el.classList.remove('show'), 2500);
+}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return String(s||'').replace(/'/g,"\\'"); }
+function sortAlpha(a, b){ return String(a).localeCompare(String(b), 'en', { numeric:true, sensitivity:'base' }); }
+
+function normalizeCode(code){
+  const s = String(code || '').trim();
+  if (!s) return '';
+  if (/^\d+$/.test(s)) return s.replace(/^0+(?=\d)/, '');
+  return s.toLowerCase();
+}
+
+// ============================================================
+// HELPERS من Top 10
+// ============================================================
+function getPersonByCode(code) {
+  if (!code) return null;
+  const cleanCode = String(code).trim();
+  if (employeesMap.has(cleanCode)) {
+    return { person: employeesMap.get(cleanCode), source: 'employee' };
+  }
+  if (traineesMap.has(cleanCode)) {
+    return { person: traineesMap.get(cleanCode), source: 'trainee' };
+  }
+  // تطبيع - تجنب أصفار بادئة
+  const norm = normalizeCode(cleanCode);
+  for (const [key, emp] of employeesMap) {
+    if (normalizeCode(key) === norm) return { person: emp, source: 'employee' };
+  }
+  for (const [key, tr] of traineesMap) {
+    if (normalizeCode(key) === norm) return { person: tr, source: 'trainee' };
+  }
+  return null;
+}
+
+function isValidEmployeeCode(str) {
+  if (!str) return false;
+  const s = String(str).trim();
+  if (/^\d+$/.test(s)) return true;
+  if (/^L&D\d+$/i.test(s)) return true;
+  return false;
+}
+
+// ============================================================
+// I18N (English only)
+// ============================================================
+const I18N = {
+  pageTitle:'Unregistered Lobster Ink Users',
+  pageSubtitle:'',
+  uploadTitle:'Drag Lobster Ink file here or click to select',
+  uploadHint:'Supports .xlsx, .xls and .csv — only the code column is read',
+  srcHintText:'Codes will be compared against employees and trainees in Firebase. Resigned + A&G dept are excluded automatically. Excluded levels (Director, HODs, AHODs, 5%) are shown only if registered.',
+  lblTotal:'Total in Firebase',
+  lblRegistered:'Registered on Platform',
+  lblUnregistered:'Unregistered on Platform',
+  lblFiltered:'Displayed Results',
+  lblDeptFilter:'Department', lblLevelFilter:'Level', lblTypeFilter:'Type',
+  lblViewMode:'View Mode', lblSearch:'Search',
+  optAll:'All', optEmp:'Employee', optTrn:'Trainee',
+  optUnreg:'Unregistered', optReg:'Registered', optAllMode:'All',
+  btnRestoreAll:'Restore All',
+  btnSave:'Save to Browser (24h)', btnClearCache:'Clear Cache',
+  btnCopy:'Copy List', btnExport:'Export Excel', btnPrint:'Print', btnNewFile:'Upload New File',
+  thCode:'Code', thName:'Name', thDept:'Department', thLevel:'Level',
+  thType:'Type', thStatus:'Status', thDelete:'Delete',
+  emptyTitle:'No matching results', emptyHint:'Try changing the filters',
+  deletedText:'employees removed from table',
+  cacheBannerText:'Restored previously uploaded file',
+  noCode:'No Code', employee:'Employee', trainee:'Trainee',
+  statusRegistered:'Registered', statusUnregistered:'Unregistered',
+  allDepts:'All Departments', allLevels:'All Levels',
+  printCount:'Employees Count',
+  tabListText:'Employees List', tabAnalysisText:'Departments Analysis',
+  thSummaryDept:'Department', thSummaryCount:'Count', tdSummaryTotal:'Total',
+  excludedResigned:(n)=>`<strong>${n}</strong> resigned`,
+  excludedDept:(n,d)=>`<strong>${n}</strong> from <strong>${d}</strong>`,
+  excludedLevel:(n,l)=>`<strong>${n}</strong> unregistered with excluded levels (${l})`,
+  excludedPrefix:'Excluded: ',
+  excludedSeparator:' • ',
+  infoUnregistered:(r,u)=>`<b>${u}</b> employees/trainees <b>not registered on the Lobster Ink e-learning platform</b> out of <b>${r}</b> in Firebase.`,
+  infoRegistered:(r,u)=>`<b>${r - u}</b> employees/trainees <b>registered on Lobster Ink platform</b> out of <b>${r}</b>.`,
+  infoAll:(r,u)=>`Total <b>${r}</b> — <b>${u}</b> <b>unregistered</b> and <b>${r - u}</b> <b>registered</b>.`,
+  filterSummary:(parts,count)=>`<i class="bi bi-funnel-fill"></i> Active filters: ${parts} — <strong>${count}</strong> results`,
+  printExplainUnregistered:'<strong>Note:</strong> These employees/trainees are <b>not registered on the Lobster Ink e-learning platform</b>.',
+  printExplainRegistered:'<strong>Note:</strong> These employees/trainees are <b>registered on the Lobster Ink e-learning platform</b>.',
+  printExplainAll:'<strong>Note:</strong> This report shows everyone in Firebase with their Lobster Ink registration status.',
+  cacheTimeLeft:(h,m,t)=>`Saved ${t} • ${h}h ${m}m left`,
+  toastSaved:'Data saved to browser ✅ (valid 24h)',
+  toastSaveFail:'Save failed ❌',
+  toastCacheCleared:'Cache cleared ✅',
+  toastCopied:'List copied ✅',
+  toastExported:'File exported ✅',
+  toastNoData:'No data available',
+  toastNoDataCopy:'No data to copy',
+  toastNoDataExport:'No data to export',
+  toastDeleted:(n)=>`Deleted "${n}" ✅`,
+  toastRestored:'All employees restored ✅',
+  toastLoaded:(n,f)=>`Loaded ${n} codes from "${f}"`,
+  toastFirebaseLoaded:(e,t)=>`Firebase: ${e} employees + ${t} trainees`,
+};
+
+// ============================================================
+// DETECT RESIGNED
+// ============================================================
+function isResigned(emp){
+  if (!emp) return false;
+  const statusFields = [
+    'status','employmentStatus','employment_status','empStatus',
+    'PlatformStatus','Platform Status','platformStatus',
+    'state','employeeStatus','EmployeeStatus'
+  ];
+  const resignedValues = [
+    'resigned','inactive','terminated','left','quit','exited','suspended','retired',
+    'مستقيل','غير نشط','منتهي','مفصول','موقوف','متقاعد','انهاء','إنهاء'
+  ];
+  for (const f of statusFields){
+    const v = emp[f];
+    if (v === undefined || v === null || v === '') continue;
+    const s = String(v).trim().toLowerCase();
+    if (resignedValues.includes(s)) return true;
+    if (s === 'active' || s === 'نشط' || s === 'يعمل' || s === 'على رأس العمل') return false;
+  }
+  if (emp.resigned === true || emp.isResigned === true) return true;
+  if (emp.terminated === true || emp.isTerminated === true) return true;
+  if (emp.active === false || emp.isActive === false) return true;
+  const exitDate = emp.exitDate || emp.resignationDate || emp.terminationDate || emp.endDate;
+  if (exitDate && String(exitDate).trim() !== '' && String(exitDate).trim() !== 'null') return true;
+  return false;
+}
+
+function isExcludedDept(dept){
+  if (!dept) return false;
+  const s = String(dept).trim().toLowerCase();
+  return EXCLUDED_DEPARTMENTS.some(d => d.toLowerCase() === s);
+}
+function isExcludedLevel(level){
+  if (!level) return false;
+  const s = String(level).trim().toLowerCase();
+  return EXCLUDED_LEVELS.some(l => l.toLowerCase() === s);
+}
+
+// ============================================================
+// APPLY LANGUAGE
+// ============================================================
+function applyLang(){
+  document.documentElement.lang = 'en';
+  document.documentElement.dir  = 'ltr';
+  document.body.classList.add('lang-en');
+
+  document.title = I18N.pageTitle;
+
+  const ids = [
+    'pageTitle','pageSubtitle','uploadTitle','uploadHint','srcHintText',
+    'lblTotal','lblRegistered','lblUnregistered','lblFiltered',
+    'lblDeptFilter','lblLevelFilter','lblTypeFilter','lblViewMode','lblSearch',
+    'optAll','optEmp','optTrn','optUnreg','optReg','optAllMode',
+    'btnSave','btnClearCache','btnCopy','btnExport','btnPrint','btnNewFile','btnRestoreAll',
+    'thCode','thName','thDept','thLevel','thType','thStatus','thDelete',
+    'emptyTitle','emptyHint','deletedText','cacheBannerText',
+    'tabListText','tabAnalysisText',
+    'thSummaryDept','tdSummaryTotal',
+  ];
+  ids.forEach(id => {
+    const v = I18N[id];
+    if (typeof v === 'string') setText(id, v);
+  });
+
+  if (allRows.length){
+    rebuildDependentFilters();
+    updateExcludedNote();
+    applyFilters();
+  }
+}
+
+// ============================================================
+// UPLOAD
+// ============================================================
+const uploadZone = document.getElementById('uploadZone');
+const fileInput  = document.getElementById('fileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type:'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
+
+      const codes = [];
+      codeDetailsMap.clear();
+      noCodeRows = [];
+      rawExcelRows = [];  // ⭐ جديد
+
+      if (rows.length > 0){
+        const keys = Object.keys(rows[0]);
+
+        const codeKey = keys.find(k => /^(username|user name|code|employee ?id|employee id|id|user id)$/i.test(String(k).trim()))
+                     || keys[0];
+        const firstKey = keys.find(k => /^first ?name$/i.test(String(k).trim()));
+        const lastKey  = keys.find(k => /^last ?name$/i.test(String(k).trim()));
+        const nameKey  = keys.find(k => /^(name|full ?name|employee name|learner name|display name)$/i.test(String(k).trim()));
+        const deptKey  = keys.find(k => /^(learner group name|department|dept|group|learner group|division)$/i.test(String(k).trim()))
+                     || keys.find(k => /dept|group|department/i.test(k));
+
+        // ⭐ نحفظ كل صف كما هو (حتى التكرار)
+        rows.forEach((r, idx) => {
+          const rawCode   = String(r[codeKey] || '').trim();
+          const firstName = String(r[firstKey] || '').trim();
+          const lastName  = String(r[lastKey]  || '').trim();
+          const fullName  = String(r[nameKey] || '').trim();
+          const deptName  = String(r[deptKey] || '').trim();
+
+          // تجاهل الصفوف الفارغة تماماً
+          if (!rawCode && !firstName && !lastName && !fullName && !deptName) return;
+
+          rawExcelRows.push({
+            rowIndex: idx + 1,
+            code: rawCode,
+            firstName,
+            lastName,
+            fullName,
+            department: deptName,
+          });
+
+          if (rawCode){
+            codes.push(rawCode);
+            codeDetailsMap.set(rawCode, {
+              code: rawCode,
+              firstName,
+              lastName,
+              fullName,
+              department: deptName,
+            });
+          } else if (firstName || lastName || fullName){
+            noCodeRows.push({
+              firstName,
+              lastName,
+              fullName,
+              department: deptName,
+            });
+          }
+        });
+      }
+
+      activityCodes = new Set(codes);
+      uploadedFileName = file.name;
+
+      toast(t('toastLoaded', codes.length, file.name));
+      console.log(`📄 Loaded ${rawExcelRows.length} rows, ${codes.length} unique codes`);
+
+      if (!allEmployees.length && !allTrainees.length){
+        await loadFirebase(true);
+      }
+
+      buildAllRows();
+      saveToCache(false);
+
+      document.getElementById('uploadSection').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+
+      rebuildDependentFilters();
+      applyFilters();
+      switchTab('list');
+    } catch (err){
+      console.error(err);
+      alert('Failed to read file: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function changeFile(){
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('uploadSection').style.display = 'block';
+  document.getElementById('cacheBanner').style.display = 'none';
+  fileInput.value = '';
+  deletedIds.clear();
+  rawExcelRows = [];
+  codeDetailsMap.clear();
+  noCodeRows = [];
+  invalidCodeRows = [];
+  missingInFirebase = [];
+  updateDeletedInfo();
+  switchTab('list');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// FIREBASE LOAD
+// ============================================================
+async function loadFirebase(showToastMsg = false){
+  try {
+    async function getAllTrainees(){
+      if (TraineeDB){
+        try { return await TraineeDB.getAll(TRAINEES_COLLECTION); }
+        catch (e){ console.warn('TraineeDB.getAll failed, trying DB:', e); }
+      }
+      try { return await DB.getAll(TRAINEES_COLLECTION); }
+      catch (e){ console.warn('DB.getAll(trainees) failed:', e); return []; }
+    }
+
+    const [emps, trainees] = await Promise.all([
+      DB.getAll(EMPLOYEES_COLLECTION).catch(e => { console.warn('employees load failed', e); return []; }),
+      getAllTrainees()
+    ]);
+
+    allEmployees = emps || [];
+    allTrainees  = trainees || [];
+    employeesMap.clear();
+    traineesMap.clear();
+    allEmployees.forEach(e => { if (e?.id != null) employeesMap.set(String(e.id).trim(), e); });
+    allTrainees.forEach(t => { if (t?.id != null) traineesMap.set(String(t.id).trim(), t); });
+    if (showToastMsg) toast(t('toastFirebaseLoaded', allEmployees.length, allTrainees.length));
+    console.log(`Firebase: ${allEmployees.length} employees, ${allTrainees.length} trainees`);
+  } catch (err){
+    console.error('loadFirebase failed:', err);
+    toast('⚠️ Failed to load Firebase data');
+  }
+}
+
+// ============================================================
+// BUILD ROWS
+// ============================================================
+function buildAllRows(){
+  const rows = [];
+  const registeredNormalized = new Set([...activityCodes].map(normalizeCode));
+  excludedStats = { resigned: 0, dept: 0, level: 0 };
+
+  function processPerson(person, type){
+    if (!person) return;
+    const empLevel = person.level || person.Level || '';
+    const empDept  = person.department || person.Department || '';
+
+    if (isResigned(person))              { excludedStats.resigned++; return; }
+    if (isExcludedDept(empDept))         { excludedStats.dept++; return; }
+
+    const rawId = person.id;
+    const code  = rawId != null ? String(rawId).trim() : '';
+    const isRegistered = code && registeredNormalized.has(normalizeCode(code));
+
+    if (isExcludedLevel(empLevel)){
+      if (!isRegistered){
+        excludedStats.level++;
+        return;
+      }
+    }
+
+    rows.push({
+      _id: type.substring(0,3) + '_' + (code || Math.random()),
+      code: code || '',
+      name: person.fullName || person.name || '—',
+      department: empDept || 'Not specified',
+      level: empLevel,
+      type,
+      status: isRegistered ? 'registered' : 'unregistered',
+    });
+  }
+
+  allEmployees.forEach(emp => processPerson(emp, 'employee'));
+
+  allTrainees.forEach(tr => {
+    const rawId = tr?.id;
+    const code  = rawId != null ? String(rawId).trim() : '';
+    if (code && employeesMap.has(code)) return;
+    processPerson(tr, 'trainee');
+  });
+
+  allRows = rows;
+  console.log(`✅ ${rows.length} active rows • Excluded:`, excludedStats);
+
+  buildAlerts();
+  updateExcludedNote();
+}
+
+// ============================================================
+// ⭐ BUILD ALERTS — مثل Top 10 بالضبط
+// ============================================================
+function buildAlerts() {
+  invalidCodeRows = [];
+  missingInFirebase = [];
+
+  // نمر على كل صف في rawExcelRows (مع التكرار)
+  rawExcelRows.forEach((row) => {
+    const cleanCode = String(row.code || '').trim();
+    const isValidCode = isValidEmployeeCode(cleanCode);
+
+    const displayName = `${row.firstName || ''} ${row.lastName || ''}`.trim()
+                      || row.fullName
+                      || '(no name)';
+
+    // 1) كود غير صالح (فارغ أو صيغة غلط)
+    if (!isValidCode) {
+      invalidCodeRows.push({
+        rowIndex: row.rowIndex,
+        code: cleanCode || '(empty)',
+        name: displayName,
+        data: {
+          department: row.department || '',
+          firstName: row.firstName || '',
+          lastName: row.lastName || '',
+        },
+      });
+      return;
+    }
+
+    // 2) كود صالح → نبحث في Firebase
+    const result = getPersonByCode(cleanCode);
+    if (!result) {
+      missingInFirebase.push({
+        rowIndex: row.rowIndex,
+        code: cleanCode,
+        name: displayName,
+        data: {
+          department: row.department || '',
+          firstName: row.firstName || '',
+          lastName: row.lastName || '',
+        },
+      });
+    }
+  });
+
+  invalidCodeRows.sort((a, b) => sortAlpha(a.name, b.name));
+  missingInFirebase.sort((a, b) => sortAlpha(a.code, b.code));
+
+  console.log(`⚠️ Invalid: ${invalidCodeRows.length}, Missing in Firebase: ${missingInFirebase.length}`);
+  console.log(`📊 Total rows: ${rawExcelRows.length}, Sum: ${invalidCodeRows.length + missingInFirebase.length}`);
+
+  renderAlerts();
+}
+
+function renderAlerts() {
+  const container = document.getElementById('alertsContainer');
+  if (!container) return;
+
+  let html = '';
+
+  if (invalidCodeRows.length > 0) {
+    html += `
+      <div class="alert-card">
+        <div class="alert-title">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          Records without valid code (${invalidCodeRows.length})
+        </div>
+        <div class="alert-list">
+          ${invalidCodeRows.slice(0, 30).map(x =>
+            `<span>Row ${x.rowIndex}: ${escapeHtml(x.code)} - ${escapeHtml(x.name)}</span>`
+          ).join('')}
+          ${invalidCodeRows.length > 30 ? `<span>... +${invalidCodeRows.length - 30}</span>` : ''}
+        </div>
+        <div class="alert-actions">
+          <button onclick="window.__viewInvalidIds()"><i class="bi bi-eye"></i> View List</button>
+          <button onclick="window.__downloadInvalidIds()"><i class="bi bi-download"></i> Download CSV</button>
+        </div>
+      </div>`;
+  }
+
+  if (missingInFirebase.length > 0) {
+    html += `
+      <div class="alert-card danger">
+        <div class="alert-title">
+          <i class="bi bi-person-slash"></i>
+          Records not in Firebase (Employees or Trainees) (${missingInFirebase.length})
+        </div>
+        <div class="alert-list">
+          ${missingInFirebase.slice(0, 30).map(x =>
+            `<span>Code ${escapeHtml(x.code)}: ${escapeHtml(x.name)}</span>`
+          ).join('')}
+          ${missingInFirebase.length > 30 ? `<span>... +${missingInFirebase.length - 30}</span>` : ''}
+        </div>
+        <div class="alert-actions">
+          <button onclick="window.__viewMissingFirebase()"><i class="bi bi-eye"></i> View List</button>
+          <button onclick="window.__downloadMissingFirebase()"><i class="bi bi-download"></i> Download CSV</button>
+        </div>
+      </div>`;
+  }
+
+  if (invalidCodeRows.length === 0 && missingInFirebase.length === 0) {
+    html += `
+      <div class="alert-card success">
+        <div class="alert-title"><i class="bi bi-check-circle-fill"></i> All data is valid</div>
+        <div class="alert-list"><span>✅ All records have valid codes and are linked to Firebase</span></div>
+      </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(title, contentHtml) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = contentHtml;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+// ============================================================
+// VIEW LISTS
+// ============================================================
+window.__viewInvalidIds = function () {
+  const rows = invalidCodeRows.map(x => `
+    <tr>
+      <td>${x.rowIndex}</td>
+      <td style="font-family:monospace; color:#dc2626; font-weight:700;">${escapeHtml(x.code)}</td>
+      <td>${escapeHtml(x.name)}</td>
+      <td>${x.data?.department ? `<span class="badge-dept">${escapeHtml(x.data.department)}</span>` : '-'}</td>
+    </tr>
+  `).join('');
+
+  openModal(
+    `Records without valid code (${invalidCodeRows.length})`,
+    `<div class="table-wrapper">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Row</th>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Department</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`
+  );
+};
+
+window.__viewMissingFirebase = function () {
+  const rows = missingInFirebase.map(x => `
+    <tr>
+      <td>${x.rowIndex}</td>
+      <td style="font-family:monospace; color:#dc2626; font-weight:700;">${escapeHtml(x.code)}</td>
+      <td>${escapeHtml(x.name)}</td>
+      <td>${x.data?.department ? `<span class="badge-dept">${escapeHtml(x.data.department)}</span>` : '-'}</td>
+    </tr>
+  `).join('');
+
+  openModal(
+    `Records not in Firebase (${missingInFirebase.length})`,
+    `<div class="table-wrapper">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Row</th>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Department</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`
+  );
+};
+
+// ============================================================
+// DOWNLOAD CSV
+// ============================================================
+function downloadCSV(list, filename, headers, rowMapper) {
+  const csv = [headers.join(','), ...list.map(r => rowMapper(r).map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  toast('✅ File downloaded');
+}
+
+window.__downloadInvalidIds = function () {
+  downloadCSV(
+    invalidCodeRows,
+    'invalid_ids.csv',
+    ['Row', 'Code', 'Name', 'Department'],
+    (x) => [x.rowIndex, x.code, x.name, x.data?.department || '']
+  );
+};
+
+window.__downloadMissingFirebase = function () {
+  downloadCSV(
+    missingInFirebase,
+    'missing_in_firebase.csv',
+    ['Row', 'Code', 'Name', 'Department'],
+    (x) => [x.rowIndex, x.code, x.name, x.data?.department || '']
+  );
+};
+
+function updateExcludedNote(){
+  const parts = [];
+  if (excludedStats.resigned > 0) parts.push(t('excludedResigned', excludedStats.resigned));
+  if (excludedStats.dept > 0)     parts.push(t('excludedDept',   excludedStats.dept, EXCLUDED_DEPARTMENTS.join(', ')));
+  if (excludedStats.level > 0)    parts.push(t('excludedLevel',  excludedStats.level,  EXCLUDED_LEVELS.join(', ')));
+
+  const note = document.getElementById('excludedNote');
+  const noteTxt = document.getElementById('excludedText');
+  if (!note || !noteTxt) return;
+
+  if (parts.length){
+    note.style.display = 'inline-flex';
+    noteTxt.innerHTML = t('excludedPrefix') + parts.join(t('excludedSeparator'));
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+// ============================================================
+// CASCADING FILTERS
+// ============================================================
+function rebuildDependentFilters(){
+  const deptSel  = document.getElementById('deptFilter');
+  const lvlSel   = document.getElementById('levelFilter');
+  const typeSel  = document.getElementById('typeFilter');
+
+  const curDept  = deptSel.value;
+  const curLevel = lvlSel.value;
+  const curType  = typeSel.value;
+
+  let deptSource = allRows;
+  if (curLevel) deptSource = deptSource.filter(r => r.level === curLevel);
+  if (curType)  deptSource = deptSource.filter(r => r.type === curType);
+  const depts = [...new Set(deptSource.map(r => r.department).filter(Boolean))].sort(sortAlpha);
+
+  deptSel.innerHTML = `<option value="">${escapeHtml(t('allDepts'))}</option>` +
+    depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  deptSel.value = (curDept && depts.includes(curDept)) ? curDept : '';
+
+  let levelSource = allRows;
+  if (deptSel.value) levelSource = levelSource.filter(r => r.department === deptSel.value);
+  if (curType)       levelSource = levelSource.filter(r => r.type === curType);
+  const levels = [...new Set(levelSource.map(r => r.level).filter(Boolean))].sort(sortAlpha);
+
+  lvlSel.innerHTML = `<option value="">${escapeHtml(t('allLevels'))}</option>` +
+    levels.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('');
+  lvlSel.value = (curLevel && levels.includes(curLevel)) ? curLevel : '';
+
+  let typeSource = allRows;
+  if (deptSel.value) typeSource = typeSource.filter(r => r.department === deptSel.value);
+  if (lvlSel.value)  typeSource = typeSource.filter(r => r.level === lvlSel.value);
+  const types = [...new Set(typeSource.map(r => r.type))];
+
+  const hasEmp = types.includes('employee');
+  const hasTrn = types.includes('trainee');
+
+  typeSel.innerHTML = `<option value="" id="optAll">${escapeHtml(t('optAll'))}</option>` +
+    (hasEmp ? `<option value="employee" id="optEmp">${escapeHtml(t('optEmp'))}</option>` : '') +
+    (hasTrn ? `<option value="trainee" id="optTrn">${escapeHtml(t('optTrn'))}</option>` : '');
+  typeSel.value = (curType && types.includes(curType)) ? curType : '';
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+document.getElementById('deptFilter').addEventListener('change', () => {
+  rebuildDependentFilters();
+  applyFilters();
+});
+document.getElementById('levelFilter').addEventListener('change', () => {
+  rebuildDependentFilters();
+  applyFilters();
+});
+document.getElementById('typeFilter').addEventListener('change', () => {
+  rebuildDependentFilters();
+  applyFilters();
+});
+document.getElementById('viewMode').addEventListener('change', () => {
+  applyFilters();
+  if (currentTab === 'analysis') setTimeout(buildDeptSummary, 50);
+});
+document.getElementById('searchFilter').addEventListener('input', () => {
+  clearTimeout(window.__srchT);
+  window.__srchT = setTimeout(applyFilters, 250);
+});
+
+function resetFilters(){
+  document.getElementById('deptFilter').value = '';
+  document.getElementById('levelFilter').value = '';
+  document.getElementById('typeFilter').value = '';
+  document.getElementById('viewMode').value = 'unregistered';
+  document.getElementById('searchFilter').value = '';
+  rebuildDependentFilters();
+  applyFilters();
+}
+
+// ============================================================
+// APPLY FILTERS
+// ============================================================
+function applyFilters(){
+  const dept  = document.getElementById('deptFilter').value;
+  const level = document.getElementById('levelFilter').value;
+  const type  = document.getElementById('typeFilter').value;
+  const mode  = document.getElementById('viewMode').value;
+  const srch  = (document.getElementById('searchFilter').value || '').trim().toLowerCase();
+
+  filteredRows = allRows.filter(r => {
+    if (deletedIds.has(r._id)) return false;
+    if (dept  && r.department !== dept) return false;
+    if (level && r.level !== level) return false;
+    if (type  && r.type !== type) return false;
+    if (srch){
+      const nMatch = r.name.toLowerCase().includes(srch);
+      const cMatch = r.code.toLowerCase().includes(srch);
+      if (!nMatch && !cMatch) return false;
+    }
+    if (mode === 'unregistered' && r.status !== 'unregistered') return false;
+    if (mode === 'registered'   && r.status !== 'registered')   return false;
+    return true;
+  });
+
+  filteredRows.sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'unregistered' ? -1 : 1;
+    const dc = sortAlpha(a.department, b.department);
+    if (dc !== 0) return dc;
+    return sortAlpha(a.name, b.name);
+  });
+
+  updateStats();
+  renderTable();
+  updatePrintHeader();
+  updateInfoMessage();
+  buildDeptSummary();
+}
+
+function updateStats(){
+  const total = allRows.length;
+  const unregistered = allRows.filter(r => r.status === 'unregistered').length;
+  const registered = total - unregistered;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statRegistered').textContent = registered;
+  document.getElementById('statUnregistered').textContent = unregistered;
+  document.getElementById('statFiltered').textContent = filteredRows.length;
+}
+
+// ============================================================
+// RENDER TABLE
+// ============================================================
+function renderTable(){
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (!filteredRows.length){
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filteredRows.map((r, i) => {
+    const typeBadge = r.type === 'employee'
+      ? `<span class="badge-type-emp">${t('employee')}</span>`
+      : `<span class="badge-type-trn">${t('trainee')}</span>`;
+    const statusBadge = r.status === 'registered'
+      ? `<span class="status-active">${t('statusRegistered')}</span>`
+      : `<span class="status-inactive">${t('statusUnregistered')}</span>`;
+    const levelBadge = r.level
+      ? `<span class="badge-level">${escapeHtml(r.level)}</span>`
+      : `<span style="color:#94a3b8;">—</span>`;
+    const codeDisplay = r.code
+      ? escapeHtml(r.code)
+      : `<span style="color:#dc2626; font-weight:700;">${t('noCode')}</span>`;
+
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td style="font-family:monospace; font-weight:700;">${codeDisplay}</td>
+        <td>${escapeHtml(r.name)}</td>
+        <td><span class="badge-dept">${escapeHtml(r.department)}</span></td>
+        <td>${levelBadge}</td>
+        <td>${typeBadge}</td>
+        <td>${statusBadge}</td>
+        <td class="col-delete no-print">
+          <button class="btn-delete" title="${t('thDelete')}" onclick="deleteRow('${escapeAttr(r._id)}', '${escapeAttr(r.name)}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function deleteRow(id, name){
+  if (!confirm(`Delete "${name}" from the table?`)) return;
+  deletedIds.add(id);
+  updateDeletedInfo();
+  applyFilters();
+  toast(t('toastDeleted', name));
+}
+function restoreAll(){
+  if (!deletedIds.size) return;
+  if (!confirm(`Restore ${deletedIds.size} deleted?`)) return;
+  deletedIds.clear();
+  updateDeletedInfo();
+  applyFilters();
+  toast(t('toastRestored'));
+}
+function updateDeletedInfo(){
+  const info = document.getElementById('deletedInfo');
+  const cnt  = document.getElementById('deletedCount');
+  if (deletedIds.size > 0){ info.style.display = 'block'; cnt.textContent = deletedIds.size; }
+  else info.style.display = 'none';
+}
+
+function updateInfoMessage(){
+  const mode = document.getElementById('viewMode').value;
+  const total = allRows.length;
+  const unreg = allRows.filter(r => r.status === 'unregistered').length;
+  const txt = document.getElementById('infoText');
+  const summary = document.getElementById('filterSummary');
+
+  let msg = '';
+  if (mode === 'unregistered')      msg = t('infoUnregistered', total, unreg);
+  else if (mode === 'registered')   msg = t('infoRegistered', total, unreg);
+  else                              msg = t('infoAll', total, unreg);
+  txt.innerHTML = msg;
+
+  const dept  = document.getElementById('deptFilter').value;
+  const level = document.getElementById('levelFilter').value;
+  const type  = document.getElementById('typeFilter').value;
+  const srch  = (document.getElementById('searchFilter').value || '').trim();
+
+  const parts = [];
+  if (dept)  parts.push(`${t('lblDeptFilter')}: <strong>${escapeHtml(dept)}</strong>`);
+  if (level) parts.push(`${t('lblLevelFilter')}: <strong>${escapeHtml(level)}</strong>`);
+  if (type)  parts.push(`${t('lblTypeFilter')}: <strong>${type === 'employee' ? t('optEmp') : t('optTrn')}</strong>`);
+  if (srch)  parts.push(`${t('lblSearch')}: <strong>${escapeHtml(srch)}</strong>`);
+
+  if (parts.length && summary){
+    summary.style.display = 'block';
+    summary.innerHTML = t('filterSummary', parts.join(' • '), filteredRows.length);
+  } else if (summary){
+    summary.style.display = 'none';
+  }
+}
+
+// ============================================================
+// ANALYSIS
+// ============================================================
+function buildDeptSummary(){
+  const mode = document.getElementById('viewMode').value;
+
+  let targetStatus = null;
+  if (mode === 'registered')   targetStatus = 'registered';
+  if (mode === 'unregistered') targetStatus = 'unregistered';
+
+  const deptMap = {};
+  allRows.forEach(r => {
+    if (deletedIds.has(r._id)) return;
+    if (targetStatus && r.status !== targetStatus) return;
+    deptMap[r.department] = (deptMap[r.department] || 0) + 1;
+  });
+
+  const sorted = Object.entries(deptMap)
+    .map(([dept, count]) => ({ dept, count }))
+    .sort((a,b) => b.count - a.count || sortAlpha(a.dept, b.dept));
+
+  const total = sorted.reduce((s,x) => s + x.count, 0);
+
+  const tbody = document.getElementById('deptSummaryBody');
+  if (!sorted.length){
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding:2rem;">${t('emptyTitle')}</td></tr>`;
+  } else {
+    tbody.innerHTML = sorted.map((x,i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td><span class="badge-dept">${escapeHtml(x.dept)}</span></td>
+        <td>${x.count}</td>
+      </tr>`).join('');
+  }
+  document.getElementById('tdSummaryTotalCount').textContent = total;
+
+  const summaryTitleEl = document.getElementById('thSummaryCount');
+  if (summaryTitleEl){
+    if (mode === 'registered')        summaryTitleEl.textContent = 'Registered';
+    else if (mode === 'unregistered') summaryTitleEl.textContent = 'Unregistered';
+    else                              summaryTitleEl.textContent = 'Total';
+  }
+
+  const canvas = document.getElementById('deptChart');
+  if (!canvas) return;
+  if (deptChartInstance){ deptChartInstance.destroy(); deptChartInstance = null; }
+  if (!sorted.length) return;
+
+  let barColor = '#3b82f6';
+  let chartLabel = 'Total';
+  if (mode === 'registered')   { barColor = '#16a34a'; chartLabel = 'Registered'; }
+  if (mode === 'unregistered') { barColor = '#dc2626'; chartLabel = 'Unregistered'; }
+
+  deptChartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(x => x.dept),
+      datasets: [{
+        label: chartLabel,
+        data: sorted.map(x => x.count),
+        backgroundColor: barColor,
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 50 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `${ctx.parsed.y}` } },
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          offset: 6,
+          color: '#1e293b',
+          font: { weight: 'bold', size: 14, family: "'Segoe UI', Tahoma, sans-serif" },
+          formatter: v => v,
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color:'#e2e8f0' } },
+        x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 0, font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// PRINT HEADER
+// ============================================================
+function updatePrintHeader(){
+  const dept = document.getElementById('deptFilter').value || t('allDepts');
+  const mode = document.getElementById('viewMode').value;
+  const modeTxt = mode === 'unregistered' ? t('statusUnregistered')
+                 : mode === 'registered'   ? t('statusRegistered')
+                 : t('optAllMode');
+
+  document.getElementById('printInfo').innerHTML =
+    `${t('lblDeptFilter')}: ${escapeHtml(dept)} &nbsp;|&nbsp; ${modeTxt}`;
+  document.getElementById('printCount').textContent = `${t('printCount')}: ${filteredRows.length}`;
+
+  let explain = '';
+  if (mode === 'unregistered')      explain = t('printExplainUnregistered');
+  else if (mode === 'registered')   explain = t('printExplainRegistered');
+  else                              explain = t('printExplainAll');
+  document.getElementById('printExplain').innerHTML = explain;
+}
+
+// ============================================================
+// TAB SWITCH
+// ============================================================
+function switchTab(tab){
+  currentTab = tab;
+  document.getElementById('tabBtnList').classList.toggle('active', tab === 'list');
+  document.getElementById('tabBtnAnalysis').classList.toggle('active', tab === 'analysis');
+  document.getElementById('tabContentList').classList.toggle('active', tab === 'list');
+  document.getElementById('tabContentAnalysis').classList.toggle('active', tab === 'analysis');
+  if (tab === 'analysis' && allRows.length) setTimeout(buildDeptSummary, 50);
+}
+
+// ============================================================
+// COPY / EXPORT (LIST)
+// ============================================================
+function copyList(){
+  if (!filteredRows.length){ toast(t('toastNoDataCopy')); return; }
+  const mode = document.getElementById('viewMode').value;
+  const modeTxt = mode === 'unregistered' ? t('statusUnregistered')
+                 : mode === 'registered'   ? t('statusRegistered')
+                 : t('optAllMode');
+  const dept = document.getElementById('deptFilter').value || t('allDepts');
+
+  let txt = `📋 Lobster Ink - ${modeTxt}\n`;
+  txt += `🏢 ${t('lblDeptFilter')}: ${dept}\n`;
+  txt += `👥 ${t('printCount')}: ${filteredRows.length}\n`;
+  txt += `${'─'.repeat(40)}\n\n`;
+
+  let curDept = null, counter = 0;
+  filteredRows.forEach(r => {
+    if (r.department !== curDept){
+      curDept = r.department;
+      counter = 0;
+      txt += `\n🏢 === ${curDept} ===\n\n`;
+    }
+    counter++;
+    txt += `${counter}. [${r.code || '—'}] ${r.name} (${r.type === 'employee' ? t('employee') : t('trainee')})\n`;
+    txt += `   ${t('thStatus')}: ${r.status === 'registered' ? t('statusRegistered') : t('statusUnregistered')}\n\n`;
+  });
+
+  navigator.clipboard.writeText(txt).then(() => toast(t('toastCopied')));
+}
+
+function exportExcel(){
+  if (!filteredRows.length){ toast(t('toastNoDataExport')); return; }
+  const rows = filteredRows.map((r, i) => ({
+    '#': i + 1,
+    [t('thCode')]: r.code || '',
+    [t('thName')]: r.name,
+    [t('thDept')]: r.department,
+    [t('thLevel')]: r.level || '',
+    [t('thType')]: r.type === 'employee' ? t('employee') : t('trainee'),
+    [t('thStatus')]: r.status === 'registered' ? t('statusRegistered') : t('statusUnregistered'),
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:14},{wch:28},{wch:22},{wch:14},{wch:12},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Unregistered');
+  const mode = document.getElementById('viewMode').value;
+  const d = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `lobster_${mode}_${d}.xlsx`);
+  toast(t('toastExported'));
+}
+
+// ============================================================
+// CACHE
+// ============================================================
+function saveToCache(showToastMsg){
+  if (!activityCodes.size && !noCodeRows.length && !rawExcelRows.length){
+    if (showToastMsg) toast(t('toastNoData'));
+    return false;
+  }
+  try {
+    const payload = {
+      savedAt: Date.now(),
+      activityCodes: [...activityCodes],
+      uploadedFileName,
+      codeDetails: [...codeDetailsMap.entries()],
+      noCodeRows: noCodeRows,
+      rawExcelRows: rawExcelRows,   // ⭐ جديد
+      filters: {
+        dept: document.getElementById('deptFilter').value,
+        level: document.getElementById('levelFilter').value,
+        type: document.getElementById('typeFilter').value,
+        mode: document.getElementById('viewMode').value,
+        search: document.getElementById('searchFilter').value,
+      },
+      deletedIds: [...deletedIds],
+      tab: currentTab,
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+    updateCacheBanner(payload.savedAt);
+    if (showToastMsg) toast(t('toastSaved'));
+    return true;
+  } catch (e){
+    console.error(e);
+    if (showToastMsg) toast(t('toastSaveFail'));
+    return false;
+  }
+}
+
+function loadFromCache(){
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !data.savedAt) { clearCacheStorage(); return false; }
+    const age = Date.now() - data.savedAt;
+    if (age > CACHE_TTL) { clearCacheStorage(); return false; }
+    return { data, filters: data.filters || {}, tab: data.tab || 'list', savedAt: data.savedAt };
+  } catch (e){
+    console.error(e);
+    clearCacheStorage();
+    return false;
+  }
+}
+
+function clearCacheStorage(){
+  localStorage.removeItem(CACHE_KEY);
+}
+
+function clearCache(){
+  if (!confirm('Clear cache and re-upload?')) return;
+  clearCacheStorage();
+  activityCodes = new Set();
+  uploadedFileName = '';
+  codeDetailsMap.clear();
+  noCodeRows = [];
+  rawExcelRows = [];
+  allRows = [];
+  filteredRows = [];
+  deletedIds.clear();
+  invalidCodeRows = [];
+  missingInFirebase = [];
+  document.getElementById('cacheBanner').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('uploadSection').style.display = 'block';
+  switchTab('list');
+  toast(t('toastCacheCleared'));
+}
+
+function updateCacheBanner(savedAt){
+  if (!savedAt){ document.getElementById('cacheBanner').style.display = 'none'; return; }
+  const age = Date.now() - savedAt;
+  const left = CACHE_TTL - age;
+  if (left <= 0){ document.getElementById('cacheBanner').style.display = 'none'; return; }
+  const h = Math.floor(left / (60*60*1000));
+  const m = Math.floor((left % (60*60*1000)) / (60*1000));
+  const d = new Date(savedAt);
+  const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('cacheTimeLeft').textContent = t('cacheTimeLeft', h, m, timeStr);
+  document.getElementById('cacheBanner').style.display = 'flex';
+}
+
+// ============================================================
+// EXPOSE TO WINDOW
+// ============================================================
+Object.assign(window, {
+  saveToCache,
+  clearCache,
+  copyList,
+  exportExcel,
+  changeFile,
+  resetFilters,
+  deleteRow,
+  restoreAll,
+  switchTab,
+});
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('authReady', async () => {
+  applyLang();
+
+  document.getElementById('uploadSection').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('uploadHint').textContent = '⏳ Loading employees from Firebase...';
+
+  await loadFirebase(false);
+
+  document.getElementById('uploadHint').textContent = t('uploadHint');
+
+  const cached = loadFromCache();
+  if (cached){
+    activityCodes = new Set(cached.data.activityCodes || []);
+    uploadedFileName = cached.data.uploadedFileName || '';
+    deletedIds = new Set(cached.data.deletedIds || []);
+
+    if (cached.data.codeDetails){
+      codeDetailsMap = new Map(cached.data.codeDetails);
+    }
+    if (cached.data.noCodeRows){
+      noCodeRows = cached.data.noCodeRows;
+    }
+    if (cached.data.rawExcelRows){
+      rawExcelRows = cached.data.rawExcelRows;
+    }
+
+    buildAllRows();
+    rebuildDependentFilters();
+
+    if (cached.filters){
+      document.getElementById('deptFilter').value = cached.filters.dept || '';
+      document.getElementById('levelFilter').value = cached.filters.level || '';
+      document.getElementById('typeFilter').value = cached.filters.type || '';
+      document.getElementById('viewMode').value = cached.filters.mode || 'unregistered';
+      document.getElementById('searchFilter').value = cached.filters.search || '';
+    }
+
+    updateDeletedInfo();
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('cacheBanner').style.display = 'flex';
+
+    applyFilters();
+    switchTab(cached.tab || 'list');
+    updateCacheBanner(cached.savedAt);
+
+    setInterval(() => {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) { document.getElementById('cacheBanner').style.display = 'none'; return; }
+      try {
+        const d = JSON.parse(raw);
+        updateCacheBanner(d.savedAt);
+      } catch(_) {}
+    }, 60000);
+  }
+});
+</script>
+
+</body>
+</html>
