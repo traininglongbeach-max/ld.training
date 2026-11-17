@@ -3,11 +3,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/fireba
 import {
     initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
     collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch,
-    query, where   // ✅ جديد: لدعم الاستعلامات المفلترة
+    query, where
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
-// ✅ استيراد IndexedDB cache
 import { cacheSet, cacheGet, cacheGetMeta, cacheRemove, cacheClear } from './cache.js';
 
 // ==================== إعدادات فيربيز ====================
@@ -24,7 +23,6 @@ const firebaseConfig = {
 // ==================== تهيئة Firebase ====================
 const app = initializeApp(firebaseConfig);
 
-// ==================== تهيئة Firestore مع الكاش الحديث ====================
 export const db = initializeFirestore(app, {
     localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager()
@@ -34,18 +32,14 @@ export const db = initializeFirestore(app, {
 export const auth = getAuth(app);
 
 // ==================== إعدادات الكاش ====================
-const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 ساعات
-const CACHE_VERSION = 3;               // ✅ رفعنا الإصدار لإبطال localStorage القديم
+const CACHE_TTL = 6 * 60 * 60 * 1000;
+const CACHE_VERSION = 3;
 
-// ==================== الكاش الداخلي ====================
 const memoryCache = new Map();
 const pendingRequests = new Map();
 
-// ==================== دوال مساعدة داخلية ====================
+// ==================== دوال مساعدة ====================
 
-/**
- * تحميل البيانات من الذاكرة
- */
 function loadFromMemory(collectionName) {
     if (memoryCache.has(collectionName)) {
         console.log(`📖 Memory Cache: ${collectionName}`);
@@ -54,9 +48,6 @@ function loadFromMemory(collectionName) {
     return null;
 }
 
-/**
- * ✅ تحميل البيانات من IndexedDB
- */
 async function loadFromIndexedDB(collectionName) {
     try {
         const meta = await cacheGetMeta(collectionName);
@@ -84,9 +75,6 @@ async function loadFromIndexedDB(collectionName) {
     }
 }
 
-/**
- * ✅ حفظ البيانات في IndexedDB
- */
 async function saveCache(collectionName, data) {
     try {
         memoryCache.set(collectionName, data);
@@ -104,9 +92,6 @@ async function saveCache(collectionName, data) {
     }
 }
 
-/**
- * تحديث عنصر في الكاش
- */
 async function updateCache(collectionName, id, newData) {
     const cached = loadFromMemory(collectionName);
     if (!cached) return false;
@@ -121,9 +106,6 @@ async function updateCache(collectionName, id, newData) {
     return false;
 }
 
-/**
- * حذف عنصر من الكاش
- */
 async function removeCacheItem(collectionName, id) {
     const cached = loadFromMemory(collectionName);
     if (!cached) return false;
@@ -137,9 +119,6 @@ async function removeCacheItem(collectionName, id) {
     return false;
 }
 
-/**
- * حذف عدة عناصر من الكاش دفعة واحدة
- */
 async function removeCacheItems(collectionName, idsArray) {
     const cached = loadFromMemory(collectionName);
     if (!cached) return false;
@@ -156,9 +135,6 @@ async function removeCacheItems(collectionName, idsArray) {
     return false;
 }
 
-/**
- * إضافة عنصر إلى الكاش
- */
 async function addToCache(collectionName, item) {
     const cached = loadFromMemory(collectionName);
     if (!cached) {
@@ -176,16 +152,10 @@ async function addToCache(collectionName, item) {
     return false;
 }
 
-/**
- * التحقق من انتهاء صلاحية الكاش
- */
 function isCacheExpired(timestamp) {
     return Date.now() - timestamp > CACHE_TTL;
 }
 
-/**
- * تحميل البيانات من Firestore مع منع التكرار
- */
 async function fetchFromFirestore(collectionName) {
     if (pendingRequests.has(collectionName)) {
         console.log(`⏳ Waiting for pending request: ${collectionName}`);
@@ -216,26 +186,20 @@ async function fetchFromFirestore(collectionName) {
     return promise;
 }
 
-/**
- * تحميل البيانات (متعدد المستويات)
- */
 async function loadData(collectionName) {
-    // 1. Memory
     let data = loadFromMemory(collectionName);
     if (data) return data;
 
-    // 2. IndexedDB
     data = await loadFromIndexedDB(collectionName);
     if (data) {
         memoryCache.set(collectionName, data);
         return data;
     }
 
-    // 3. Firestore
     return await fetchFromFirestore(collectionName);
 }
 
-// ==================== كائن DB الأساسي ====================
+// ==================== كائن DB ====================
 export const DB = {
     async init() {
         console.log("✅ Firestore connected (IndexedDB cache enabled)");
@@ -243,7 +207,6 @@ export const DB = {
         return Promise.resolve();
     },
 
-    // ==================== إدراج عنصر ====================
     async insert(storeName, data) {
         try {
             let id = data.id;
@@ -271,7 +234,6 @@ export const DB = {
         }
     },
 
-    // ==================== تحديث عنصر ====================
     async update(storeName, data) {
         try {
             if (!data.id) throw new Error("ID required for update");
@@ -288,7 +250,6 @@ export const DB = {
         }
     },
 
-    // ==================== استرجاع عنصر بواسطة ID ====================
     async get(storeName, id) {
         try {
             const cached = loadFromMemory(storeName);
@@ -317,7 +278,6 @@ export const DB = {
         }
     },
 
-    // ==================== استرجاع جميع العناصر ====================
     async getAll(storeName) {
         try {
             return await loadData(storeName);
@@ -328,15 +288,8 @@ export const DB = {
     },
 
     // ============================================================
-    // ✅ NEW: جلب السجلات بتاريخ محدد فقط (استعلام Firestore مباشر)
+    // ✅ جلب السجلات بتاريخ محدد فقط (استعلام Firestore مباشر)
     // ============================================================
-    /**
-     * جلب السجلات التي تطابق تاريخاً محدداً باستخدام query مباشر على Firestore
-     * @param {string} storeName - اسم الـ Collection (مثلاً 'daily_task_records')
-     * @param {string} date - التاريخ بصيغة YYYY-MM-DD
-     * @param {string} dateField - اسم حقل التاريخ (افتراضي: 'task_date')
-     * @returns {Promise<Array>} - قائمة السجلات
-     */
     async getRecordsByDate(storeName, date, dateField = 'task_date') {
         try {
             if (!date) {
@@ -357,9 +310,6 @@ export const DB = {
 
             console.log(`✅ getRecordsByDate: ${data.length} records for ${date}`);
 
-            // ✅ لا نحفظ في الـ cache العام (لأنه مخصص لتاريخ واحد)
-            // بدلاً من ذلك، نخزّنها في memory cache تحت مفتاح مركّب
-            // حتى يمكن استخدامها في نفس الجلسة دون إعادة جلب
             const cacheKey = `${storeName}__date__${date}`;
             memoryCache.set(cacheKey, data);
 
@@ -367,8 +317,6 @@ export const DB = {
         } catch (error) {
             console.error(`❌ getRecordsByDate failed: ${storeName} @ ${date}`, error);
 
-            // ✅ Fallback: إذا فشل الـ query (مثلاً لا يوجد index)،
-            // ارجع للطريقة القديمة: جلب الكل ثم الفلترة
             try {
                 console.log(`⚠️ Falling back to full collection fetch for ${storeName}`);
                 const all = await this.getAll(storeName);
@@ -382,7 +330,55 @@ export const DB = {
         }
     },
 
-    // ==================== حذف عنصر ====================
+    // ============================================================
+    // ✅ NEW: جلب السجلات بقيم متعددة (WHERE IN) — لتوفير القراءات
+    // ============================================================
+    /**
+     * جلب السجلات التي حقلها field يساوي أي قيمة في values[]
+     * يجزّئ القيم إلى دفعات من 30 (حد Firestore الأقصى لـ in)
+     * @param {string} storeName - اسم الـ Collection
+     * @param {string} field - اسم الحقل (مثلاً 'spot_check_id')
+     * @param {Array<string>} values - القيم المطلوبة
+     * @returns {Promise<Array>}
+     */
+    async queryWhereIn(storeName, field, values) {
+        try {
+            if (!values || values.length === 0) {
+                console.log(`⚠️ queryWhereIn: no values for ${storeName}.${field}`);
+                return [];
+            }
+
+            console.log(`🔥 Firestore queryWhereIn: ${storeName} where ${field} in [${values.length} values]`);
+
+            const CHUNK = 30; // Firestore in limit
+            const results = [];
+
+            for (let i = 0; i < values.length; i += CHUNK) {
+                const chunk = values.slice(i, i + CHUNK);
+                const colRef = collection(db, storeName);
+                const q = query(colRef, where(field, "in", chunk));
+                const querySnapshot = await getDocs(q);
+
+                querySnapshot.docs.forEach(d => {
+                    results.push({ id: d.id, ...d.data() });
+                });
+
+                console.log(`  ↳ chunk ${Math.floor(i/CHUNK)+1}: ${querySnapshot.size} docs`);
+            }
+
+            console.log(`✅ queryWhereIn: ${results.length} total records from ${storeName}`);
+
+            // خزّن في memory cache بمفتاح مركّب (لا يؤثر على الـ getAll)
+            const cacheKey = `${storeName}__in__${field}__${values.length}__${values[0] || ''}`;
+            memoryCache.set(cacheKey, results);
+
+            return results;
+        } catch (error) {
+            console.error(`❌ queryWhereIn failed: ${storeName}`, error);
+            throw error;
+        }
+    },
+
     async delete(storeName, id) {
         try {
             await deleteDoc(doc(db, storeName, String(id)));
@@ -394,7 +390,6 @@ export const DB = {
         }
     },
 
-    // ==================== ✅ الحذف الدفعي ====================
     async bulkDelete(storeName, idsArray) {
         try {
             if (!idsArray || idsArray.length === 0) return 0;
@@ -429,7 +424,6 @@ export const DB = {
         }
     },
 
-    // ==================== فلترة ====================
     async filter(storeName, predicate) {
         try {
             const all = await loadData(storeName);
@@ -442,7 +436,6 @@ export const DB = {
         }
     },
 
-    // ==================== البحث عن عنصر ====================
     async find(storeName, predicate) {
         try {
             const all = await loadData(storeName);
@@ -455,7 +448,6 @@ export const DB = {
         }
     },
 
-    // ==================== الإدراج الدفعي ====================
     async bulkInsert(storeName, dataArray) {
         try {
             if (!dataArray || dataArray.length === 0) return [];
@@ -510,16 +502,15 @@ export const DB = {
         }
     },
 
-    // ==================== تحديث كاش Collection ====================
     async refresh(collectionName) {
         try {
             console.log(`🔄 Refreshing: ${collectionName}`);
             memoryCache.delete(collectionName);
 
-            // ✅ امسح كل مفاتيح التاريخ المرتبطة
             const dateKeysToRemove = [];
             for (const key of memoryCache.keys()) {
-                if (key.startsWith(`${collectionName}__date__`)) {
+                if (key.startsWith(`${collectionName}__date__`) ||
+                    key.startsWith(`${collectionName}__in__`)) {
                     dateKeysToRemove.push(key);
                 }
             }
@@ -534,12 +525,11 @@ export const DB = {
         }
     },
 
-    // ==================== تحديث جميع الكاش ====================
     async refreshAll() {
         try {
             console.log('🔄 Refreshing all caches');
             const collections = Array.from(memoryCache.keys())
-                .filter(k => !k.includes('__date__'));   // ✅ تجاهل مفاتيح التاريخ
+                .filter(k => !k.includes('__date__') && !k.includes('__in__'));
             const results = {};
 
             for (const collectionName of collections) {
@@ -554,7 +544,6 @@ export const DB = {
         }
     },
 
-    // ==================== مسح الكاش ====================
     async clearCache() {
         try {
             console.log('🗑️ Clearing all caches');
@@ -576,7 +565,6 @@ export const DB = {
         }
     },
 
-    // ==================== معلومات الكاش ====================
     async cacheInfo() {
         try {
             const info = {
@@ -613,16 +601,15 @@ export const DB = {
         }
     },
 
-    // ==================== إبطال كاش Collection ====================
     async invalidate(collectionName) {
         try {
             console.log(`🚫 Invalidating: ${collectionName}`);
             memoryCache.delete(collectionName);
 
-            // ✅ امسح كل مفاتيح التاريخ المرتبطة
             const dateKeysToRemove = [];
             for (const key of memoryCache.keys()) {
-                if (key.startsWith(`${collectionName}__date__`)) {
+                if (key.startsWith(`${collectionName}__date__`) ||
+                    key.startsWith(`${collectionName}__in__`)) {
                     dateKeysToRemove.push(key);
                 }
             }
@@ -637,14 +624,6 @@ export const DB = {
         }
     },
 
-    // ============================================================
-    // ✅ NEW: إبطال cache تاريخ محدد فقط
-    // ============================================================
-    /**
-     * إبطال cache تاريخ محدد (لا يؤثر على باقي التواريخ)
-     * @param {string} storeName - اسم الـ Collection
-     * @param {string} date - التاريخ
-     */
     invalidateDate(storeName, date) {
         const cacheKey = `${storeName}__date__${date}`;
         if (memoryCache.has(cacheKey)) {
@@ -656,10 +635,8 @@ export const DB = {
     }
 };
 
-// ==================== تصدير للاستخدام العام ====================
 window.DB = DB;
 
-// ==================== تنظيف الكاش القديم من localStorage عند الترقية ====================
 (async () => {
     try {
         const versionKey = 'db_cache_version';
