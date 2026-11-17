@@ -12,8 +12,6 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
 body{background:#f0f4f8;padding-bottom:80px}
-
-/* Navbar */
 .navbar{background:#fff;padding:.8rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem;position:sticky;top:0;z-index:999}
 .logo h2{color:#1e3a5f;font-size:1.1rem}
 .logo span{color:#2b7a4b}
@@ -25,47 +23,31 @@ body{background:#f0f4f8;padding-bottom:80px}
 .nav-links .export{background:#217346;color:#fff}
 .nav-links .export:hover{background:#185c37}
 .nav-links .logout{background:#e53e3e;color:#fff}
-
-/* Container */
 .container{max-width:1400px;margin:1.2rem auto;padding:0 1rem}
-
-/* Header Card */
 .header-card{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
 .header-card h1{color:#1e3a5f;font-size:1.4rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
-
-/* Setup Grid */
 .setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.9rem}
 .setup-item label{display:block;font-weight:700;color:#1e3a5f;font-size:.85rem;margin-bottom:.35rem}
 .setup-item input,.setup-item select{width:100%;padding:.7rem .9rem;border:2px solid #e2e8f0;border-radius:.8rem;font-size:.9rem;background:#fff;transition:.2s}
 .setup-item input:focus,.setup-item select:focus{outline:none;border-color:#2b7a4b}
-
-/* Date Filters */
+.setup-item select:disabled{background:#edf2f7;color:#a0aec0;cursor:not-allowed;opacity:.75}
 .date-filters{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
 .date-filters select{width:100%;padding:.7rem .9rem;border:2px solid #e2e8f0;border-radius:.8rem;font-size:.9rem;background:#fff;cursor:pointer}
 .date-filters select:focus{outline:none;border-color:#2b7a4b}
-
 .selected-date-preview{margin-top:.6rem;padding:.55rem .9rem;background:#ebf8ff;border:2px solid #bee3f8;border-radius:.8rem;font-size:.85rem;color:#2c5282;font-weight:700;display:flex;align-items:center;gap:.5rem}
 .selected-date-preview .icon{font-size:1.1rem}
-
-/* Exclude Levels */
 .exclude-levels{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
 .exclude-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .7rem;background:#edf2f7;border-radius:1rem;font-size:.78rem;cursor:pointer;user-select:none;transition:.15s;border:2px solid transparent}
 .exclude-chip:hover{background:#e2e8f0}
 .exclude-chip.active{background:#fed7d7;color:#c53030;border-color:#fc8181;font-weight:700}
 .exclude-chip input{display:none}
-
-/* Sections */
 .section{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
 .section-title{color:#1e3a5f;font-size:1.05rem;font-weight:700;margin-bottom:1rem;padding-left:.7rem;border-left:4px solid #2b7a4b;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
 .section-title .badge{background:#ebf8ff;color:#2b6cb0;padding:.25rem .7rem;border-radius:1rem;font-size:.78rem;font-weight:700}
-
-/* Search */
 .search-box{display:flex;gap:.5rem;margin-bottom:1rem;position:relative}
 .search-box input{flex:1;padding:.75rem 1rem;border:2px solid #e2e8f0;border-radius:2rem;font-size:.9rem}
 .search-box input:focus{outline:none;border-color:#2b7a4b;box-shadow:0 0 0 3px rgba(43,122,75,.1)}
 .search-count{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-size:.75rem;color:#718096;font-weight:700;background:#f7fafc;padding:.2rem .6rem;border-radius:1rem;pointer-events:none}
-
-/* Employee List */
 .emp-list{max-height:340px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:.8rem;padding:.4rem}
 .emp-item{display:flex;align-items:center;gap:.7rem;padding:.7rem .8rem;border-radius:.6rem;cursor:pointer;transition:.15s;border-bottom:1px solid #f0f4f8}
 .emp-item:last-child{border-bottom:none}
@@ -76,32 +58,9 @@ body{background:#f0f4f8;padding-bottom:80px}
 .emp-name{font-weight:700;color:#2d3748;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .emp-meta{font-size:.75rem;color:#718096;margin-top:2px}
 .emp-id{background:#edf2f7;color:#4a5568;padding:.15rem .5rem;border-radius:.4rem;font-size:.72rem;font-weight:700;flex-shrink:0}
-
-/* Small photo button in employee list */
-.btn-photo-sm {
-  background: #805ad5;
-  color: #fff;
-  border: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: .85rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: .15s;
-  margin-left: .3rem;
-}
-.btn-photo-sm:hover {
-  background: #6b46c1;
-  transform: scale(1.1);
-}
-/* Match Highlight */
+.btn-photo-sm{background:#805ad5;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;margin-left:.3rem}
+.btn-photo-sm:hover{background:#6b46c1;transform:scale(1.1)}
 .match-highlight{background:#fefcbf;color:#744210;font-weight:900;padding:0 2px;border-radius:3px;letter-spacing:.5px;border-bottom:2px solid #d69e2e}
-
-/* Result Rows */
 .result-row{display:flex;align-items:center;gap:.6rem;padding:.65rem .8rem;border-radius:.7rem;background:#f9fafb;margin-bottom:.4rem;flex-wrap:wrap}
 .result-row .rname{flex:1;min-width:120px;font-weight:700;color:#2d3748;font-size:.88rem}
 .result-row .rmeta{font-size:.72rem;color:#718096}
@@ -112,8 +71,6 @@ body{background:#f0f4f8;padding-bottom:80px}
 .toggle-btn.dont.active{background:#fed7d7;border-color:#e53e3e;color:#822727}
 .toggle-btn:not(.active){color:#a0aec0}
 .btn-remove{background:#fed7d7;color:#c53030;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-weight:900;flex-shrink:0}
-
-/* Action Buttons */
 .action-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem}
 .btn{padding:.6rem 1rem;border:none;border-radius:2rem;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s;display:inline-flex;align-items:center;gap:.35rem}
 .btn:hover{transform:translateY(-1px)}
@@ -125,8 +82,6 @@ body{background:#f0f4f8;padding-bottom:80px}
 .btn-next{background:#3182ce;color:#fff}
 .btn-next:hover{background:#2b6cb0}
 .btn-clear{background:#e2e8f0;color:#4a5568}
-
-/* Summary */
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.7rem;margin-top:1rem}
 .summary-box{background:linear-gradient(135deg,#f7fafc,#edf2f7);border-radius:.8rem;padding:.8rem;text-align:center}
 .summary-box .lbl{font-size:.75rem;color:#718096;margin-bottom:.25rem}
@@ -134,8 +89,6 @@ body{background:#f0f4f8;padding-bottom:80px}
 .summary-box.know .val{color:#38a169}
 .summary-box.dont .val{color:#e53e3e}
 .summary-box.pct .val{color:#2b7a4b}
-
-/* Tables */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;min-width:700px;direction:ltr}
 th,td{padding:.7rem .6rem;text-align:center;border-bottom:1px solid #e2e8f0;font-size:.87rem}
@@ -154,74 +107,27 @@ td.dept-cell{text-align:left;font-weight:700;color:#2d3748}
 .rank-badge.gold{background:#fefcbf;color:#744210}
 .rank-badge.silver{background:#e2e8f0;color:#4a5568}
 .rank-badge.bronze{background:#feebc8;color:#7b341e}
-
-/* Dept Summary Header */
 .dept-summary-header{background:linear-gradient(135deg,#1e3a5f,#2b7a4b);color:#fff;border-radius:.9rem;padding:.9rem 1.1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem}
 .dept-summary-header .info{display:flex;flex-direction:column;gap:.15rem}
 .dept-summary-header .label{font-size:.72rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
 .dept-summary-header .value{font-size:1rem;font-weight:900}
 .dept-summary-header .date-badge{background:rgba(255,255,255,.15);padding:.4rem .9rem;border-radius:1rem;font-size:.82rem;font-weight:700}
 .dept-summary-header .badge{padding:.3rem .8rem;border-radius:1rem;font-size:.78rem;font-weight:700}
-
-/* Chart */
 .chart-container{position:relative;height:300px;margin-top:.5rem}
 @media(max-width:768px){.chart-container{height:260px}}
-
-/* Side-by-side layout for Chart + Dept Summary */
-.chart-dept-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  align-items: start;
-}
-.chart-dept-wrapper .section {
-  margin-bottom: 0;
-}
-@media (max-width: 992px) {
-  .chart-dept-wrapper {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Compact styling inside wrapper */
+.chart-dept-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;align-items:start}
+.chart-dept-wrapper .section{margin-bottom:0}
+@media (max-width: 992px){.chart-dept-wrapper{grid-template-columns:1fr}}
 .chart-dept-wrapper #deptTable th,
-.chart-dept-wrapper #deptTable td {
-  padding: .45rem .4rem;
-  font-size: 16px;
-}
-.chart-dept-wrapper #deptTable th {
-  font-size: 18px;
-}
-.chart-dept-wrapper .dept-summary-header {
-  padding: .65rem .85rem;
-  margin-bottom: .7rem;
-}
-.chart-dept-wrapper .dept-summary-header .value {
-  font-size: 20px;
-}
-.chart-dept-wrapper .dept-summary-header .label {
-  font-size: .65rem;
-}
-.chart-dept-wrapper .dept-summary-header .date-badge {
-    font-size: 20px;
-}
-.chart-dept-wrapper .section-title {
-  font-size: .95rem;
-  margin-bottom: .7rem;
-}
-.chart-dept-wrapper .section-title .badge {
-  font-size: .7rem;
-  padding: .2rem .55rem;
-}
-.chart-dept-wrapper .rank-badge {
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  font-size: .65rem;
-}
-
-/* All Employees Table (Know + Don't Know) */
+.chart-dept-wrapper #deptTable td{padding:.45rem .4rem;font-size:16px}
+.chart-dept-wrapper #deptTable th{font-size:18px}
+.chart-dept-wrapper .dept-summary-header{padding:.65rem .85rem;margin-bottom:.7rem}
+.chart-dept-wrapper .dept-summary-header .value{font-size:20px}
+.chart-dept-wrapper .dept-summary-header .label{font-size:.65rem}
+.chart-dept-wrapper .dept-summary-header .date-badge{font-size:20px}
+.chart-dept-wrapper .section-title{font-size:.95rem;margin-bottom:.7rem}
+.chart-dept-wrapper .section-title .badge{font-size:.7rem;padding:.2rem .55rem}
+.chart-dept-wrapper .rank-badge{width:20px;height:20px;line-height:20px;font-size:.65rem}
 #allEmpSection .section-title{border-left-color:#2b7a4b}
 .emp-status-badge{display:inline-block;padding:.25rem .75rem;border-radius:1rem;font-weight:700;font-size:.75rem;white-space:nowrap}
 .emp-status-badge.know{background:#c6f6d5;color:#22543d}
@@ -240,121 +146,28 @@ tr.row-know{background:#f0fff4}
 tr.row-know:hover{background:#e6fffa}
 tr.row-dont{background:#fff5f5}
 tr.row-dont:hover{background:#fed7d7}
-
-/* Empty State */
 .empty{text-align:center;padding:1.5rem;color:#a0aec0;font-size:.88rem}
-
-/* Toast */
 .toast{position:fixed;bottom:1.2rem;right:1.2rem;background:#2b7a4b;color:#fff;padding:.75rem 1.2rem;border-radius:2rem;z-index:3000;animation:slideIn .3s;font-weight:700;font-size:.85rem;box-shadow:0 5px 20px rgba(0,0,0,.2);max-width:90%}
 .toast.error{background:#e53e3e}
 .toast.warn{background:#d69e2e}
 .toast.info{background:#4299e1}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* ===== Employee Photo Modal ===== */
-.photo-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  z-index: 5000;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  animation: fadeIn .2s ease;
-}
-.photo-modal-overlay.active {
-  display: flex;
-}
-.photo-modal {
-  background: #fff;
-  border-radius: 1.2rem;
-  padding: 1.2rem;
-  max-width: 420px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  animation: popIn .25s ease;
-  position: relative;
-}
-.photo-modal img {
-  width: 100%;
-  max-height: 420px;
-  object-fit: fill;
-  border-radius: 1rem;
-  border: 3px solid #e2e8f0;
-  background: #f7fafc;
-}
-.photo-modal .emp-photo-name {
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: #1e3a5f;
-  margin-top: .8rem;
-}
-.photo-modal .emp-photo-meta {
-  font-size: .82rem;
-  color: #718096;
-  margin-top: .25rem;
-}
-.photo-modal .close-btn {
-  position: absolute;
-  top: .6rem;
-  right: .6rem;
-  background: #e53e3e;
-  color: #fff;
-  border: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  font-size: 1rem;
-  font-weight: 900;
-  cursor: pointer;
-  transition: .15s;
-}
-.photo-modal .close-btn:hover {
-  background: #c53030;
-  transform: scale(1.05);
-}
-.photo-modal .no-photo {
-  padding: 3rem 1rem;
-  color: #a0aec0;
-  font-size: .9rem;
-  font-weight: 700;
-  background: #f7fafc;
-  border-radius: 1rem;
-  border: 3px dashed #e2e8f0;
-}
-.photo-modal .loading-photo {
-  padding: 3rem 1rem;
-  color: #4299e1;
-  font-size: .9rem;
-  font-weight: 700;
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-/* Photo button in result row */
-.btn-photo {
-  background: #805ad5;
-  color: #fff;
-  border: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: .95rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: .15s;
-}
-.btn-photo:hover {
-  background: #6b46c1;
-  transform: scale(1.1);
-}
-
-/* Mobile */
+.photo-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:5000;justify-content:center;align-items:center;padding:1rem;animation:fadeIn .2s ease}
+.photo-modal-overlay.active{display:flex}
+.photo-modal{background:#fff;border-radius:1.2rem;padding:1.2rem;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:popIn .25s ease;position:relative}
+.photo-modal img{width:100%;max-height:420px;object-fit:fill;border-radius:1rem;border:3px solid #e2e8f0;background:#f7fafc}
+.photo-modal .emp-photo-name{font-size:1.1rem;font-weight:900;color:#1e3a5f;margin-top:.8rem}
+.photo-modal .emp-photo-meta{font-size:.82rem;color:#718096;margin-top:.25rem}
+.photo-modal .close-btn{position:absolute;top:.6rem;right:.6rem;background:#e53e3e;color:#fff;border:none;width:34px;height:34px;border-radius:50%;font-size:1rem;font-weight:900;cursor:pointer;transition:.15s}
+.photo-modal .close-btn:hover{background:#c53030;transform:scale(1.05)}
+.photo-modal .no-photo{padding:3rem 1rem;color:#a0aec0;font-size:.9rem;font-weight:700;background:#f7fafc;border-radius:1rem;border:3px dashed #e2e8f0}
+.photo-modal .loading-photo{padding:3rem 1rem;color:#4299e1;font-size:.9rem;font-weight:700}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.btn-photo{background:#805ad5;color:#fff;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:.95rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.btn-photo:hover{background:#6b46c1;transform:scale(1.1)}
+.info-banner{background:#ebf8ff;border:2px solid #bee3f8;color:#2c5282;padding:.7rem 1rem;border-radius:.8rem;font-size:.85rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.info-banner.danger{background:#fed7d7;border-color:#fc8181;color:#822727}
 @media(max-width:768px){
   .container{padding:0 .7rem}
   .header-card,.section{padding:.9rem}
@@ -389,12 +202,9 @@ tr.row-dont:hover{background:#fed7d7}
 </div>
 
 <div class="container">
-
-  <!-- Setup -->
   <div class="header-card">
-    <h1>📋 Spot Check </h1>
+    <h1>📋 Spot Check</h1>
     <div class="setup-grid">
-
       <div class="setup-item">
         <label>📅 Date Filter (Year / Month / Day)</label>
         <div class="date-filters">
@@ -407,27 +217,26 @@ tr.row-dont:hover{background:#fed7d7}
           <span id="selectedDateText">—</span>
         </div>
       </div>
-
       <div class="setup-item">
         <label>🎯 Task / Standard</label>
         <select id="taskSelect"><option value="">— Select Task —</option></select>
       </div>
-
       <div class="setup-item">
-        <label>📂 Department</label>
+        <label>📂 Department <span id="deptLockHint" style="color:#c53030;font-size:.72rem;font-weight:700"></span></label>
         <select id="deptSelect"><option value="">— Select Department —</option></select>
       </div>
-
     </div>
-
-    <!-- Exclude Levels -->
     <div class="setup-item" style="margin-top:1rem">
       <label>🚫 Exclude Levels (auto: Managers / HODs / AHODs / Directors / GM)</label>
       <div class="exclude-levels" id="excludeLevelsChips"></div>
     </div>
   </div>
 
-  <!-- Search & Add -->
+  <div class="info-banner danger" id="deptLockBanner" style="display:none">
+    <span>🔒</span>
+    <span>لديك <strong id="deptLockCount">0</strong> موظف غير محفوظ في هذه الإدارة — يجب <strong>الحفظ</strong> أو <strong>Clear</strong> قبل تغيير الإدارة.</span>
+  </div>
+
   <div class="section" id="addSection" style="display:none">
     <div class="section-title">
       <span>🔍 Search Employees (by First Name)</span>
@@ -442,7 +251,6 @@ tr.row-dont:hover{background:#fed7d7}
     </div>
   </div>
 
-  <!-- Selected / Results -->
   <div class="section" id="resultSection" style="display:none">
     <div class="section-title">
       <span>✏️ Checked Employees</span>
@@ -456,15 +264,12 @@ tr.row-dont:hover{background:#fed7d7}
     <div class="summary-grid" id="liveSummary"></div>
   </div>
 
-  <!-- Save Actions -->
   <div class="action-bar" id="saveBar" style="display:none">
     <button class="btn btn-save" onclick="saveDeptResults()">💾 Save Department Results</button>
     <button class="btn btn-next" onclick="goNextDept()">➡️ Next Department</button>
   </div>
 
-  <!-- Chart + Department Summary (Side by Side) -->
   <div class="chart-dept-wrapper">
-
     <div class="section" id="chartSection" style="display:none">
       <div class="section-title">
         <span>📈 Overall Performance</span>
@@ -474,7 +279,6 @@ tr.row-dont:hover{background:#fed7d7}
       </div>
     </div>
 
-    <!-- Department Summary -->
     <div class="section" id="deptSummarySection">
       <div class="dept-summary-header" id="deptSummaryHeader">
         <div class="info">
@@ -500,23 +304,18 @@ tr.row-dont:hover{background:#fed7d7}
         </table>
       </div>
     </div>
-
   </div>
 
-  <!-- ✅ All Employees (Know + Don't Know) with Edit/Delete -->
   <div class="section" id="allEmpSection" style="display:none">
     <div class="section-title">
       <span>📋 All Checked Employees (Know + Don't Know)</span>
       <span class="badge" id="allEmpBadge">0 employees</span>
     </div>
-
-    <!-- Filter buttons -->
     <div class="action-bar">
       <button class="btn btn-know-all" id="filterAll" onclick="setAllEmpFilter('all')">👥 All</button>
       <button class="btn btn-know-all" id="filterKnow" onclick="setAllEmpFilter('KNOW')">🟢 Know Only</button>
       <button class="btn btn-clear" id="filterDont" onclick="setAllEmpFilter('DONT_KNOW')">🔴 Don't Know Only</button>
     </div>
-
     <div class="table-wrap">
       <table id="allEmpTable">
         <thead>
@@ -537,7 +336,6 @@ tr.row-dont:hover{background:#fed7d7}
     </div>
   </div>
 
-  <!-- Don't Know Employees Table (احتياطي) -->
   <div class="section" id="dontKnowSection" style="display:none">
     <div class="section-title">
       <span>🔴 Don't Know Employees</span>
@@ -561,7 +359,6 @@ tr.row-dont:hover{background:#fed7d7}
     </div>
   </div>
 
-  <!-- Overall Summary -->
   <div class="section" id="overallSection">
     <div class="section-title">
       <span>🏆 Overall Summary</span>
@@ -569,10 +366,8 @@ tr.row-dont:hover{background:#fed7d7}
     </div>
     <div class="summary-grid" id="overallSummary"></div>
   </div>
-
 </div>
 
-<!-- Employee Photo Modal -->
 <div class="photo-modal-overlay" id="photoModal" onclick="closePhotoModal(event)">
   <div class="photo-modal" onclick="event.stopPropagation()">
     <button class="close-btn" onclick="closePhotoModal()">✕</button>
@@ -602,35 +397,34 @@ let filterYear = '';
 let filterMonth = '';
 let filterDay = '';
 
+// ✅ spot_checks كامل (جدول صغير) — يُحمَّل مرة واحدة
+let allSpotChecks = [];
+
+// ✅ cache results — لكل يوم على حدة
+let resultsByScope = new Map();
+let loadedScopes = new Set();
+
 let savedSpotChecks = [];
 let savedResults = [];
-
-// ✅ Sets و Map للبحث السريع ومنع التكرار
-let selectedEmployeeIds = new Set();
-let savedEmployeeIds = new Set();
 let savedResultsMap = new Map();
 
-// Exclude levels
+let selectedEmployeeIds = new Set();
+let savedEmployeeIds = new Set();
+
 let excludedLevels = new Set();
 const DEFAULT_EXCLUDED = [
   'manager','assistant','director','asst. manager','asst manager','dir.',
   'ahod','ahods','hod','hods','gm','0.05'
 ];
 
-// Sort (Dept Summary)
 let sortKey = 'pct';
 let sortDir = 'desc';
-
-// Sort (Don't Know Table)
 let dkSortKey = 'department';
 let dkSortDir = 'asc';
-
-// Sort + Filter (All Employees Table)
 let aeSortKey = 'department';
 let aeSortDir = 'asc';
 let aeFilter = 'all';
 
-// Chart
 let totalChartInstance = null;
 
 /* ===================== Helpers ===================== */
@@ -653,7 +447,7 @@ function toast(msg, type='') {
   t.className = 'toast ' + type;
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 2800);
+  setTimeout(()=>t.remove(), 3000);
 }
 
 function escapeHtml(s) {
@@ -674,11 +468,32 @@ function isLevelExcluded(level) {
   return false;
 }
 
-function extractFirstName(fullName) {
-  if (!fullName) return '';
-  const trimmed = String(fullName).trim();
-  const parts = trimmed.split(/\s+/);
-  return parts[0] || '';
+/* ===================== Scope Key ===================== */
+function getScopeKey() {
+  return `day:${spotDate}`;
+}
+
+/* ===================== ✅ Query results by spot_check_ids (Firestore where in) ===================== */
+async function queryResultsBySpotCheckIds(scIds) {
+  if (!scIds || scIds.length === 0) return [];
+
+  if (typeof DB.queryWhereIn === 'function') {
+    try {
+      return await DB.queryWhereIn('spot_check_results', 'spot_check_id', scIds);
+    } catch (e) {
+      console.warn('DB.queryWhereIn failed, will fallback:', e);
+    }
+  }
+
+  console.warn('⚠️ Falling back to getAll — reads NOT optimized');
+  try {
+    const all = await DB.getAll('spot_check_results') || [];
+    const scIdSet = new Set(scIds.map(String));
+    return all.filter(r => scIdSet.has(String(r.spot_check_id)));
+  } catch (e) {
+    console.error('All result fetch methods failed:', e);
+    return [];
+  }
 }
 
 /* ===================== Date Filters ===================== */
@@ -701,6 +516,7 @@ function buildMonthOptions() {
   filterMonth = currentMonth;
 }
 
+// ✅ تم حذف خيار "Whole Month"
 function buildDayOptions() {
   const sel = document.getElementById('filterDay');
   const days = [];
@@ -715,9 +531,15 @@ function updateSpotDateFromFilters() {
   const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
   const safeDay = Math.min(parseInt(filterDay), daysInMonth);
   spotDate = `${filterYear}-${filterMonth}-${String(safeDay).padStart(2,'0')}`;
-  document.getElementById('selectedDateText').textContent = fmtDate(spotDate);
+  updateDatePreview();
 }
 
+function updateDatePreview() {
+  const textEl = document.getElementById('selectedDateText');
+  if (textEl) textEl.textContent = fmtDate(spotDate);
+}
+
+// ✅ rebuild بدون ALL
 function rebuildDayOptions() {
   const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
   const daySel = document.getElementById('filterDay');
@@ -727,12 +549,16 @@ function rebuildDayOptions() {
     const v = String(d).padStart(2,'0');
     daySel.innerHTML += `<option value="${v}">${v}</option>`;
   }
-  if (parseInt(prevValue) <= daysInMonth) daySel.value = prevValue;
+  if (prevValue !== '' && parseInt(prevValue) <= daysInMonth) daySel.value = prevValue;
   else daySel.value = String(daysInMonth).padStart(2,'0');
   filterDay = daySel.value;
 }
 
 async function onDateFilterChange() {
+  if (!confirmDiscardUnsaved()) {
+    document.getElementById('filterDay').value = filterDay;
+    return;
+  }
   filterYear = document.getElementById('filterYear').value;
   filterMonth = document.getElementById('filterMonth').value;
   rebuildDayOptions();
@@ -751,6 +577,10 @@ function initDateFilters() {
   document.getElementById('filterYear').addEventListener('change', onDateFilterChange);
   document.getElementById('filterMonth').addEventListener('change', onDateFilterChange);
   document.getElementById('filterDay').addEventListener('change', async () => {
+    if (!confirmDiscardUnsaved()) {
+      document.getElementById('filterDay').value = filterDay;
+      return;
+    }
     filterDay = document.getElementById('filterDay').value;
     updateSpotDateFromFilters();
     resetSession();
@@ -759,7 +589,21 @@ function initDateFilters() {
   });
 }
 
-/* ===================== Load All ===================== */
+function hasUnsavedEmployees() {
+  return selectedEmployees.some(s => !s.fromDb);
+}
+
+function getUnsavedCount() {
+  return selectedEmployees.filter(s => !s.fromDb).length;
+}
+
+function confirmDiscardUnsaved() {
+  if (!hasUnsavedEmployees()) return true;
+  const n = getUnsavedCount();
+  return confirm(`لديك ${n} موظف غير محفوظ في إدارة "${currentDept}".\n\nهل تريد تجاهلهم والمتابعة؟`);
+}
+
+/* ===================== ✅ Load All (spot_checks فقط — لا results) ===================== */
 async function loadAll() {
   try {
     const emps = await DB.getAll('employees') || [];
@@ -780,16 +624,23 @@ async function loadAll() {
     departments = [...set].sort();
 
     allTasks = await DB.getAll('tasks') || [];
-    savedSpotChecks = await DB.getAll('spot_checks') || [];
-    savedResults   = await DB.getAll('spot_check_results') || [];
 
-    savedResultsMap = new Map();
-    savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
+    // ✅ spot_checks فقط (جدول صغير) — لا نلمس spot_check_results هنا
+    allSpotChecks = await DB.getAll('spot_checks') || [];
+
+    resultsByScope = new Map();
+    loadedScopes = new Set();
 
     initExcludedLevelChips();
     renderTaskSelectForDate(spotDate);
 
-    console.log('✅ Loaded:', { emp: employees.length, depts: departments.length, tasks: allTasks.length });
+    console.log('✅ Loaded:', {
+      emp: employees.length,
+      depts: departments.length,
+      tasks: allTasks.length,
+      spotChecks: allSpotChecks.length,
+      resultsCache: 'EMPTY (lazy per-day)'
+    });
   } catch (err) {
     console.error('Load error:', err);
     toast('Failed to load data', 'error');
@@ -859,7 +710,7 @@ function applyExcludeToggle(level, isExcluded) {
   renderResults();
 }
 
-/* ===================== Task Select ===================== */
+/* ===================== Task Select (يوم فقط) ===================== */
 function getTasksForDate(all, isoDate) {
   if (!isoDate) return [];
   return all.filter(t => {
@@ -893,6 +744,13 @@ function renderTaskSelectForDate(isoDate) {
 
 /* ===================== Event Handlers ===================== */
 document.getElementById('taskSelect').addEventListener('change', async (e) => {
+  if (hasUnsavedEmployees()) {
+    const ok = confirm(`لديك ${getUnsavedCount()} موظف غير محفوظ. تجاهلهم وتغيير المهمة؟`);
+    if (!ok) {
+      document.getElementById('taskSelect').value = currentTask?.id || '';
+      return;
+    }
+  }
   const id = e.target.value;
   currentTask = id ? tasks.find(t => String(t.id) === String(id)) : null;
   resetSession();
@@ -900,9 +758,19 @@ document.getElementById('taskSelect').addEventListener('change', async (e) => {
 });
 
 document.getElementById('deptSelect').addEventListener('change', async (e) => {
-  currentDept = e.target.value;
+  const newDept = e.target.value;
+
+  if (hasUnsavedEmployees()) {
+    const n = getUnsavedCount();
+    toast(`🔒 لا يمكن تغيير الإدارة — لديك ${n} موظف غير محفوظ. احفظ أولاً أو Clear.`, 'error');
+    document.getElementById('deptSelect').value = currentDept;
+    return;
+  }
+
+  currentDept = newDept;
   selectedEmployees = [];
   selectedEmployeeIds = new Set();
+  savedEmployeeIds = new Set();
   await loadSavedForDept();
   renderEmployeeList();
   renderResults();
@@ -924,13 +792,45 @@ function resetSession() {
   updateVisibility();
 }
 
-/* ===================== refreshSavedForDate ===================== */
-async function refreshSavedForDate() {
-  savedSpotChecks = await DB.getAll('spot_checks') || [];
-  savedResults   = await DB.getAll('spot_check_results') || [];
+/* ===================== View Scoping (يوم فقط) ===================== */
+function applyViewScope() {
+  savedSpotChecks = allSpotChecks.filter(s => s.date === spotDate);
+  const scIds = new Set(savedSpotChecks.map(s => String(s.id)));
+
+  const scopeKey = getScopeKey();
+  const cached = resultsByScope.get(scopeKey) || [];
+  savedResults = cached.filter(r => scIds.has(String(r.spot_check_id)));
 
   savedResultsMap = new Map();
   savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
+}
+
+/* ===================== ✅ تحميل نتائج اليوم فقط (Lazy) ===================== */
+async function ensureResultsLoadedForScope() {
+  const scopeKey = getScopeKey();
+  if (loadedScopes.has(scopeKey)) return;
+
+  const scopeSpotChecks = allSpotChecks.filter(s => s.date === spotDate);
+  const scIds = scopeSpotChecks.map(s => String(s.id));
+
+  if (scIds.length === 0) {
+    resultsByScope.set(scopeKey, []);
+    loadedScopes.add(scopeKey);
+    console.log(`📥 Empty scope ${scopeKey} (no spot_checks)`);
+    return;
+  }
+
+  const scopedResults = await queryResultsBySpotCheckIds(scIds);
+
+  resultsByScope.set(scopeKey, scopedResults);
+  loadedScopes.add(scopeKey);
+
+  console.log(`📥 Loaded ${scopeKey}: ${scopedResults.length} results (from ${scIds.length} spot_checks)`);
+}
+
+async function refreshSavedForDate() {
+  await ensureResultsLoadedForScope();
+  applyViewScope();
 
   renderDeptSummary();
   renderOverallSummary();
@@ -940,20 +840,15 @@ async function refreshSavedForDate() {
 
 /* ===================== loadSavedForDept ===================== */
 async function loadSavedForDept() {
-  if (!spotDate || !currentTask || !currentDept) {
-    selectedEmployees = [];
-    selectedEmployeeIds = new Set();
-    savedEmployeeIds = new Set();
-    return;
-  }
+  selectedEmployees = [];
+  selectedEmployeeIds = new Set();
+  savedEmployeeIds = new Set();
+
+  if (!spotDate || !currentTask || !currentDept) return;
+
   const sc = savedSpotChecks.find(s =>
     s.date === spotDate && String(s.task_id) === String(currentTask.id));
-  if (!sc) {
-    selectedEmployees = [];
-    selectedEmployeeIds = new Set();
-    savedEmployeeIds = new Set();
-    return;
-  }
+  if (!sc) return;
 
   const res = savedResults.filter(r =>
     String(r.spot_check_id) === String(sc.id) && r.department === currentDept);
@@ -965,7 +860,7 @@ async function loadSavedForDept() {
       name: emp?.name || `#${r.employee_id}`,
       position: emp?.position || '',
       level: emp?.level || '',
-      department: r.department,
+      department: currentDept,
       result: r.result,
       resultId: r.id,
       fromDb: true
@@ -976,7 +871,7 @@ async function loadSavedForDept() {
   savedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
 }
 
-/* ===================== ✅ Render Employee List (Smart Search) ===================== */
+/* ===================== Render Employee List ===================== */
 function renderEmployeeList() {
   const input = document.getElementById('empSearch');
   const rawQuery = (input?.value || '').trim().toLowerCase();
@@ -1002,6 +897,9 @@ function renderEmployeeList() {
     });
 
     filtered.sort((a, b) => {
+      const aS = selectedIds.has(String(a.id)) ? 1 : 0;
+      const bS = selectedIds.has(String(b.id)) ? 1 : 0;
+      if (aS !== bS) return aS - bS;
       const aScore = getMatchScore(a.name, queryParts);
       const bScore = getMatchScore(b.name, queryParts);
       if (aScore !== bScore) return bScore - aScore;
@@ -1012,18 +910,6 @@ function renderEmployeeList() {
       const aS = selectedIds.has(String(a.id)) ? 1 : 0;
       const bS = selectedIds.has(String(b.id)) ? 1 : 0;
       if (aS !== bS) return aS - bS;
-      return a.name.localeCompare(b.name, 'en');
-    });
-  }
-
-  if (queryParts.length > 0) {
-    filtered.sort((a, b) => {
-      const aS = selectedIds.has(String(a.id)) ? 1 : 0;
-      const bS = selectedIds.has(String(b.id)) ? 1 : 0;
-      if (aS !== bS) return aS - bS;
-      const aScore = getMatchScore(a.name, queryParts);
-      const bScore = getMatchScore(b.name, queryParts);
-      if (aScore !== bScore) return bScore - aScore;
       return a.name.localeCompare(b.name, 'en');
     });
   }
@@ -1068,47 +954,28 @@ function renderEmployeeList() {
   }).join('');
 }
 
-/* ===================== ✅ حساب جودة المطابقة ===================== */
 function getMatchScore(fullName, queryParts) {
   if (!fullName || !queryParts.length) return 0;
-
   const name = fullName.toLowerCase();
   const nameWords = name.split(/\s+/).filter(Boolean);
-
   let score = 0;
 
   queryParts.forEach((part, idx) => {
-    if (nameWords[0]?.startsWith(part)) {
-      score += 1000 - idx * 10;
-      return;
-    }
-
+    if (nameWords[0]?.startsWith(part)) { score += 1000 - idx * 10; return; }
     const wordStarts = nameWords.findIndex(w => w.startsWith(part));
-    if (wordStarts !== -1) {
-      score += 500 - wordStarts * 5 - idx * 10;
-      return;
-    }
-
-    if (name.includes(part)) {
-      score += 100 - idx * 5;
-    }
+    if (wordStarts !== -1) { score += 500 - wordStarts * 5 - idx * 10; return; }
+    if (name.includes(part)) { score += 100 - idx * 5; }
   });
 
-  if (name.startsWith(queryParts.join(' '))) {
-    score += 500;
-  }
-
+  if (name.startsWith(queryParts.join(' '))) { score += 500; }
   return score;
 }
 
-/* ===================== ✅ إبراز الكلمات المطابقة ===================== */
 function highlightMatches(fullName, queryParts) {
   if (!fullName) return '';
   if (!queryParts || !queryParts.length) return escapeHtml(fullName);
-
   const name = String(fullName);
   const lowerName = name.toLowerCase();
-
   const ranges = [];
 
   queryParts.forEach(part => {
@@ -1137,22 +1004,18 @@ function highlightMatches(fullName, queryParts) {
   let result = '';
   let cursor = 0;
   merged.forEach(r => {
-    if (cursor < r.start) {
-      result += escapeHtml(name.substring(cursor, r.start));
-    }
+    if (cursor < r.start) result += escapeHtml(name.substring(cursor, r.start));
     result += `<span class="match-highlight">${escapeHtml(name.substring(r.start, r.end))}</span>`;
     cursor = r.end;
   });
-  if (cursor < name.length) {
-    result += escapeHtml(name.substring(cursor));
-  }
-
+  if (cursor < name.length) result += escapeHtml(name.substring(cursor));
   return result;
 }
 
-/* ===================== ✅ toggleEmployee (منع التكرار) ===================== */
+/* ===================== toggleEmployee ===================== */
 window.toggleEmployee = function(empId) {
   empId = String(empId);
+  if (!currentDept) return;
 
   if (selectedEmployeeIds.has(empId)) {
     selectedEmployeeIds.delete(empId);
@@ -1160,18 +1023,25 @@ window.toggleEmployee = function(empId) {
     if (idx >= 0) selectedEmployees.splice(idx, 1);
     renderEmployeeList();
     renderResults();
+    updateVisibility();
     return;
   }
 
   const emp = employees.find(e => String(e.id) === empId);
   if (!emp) return;
 
+  if (emp.department !== currentDept) {
+    toast('Employee does not belong to this department', 'error');
+    return;
+  }
+
   if (savedEmployeeIds.has(empId)) {
+    const daySC = savedSpotChecks.find(s =>
+      s.date === spotDate && String(s.task_id) === String(currentTask?.id));
     const dbResult = savedResults.find(r =>
       String(r.employee_id) === empId &&
-      String(r.spot_check_id) === String(
-        savedSpotChecks.find(s => s.date === spotDate && String(s.task_id) === String(currentTask?.id))?.id
-      )
+      String(r.spot_check_id) === String(daySC?.id) &&
+      r.department === currentDept
     );
     if (dbResult) {
       selectedEmployees.push({
@@ -1179,7 +1049,7 @@ window.toggleEmployee = function(empId) {
         name: emp.name,
         position: emp.position,
         level: emp.level,
-        department: emp.department,
+        department: currentDept,
         result: dbResult.result,
         resultId: dbResult.id,
         fromDb: true
@@ -1187,6 +1057,7 @@ window.toggleEmployee = function(empId) {
       selectedEmployeeIds.add(empId);
       renderEmployeeList();
       renderResults();
+      updateVisibility();
       return;
     }
   }
@@ -1196,7 +1067,7 @@ window.toggleEmployee = function(empId) {
     name: emp.name,
     position: emp.position,
     level: emp.level,
-    department: emp.department,
+    department: currentDept,
     result: 'KNOW',
     fromDb: false
   });
@@ -1204,6 +1075,7 @@ window.toggleEmployee = function(empId) {
 
   renderEmployeeList();
   renderResults();
+  updateVisibility();
 };
 
 /* ===================== Render Results ===================== */
@@ -1250,6 +1122,7 @@ window.removeEmployee = function(idx) {
   selectedEmployeeIds.delete(empId);
   renderEmployeeList();
   renderResults();
+  updateVisibility();
 };
 
 window.setAllKnow = function() {
@@ -1260,12 +1133,11 @@ window.setAllKnow = function() {
 
 window.clearSelected = function() {
   if (!confirm('Clear unsaved employees? (Saved ones stay)')) return;
-
   selectedEmployees = selectedEmployees.filter(s => s.fromDb);
   selectedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
-
   renderEmployeeList();
   renderResults();
+  updateVisibility();
   toast('✓ Cleared unsaved employees');
 };
 
@@ -1284,15 +1156,26 @@ function renderLiveSummary() {
   `;
 }
 
-/* ===================== Visibility ===================== */
+/* ===================== Visibility + Dept Lock ===================== */
 function updateVisibility() {
   const ready = spotDate && currentTask && currentDept;
   document.getElementById('addSection').style.display    = ready ? 'block' : 'none';
   document.getElementById('resultSection').style.display = ready ? 'block' : 'none';
   document.getElementById('saveBar').style.display       = ready ? 'flex'  : 'none';
+
+  const deptSel = document.getElementById('deptSelect');
+  const lockBanner = document.getElementById('deptLockBanner');
+  const lockCount = document.getElementById('deptLockCount');
+  const lockHint = document.getElementById('deptLockHint');
+
+  const locked = hasUnsavedEmployees();
+  if (deptSel) deptSel.disabled = locked && !!currentDept;
+  if (lockBanner) lockBanner.style.display = locked ? 'flex' : 'none';
+  if (lockCount) lockCount.textContent = getUnsavedCount();
+  if (lockHint) lockHint.textContent = locked ? `🔒 مقفل — احفظ أولاً (${getUnsavedCount()})` : '';
 }
 
-/* ===================== ✅ Save (Low Reads + No Duplicates) ===================== */
+/* ===================== Save (Atomic + Dept Isolated) ===================== */
 window.saveDeptResults = async function() {
   if (!spotDate || !currentTask || !currentDept) {
     toast('Select date, task and department', 'error'); return;
@@ -1301,37 +1184,47 @@ window.saveDeptResults = async function() {
     toast('No employees to save', 'warn'); return;
   }
 
+  const deptAtSave = currentDept;
+  const taskAtSave = currentTask;
+  const dateAtSave = spotDate;
+  const employeesAtSave = selectedEmployees.map(s => ({ ...s }));
+
+  const wrongDept = employeesAtSave.filter(s => s.department !== deptAtSave);
+  if (wrongDept.length > 0) {
+    console.error('❌ Dept mismatch on save:', wrongDept);
+    toast(`❌ Department mismatch on ${wrongDept.length} employee(s) — please re-select`, 'error');
+    return;
+  }
+
   const saveBtn = document.querySelector('.btn-save');
+  const deptSel = document.getElementById('deptSelect');
+  const taskSel = document.getElementById('taskSelect');
   const originalText = saveBtn?.textContent;
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '💾 Saving...'; }
+  if (deptSel) deptSel.disabled = true;
+  if (taskSel) taskSel.disabled = true;
 
   try {
     try {
-      await Promise.all([
-        DB.refresh('spot_checks'),
-        DB.refresh('spot_check_results')
-      ]);
-      savedSpotChecks = await DB.getAll('spot_checks') || [];
-      savedResults    = await DB.getAll('spot_check_results') || [];
-      savedResultsMap = new Map();
-      savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
+      await DB.refresh('spot_checks');
+      allSpotChecks = await DB.getAll('spot_checks') || [];
     } catch (e) {
-      console.warn('Refresh before save failed, using cache:', e);
+      console.warn('Refresh spot_checks failed:', e);
     }
 
-    const scId = `${spotDate}_${String(currentTask.id)}`;
+    const scId = `${dateAtSave}_${String(taskAtSave.id)}`;
 
-    let sc = savedSpotChecks.find(s =>
+    let sc = allSpotChecks.find(s =>
       String(s.id) === scId ||
-      (s.date === spotDate && String(s.task_id) === String(currentTask.id))
+      (s.date === dateAtSave && String(s.task_id) === String(taskAtSave.id))
     );
 
     if (!sc) {
       await DB.insert('spot_checks', {
         id: scId,
-        date: spotDate,
-        task_id: String(currentTask.id),
-        task_name: currentTask.name,
+        date: dateAtSave,
+        task_id: String(taskAtSave.id),
+        task_name: taskAtSave.name,
         created_by: currentUser?.uid || 'unknown',
         created_at: Date.now(),
         updated_at: Date.now()
@@ -1339,68 +1232,94 @@ window.saveDeptResults = async function() {
 
       sc = {
         id: scId,
-        date: spotDate,
-        task_id: String(currentTask.id),
-        task_name: currentTask.name,
+        date: dateAtSave,
+        task_id: String(taskAtSave.id),
+        task_name: taskAtSave.name,
         created_by: currentUser?.uid || 'unknown'
       };
-      savedSpotChecks.push(sc);
+      allSpotChecks.push(sc);
     }
 
+    const scopeKey = getScopeKey();
+    let currentScopeResults = resultsByScope.get(scopeKey) || [];
+
     const existingMap = new Map();
-    savedResults
-      .filter(r => String(r.spot_check_id) === String(sc.id))
-      .forEach(r => {
-        const key = String(r.employee_id);
-        if (!existingMap.has(key)) existingMap.set(key, r);
-      });
+    currentScopeResults
+      .filter(r => String(r.spot_check_id) === String(sc.id) && r.department === deptAtSave)
+      .forEach(r => existingMap.set(String(r.employee_id), r));
+
+    const corruptMap = new Map();
+    currentScopeResults
+      .filter(r => String(r.spot_check_id) === String(sc.id) && r.department !== deptAtSave)
+      .forEach(r => corruptMap.set(String(r.employee_id), r));
 
     const uniqueEmployees = [];
     const seenIds = new Set();
-    for (const s of selectedEmployees) {
+    for (const s of employeesAtSave) {
       const empId = String(s.employee_id);
       if (seenIds.has(empId)) continue;
       seenIds.add(empId);
       uniqueEmployees.push(s);
     }
 
-    let added = 0, updated = 0, skipped = 0;
+    let added = 0, updated = 0, skipped = 0, corrupted = 0;
+    const newlySaved = [];
+    const updatedResults = [];
 
     for (const s of uniqueEmployees) {
       const empId = String(s.employee_id);
+
+      if (corruptMap.has(empId)) {
+        console.error('❌ Employee exists under another department — skipping:', empId);
+        corrupted++;
+        continue;
+      }
+
       const existing = existingMap.get(empId);
 
       if (existing) {
+        if (existing.department !== deptAtSave) {
+          console.error('❌ Dept mismatch on existing record:', existing);
+          corrupted++;
+          continue;
+        }
         if (existing.result !== s.result) {
           existing.result = s.result;
           existing.updated_at = Date.now();
           await DB.update('spot_check_results', existing);
           updated++;
+          updatedResults.push({ ...existing });
         } else {
           skipped++;
         }
       } else {
         const resultId = `${sc.id}_${empId}`;
-        await DB.insert('spot_check_results', {
+        const newRec = {
           id: resultId,
           spot_check_id: String(sc.id),
           employee_id: empId,
-          department: String(currentDept),
+          department: deptAtSave,
           result: s.result,
           created_by: currentUser?.uid || 'unknown',
           created_at: Date.now(),
           updated_at: Date.now()
-        });
+        };
+        await DB.insert('spot_check_results', newRec);
         added++;
+        newlySaved.push(newRec);
       }
     }
 
-    try {
-      savedSpotChecks = await DB.getAll('spot_checks') || [];
-      savedResults    = await DB.getAll('spot_check_results') || [];
-      savedResultsMap = new Map();
-      savedResults.forEach(r => savedResultsMap.set(String(r.id), r));
-    } catch (e) { console.warn('Reload failed:', e); }
+    const updatedScopeResults = [...currentScopeResults];
+    newlySaved.forEach(nr => updatedScopeResults.push(nr));
+    updatedResults.forEach(ur => {
+      const idx = updatedScopeResults.findIndex(r => String(r.id) === String(ur.id));
+      if (idx >= 0) updatedScopeResults[idx] = ur;
+    });
+    resultsByScope.set(scopeKey, updatedScopeResults);
+    loadedScopes.add(scopeKey);
+
+    applyViewScope();
 
     await loadSavedForDept();
     renderEmployeeList();
@@ -1409,20 +1328,33 @@ window.saveDeptResults = async function() {
     renderOverallSummary();
     renderAllEmpTable();
     renderDontKnowTable();
+    updateVisibility();
 
-    const msg = `✅ Saved — Added: ${added}, Updated: ${updated}${skipped ? `, Skipped: ${skipped}` : ''}`;
+    let msg = `✅ Saved — Added: ${added}, Updated: ${updated}`;
+    if (skipped) msg += `, Skipped: ${skipped}`;
+    if (corrupted) msg += `, ⚠️ Corrupted: ${corrupted}`;
     toast(msg);
   } catch (err) {
     console.error('❌ Save failed:', err);
     toast('Save failed: ' + (err.message || ''), 'error');
   } finally {
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = originalText || '💾 Save Department Results'; }
+    if (deptSel) deptSel.disabled = false;
+    if (taskSel) taskSel.disabled = false;
+    updateVisibility();
   }
 };
 
 /* ===================== Next Dept ===================== */
 window.goNextDept = async function() {
   if (!currentDept) return;
+  if (hasUnsavedEmployees()) {
+    const ok = confirm(`لديك ${getUnsavedCount()} موظف غير محفوظ. تجاهلهم والانتقال للإدارة التالية؟`);
+    if (!ok) return;
+    selectedEmployees = selectedEmployees.filter(s => s.fromDb);
+    selectedEmployeeIds = new Set(selectedEmployees.map(s => String(s.employee_id)));
+  }
+
   const idx = departments.indexOf(currentDept);
   if (idx === -1) return;
   const next = departments[(idx + 1) % departments.length];
@@ -1438,9 +1370,10 @@ window.goNextDept = async function() {
   toast(`➡️ ${next}`);
 };
 
-/* ===================== Dept Stats ===================== */
+/* ===================== Dept Stats (يوم فقط) ===================== */
 function getDeptStats() {
   if (!spotDate || !currentTask) return [];
+
   const sc = savedSpotChecks.find(s =>
     s.date === spotDate && String(s.task_id) === String(currentTask.id));
   if (!sc) return [];
@@ -1516,7 +1449,6 @@ function renderDeptSummary() {
   renderTotalChart();
 }
 
-/* ===================== Sort Handlers (Dept Table) ===================== */
 document.querySelectorAll('th[data-sort]').forEach(th => {
   th.addEventListener('click', () => {
     const key = th.getAttribute('data-sort');
@@ -1534,28 +1466,28 @@ document.querySelectorAll('th[data-sort]').forEach(th => {
   });
 });
 
-/* ===================== ✅ All Employees Table ===================== */
+/* ===================== All Employees Data (يوم فقط) ===================== */
 function getAllEmployeesData() {
   if (!spotDate || !currentTask) return [];
+
   const sc = savedSpotChecks.find(s =>
     s.date === spotDate && String(s.task_id) === String(currentTask.id));
   if (!sc) return [];
 
-  const allResults = savedResults.filter(r =>
-    String(r.spot_check_id) === String(sc.id));
-
-  return allResults.map(r => {
-    const emp = employees.find(e => String(e.id) === String(r.employee_id));
-    return {
-      department: r.department || emp?.department || '—',
-      employee_id: String(r.employee_id),
-      name: emp?.name || `#${r.employee_id}`,
-      position: emp?.position || '—',
-      level: emp?.level || '',
-      result: r.result,
-      resultId: r.id
-    };
-  });
+  return savedResults
+    .filter(r => String(r.spot_check_id) === String(sc.id))
+    .map(r => {
+      const emp = employees.find(e => String(e.id) === String(r.employee_id));
+      return {
+        department: r.department || emp?.department || '—',
+        employee_id: String(r.employee_id),
+        name: emp?.name || `#${r.employee_id}`,
+        position: emp?.position || '—',
+        level: emp?.level || '',
+        result: r.result,
+        resultId: r.id
+      };
+    });
 }
 
 window.setAllEmpFilter = function(filter) {
@@ -1571,7 +1503,8 @@ function renderAllEmpTable() {
   const body = document.getElementById('allEmpBody');
   const badge = document.getElementById('allEmpBadge');
 
-  let list = getAllEmployeesData();
+  const allData = getAllEmployeesData();
+  let list = allData;
 
   if (list.length === 0) {
     section.style.display = 'none';
@@ -1583,7 +1516,7 @@ function renderAllEmpTable() {
   if (aeFilter === 'KNOW') list = list.filter(x => x.result === 'KNOW');
   else if (aeFilter === 'DONT_KNOW') list = list.filter(x => x.result === 'DONT_KNOW');
 
-  badge.textContent = `${list.length} / ${getAllEmployeesData().length} employees`;
+  badge.textContent = `${list.length} / ${allData.length} employees`;
 
   const sorted = [...list].sort((a, b) => {
     let va = a[aeSortKey], vb = b[aeSortKey];
@@ -1643,6 +1576,11 @@ window.changeResult = async function(resultId, newResult) {
     const idx = savedResults.findIndex(r => String(r.id) === String(resultId));
     if (idx >= 0) savedResults[idx].result = newResult;
 
+    const scopeKey = getScopeKey();
+    const scopeResults = resultsByScope.get(scopeKey) || [];
+    const sIdx = scopeResults.findIndex(r => String(r.id) === String(resultId));
+    if (sIdx >= 0) scopeResults[sIdx] = { ...result };
+
     renderDeptSummary();
     renderOverallSummary();
     renderAllEmpTable();
@@ -1658,18 +1596,15 @@ window.changeResult = async function(resultId, newResult) {
 window.editResultRow = async function(resultId) {
   const result = savedResultsMap.get(String(resultId));
   if (!result) { toast('Result not found', 'error'); return; }
-
   const currentLabel = result.result === 'KNOW' ? 'Know' : "Don't Know";
-  const choice = confirm(`Current: ${currentLabel}\n\nClick OK to change to "${result.result === 'KNOW' ? "Don't Know" : 'Know'}", Cancel to keep.`);
+  const choice = confirm(`Current: ${currentLabel}\n\nChange to "${result.result === 'KNOW' ? "Don't Know" : 'Know'}"?`);
   if (choice) {
     await window.changeResult(resultId, result.result === 'KNOW' ? 'DONT_KNOW' : 'KNOW');
   }
 };
 
-/* ===================== Delete Result Row ===================== */
 window.deleteResultRow = async function(resultId, empName) {
   if (!confirm(`Delete result for:\n"${empName}"?\n\nThis cannot be undone.`)) return;
-
   try {
     await DB.delete('spot_check_results', resultId);
 
@@ -1684,6 +1619,11 @@ window.deleteResultRow = async function(resultId, empName) {
       }
     }
 
+    const scopeKey = getScopeKey();
+    const scopeResults = resultsByScope.get(scopeKey) || [];
+    const sIdx = scopeResults.findIndex(r => String(r.id) === String(resultId));
+    if (sIdx >= 0) scopeResults.splice(sIdx, 1);
+
     await loadSavedForDept();
     renderEmployeeList();
     renderResults();
@@ -1691,6 +1631,7 @@ window.deleteResultRow = async function(resultId, empName) {
     renderOverallSummary();
     renderAllEmpTable();
     renderDontKnowTable();
+    updateVisibility();
     toast('🗑️ Result deleted');
   } catch (err) {
     console.error(err);
@@ -1698,7 +1639,6 @@ window.deleteResultRow = async function(resultId, empName) {
   }
 };
 
-/* ===================== Sort Handlers (All Emp Table) ===================== */
 function initAllEmpSortHandlers() {
   document.querySelectorAll('th[data-ae-sort]').forEach(th => {
     th.addEventListener('click', () => {
@@ -1727,18 +1667,16 @@ function renderOverallSummary() {
     return;
   }
 
-  const sc = savedSpotChecks.find(s =>
-    s.date === spotDate && String(s.task_id) === String(currentTask.id));
-  if (!sc) {
+  const stats = getDeptStats();
+  if (stats.length === 0) {
     document.getElementById('overallSummary').innerHTML = '<div class="empty">No data available</div>';
     return;
   }
 
-  const results = savedResults.filter(r => String(r.spot_check_id) === String(sc.id));
-  const total = results.length;
-  const know = results.filter(r => r.result === 'KNOW').length;
-  const dont = total - know;
-  const pct = total ? (know/total*100).toFixed(2) : '0.00';
+  const total = stats.reduce((a,b) => a + b.total, 0);
+  const know  = stats.reduce((a,b) => a + b.know, 0);
+  const dont  = total - know;
+  const pct   = total ? (know/total*100).toFixed(2) : '0.00';
 
   document.getElementById('overallSummary').innerHTML = `
     <div class="summary-box"><div class="lbl">Total Checked</div><div class="val">${total}</div></div>
@@ -1750,24 +1688,7 @@ function renderOverallSummary() {
 
 /* ===================== Don't Know Employees Table ===================== */
 function getDontKnowEmployees() {
-  if (!spotDate || !currentTask) return [];
-  const sc = savedSpotChecks.find(s =>
-    s.date === spotDate && String(s.task_id) === String(currentTask.id));
-  if (!sc) return [];
-
-  const dontKnowResults = savedResults.filter(r =>
-    String(r.spot_check_id) === String(sc.id) && r.result === 'DONT_KNOW');
-
-  return dontKnowResults.map(r => {
-    const emp = employees.find(e => String(e.id) === String(r.employee_id));
-    return {
-      department: r.department || emp?.department || '—',
-      employee_id: String(r.employee_id),
-      name: emp?.name || `#${r.employee_id}`,
-      position: emp?.position || '—',
-      level: emp?.level || ''
-    };
-  });
+  return getAllEmployeesData().filter(x => x.result === 'DONT_KNOW');
 }
 
 function renderDontKnowTable() {
@@ -1928,11 +1849,11 @@ function renderTotalChart() {
       scales: {
         x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 14, weight: '700' }, color: '#4a5568' } },
         y1: { type: 'linear', position: 'left', beginAtZero: true, suggestedMax: Math.max(totalEmployees, totalKnow, 1) * 1.2,
-          title: { display: true, text: 'Number of Employees', font: { family: 'Tajawal', size: 11, weight: '700' }, color: '#4a5568' },
+          title: { display: true, text: ' ', font: { family: 'Tajawal', size: 11, weight: '700' }, color: '#4a5568' },
           ticks: { font: { family: 'Tajawal', size: 11 }, color: '#718096', precision: 0, stepSize: Math.max(10, Math.ceil(Math.max(totalEmployees, 100) / 5 / 10) * 10) },
           grid: { color: '#edf2f7' } },
         y2: { type: 'linear', position: 'right', beginAtZero: true, max: 100,
-          title: { display: true, text: 'Percentage %', font: { family: 'Tajawal', size: 11, weight: '700' }, color: '#d69e2e' },
+          title: { display: true, text: '', font: { family: 'Tajawal', size: 11, weight: '700' }, color: '#d69e2e' },
           ticks: { font: { family: 'Tajawal', size: 11 }, color: '#d69e2e', callback: v => v + '%', stepSize: 20 },
           grid: { drawOnChartArea: false } }
       }
@@ -1941,7 +1862,7 @@ function renderTotalChart() {
   });
 }
 
-/* ===================== ✅ Employee Photo Modal (Cloudinary) ===================== */
+/* ===================== Employee Photo Modal ===================== */
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/so9u5deh/image/upload/';
 const PHOTO_EXTS = ['webp', 'jpg', 'jpeg', 'png', 'JPG', 'PNG', 'JPEG'];
 
@@ -1949,7 +1870,6 @@ function findEmployeePhotoUrl(empCode) {
   return new Promise((resolve) => {
     const code = String(empCode).trim();
     if (!code) { resolve(null); return; }
-
     let i = 0;
     function tryNext() {
       if (i >= PHOTO_EXTS.length) { resolve(null); return; }
@@ -1965,10 +1885,7 @@ function findEmployeePhotoUrl(empCode) {
 
 window.showEmployeePhoto = async function(empId) {
   const emp = employees.find(e => String(e.id) === String(empId));
-  if (!emp) {
-    toast('Employee not found', 'error');
-    return;
-  }
+  if (!emp) { toast('Employee not found', 'error'); return; }
 
   const modal = document.getElementById('photoModal');
   const content = document.getElementById('photoModalContent');
@@ -1982,10 +1899,7 @@ window.showEmployeePhoto = async function(empId) {
 
   try {
     let photoUrl = emp.photoURL || '';
-
-    if (!photoUrl) {
-      photoUrl = await findEmployeePhotoUrl(emp.id);
-    }
+    if (!photoUrl) photoUrl = await findEmployeePhotoUrl(emp.id);
 
     if (photoUrl) {
       const img = new Image();
@@ -2023,22 +1937,18 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* ===================== ✅ Export Department Summary to Excel ===================== */
+/* ===================== Export Excel (يوم فقط) ===================== */
 window.exportDeptSummaryToExcel = function() {
   const stats = getDeptStats();
-
   if (!stats || stats.length === 0) {
-    toast('No data to export', 'warn');
-    return;
+    toast('No data to export', 'warn'); return;
   }
 
   try {
     const sorted = [...stats].sort((a, b) => {
       let va = a[sortKey], vb = b[sortKey];
       if (sortKey === 'department') {
-        return sortDir === 'asc'
-          ? va.localeCompare(vb, 'en')
-          : vb.localeCompare(va, 'en');
+        return sortDir === 'asc' ? va.localeCompare(vb, 'en') : vb.localeCompare(va, 'en');
       }
       return sortDir === 'asc' ? va - vb : vb - va;
     });
@@ -2092,7 +2002,6 @@ window.exportDeptSummaryToExcel = function() {
     const fileName = `Dept_Summary_${safeTask}_${dateStr}.xlsx`;
 
     XLSX.writeFile(wb, fileName);
-
     toast('✅ Excel file exported successfully');
   } catch (err) {
     console.error('Export error:', err);
@@ -2102,15 +2011,17 @@ window.exportDeptSummaryToExcel = function() {
 
 /* ===================== Refresh ===================== */
 window.refreshData = async function() {
+  if (hasUnsavedEmployees()) {
+    const ok = confirm(`لديك ${getUnsavedCount()} موظف غير محفوظ. تجاهلهم وتحديث البيانات؟`);
+    if (!ok) return;
+  }
+
   toast('⏳ Refreshing...', 'info');
   try {
     if (DB.refresh) {
-      await Promise.all([
-        DB.refresh('employees').catch(()=>null),
-        DB.refresh('tasks').catch(()=>null),
-        DB.refresh('spot_checks').catch(()=>null),
-        DB.refresh('spot_check_results').catch(()=>null)
-      ]);
+      await DB.refresh('spot_checks').catch(()=>null);
+      await DB.refresh('employees').catch(()=>null);
+      await DB.refresh('tasks').catch(()=>null);
     }
 
     const keepYear = filterYear, keepMonth = filterMonth, keepDay = filterDay;
@@ -2162,26 +2073,26 @@ window.refreshData = async function() {
 
 /* ===================== Logout ===================== */
 window.logout = async function() {
+  if (hasUnsavedEmployees()) {
+    const ok = confirm(`لديك ${getUnsavedCount()} موظف غير محفوظ. هل تريد تسجيل الخروج بدون حفظ؟`);
+    if (!ok) return;
+  }
   if (confirm('Log out?')) {
     await signOut(auth);
     window.location.href = 'login.html';
   }
 };
 
-/* ===================== ✅ ربط البحث المباشر ===================== */
+/* ===================== Search Init ===================== */
 function initSearchInput() {
   const input = document.getElementById('empSearch');
   if (!input) {
     console.error('❌ empSearch input not found!');
     return;
   }
-
-  console.log('✅ Search input initialized');
-
   input.addEventListener('input', () => {
     renderEmployeeList();
   });
-
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       input.value = '';
@@ -2190,7 +2101,7 @@ function initSearchInput() {
   });
 }
 
-// ✅ صدّر الدوال على window
+// Expose
 window.renderEmployeeList = renderEmployeeList;
 window.toggleEmployee = toggleEmployee;
 window.setResult = setResult;
@@ -2221,7 +2132,7 @@ onAuthStateChanged(auth, async (user) => {
   initDontKnowSortHandlers();
   setAllEmpFilter('all');
 
-  console.log('✅ Spot Check ready (No duplicates + Low reads + Photo Modal)');
+  console.log('✅ Spot Check ready — Day-only view, optimized reads');
 });
 </script>
 </body>
