@@ -1,4 +1,3 @@
-// database.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import {
     initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
@@ -19,7 +18,6 @@ const firebaseConfig = {
     appId: "1:202134601199:web:86d145ef5fe762f247ca1a",
     measurementId: "G-9KMSG3M4P1"
 };
-
 // ==================== تهيئة Firebase ====================
 const app = initializeApp(firebaseConfig);
 
@@ -331,16 +329,8 @@ export const DB = {
     },
 
     // ============================================================
-    // ✅ NEW: جلب السجلات بقيم متعددة (WHERE IN) — لتوفير القراءات
+    // ✅ جلب السجلات بقيم متعددة (WHERE IN) — لتوفير القراءات
     // ============================================================
-    /**
-     * جلب السجلات التي حقلها field يساوي أي قيمة في values[]
-     * يجزّئ القيم إلى دفعات من 30 (حد Firestore الأقصى لـ in)
-     * @param {string} storeName - اسم الـ Collection
-     * @param {string} field - اسم الحقل (مثلاً 'spot_check_id')
-     * @param {Array<string>} values - القيم المطلوبة
-     * @returns {Promise<Array>}
-     */
     async queryWhereIn(storeName, field, values) {
         try {
             if (!values || values.length === 0) {
@@ -368,7 +358,6 @@ export const DB = {
 
             console.log(`✅ queryWhereIn: ${results.length} total records from ${storeName}`);
 
-            // خزّن في memory cache بمفتاح مركّب (لا يؤثر على الـ getAll)
             const cacheKey = `${storeName}__in__${field}__${values.length}__${values[0] || ''}`;
             memoryCache.set(cacheKey, results);
 
@@ -653,3 +642,205 @@ window.DB = DB;
         console.warn('⚠️ Version check failed:', error);
     }
 })();
+
+
+/* ============================================================
+   ✅ Checklist Module — Collections & Helpers
+   ============================================================ */
+
+export const CHECKLIST = {
+    CATALOG: 'checklist_catalog',
+    RECORDS: 'checklist_records'
+};
+
+/* ------------------------------------------------------------
+   تحميل سجلات يوم محدد فقط (لتوفير القراءات)
+   - يستخدم getRecordsByDate الموجود (استعلام Firestore مباشر)
+   - يخزّن النتيجة في memory cache بمفتاح date
+   ------------------------------------------------------------ */
+DB.getChecklistRecordsByDate = async function (date) {
+    return this.getRecordsByDate(CHECKLIST.RECORDS, date, 'date');
+};
+
+/* ------------------------------------------------------------
+   تحميل الكتالوج (الإدارات + الأقسام)
+   - يُقرأ مرة واحدة فقط
+   - يخزَّن في memory + IndexedDB cache
+   ------------------------------------------------------------ */
+DB.getChecklistCatalog = async function () {
+    return this.getAll(CHECKLIST.CATALOG);
+};
+
+/* ------------------------------------------------------------
+   upsert سجل يومي (يمنع التكرار عبر id ثابت)
+   id = "YYYY-MM-DD::Department::Section"
+   ------------------------------------------------------------ */
+DB.upsertChecklistRecord = async function (record) {
+    const {
+        date, department, section,
+        existStatus, implementedStatus, updatedBy
+    } = record;
+
+    if (!date || !department || !section) {
+        throw new Error('date, department, section are required');
+    }
+
+    const id = `${date}::${department}::${section}`;
+    const now = Date.now();
+
+    let existing = null;
+    try {
+        existing = await this.get(CHECKLIST.RECORDS, id);
+    } catch (e) {
+        console.warn('get existing record failed, assuming new:', e);
+    }
+
+    if (existing) {
+        return this.update(CHECKLIST.RECORDS, {
+            ...existing,
+            existStatus,
+            implementedStatus,
+            updatedAt: now,
+            updatedBy: updatedBy || 'unknown'
+        });
+    }
+
+    return this.insert(CHECKLIST.RECORDS, {
+        id,
+        date,
+        department,
+        section,
+        existStatus,
+        implementedStatus,
+        createdAt: now,
+        updatedAt: now,
+        updatedBy: updatedBy || 'unknown'
+    });
+};
+
+/* ------------------------------------------------------------
+   إضافة قسم جديد للكتالوج (يمنع التكرار)
+   id = "cat::Department::Section"
+   ------------------------------------------------------------ */
+DB.addCatalogSection = async function (department, section, createdBy) {
+    if (!department || !section) throw new Error('department and section are required');
+
+    const id = `cat::${department}::${section}`;
+    let existing = null;
+    try { existing = await this.get(CHECKLIST.CATALOG, id); } catch (e) {}
+    if (existing) {
+        console.log(`⚠️ Section already exists: ${department} / ${section}`);
+        return existing;
+    }
+
+    return this.insert(CHECKLIST.CATALOG, {
+        id,
+        department,
+        section,
+        createdAt: Date.now(),
+        createdBy: createdBy || 'unknown'
+    });
+};
+
+/* ------------------------------------------------------------
+   إضافة إدارة جديدة (placeholder) — تظهر في القائمة حتى بدون أقسام
+   ------------------------------------------------------------ */
+DB.addCatalogDepartment = async function (department, createdBy) {
+    if (!department) throw new Error('department is required');
+
+    const id = `dept::${department}::__placeholder__`;
+    let existing = null;
+    try { existing = await this.get(CHECKLIST.CATALOG, id); } catch (e) {}
+    if (existing) {
+        console.log(`⚠️ Department already exists: ${department}`);
+        return existing;
+    }
+
+    return this.insert(CHECKLIST.CATALOG, {
+        id,
+        department,
+        section: '__placeholder__',
+        createdAt: Date.now(),
+        createdBy: createdBy || 'unknown'
+    });
+};
+
+/* ------------------------------------------------------------
+   حذف إدارة كاملة (كل أقسامها من الكتالوج فقط — السجلات التاريخية تُحفظ)
+   ------------------------------------------------------------ */
+DB.deleteCatalogDepartment = async function (department) {
+    const all = await this.getAll(CHECKLIST.CATALOG);
+    const targets = (all || []).filter(c => c.department === department);
+    if (targets.length === 0) return 0;
+
+    const ids = targets.map(t => t.id);
+    return this.bulkDelete(CHECKLIST.CATALOG, ids);
+};
+
+/* ------------------------------------------------------------
+   حذف كل سجلات يوم واحد (اختياري)
+   ------------------------------------------------------------ */
+DB.deleteChecklistRecordsForDate = async function (date) {
+    const rows = await this.getChecklistRecordsByDate(date);
+    if (!rows.length) return 0;
+
+    const ids = rows.map(r => r.id);
+    return this.bulkDelete(CHECKLIST.RECORDS, ids);
+};
+
+/* ------------------------------------------------------------
+   إعادة تسمية إدارة (تُحدِّث الكتالوج فقط)
+   ------------------------------------------------------------ */
+DB.renameCatalogDepartment = async function (oldName, newName) {
+    if (!oldName || !newName || oldName === newName) return 0;
+
+    const all = await this.getAll(CHECKLIST.CATALOG);
+    const targets = (all || []).filter(c => c.department === oldName);
+    if (targets.length === 0) return 0;
+
+    let count = 0;
+    for (const t of targets) {
+        const newId = t.section === '__placeholder__'
+            ? `dept::${newName}::__placeholder__`
+            : `cat::${newName}::${t.section}`;
+
+        try {
+            await this.delete(CHECKLIST.CATALOG, t.id);
+            await this.insert(CHECKLIST.CATALOG, {
+                ...t,
+                id: newId,
+                department: newName,
+                updatedAt: Date.now()
+            });
+            count++;
+        } catch (e) {
+            console.error(`rename item failed: ${t.id}`, e);
+        }
+    }
+    return count;
+};
+
+/* ------------------------------------------------------------
+   Seed initial catalog (مرة واحدة عند أول استخدام)
+   ------------------------------------------------------------ */
+DB.seedCatalog = async function (seedData, createdBy) {
+    if (!Array.isArray(seedData) || seedData.length === 0) {
+        console.warn('⚠️ seedCatalog: no data');
+        return 0;
+    }
+
+    const items = seedData.map(({ department, section }) => ({
+        id: `cat::${department}::${section}`,
+        department,
+        section,
+        createdAt: Date.now(),
+        createdBy: createdBy || 'seed'
+    }));
+
+    console.log(`🌱 Seeding ${items.length} catalog items...`);
+    const result = await this.bulkInsert(CHECKLIST.CATALOG, items);
+    console.log(`✅ Seeded ${result.length} catalog items`);
+    return result.length;
+};
+
+console.log('✅ Checklist module ready:', Object.keys(CHECKLIST).join(', '));
