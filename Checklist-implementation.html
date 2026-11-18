@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist Management - L&D System</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
+body{background:#f0f4f8;padding-bottom:60px}
+
+/* Navbar */
+.navbar{background:#fff;padding:.8rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem;position:sticky;top:0;z-index:999}
+.logo h2{color:#1e3a5f;font-size:1.1rem}
+.logo span{color:#2b7a4b}
+.nav-links{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.nav-links a,.nav-links button{text-decoration:none;padding:.45rem .9rem;border-radius:2rem;font-weight:600;cursor:pointer;border:none;font-size:.82rem;transition:.2s;font-family:'Tajawal',sans-serif}
+.nav-links .home{background:#2b7a4b;color:#fff}
+.nav-links .refresh{background:#4299e1;color:#fff}
+.nav-links .refresh:hover{background:#3182ce}
+.nav-links .export{background:#217346;color:#fff}
+.nav-links .export:hover{background:#185c37}
+.nav-links .print{background:#805ad5;color:#fff}
+.nav-links .print:hover{background:#6b46c1}
+.nav-links .logout{background:#e53e3e;color:#fff}
+.nav-links .settings{background:#d69e2e;color:#fff}
+.nav-links .settings:hover{background:#b7791f}
+.nav-links .settings.active{background:#1e3a5f;box-shadow:inset 0 0 0 2px #fff}
+
+.container{max-width:1400px;margin:1.2rem auto;padding:0 1rem}
+
+/* Cards */
+.header-card{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.header-card h2{color:#1e3a5f;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.header-card h2 .badge{background:#ebf8ff;color:#2b6cb0;padding:.25rem .7rem;border-radius:1rem;font-size:.75rem;font-weight:700;margin-left:auto}
+
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.9rem}
+.setup-item label{display:block;font-weight:700;color:#1e3a5f;font-size:.85rem;margin-bottom:.35rem}
+.setup-item select,.setup-item input{width:100%;padding:.7rem .9rem;border:2px solid #e2e8f0;border-radius:.8rem;font-size:.9rem;background:#fff;font-family:'Tajawal',sans-serif;transition:.2s}
+.setup-item select:focus,.setup-item input:focus{outline:none;border-color:#2b7a4b}
+.setup-item select:disabled,.setup-item input:disabled{background:#edf2f7;color:#a0aec0;cursor:not-allowed;opacity:.7}
+.date-filters{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.selected-date{grid-column:1/-1;margin-top:.4rem;padding:.5rem .8rem;background:#ebf8ff;border:2px solid #bee3f8;border-radius:.7rem;font-size:.82rem;color:#2c5282;font-weight:700}
+.dept-lock-hint{color:#c53030;font-size:.72rem;font-weight:700;margin-left:.35rem}
+
+/* Buttons */
+.btn{padding:.6rem 1rem;border:none;border-radius:2rem;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s;display:inline-flex;align-items:center;gap:.35rem;font-family:'Tajawal',sans-serif}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-save{background:#2b7a4b;color:#fff}
+.btn-save:hover:not(:disabled){background:#1e5a38}
+.btn-add{background:#3182ce;color:#fff}
+.btn-add:hover:not(:disabled){background:#2b6cb0}
+.btn-clear{background:#e2e8f0;color:#4a5568}
+.btn-clear:hover:not(:disabled){background:#cbd5e0}
+.btn-danger{background:#e53e3e;color:#fff}
+.btn-danger:hover:not(:disabled){background:#c53030}
+.btn-sm{padding:.4rem .8rem;font-size:.75rem}
+
+.action-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+
+/* Info banners */
+.info-banner{background:#fefcbf;border:2px solid #f6e05e;color:#744210;padding:.65rem 1rem;border-radius:.8rem;font-size:.85rem;font-weight:700;margin-top:.9rem;display:flex;align-items:center;gap:.5rem}
+.info-banner.danger{background:#fed7d7;border-color:#fc8181;color:#822727}
+.info-banner.success{background:#c6f6d5;border-color:#38a169;color:#22543d}
+
+/* Stats */
+.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.5rem}
+.stat-pill{background:linear-gradient(135deg,#f7fafc,#edf2f7);padding:.55rem .7rem;border-radius:.7rem;text-align:center}
+.stat-pill .lbl{font-size:.68rem;color:#718096;font-weight:700}
+.stat-pill .val{font-size:1.25rem;font-weight:900;color:#1e3a5f;line-height:1.1}
+.stat-pill.yes .val{color:#38a169}
+.stat-pill.no .val{color:#e53e3e}
+.stat-pill.pct .val{color:#2b7a4b}
+
+/* Table */
+.section{width:fit-content ;align-items: center; margin-left: 250px; background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.section-title{color:#1e3a5f;font-size:1rem;font-weight:700;margin-bottom:.8rem;padding-left:.7rem;border-left:4px solid #2b7a4b;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem}
+.section-title .badge{background:#ebf8ff;color:#2b6cb0;padding:.25rem .7rem;border-radius:1rem;font-size:.75rem;font-weight:700}
+
+.excel-table{width:100%;border-collapse:collapse;direction:ltr;background:#fff}
+.excel-table th{background:#1e3a5f;color:#fff;font-weight:700;font-size:.82rem;padding:.6rem .5rem;text-align:center;border:1px solid #2c5282;letter-spacing:.3px;text-transform:uppercase}
+.excel-table td{padding:.45rem .5rem;border:1px solid #e2e8f0;font-size:.88rem;text-align:center;vertical-align:middle;background:#fff}
+.excel-table td.sn-cell{color:#718096;font-weight:700;background:#f7fafc}
+.excel-table td.dept-cell{font-weight:700;color:#1e3a5f;background:#f7fafc}
+.excel-table td.section-cell{    text-align: left; color: #1e3a5f; font-weight: 900;}
+.excel-table td.date-cell{color:#718096;font-size:.8rem}
+.excel-table tbody tr:hover td{background:#f7fafc}
+.excel-table tbody tr:hover td.dept-cell,
+.excel-table tbody tr:hover td.sn-cell{background:#edf2f7}
+
+.status-badge{display:inline-block;padding:.25rem .7rem;border-radius:1rem;font-weight:700;font: size 0.15px;;white-space:nowrap;min-width:42px}
+.status-badge.yes{background:#c6f6d5;color:#22543d}
+.status-badge.no{background:#fed7d7;color:#822727}
+
+.btn-action{padding:.35rem .7rem;border:none;border-radius:1rem;font-size:.72rem;font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:.25rem;font-family:'Tajawal',sans-serif;margin:0 .15rem}
+.btn-action.edit{background:#4299e1;color:#fff}
+.btn-action.edit:hover{background:#3182ce}
+.btn-action.delete{background:#e53e3e;color:#fff}
+.btn-action.delete:hover{background:#c53030}
+
+.empty{text-align:center;padding:2rem 1rem;color:#a0aec0;font-size:.9rem}
+
+/* Multi-section picker */
+.picker-row{display:flex;align-items:center;gap:.6rem;padding:.55rem .7rem;border-radius:.6rem;border:1px solid #e2e8f0;margin-bottom:.35rem;background:#fff;transition:.15s;flex-wrap:wrap}
+.picker-row:hover{background:#f7fafc}
+.picker-row.picked{background:#e6fffa;border-color:#38a169}
+.picker-check{display:flex;align-items:center;flex-shrink:0}
+.picker-check input{width:20px;height:20px;accent-color:#2b7a4b;cursor:pointer}
+.picker-name{flex:1;min-width:140px;font-weight:700;color:#2d3748;font-size:.88rem;display:flex;align-items:center;gap:.4rem}
+.picker-badge{font-size:.65rem;padding:.15rem .5rem;border-radius:1rem;background:#ebf8ff;color:#2b6cb0;font-weight:700}
+.picker-badge.existing{background:#e6fffa;color:#22543d}
+.picker-status-group{display:flex;gap:.8rem;flex-wrap:wrap}
+.picker-status{display:flex;align-items:center;gap:.25rem}
+.picker-label{font-size:.72rem;color:#718096;font-weight:700;min-width:38px}
+.mini-btn{width:30px;height:30px;border-radius:.5rem;border:2px solid #e2e8f0;background:#fff;cursor:pointer;font-weight:900;font-size:.9rem;transition:.15s;color:#a0aec0;font-family:'Tajawal',sans-serif}
+.mini-btn:hover{background:#f7fafc}
+.mini-btn.yes.active{background:#c6f6d5;border-color:#38a169;color:#22543d}
+.mini-btn.no.active{background:#fed7d7;border-color:#e53e3e;color:#822727}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5000;display:none;justify-content:center;align-items:center;padding:1rem;animation:fadeIn .2s}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:1.2rem;padding:1.4rem;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:popIn .25s;position:relative;max-height:90vh;overflow-y:auto}
+.modal h3{color:#1e3a5f;font-size:1.1rem;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:2px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.modal .close-x{background:#e2e8f0;color:#4a5568;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-weight:900;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.modal .close-x:hover{background:#cbd5e0}
+.modal-body{display:flex;flex-direction:column;gap:.9rem}
+.modal-footer{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;padding-top:.9rem;border-top:1px solid #e2e8f0;flex-wrap:wrap}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Settings tab */
+.tab-bar{display:flex;gap:.4rem;margin-bottom:1rem;border-bottom:2px solid #e2e8f0;flex-wrap:wrap}
+.tab-btn{padding:.65rem 1.1rem;border:none;background:transparent;font-weight:700;color:#718096;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:.88rem;border-bottom:3px solid transparent;transition:.15s;margin-bottom:-2px}
+.tab-btn:hover{color:#1e3a5f}
+.tab-btn.active{color:#2b7a4b;border-bottom-color:#2b7a4b}
+
+.dept-list{display:flex;flex-direction:column;gap:.5rem}
+.dept-item{background:#f7fafc;border:2px solid #e2e8f0;border-radius:.8rem;padding:.7rem .9rem;display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap}
+.dept-item .dept-name{font-weight:700;color:#1e3a5f;flex:1;min-width:120px}
+.dept-item .dept-count{background:#ebf8ff;color:#2b6cb0;padding:.2rem .6rem;border-radius:1rem;font-size:.75rem;font-weight:700}
+.dept-item .dept-actions{display:flex;gap:.3rem}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.88);display:none;justify-content:center;align-items:center;flex-direction:column;gap:1rem;z-index:9999;font-weight:700;color:#1e3a5f}
+.loading-overlay.active{display:flex}
+.spinner{width:50px;height:50px;border:4px solid #e2e8f0;border-top-color:#2b7a4b;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;background:#2b7a4b;color:#fff;padding:.75rem 1.2rem;border-radius:2rem;z-index:3000;animation:slideIn .3s;font-weight:700;font-size:.85rem;box-shadow:0 5px 20px rgba(0,0,0,.2);max-width:90%}
+.toast.error{background:#e53e3e}
+.toast.warn{background:#d69e2e}
+.toast.info{background:#4299e1}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Print */
+.print-only{display:none}
+.print-header{text-align:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #1e3a5f}
+.print-header h1{font-size:18pt;font-weight:900;color:#1e3a5f;margin-bottom:6px}
+.print-meta{display:flex;justify-content:center;gap:2rem;font-size:10pt;color:#2d3748;flex-wrap:wrap}
+.print-meta strong{color:#1e3a5f}
+
+@media(max-width:768px){
+  .container{padding:0 .7rem}
+  .header-card,.section{padding:.9rem}
+  .setup-grid{grid-template-columns:1fr}
+  .date-filters{grid-template-columns:1fr}
+  .navbar{padding:.6rem .8rem}
+  .logo h2{font-size:.95rem}
+  .excel-table{font-size:.78rem}
+  .excel-table th,.excel-table td{padding:.3rem .25rem}
+  .picker-status-group{width:100%;justify-content:flex-end}
+  .picker-name{min-width:100%}
+}
+
+@media print{
+  .no-print,.navbar,.toast,.loading-overlay,.action-row,.stats-bar,.tab-bar,.modal-overlay{display:none !important}
+  .print-only{display:block !important}
+  body{background:#fff !important;padding:0 !important;margin:0 !important}
+  .container{max-width:100% !important;padding:0 !important;margin:0 !important}
+
+  /* إخفاء الفلاتر */
+  .header-card{display:none !important}
+
+  /* توسيط الجدول */
+  .section{
+    box-shadow:none !important;
+    border:none !important;
+    padding:0 !important;
+    border-radius:0 !important;
+
+    width: 100% !important;
+    margin: 0 auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    display: block !important;
+  }
+  .section-title{display:none !important}
+
+  .table-wrap,
+  #mainTable{
+    margin: 0 auto !important;
+    width: 65% !important;
+  }
+  #mainTable{
+    width: 95% !important;
+    max-width: 95% !important;
+    font-size:10pt !important;
+  }
+
+  .excel-table th{
+    background:#1e3a5f !important;color:#fff !important;
+    padding:6pt 5pt !important;font-size:9pt !important;
+  }
+  .excel-table td{
+    padding:5pt !important;font-size:10pt !important;
+    border:1px solid #999 !important;
+  }
+  .excel-table td.sn-cell,
+  .excel-table td.dept-cell{background:#f7fafc !important}
+  .status-badge.yes{background:#c6f6d5 !important;color:#22543d !important}
+  .status-badge.no{background:#fed7d7 !important;color:#822727 !important}
+  .btn-action,.actions-col{display:none !important}
+
+  tr{page-break-inside:avoid !important}
+  thead{display:table-header-group}
+
+  @page{size:A4 landscape;margin:10mm}
+
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
+}
+</style>
+</head>
+<body>
+
+<!-- Print header -->
+<div class="print-header print-only">
+  <h1>Checklist Implementation Report</h1>
+  <div class="print-meta">
+    <span>Date: <strong id="printDate">—</strong></span>
+    <span>Department: <strong id="printDept">All</strong></span>
+    <span>Total: <strong id="printTotal">0</strong></span>
+  </div>
+</div>
+
+<!-- Navbar -->
+<div class="navbar no-print">
+  <div class="logo"><h2>📋 <span>Checklist</span> Management</h2></div>
+  <div class="nav-links">
+    <a href="index.html" class="home">🏠 Home</a>
+    <button onclick="switchTab('main')" id="tabMainBtn" style="background:#2b7a4b;color:#fff">📋 Daily View</button>
+    <button onclick="switchTab('settings')" id="tabSettingsBtn" class="settings">⚙️ Settings</button>
+    <button onclick="refreshData()" class="refresh">🔄 Refresh</button>
+    <button onclick="exportExcel()" class="export">📊 Export Excel</button>
+    <button onclick="printReport()" class="print">🖨️ Print</button>
+    <button onclick="logout()" class="logout">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ================= MAIN TAB ================= -->
+  <div id="mainTab">
+
+    <!-- Filters + Multi-section Entry -->
+    <div class="header-card no-print">
+      <h2>📋 Record Checklist Entry <span class="badge" id="todayBadge"></span></h2>
+
+      <div class="setup-grid">
+        <div class="setup-item">
+          <label>📅 Date</label>
+          <div class="date-filters">
+            <select id="filterYear"></select>
+            <select id="filterMonth"></select>
+            <select id="filterDay"></select>
+          </div>
+          <div class="selected-date">📅 <span id="selectedDateText">—</span></div>
+        </div>
+        <div class="setup-item">
+          <label>🏢 Department</label>
+          <select id="deptSelect"><option value="">— Select Department —</option></select>
+        </div>
+        <div class="setup-item">
+          <label>&nbsp;</label>
+          <button class="btn btn-add" style="width:100%;justify-content:center" id="saveMultiBtn" onclick="saveMultiSections()" disabled>💾 Save Selected Sections</button>
+        </div>
+      </div>
+
+      <!-- Lock banner -->
+      <div class="info-banner danger no-print" id="deptLockBanner" style="display:none">
+        <span>🔒</span>
+        <span>لديك <strong id="deptLockCount">0</strong> قسم غير محفوظ في هذه الإدارة — يجب <strong>الحفظ</strong> أو <strong> الحذف</strong> قبل تغيير الإدارة.</span>
+      </div>
+
+      <div id="sectionsPickerWrap" style="display:none;margin-top:1rem">
+        <label style="display:block;font-weight:700;color:#1e3a5f;font-size:.85rem;margin-bottom:.5rem">
+          📂 Select Sections (choose one or more) — <span id="selectedSectionsCount" style="color:#2b7a4b">0 selected</span>
+        </label>
+        <div class="action-row" style="margin-bottom:.6rem">
+          <button class="btn btn-clear btn-sm" onclick="selectAllSections()">☑ Select All</button>
+          <button class="btn btn-clear btn-sm" onclick="clearAllSections()">☐ Clear All</button>
+          <button class="btn btn-clear btn-sm" onclick="fillAllYes()">✔ Set All Yes</button>
+          <button class="btn btn-clear btn-sm" onclick="fillAllNo()">✖ Set All No</button>
+        </div>
+        <div id="sectionsPickerList" style="max-height:420px;overflow-y:auto;border:2px solid #e2e8f0;border-radius:.8rem;padding:.5rem;background:#fff"></div>
+      </div>
+
+      <div class="info-banner success no-print" id="formStatus" style="display:none">
+        <span id="formStatusText">—</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="header-card no-print">
+      <div class="stats-bar" id="statsBar"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="section">
+      <div class="section-title no-print">
+        <span>📋 Records for <span id="tableDateLabel">—</span></span>
+        <span class="badge" id="tableBadge">0 records</span>
+      </div>
+      <div class="table-wrap" style="overflow-x:auto">
+        <table id="mainTable" class="excel-table">
+          <thead>
+            <tr>
+              <th style="width:50px">#</th>
+              <th style="width:90px">Department</th>
+              <th style="text-align:center">Section</th>
+              <th style="width:110px">Exist</th>
+              <th style="width:140px">Implemented</th>
+              <th style="width:180px" class="actions-col no-print">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="mainBody">
+            <tr><td colspan="7" class="empty">No records for this date yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SETTINGS TAB ================= -->
+  <div id="settingsTab" style="display:none">
+    <div class="header-card">
+      <h2>⚙️ Settings — Departments &amp; Sections</h2>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tabDeptBtn" onclick="switchSettingsTab('dept')">🏢 Departments</button>
+        <button class="tab-btn" id="tabSecBtn" onclick="switchSettingsTab('sec')">📂 Sections</button>
+      </div>
+
+      <div id="deptSubTab">
+        <div class="action-row" style="margin-bottom:1rem">
+          <button class="btn btn-add" onclick="openDeptModal()">➕ Add Department</button>
+          <button class="btn btn-clear" onclick="seedFromExcel()">🌱 Seed from Excel Template</button>
+        </div>
+        <div id="deptList" class="dept-list">
+          <div class="empty">Loading...</div>
+        </div>
+      </div>
+
+      <div id="secSubTab" style="display:none">
+        <div class="setup-item" style="margin-bottom:1rem">
+          <label>Filter by Department</label>
+          <select id="settingsDeptFilter" onchange="renderSectionsList()">
+            <option value="">— All Departments —</option>
+          </select>
+        </div>
+        <div class="action-row" style="margin-bottom:1rem">
+          <button class="btn btn-add" onclick="openSectionModal()">➕ Add Section</button>
+        </div>
+        <div id="sectionList" class="dept-list">
+          <div class="empty">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Department Modal -->
+<div class="modal-overlay" id="deptModal" onclick="closeModal(event,'deptModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3><span id="deptModalTitle">Add Department</span><button class="close-x" onclick="closeModal(null,'deptModal')">✕</button></h3>
+    <div class="modal-body">
+      <div class="setup-item">
+        <label>Department Name</label>
+        <input type="text" id="deptModalInput" placeholder="e.g., F&B, FO, HK, Rec" maxlength="60">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-clear" onclick="closeModal(null,'deptModal')">Cancel</button>
+      <button class="btn btn-save" onclick="saveDeptModal()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Section Modal -->
+<div class="modal-overlay" id="secModal" onclick="closeModal(event,'secModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3><span id="secModalTitle">Add Section</span><button class="close-x" onclick="closeModal(null,'secModal')">✕</button></h3>
+    <div class="modal-body">
+      <div class="setup-item">
+        <label>Department</label>
+        <select id="secModalDept"><option value="">— Select —</option></select>
+      </div>
+      <div class="setup-item">
+        <label>Section Name</label>
+        <input type="text" id="secModalInput" placeholder="e.g., Cascade Bar" maxlength="80">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-clear" onclick="closeModal(null,'secModal')">Cancel</button>
+      <button class="btn btn-save" onclick="saveSecModal()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Record Modal -->
+<div class="modal-overlay" id="editModal" onclick="closeModal(event,'editModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3><span>Edit Record</span><button class="close-x" onclick="closeModal(null,'editModal')">✕</button></h3>
+    <div class="modal-body">
+      <div class="setup-item">
+        <label>Section</label>
+        <input type="text" id="editSectionName" disabled>
+      </div>
+      <div class="setup-item">
+        <label>✔ Exist</label>
+        <div class="status-pick" id="editExistPick">
+          <button type="button" class="yes" data-val="YES" onclick="pickEdit('exist','YES')">✔ Yes</button>
+          <button type="button" class="no" data-val="NO" onclick="pickEdit('exist','NO')">✖ No</button>
+        </div>
+      </div>
+      <div class="setup-item">
+        <label>✔ Implemented</label>
+        <div class="status-pick" id="editImplPick">
+          <button type="button" class="yes" data-val="YES" onclick="pickEdit('impl','YES')">✔ Yes</button>
+          <button type="button" class="no" data-val="NO" onclick="pickEdit('impl','NO')">✖ No</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-clear" onclick="closeModal(null,'editModal')">Cancel</button>
+      <button class="btn btn-save" onclick="saveEditModal()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingText">Loading...</div>
+</div>
+
+<script type="module">
+import { auth, DB } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+let currentUser = null;
+let currentDate = todayISO();
+let activeTab = 'main';
+let activeSettingsTab = 'dept';
+
+let catalog = [];
+let departments = [];
+let dailyRecords = [];
+
+let pickerState = new Map();   // section -> { existStatus, implementedStatus, checked }
+
+let editRecord = null;
+let editExist = null;
+let editImpl = null;
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+function escapeJs(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+function makeRecordId(date, dep, sec) {
+  return `${date}::${dep}::${sec}`;
+}
+function toast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+function showLoading(msg) {
+  document.getElementById('loadingText').textContent = msg || 'Loading...';
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
+/* =====================================================================
+   CATALOG
+   ===================================================================== */
+async function loadCatalog() {
+  try {
+    const rows = await DB.getChecklistCatalog();
+    catalog = (rows || []).sort((a, b) => {
+      if (a.department !== b.department) return a.department.localeCompare(b.department);
+      return a.section.localeCompare(b.section);
+    });
+    departments = [...new Set(catalog.map(c => c.department))];
+    populateDeptSelects();
+    renderDeptList();
+    renderSectionsList();
+  } catch (err) {
+    console.error('loadCatalog failed:', err);
+    toast('Failed to load catalog: ' + (err.message || ''), 'error');
+  }
+}
+
+/* =====================================================================
+   DAILY RECORDS
+   ===================================================================== */
+async function loadDailyRecords() {
+  try {
+    const rows = await DB.getChecklistRecordsByDate(currentDate);
+    dailyRecords = (rows || []).sort((a, b) => {
+      if (a.department !== b.department) return a.department.localeCompare(b.department);
+      return a.section.localeCompare(b.section);
+    });
+    renderTable();
+    renderStats();
+  } catch (err) {
+    console.error('loadDailyRecords failed:', err);
+    toast('Failed to load records: ' + (err.message || ''), 'error');
+  }
+}
+
+/* =====================================================================
+   DROPDOWNS
+   ===================================================================== */
+function populateDeptSelects() {
+  const deptSel = document.getElementById('deptSelect');
+  const secFilterSel = document.getElementById('settingsDeptFilter');
+  const secModalSel = document.getElementById('secModalDept');
+
+  const opts = departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+
+  deptSel.innerHTML = '<option value="">— Select Department —</option>' + opts;
+  secFilterSel.innerHTML = '<option value="">— All Departments —</option>' + opts;
+  secModalSel.innerHTML = '<option value="">— Select —</option>' + opts;
+}
+
+/* =====================================================================
+   DEPARTMENT LOCK
+   ===================================================================== */
+function hasUnsavedSections() {
+  return [...pickerState.values()].some(st =>
+    st.checked && (st.existStatus || st.implementedStatus)
+  );
+}
+
+function getUnsavedSectionsCount() {
+  return [...pickerState.values()].filter(st =>
+    st.checked && (st.existStatus || st.implementedStatus)
+  ).length;
+}
+
+function updateDeptLock() {
+  const deptSel = document.getElementById('deptSelect');
+  const banner = document.getElementById('deptLockBanner');
+  const countEl = document.getElementById('deptLockCount');
+  const locked = hasUnsavedSections() && !!deptSel.value;
+
+  deptSel.disabled = locked;
+  if (banner) banner.style.display = locked ? 'flex' : 'none';
+  if (countEl) countEl.textContent = getUnsavedSectionsCount();
+}
+
+/* =====================================================================
+   MULTI-SECTION PICKER
+   ===================================================================== */
+function buildSectionsPicker() {
+  const dep = document.getElementById('deptSelect').value;
+  const wrap = document.getElementById('sectionsPickerWrap');
+  const list = document.getElementById('sectionsPickerList');
+
+  if (!dep) {
+    wrap.style.display = 'none';
+    pickerState.clear();
+    updateSaveMultiBtn();
+    updateDeptLock();
+    return;
+  }
+
+  const sections = catalog
+    .filter(c => c.department === dep && c.section !== '__placeholder__')
+    .map(c => c.section)
+    .sort();
+
+  if (!sections.length) {
+    wrap.style.display = 'block';
+    list.innerHTML = '<div class="empty">No sections in this department. Add some in Settings ⚙️</div>';
+    pickerState.clear();
+    updateSaveMultiBtn();
+    updateDeptLock();
+    return;
+  }
+
+  const newState = new Map();
+  sections.forEach(s => {
+    if (pickerState.has(s)) newState.set(s, pickerState.get(s));
+    else newState.set(s, { existStatus: null, implementedStatus: null, checked: false });
+  });
+  pickerState = newState;
+
+  wrap.style.display = 'block';
+  renderSectionsPicker();
+  updateSaveMultiBtn();
+  updateDeptLock();
+}
+
+function renderSectionsPicker() {
+  const list = document.getElementById('sectionsPickerList');
+  const dep = document.getElementById('deptSelect').value;
+  let html = '';
+  let checkedCount = 0;
+
+  pickerState.forEach((st, sec) => {
+    const id = makeRecordId(currentDate, dep, sec);
+    const existing = dailyRecords.find(r => r.id === id);
+    const isExisting = !!existing;
+
+    if (isExisting && st.existStatus === null && st.implementedStatus === null) {
+      st.existStatus = existing.existStatus;
+      st.implementedStatus = existing.implementedStatus;
+    }
+
+    if (st.checked) checkedCount++;
+
+    const eYes = st.existStatus === 'YES';
+    const eNo  = st.existStatus === 'NO';
+    const iYes = st.implementedStatus === 'YES';
+    const iNo  = st.implementedStatus === 'NO';
+
+    html += `
+      <div class="picker-row ${st.checked ? 'picked' : ''}">
+        <label class="picker-check">
+          <input type="checkbox" ${st.checked ? 'checked' : ''}
+                 onchange="togglePickerCheck('${escapeJs(sec)}', this.checked)">
+        </label>
+        <div class="picker-name">
+          ${escapeHtml(sec)}
+          ${isExisting ? '<span class="picker-badge existing">saved</span>' : ''}
+        </div>
+        <div class="picker-status-group">
+          <div class="picker-status">
+            <span class="picker-label">Exist:</span>
+            <button type="button" class="mini-btn yes ${eYes ? 'active' : ''}"
+                    onclick="setPickerStatus('${escapeJs(sec)}','existStatus','YES')">✔</button>
+            <button type="button" class="mini-btn no ${eNo ? 'active' : ''}"
+                    onclick="setPickerStatus('${escapeJs(sec)}','existStatus','NO')">✖</button>
+          </div>
+          <div class="picker-status">
+            <span class="picker-label">Impl:</span>
+            <button type="button" class="mini-btn yes ${iYes ? 'active' : ''}"
+                    onclick="setPickerStatus('${escapeJs(sec)}','implementedStatus','YES')">✔</button>
+            <button type="button" class="mini-btn no ${iNo ? 'active' : ''}"
+                    onclick="setPickerStatus('${escapeJs(sec)}','implementedStatus','NO')">✖</button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  list.innerHTML = html;
+  document.getElementById('selectedSectionsCount').textContent = `${checkedCount} selected`;
+}
+
+function togglePickerCheck(sec, checked) {
+  const st = pickerState.get(sec);
+  if (!st) return;
+  st.checked = checked;
+  renderSectionsPicker();
+  updateSaveMultiBtn();
+  updateDeptLock();
+}
+
+function setPickerStatus(sec, field, val) {
+  const st = pickerState.get(sec);
+  if (!st) return;
+  if (st[field] === val) st[field] = null;
+  else st[field] = val;
+  if (st[field] && !st.checked) st.checked = true;
+  renderSectionsPicker();
+  updateSaveMultiBtn();
+  updateDeptLock();
+}
+
+function selectAllSections() {
+  pickerState.forEach(st => st.checked = true);
+  renderSectionsPicker();
+  updateSaveMultiBtn();
+  updateDeptLock();
+}
+function clearAllSections() {
+  pickerState.forEach(st => {
+    st.checked = false;
+    st.existStatus = null;
+    st.implementedStatus = null;
+  });
+  renderSectionsPicker();
+  updateSaveMultiBtn();
+  updateDeptLock();
+}
+function fillAllYes() {
+  pickerState.forEach(st => {
+    if (st.checked) {
+      st.existStatus = 'YES';
+      st.implementedStatus = 'YES';
+    }
+  });
+  renderSectionsPicker();
+  updateDeptLock();
+}
+function fillAllNo() {
+  pickerState.forEach(st => {
+    if (st.checked) {
+      st.existStatus = 'NO';
+      st.implementedStatus = 'NO';
+    }
+  });
+  renderSectionsPicker();
+  updateDeptLock();
+}
+
+function updateSaveMultiBtn() {
+  const btn = document.getElementById('saveMultiBtn');
+  const dep = document.getElementById('deptSelect').value;
+  if (!dep) { btn.disabled = true; btn.textContent = '💾 Save Selected Sections'; return; }
+
+  const ready = [...pickerState.values()].filter(st =>
+    st.checked && st.existStatus && st.implementedStatus
+  );
+  btn.disabled = ready.length === 0;
+  btn.textContent = ready.length > 0
+    ? `💾 Save ${ready.length} Section${ready.length > 1 ? 's' : ''}`
+    : '💾 Save Selected Sections';
+}
+
+async function saveMultiSections() {
+  const dep = document.getElementById('deptSelect').value;
+  if (!dep) { toast('Select department first', 'warn'); return; }
+
+  const toSave = [...pickerState.entries()]
+    .filter(([, st]) => st.checked && st.existStatus && st.implementedStatus)
+    .map(([sec, st]) => ({ sec, existStatus: st.existStatus, implementedStatus: st.implementedStatus }));
+
+  if (!toSave.length) { toast('Select sections and set both statuses', 'warn'); return; }
+
+  const btn = document.getElementById('saveMultiBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving...';
+  showLoading(`Saving ${toSave.length} section(s)...`);
+
+  let added = 0, updated = 0, failed = 0;
+
+  try {
+    for (const item of toSave) {
+      try {
+        const id = makeRecordId(currentDate, dep, item.sec);
+        const existing = dailyRecords.find(r => r.id === id);
+        const now = Date.now();
+
+        if (existing) {
+          await DB.update('checklist_records', {
+            ...existing,
+            existStatus: item.existStatus,
+            implementedStatus: item.implementedStatus,
+            updatedAt: now,
+            updatedBy: currentUser?.uid || 'unknown'
+          });
+          updated++;
+        } else {
+          await DB.insert('checklist_records', {
+            id,
+            date: currentDate,
+            department: dep,
+            section: item.sec,
+            existStatus: item.existStatus,
+            implementedStatus: item.implementedStatus,
+            createdAt: now,
+            updatedAt: now,
+            updatedBy: currentUser?.uid || 'unknown'
+          });
+          added++;
+        }
+      } catch (err) {
+        console.error(`Save failed for ${item.sec}:`, err);
+        failed++;
+      }
+    }
+
+    await loadDailyRecords();
+
+    pickerState.forEach(st => st.checked = false);
+    renderSectionsPicker();
+    updateSaveMultiBtn();
+    updateDeptLock();
+
+    let msg = `✅ Saved ${toSave.length} section(s) — Added: ${added}, Updated: ${updated}`;
+    if (failed) msg += `, Failed: ${failed}`;
+    toast(msg, failed ? 'warn' : '');
+
+    const status = document.getElementById('formStatus');
+    const statusText = document.getElementById('formStatusText');
+    status.style.display = 'flex';
+    statusText.textContent = msg;
+    setTimeout(() => { status.style.display = 'none'; }, 5000);
+
+  } catch (err) {
+    console.error('saveMultiSections failed:', err);
+    toast('Save failed: ' + (err.message || ''), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    hideLoading();
+  }
+}
+
+function onDeptChange() {
+  if (hasUnsavedSections()) {
+    const n = getUnsavedSectionsCount();
+    toast(`🔒 لديك ${n} قسم غير محفوظ — احفظ أو اضغط Clear All أولًا`, 'error');
+    buildSectionsPicker();
+    updateDeptLock();
+    return;
+  }
+  pickerState.clear();
+  buildSectionsPicker();
+  updateDeptLock();
+}
+
+/* =====================================================================
+   TABLE
+   ===================================================================== */
+function renderTable() {
+  const tbody = document.getElementById('mainBody');
+  document.getElementById('tableBadge').textContent =
+    `${dailyRecords.length} record${dailyRecords.length !== 1 ? 's' : ''}`;
+  document.getElementById('tableDateLabel').textContent = fmtDate(currentDate);
+  document.getElementById('todayBadge').textContent =
+    currentDate === todayISO() ? 'Today' : fmtDate(currentDate);
+
+  if (!dailyRecords.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No records for this date yet. Use the form above to add.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = dailyRecords.map((r, i) => {
+    const eYes = r.existStatus === 'YES';
+    const iYes = r.implementedStatus === 'YES';
+    return `<tr>
+      <td class="sn-cell">${i + 1}</td>
+      <td class="dept-cell">${escapeHtml(r.department)}</td>
+      <td class="section-cell">${escapeHtml(r.section)}</td>
+      <td><span class="status-badge ${eYes ? 'yes' : 'no'}">${eYes ? '✔' : '✖'}</span></td>
+      <td><span class="status-badge ${iYes ? 'yes' : 'no'}">${iYes ? '✔' : '✖'}</span></td>
+      <td class="actions-col no-print">
+        <button class="btn-action edit" onclick="openEditModal('${escapeJs(r.id)}')">✏️ Edit</button>
+        <button class="btn-action delete" onclick="deleteRecord('${escapeJs(r.id)}')">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderStats() {
+  let existYes = 0, existNo = 0, implYes = 0, implNo = 0, both = 0;
+  dailyRecords.forEach(r => {
+    if (r.existStatus === 'YES') existYes++; else existNo++;
+    if (r.implementedStatus === 'YES') implYes++; else implNo++;
+    if (r.existStatus === 'YES' && r.implementedStatus === 'YES') both++;
+  });
+  const total = dailyRecords.length;
+  const pct = total ? (both / total * 100).toFixed(1) : '0.0';
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-pill"><div class="lbl">Total Records</div><div class="val">${total}</div></div>
+    <div class="stat-pill yes"><div class="lbl">Exist ✔</div><div class="val">${existYes}</div></div>
+    <div class="stat-pill no"><div class="lbl">Not Exist ✖</div><div class="val">${existNo}</div></div>
+    <div class="stat-pill yes"><div class="lbl">Impl ✔</div><div class="val">${implYes}</div></div>
+    <div class="stat-pill no"><div class="lbl">Not Impl ✖</div><div class="val">${implNo}</div></div>
+    <div class="stat-pill pct"><div class="lbl">Complete</div><div class="val">${pct}%</div></div>
+  `;
+}
+
+/* =====================================================================
+   EDIT / DELETE
+   ===================================================================== */
+function openEditModal(recordId) {
+  const rec = dailyRecords.find(r => r.id === recordId);
+  if (!rec) { toast('Record not found', 'error'); return; }
+
+  editRecord = rec;
+  editExist = rec.existStatus;
+  editImpl = rec.implementedStatus;
+
+  document.getElementById('editSectionName').value = `${rec.department} / ${rec.section}`;
+  renderEditPicks();
+  document.getElementById('editModal').classList.add('active');
+}
+function pickEdit(which, val) {
+  if (which === 'exist') editExist = val;
+  else editImpl = val;
+  renderEditPicks();
+}
+function renderEditPicks() {
+  document.querySelectorAll('#editExistPick button').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === editExist);
+  });
+  document.querySelectorAll('#editImplPick button').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === editImpl);
+  });
+}
+async function saveEditModal() {
+  if (!editRecord) return;
+  if (!editExist || !editImpl) { toast('Please pick both statuses', 'warn'); return; }
+
+  showLoading('Saving...');
+  try {
+    await DB.update('checklist_records', {
+      ...editRecord,
+      existStatus: editExist,
+      implementedStatus: editImpl,
+      updatedAt: Date.now(),
+      updatedBy: currentUser?.uid || 'unknown'
+    });
+    closeModal(null, 'editModal');
+    await loadDailyRecords();
+    toast('✅ Record updated');
+  } catch (err) {
+    console.error(err);
+    toast('Failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteRecord(recordId) {
+  const rec = dailyRecords.find(r => r.id === recordId);
+  if (!rec) return;
+  if (!confirm(`Delete record:\n${rec.department} / ${rec.section}\n\nThis cannot be undone.`)) return;
+
+  showLoading('Deleting...');
+  try {
+    await DB.delete('checklist_records', recordId);
+    await loadDailyRecords();
+    toast('🗑️ Record deleted');
+  } catch (err) {
+    console.error(err);
+    toast('Delete failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* =====================================================================
+   SETTINGS — Departments
+   ===================================================================== */
+function renderDeptList() {
+  const el = document.getElementById('deptList');
+  if (!departments.length) {
+    el.innerHTML = '<div class="empty">No departments yet. Click "Add Department" or "Seed from Excel Template" to start.</div>';
+    return;
+  }
+  el.innerHTML = departments.map(d => {
+    const count = catalog.filter(c => c.department === d && c.section !== '__placeholder__').length;
+    return `<div class="dept-item">
+      <div class="dept-name">🏢 ${escapeHtml(d)}</div>
+      <div class="dept-count">${count} section${count !== 1 ? 's' : ''}</div>
+      <div class="dept-actions">
+        <button class="btn-action edit" onclick="renameDept('${escapeJs(d)}')">✏️ Rename</button>
+        <button class="btn-action delete" onclick="deleteDept('${escapeJs(d)}')">🗑️ Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let editingDept = null;
+function openDeptModal(deptName) {
+  editingDept = deptName || null;
+  document.getElementById('deptModalTitle').textContent = deptName ? 'Rename Department' : 'Add Department';
+  document.getElementById('deptModalInput').value = deptName || '';
+  document.getElementById('deptModal').classList.add('active');
+  setTimeout(() => document.getElementById('deptModalInput').focus(), 100);
+}
+function renameDept(d) { openDeptModal(d); }
+
+async function saveDeptModal() {
+  const val = document.getElementById('deptModalInput').value.trim();
+  if (!val) { toast('Department name required', 'warn'); return; }
+
+  showLoading('Saving...');
+  try {
+    if (editingDept) {
+      if (val === editingDept) { closeModal(null, 'deptModal'); hideLoading(); return; }
+      if (departments.includes(val)) { toast('Department already exists', 'warn'); hideLoading(); return; }
+      await DB.renameCatalogDepartment(editingDept, val);
+      toast(`✅ Renamed "${editingDept}" → "${val}"`);
+    } else {
+      if (departments.includes(val)) { toast('Department already exists', 'warn'); hideLoading(); return; }
+      await DB.addCatalogDepartment(val, currentUser?.uid || 'unknown');
+      toast(`✅ Department added: ${val}`);
+    }
+    closeModal(null, 'deptModal');
+    await loadCatalog();
+  } catch (err) {
+    console.error(err);
+    toast('Failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteDept(d) {
+  const count = catalog.filter(c => c.department === d).length;
+  if (!confirm(`Delete department "${d}"?\n\nThis will remove ${count} section(s) from the catalog.\n(Historical daily records are kept.)`)) return;
+
+  showLoading('Deleting...');
+  try {
+    await DB.deleteCatalogDepartment(d);
+    toast(`🗑️ Department deleted: ${d}`);
+    await loadCatalog();
+  } catch (err) {
+    console.error(err);
+    toast('Delete failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function seedFromExcel() {
+  if (!confirm('Seed 39 sections from Excel template?\n\nThis adds all original data once. Existing sections will be preserved.')) return;
+  const SEED = [
+    { department: 'F&B', section: 'Cascade Bar' },
+    { department: 'F&B', section: 'Cactus Maxican Resto Bar' },
+    { department: 'F&B', section: 'Beach Bar' },
+    { department: 'F&B', section: 'Eclipse Bar' },
+    { department: 'F&B', section: 'Breeze Restaurant' },
+    { department: 'F&B', section: 'Swim Up Bar' },
+    { department: 'F&B', section: 'Zetas Bar' },
+    { department: 'F&B', section: 'Boho Bar' },
+    { department: 'F&B', section: 'Family Bar' },
+    { department: 'F&B', section: 'Water Do Bar' },
+    { department: 'F&B', section: 'Milly Bar' },
+    { department: 'F&B', section: 'Main Pool Bar' },
+    { department: 'F&B', section: 'Lobby Bar' },
+    { department: 'F&B', section: 'Hola Bar' },
+    { department: 'F&B', section: 'The Point Lounge Bar' },
+    { department: 'F&B', section: 'D White Restaurant' },
+    { department: 'F&B', section: 'Al Dente Restaurant' },
+    { department: 'FO', section: 'Front Desk' },
+    { department: 'FO', section: 'FO Concierge' },
+    { department: 'HK', section: 'Toilet - Villa 89' },
+    { department: 'HK', section: 'Toilet - New Beach' },
+    { department: 'HK', section: 'Toilet - Cascade' },
+    { department: 'HK', section: 'Toilet - Spa' },
+    { department: 'HK', section: 'Toilet - Main Pool' },
+    { department: 'HK', section: 'Toilet - The Point' },
+    { department: 'HK', section: 'Toilet - The Point Pool' },
+    { department: 'HK', section: 'Toilet - Looby' },
+    { department: 'Rec', section: 'Cascade Pool' },
+    { department: 'Rec', section: 'Swim up Pool' },
+    { department: 'Rec', section: 'Eclipse Pool' },
+    { department: 'Rec', section: 'Pool 93' },
+    { department: 'Rec', section: 'Pool 87' },
+    { department: 'Rec', section: 'Pool 76' },
+    { department: 'Rec', section: 'Inflatable Aqua park' },
+    { department: 'Rec', section: 'Beach' },
+    { department: 'Rec', section: 'Family Pool' },
+    { department: 'Rec', section: 'Aqua Park' },
+    { department: 'Rec', section: 'Main Pool' },
+    { department: 'Rec', section: 'The Point Pool' }
+  ];
+  showLoading('Seeding catalog...');
+  try {
+    const n = await DB.seedCatalog(SEED, currentUser?.uid || 'seed');
+    toast(`✅ Seeded ${n} sections`);
+    await loadCatalog();
+  } catch (err) {
+    console.error(err);
+    toast('Seed failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* =====================================================================
+   SETTINGS — Sections
+   ===================================================================== */
+function renderSectionsList() {
+  const filterDep = document.getElementById('settingsDeptFilter').value;
+  const el = document.getElementById('sectionList');
+
+  let list = catalog.filter(c => c.section !== '__placeholder__');
+  if (filterDep) list = list.filter(c => c.department === filterDep);
+
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">No sections found. Click "Add Section" to create one.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(c => `<div class="dept-item">
+    <div class="dept-name">
+      <span style="color:#718096;font-size:.85rem;font-weight:700">${escapeHtml(c.department)}</span>
+      &nbsp;›&nbsp; ${escapeHtml(c.section)}
+    </div>
+    <div class="dept-actions">
+      <button class="btn-action edit" onclick="renameSection('${escapeJs(c.id)}')">✏️ Edit</button>
+      <button class="btn-action delete" onclick="deleteSection('${escapeJs(c.id)}')">🗑️ Delete</button>
+    </div>
+  </div>`).join('');
+}
+
+let editingSection = null;
+function openSectionModal(catalogId) {
+  editingSection = catalogId || null;
+  if (catalogId) {
+    const c = catalog.find(x => x.id === catalogId);
+    if (c) {
+      document.getElementById('secModalTitle').textContent = 'Edit Section';
+      document.getElementById('secModalDept').value = c.department;
+      document.getElementById('secModalInput').value = c.section;
+    }
+  } else {
+    document.getElementById('secModalTitle').textContent = 'Add Section';
+    document.getElementById('secModalDept').value = document.getElementById('settingsDeptFilter').value || '';
+    document.getElementById('secModalInput').value = '';
+  }
+  document.getElementById('secModal').classList.add('active');
+  setTimeout(() => document.getElementById('secModalInput').focus(), 100);
+}
+function renameSection(id) { openSectionModal(id); }
+
+async function saveSecModal() {
+  const dep = document.getElementById('secModalDept').value;
+  const sec = document.getElementById('secModalInput').value.trim();
+  if (!dep || !sec) { toast('Department and section name required', 'warn'); return; }
+
+  showLoading('Saving...');
+  try {
+    if (editingSection) {
+      const existing = catalog.find(c => c.id === editingSection);
+      if (!existing) throw new Error('Section not found');
+
+      const dup = catalog.find(c =>
+        c.id !== editingSection && c.department === dep && c.section === sec
+      );
+      if (dup) { toast('This section already exists in that department', 'warn'); hideLoading(); return; }
+
+      const newId = `cat::${dep}::${sec}`;
+      if (newId !== existing.id) {
+        await DB.delete('checklist_catalog', existing.id);
+        await DB.insert('checklist_catalog', {
+          ...existing, id: newId, department: dep, section: sec, updatedAt: Date.now()
+        });
+      } else {
+        await DB.update('checklist_catalog', {
+          ...existing, department: dep, section: sec, updatedAt: Date.now()
+        });
+      }
+      toast(`✅ Section updated: ${dep} / ${sec}`);
+    } else {
+      await DB.addCatalogSection(dep, sec, currentUser?.uid || 'unknown');
+      toast(`✅ Section added: ${dep} / ${sec}`);
+    }
+    closeModal(null, 'secModal');
+    await loadCatalog();
+  } catch (err) {
+    console.error(err);
+    toast('Failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteSection(catalogId) {
+  const c = catalog.find(x => x.id === catalogId);
+  if (!c) return;
+  if (!confirm(`Delete section "${c.section}" from "${c.department}"?`)) return;
+
+  showLoading('Deleting...');
+  try {
+    await DB.delete('checklist_catalog', catalogId);
+    await loadCatalog();
+    toast('🗑️ Section deleted');
+  } catch (err) {
+    console.error(err);
+    toast('Delete failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* =====================================================================
+   TABS
+   ===================================================================== */
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('mainTab').style.display = tab === 'main' ? 'block' : 'none';
+  document.getElementById('settingsTab').style.display = tab === 'settings' ? 'block' : 'none';
+  document.getElementById('tabMainBtn').style.background = tab === 'main' ? '#2b7a4b' : '';
+  document.getElementById('tabSettingsBtn').classList.toggle('active', tab === 'settings');
+}
+
+function switchSettingsTab(t) {
+  activeSettingsTab = t;
+  document.getElementById('deptSubTab').style.display = t === 'dept' ? 'block' : 'none';
+  document.getElementById('secSubTab').style.display = t === 'sec' ? 'block' : 'none';
+  document.getElementById('tabDeptBtn').classList.toggle('active', t === 'dept');
+  document.getElementById('tabSecBtn').classList.toggle('active', t === 'sec');
+}
+
+function closeModal(event, id) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById(id).classList.remove('active');
+}
+
+/* =====================================================================
+   DATE FILTERS
+   ===================================================================== */
+function buildYearOptions() {
+  const sel = document.getElementById('filterYear');
+  const now = new Date().getFullYear();
+  const years = [];
+  for (let y = now - 3; y <= now + 2; y++) years.push(y);
+  sel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+  sel.value = String(now);
+}
+function buildMonthOptions() {
+  const sel = document.getElementById('filterMonth');
+  const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  sel.innerHTML = names.map((m, i) => `<option value="${String(i+1).padStart(2,'0')}">${m}</option>`).join('');
+  sel.value = String(new Date().getMonth() + 1).padStart(2,'0');
+}
+function buildDayOptions() {
+  const sel = document.getElementById('filterDay');
+  const y = parseInt(document.getElementById('filterYear').value);
+  const m = parseInt(document.getElementById('filterMonth').value);
+  const dim = new Date(y, m, 0).getDate();
+  const prev = sel.value;
+  sel.innerHTML = '';
+  for (let d = 1; d <= dim; d++) {
+    const v = String(d).padStart(2,'0');
+    sel.innerHTML += `<option value="${v}">${v}</option>`;
+  }
+  if (prev && parseInt(prev) <= dim) sel.value = prev;
+  else sel.value = String(new Date().getDate()).padStart(2,'0');
+}
+function updateDateFromFilters() {
+  const y = document.getElementById('filterYear').value;
+  const m = document.getElementById('filterMonth').value;
+  const d = document.getElementById('filterDay').value;
+  currentDate = `${y}-${m}-${d}`;
+  document.getElementById('selectedDateText').textContent = fmtDate(currentDate);
+}
+async function onDateChange() {
+  buildDayOptions();
+  updateDateFromFilters();
+  await loadDailyRecords();
+  if (document.getElementById('deptSelect').value) buildSectionsPicker();
+}
+
+/* =====================================================================
+   EXPORT EXCEL
+   ===================================================================== */
+async function exportExcel() {
+  if (!dailyRecords.length) { toast('No records to export', 'warn'); return; }
+
+  const fileName = `Checklist_${currentDate}.xlsx`;
+  try {
+    if (typeof ExcelJS === 'undefined') throw new Error('ExcelJS not loaded');
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'L&D System';
+    const ws = wb.addWorksheet('Checklist');
+
+    const NAVY = 'FF1E3A5F', WHITE = 'FFFFFFFF', GRAY = 'FFF7FAFC';
+    const LGREEN = 'FFF0FFF4', LRED = 'FFFFF5F5', GREEN = 'FF38A169', RED = 'FFE53E3E';
+    const BORDER = 'FFD0D7DE';
+    const thin = { style:'thin', color:{ argb:BORDER } };
+    const allB = { top:thin, left:thin, bottom:thin, right:thin };
+
+    ws.mergeCells('A1:F1');
+    const t = ws.getCell('A1');
+    t.value = 'Checklist Implementation Report';
+    t.font = { name:'Tajawal', size:16, bold:true, color:{ argb:WHITE } };
+    t.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:NAVY } };
+    t.alignment = { horizontal:'center', vertical:'middle' };
+    ws.getRow(1).height = 30;
+
+    ws.mergeCells('A2:F2');
+    const info = ws.getCell('A2');
+    info.value = `Date: ${fmtDate(currentDate)}   |   Total: ${dailyRecords.length} records   |   Exported: ${new Date().toLocaleString('en-GB')}`;
+    info.font = { name:'Tajawal', size:10, italic:true, color:{ argb:'FF4A5568' } };
+    info.alignment = { horizontal:'center' };
+
+    const headers = ['#', 'Date', 'Dep', 'Section', 'Exist', 'Implemented'];
+    headers.forEach((h, i) => {
+      const c = ws.getCell(3, i + 1);
+      c.value = h;
+      c.font = { name:'Tajawal', size:11, bold:true, color:{ argb:WHITE } };
+      c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:NAVY } };
+      c.alignment = { horizontal:'center', vertical:'middle' };
+      c.border = allB;
+    });
+    ws.getRow(3).height = 22;
+
+    dailyRecords.forEach((r, i) => {
+      const row = 4 + i;
+      const eY = r.existStatus === 'YES';
+      const iY = r.implementedStatus === 'YES';
+      const vals = [i + 1, fmtDate(r.date), r.department, r.section, eY ? '✔' : '✖', iY ? '✔' : '✖'];
+      vals.forEach((v, j) => {
+        const c = ws.getCell(row, j + 1);
+        c.value = v;
+        c.border = allB;
+        c.alignment = { horizontal: j === 3 ? 'left' : 'center', vertical: 'middle' };
+        if (j === 0) { c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } }; c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:'FF718096' } }; }
+        else if (j === 2) { c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } }; c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:NAVY } }; }
+        else if (j === 3) { c.font = { name:'Tajawal', size:10, color:{ argb:'FF2D3748' } }; }
+        else if (j === 4) { c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: eY ? GREEN : RED } }; c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: eY ? LGREEN : LRED } }; }
+        else if (j === 5) { c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: iY ? GREEN : RED } }; c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: iY ? LGREEN : LRED } }; }
+      });
+    });
+
+    ws.columns = [{ width:6 },{ width:14 },{ width:10 },{ width:32 },{ width:10 },{ width:14 }];
+    ws.views = [{ state:'frozen', ySplit:3 }];
+
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('✅ Excel exported');
+  } catch (err) {
+    console.error(err);
+    toast('Export failed: ' + (err.message || ''), 'error');
+  }
+}
+
+/* =====================================================================
+   PRINT
+   ===================================================================== */
+function printReport() {
+  document.getElementById('printDate').textContent = fmtDate(currentDate);
+  document.getElementById('printDept').textContent = 'All';
+  document.getElementById('printTotal').textContent = dailyRecords.length;
+  window.print();
+}
+
+/* =====================================================================
+   REFRESH / LOGOUT
+   ===================================================================== */
+async function refreshData() {
+  showLoading('Refreshing...');
+  try {
+    if (typeof DB.refresh === 'function') {
+      try { await DB.refresh('checklist_records'); } catch(e) {}
+      try { await DB.refresh('checklist_catalog'); } catch(e) {}
+    }
+    await loadCatalog();
+    await loadDailyRecords();
+    if (document.getElementById('deptSelect').value) buildSectionsPicker();
+    toast('✅ Refreshed');
+  } finally {
+    hideLoading();
+  }
+}
+
+window.logout = async function() {
+  if (hasUnsavedSections()) {
+    const n = getUnsavedSectionsCount();
+    if (!confirm(`لديك ${n} قسم غير محفوظ. تسجيل الخروج بدون حفظ؟`)) return;
+  }
+  if (confirm('Log out?')) {
+    try { await signOut(auth); } catch(e) {}
+    window.location.href = 'login.html';
+  }
+};
+
+/* =====================================================================
+   UNSAVED GUARD
+   ===================================================================== */
+window.addEventListener('beforeunload', (e) => {
+  if (hasUnsavedSections()) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+/* =====================================================================
+   EVENT LISTENERS
+   ===================================================================== */
+function initEventListeners() {
+  document.getElementById('filterYear').addEventListener('change', onDateChange);
+  document.getElementById('filterMonth').addEventListener('change', onDateChange);
+  document.getElementById('filterDay').addEventListener('change', onDateChange);
+
+  document.getElementById('deptSelect').addEventListener('change', onDeptChange);
+
+  document.getElementById('settingsDeptFilter').addEventListener('change', renderSectionsList);
+}
+
+/* =====================================================================
+   EXPOSE
+   ===================================================================== */
+window.switchTab = switchTab;
+window.switchSettingsTab = switchSettingsTab;
+window.saveMultiSections = saveMultiSections;
+window.togglePickerCheck = togglePickerCheck;
+window.setPickerStatus = setPickerStatus;
+window.selectAllSections = selectAllSections;
+window.clearAllSections = clearAllSections;
+window.fillAllYes = fillAllYes;
+window.fillAllNo = fillAllNo;
+window.pickEdit = pickEdit;
+window.openEditModal = openEditModal;
+window.saveEditModal = saveEditModal;
+window.deleteRecord = deleteRecord;
+window.openDeptModal = openDeptModal;
+window.renameDept = renameDept;
+window.saveDeptModal = saveDeptModal;
+window.deleteDept = deleteDept;
+window.seedFromExcel = seedFromExcel;
+window.openSectionModal = openSectionModal;
+window.renameSection = renameSection;
+window.saveSecModal = saveSecModal;
+window.deleteSection = deleteSection;
+window.closeModal = closeModal;
+window.renderSectionsList = renderSectionsList;
+window.refreshData = refreshData;
+window.exportExcel = exportExcel;
+window.printReport = printReport;
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+
+  buildYearOptions();
+  buildMonthOptions();
+  buildDayOptions();
+  updateDateFromFilters();
+
+  initEventListeners();
+
+  showLoading('Loading...');
+  try {
+    await loadCatalog();
+    await loadDailyRecords();
+  } finally {
+    hideLoading();
+  }
+
+  console.log('✅ Checklist Management ready — date:', currentDate);
+});
+</script>
+</body>
+</html>
