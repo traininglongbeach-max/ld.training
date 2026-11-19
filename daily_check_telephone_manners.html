@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telephone Manners</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
+body{background:#f0f4f8;padding-bottom:70px;color:#2d3748}
+.navbar{background:#fff;padding:.8rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.7rem;position:sticky;top:0;z-index:999}
+.logo h2{color:#1e3a5f;font-size:1.1rem}.logo span{color:#2b7a4b}
+.nav-links{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.nav-links a,.nav-links button{text-decoration:none;padding:.45rem .9rem;border-radius:2rem;font-weight:700;cursor:pointer;border:none;font-size:.82rem;transition:.2s}
+.home{background:#2b7a4b;color:#fff}.refresh{background:#4299e1;color:#fff}.export{background:#217346;color:#fff}.logout{background:#e53e3e;color:#fff}
+.container{max-width:1450px;margin:1.2rem auto;padding:0 1rem}
+.header-card,.section{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.header-card h1{color:#1e3a5f;font-size:1.45rem;margin-bottom:.35rem}
+.subtitle{color:#718096;font-size:.88rem;margin-bottom:1rem}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.85rem}
+.setup-item label{display:block;font-weight:700;color:#1e3a5f;font-size:.85rem;margin-bottom:.35rem}
+.setup-item input,.setup-item select{width:100%;padding:.68rem .85rem;border:2px solid #e2e8f0;border-radius:.75rem;font-size:.9rem;background:#fff;min-height:43px}
+.setup-item input:focus,.setup-item select:focus{outline:none;border-color:#2b7a4b}
+.date-filters{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+.date-filters select{width:100%;padding:.65rem .5rem;border:2px solid #e2e8f0;border-radius:.7rem;background:#fff}
+.selected-date-preview{margin-top:.55rem;padding:.5rem .8rem;background:#ebf8ff;border:1px solid #bee3f8;border-radius:.7rem;color:#2c5282;font-size:.83rem;font-weight:700}
+.section-title{color:#1e3a5f;font-size:1.05rem;font-weight:800;margin-bottom:1rem;padding-left:.7rem;border-left:4px solid #2b7a4b;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.badge{background:#ebf8ff;color:#2b6cb0;padding:.25rem .7rem;border-radius:1rem;font-size:.78rem;font-weight:700}
+.form-grid{display:grid;grid-template-columns:1.2fr 1.3fr 1.5fr .8fr .8fr 1.2fr;gap:.75rem;align-items:end}
+.field label{display:block;font-size:.82rem;font-weight:700;color:#1e3a5f;margin-bottom:.35rem}
+.field input,.field select{width:100%;padding:.68rem .75rem;border:2px solid #e2e8f0;border-radius:.7rem;background:#fff;font-size:.88rem;min-height:43px}
+.field input:focus,.field select:focus{outline:none;border-color:#2b7a4b}
+.field input[readonly]{background:#f7fafc;color:#4a5568}
+.btn{padding:.62rem 1rem;border:none;border-radius:2rem;font-weight:800;cursor:pointer;font-size:.82rem;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:.35rem}
+.btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-save{background:#2b7a4b;color:#fff}.btn-clear{background:#e2e8f0;color:#4a5568}.btn-edit{background:#4299e1;color:#fff}.btn-delete{background:#fed7d7;color:#c53030}
+.action-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+.hint{margin-top:.8rem;background:#ebf8ff;border:1px solid #bee3f8;color:#2c5282;padding:.65rem .85rem;border-radius:.7rem;font-size:.8rem;line-height:1.6}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.7rem;margin-bottom:1rem}
+.summary-box{background:#fff;border-radius:.9rem;padding:.85rem;text-align:center;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.summary-box .lbl{font-size:.76rem;color:#718096;margin-bottom:.25rem}.summary-box .val{font-size:1.45rem;font-weight:900;color:#1e3a5f}.summary-box .pct{font-size:.75rem;font-weight:800;color:#718096;margin-top:.2rem}
+.summary-box.good .val{color:#2f855a}.summary-box.mid .val{color:#b7791f}.summary-box.bad .val{color:#c53030}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:.8rem}
+.filters{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.filters select,.filters input{padding:.58rem .75rem;border:2px solid #e2e8f0;border-radius:.7rem;background:#fff;font-size:.83rem}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:900px;direction:ltr}
+th,td{    padding: .68rem .6rem;
+    text-align: center;
+    border: 1px solid #dce3eb;
+    font-size: 15px;
+    font-weight: 900;}
+th{background:#1e3a5f;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+td.section-cell{text-align:center;font-weight:700;padding-left:1.4rem}
+tr.dept-row td{background:#e9f0f7;color:#1e3a5f;font-weight:900;text-align:center;border-top:2px solid #1e3a5f}
+tr.data-row:hover{background:#f7fafc}
+td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weight:800}td.status-cell.needs{background:#fff4d6!important;color:#7b341e;font-weight:800}td.status-cell.not{background:#ffe3e3!important;color:#822727;font-weight:800}td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
+.reply{display:inline-block;padding:.25rem .65rem;border-radius:1rem;font-weight:800;font-size:.77rem;white-space:nowrap}
+.reply.satisfactory{font-size: 15px; color:#22543d }.reply.needs{font-size: 15px; color:#7b341e}.reply.not{font-size: 15px; color:#822727}.reply.na{font-size: 15px; color:#4a5568}
+.row-actions{display:flex;gap:.35rem;justify-content:center}
+.btn-action{padding:.32rem .65rem;border:0;border-radius:1rem;font-size:.74rem;font-weight:800;cursor:pointer}
+.btn-action.edit{background:#bee3f8;color:#2a4365}.btn-action.delete{background:#fed7d7;color:#822727}
+.empty{text-align:center;padding:1.8rem;color:#a0aec0;font-size:.9rem}
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;background:#2b7a4b;color:#fff;padding:.75rem 1.1rem;border-radius:2rem;z-index:3000;font-weight:800;font-size:.85rem;box-shadow:0 5px 20px rgba(0,0,0,.2);max-width:90%}
+.toast.error{background:#e53e3e}.toast.warn{background:#d69e2e}.toast.info{background:#4299e1}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;justify-content:center;align-items:center;padding:1rem}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:1rem;padding:1.2rem;width:min(650px,100%);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{color:#1e3a5f;margin-bottom:1rem}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.modal-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}.settings-card{border:1px solid #e2e8f0;border-radius:.9rem;padding:1rem}.settings-card h3{color:#1e3a5f;margin-bottom:.75rem}.settings-list{display:grid;gap:.5rem;margin-top:.8rem}.settings-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.55rem;background:#f7fafc;border-radius:.6rem;font-size:.84rem}.settings-item button{border:0;border-radius:.5rem;padding:.35rem .55rem;cursor:pointer;font-weight:700}.settings-item .small-edit{background:#bee3f8;color:#2a4365}.settings-item .small-delete{background:#fed7d7;color:#822727}.settings-actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}.settings-card input,.settings-card select{width:100%;padding:.65rem;border:2px solid #e2e8f0;border-radius:.6rem;margin:.25rem 0 .55rem}.settings-note{font-size:.78rem;color:#718096;line-height:1.5;margin-top:.5rem}
+@media(max-width:1000px){.form-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.container{padding:0 .65rem}.header-card,.section{padding:.9rem}.form-grid{grid-template-columns:1fr 1fr}.date-filters{grid-template-columns:1fr}.modal-grid{grid-template-columns:1fr}.navbar{padding:.65rem .8rem}.logo h2{font-size:.95rem}}
+@media print {
+    @page {
+        margin: 10mm;
+    }
+
+    html, body {
+        background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    #recordsSection,
+    #recordsSection * {
+        visibility: visible !important;
+    }
+
+    #recordsSection {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    #recordsSection::before {
+        content: "☎️ Daily Check Telephone Manners";
+        display: block;
+        text-align: center;
+        font-size: 18pt;
+        font-weight: bold;
+        color: #1e3a5f;
+        margin-bottom: 18px;
+    }
+
+    #recordsSection .toolbar {
+        display: none !important;
+    }
+
+    #recordsSection .table-wrap {
+        overflow: visible !important;
+    }
+
+    #recordsTable {
+        width: 100% !important;
+        min-width: 0 !important;
+        border-collapse: collapse !important;
+    }
+
+    #recordsTable th,
+    #recordsTable td {
+        padding: 5px 4px !important;
+        font-size: 9pt !important;
+        border: 1px solid #555 !important;
+    }
+
+    #recordsTable th {
+        background: #1e3a5f !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #recordsTable tr.dept-row td {
+        background: #e9f0f7 !important;
+        color: #1e3a5f !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #recordsTable .status-cell.satisfactory {
+        background: #c6f6d5 !important;
+        color: #22543d !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #recordsTable .status-cell.needs {
+        background: #feebc8 !important;
+        color: #744210 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #recordsTable .status-cell.not {
+        background: #fed7d7 !important;
+        color: #822727 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #recordsTable .status-cell.na {
+        background: #e2e8f0 !important;
+        color: #2d3748 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #recordsTable .action-col {
+        display: none !important;
+    }
+}
+</style>
+</head>
+<body>
+<nav class="navbar no-print">
+  <div class="logo"><h2>☎️ <span>Daily Check</span> Telephone Manners</h2></div>
+  <div class="nav-links">
+    <a href="index.html" class="home">🏠 Home</a>
+    <button class="export" onclick="exportExcel()">📊 Export Excel</button>
+    <button class="refresh" onclick="toggleSettings()">⚙️ Settings</button>
+    <button class="refresh" onclick="refreshData()">🔄 Refresh</button>
+    <button class="logout" onclick="logout()">🚪 Logout</button>
+  </div>
+</nav>
+
+<main class="container">
+  <section class="header-card">
+    <h1>Daily Check – Telephone Manners</h1>
+    <div class="subtitle">Daily telephone response monitoring and greeting quality assessment</div>
+    <div class="setup-grid">
+      <div class="setup-item">
+        <label>📅 Report Date</label>
+        <div class="date-filters">
+          <select id="filterYear"></select><select id="filterMonth"></select><select id="filterDay"></select>
+        </div>
+        <div class="selected-date-preview" id="selectedDateText">—</div>
+      </div>
+      <div class="setup-item">
+        <label>📂 Department Filter</label>
+        <select id="departmentFilter"><option value="">All Departments</option></select>
+      </div>
+      <div class="setup-item">
+        <label>🔎 Section Filter</label>
+        <select id="sectionFilter"><option value="">All Sections</option></select>
+      </div>
+    </div>
+  </section>
+
+  <div class="summary-grid">
+    <div class="summary-box"><div class="lbl">Total Checks</div><div class="val" id="statTotal">0</div><div class="pct" id="statTotalPct">0%</div></div>
+    <div class="summary-box good"><div class="lbl">Satisfactory</div><div class="val" id="statGood">0</div><div class="pct" id="statGoodPct">0%</div></div>
+    <div class="summary-box mid"><div class="lbl">Needs Improvement</div><div class="val" id="statNeeds">0</div><div class="pct" id="statNeedsPct">0%</div></div>
+    <div class="summary-box bad"><div class="lbl">Not Satisfactory</div><div class="val" id="statNot">0</div><div class="pct" id="statNotPct">0%</div></div>
+    <div class="summary-box"><div class="lbl">N.A – No Answer</div><div class="val" id="statNA">0</div><div class="pct" id="statNAPct">0%</div></div>
+  </div>
+
+  <section class="section no-print" id="entrySection">
+    <div class="section-title"><span id="formTitle">➕ Add Telephone Check</span><span class="badge" id="formMode">New Record</span></div>
+    <form id="checkForm">
+      <div class="form-grid">
+        <div class="field">
+          <label>Department</label>
+          <select id="departmentInput" required></select>
+        </div>
+        <div class="field">
+          <label>Section / Location</label>
+          <select id="sectionInput" required></select>
+        </div>
+        <div class="field">
+          <label>Name</label>
+          <input id="employeeName" type="text" list="employeeOptions" placeholder="Select or type employee name" required maxlength="100"><datalist id="employeeOptions"></datalist>
+        </div>
+        <div class="field">
+          <label>Time</label>
+          <input id="checkTime" type="time" required>
+        </div>
+        <div class="field">
+          <label>No. of rings</label>
+          <input id="rings" type="number" min="1" max="10" step="1" value="1" required>
+        </div>
+        <div class="field">
+          <label>Reply</label>
+          <select id="reply" required>
+            <option value="Satisfactory">Satisfactory</option>
+            <option value="Needs Improvement">Needs Improvement</option>
+            <option value="Not Satisfactory">Not Satisfactory</option>
+            <option value="N.A">N.A</option>
+          </select>
+        </div>
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-save" type="submit" id="saveBtn">💾 Save Check</button>
+        <button class="btn btn-clear" type="button" onclick="resetForm()">↺ Clear Form</button>
+      </div>
+    </form>
+    <div class="hint">
+      <strong>Automatic Reply:</strong> 1–3 rings = Satisfactory · 4–9 rings = Needs Improvement · 10 rings = N.A (No Answer).
+      You can manually change Reply to <strong>Not Satisfactory</strong> or any other option when the greeting is incorrect. The selected Reply is saved as entered.
+    </div>
+  </section>
+
+  <section class="section" id="recordsSection">
+    <div class="toolbar no-print">
+      <div class="section-title" style="margin:0"><span>📋 Daily Telephone Check Records</span><span class="badge" id="recordCount"></span></div>
+      <div class="filters">
+        <input id="searchInput" type="search" placeholder="Search name / extension..." aria-label="Search records">
+        <button class="btn btn-clear" onclick="window.print()">🖨️ Print Report</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="recordsTable">
+        <thead>
+          <tr>
+            <th style="width:22%">Section</th><th style="width:17%">Ext.</th><th>Name</th><th style="width:10%">Time</th><th style="width:12%">No. of rings</th><th style="width:17%">Reply</th><th class="action-col no-print">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="recordsBody"><tr><td colspan="7" class="empty">Loading records...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" id="settingsPanel" style="display:none">
+    <div class="section-title"><span>⚙️ Telephone Manners Settings</span><button class="btn btn-clear" type="button" onclick="toggleSettings(false)">Back to Daily Check</button></div>
+    <div class="settings-grid">
+      <div class="settings-card"><h3>Manage Departments</h3><label>Department name</label><input id="newDepartmentName" placeholder="Enter department name"><button class="btn btn-save" type="button" onclick="addDepartment()">Add Department</button><div class="settings-list" id="departmentSettingsList"></div></div>
+      <div class="settings-card"><h3>Manage Sections</h3><label>Department</label><select id="settingsDepartment"></select><label>Section name</label><input id="newSectionName" placeholder="Enter section / location"><label>Extension</label><input id="newSectionExt" placeholder="Enter extension"><button class="btn btn-save" type="button" onclick="addSection()">Add Section</button><div class="settings-list" id="sectionSettingsList"></div></div>
+      <div class="settings-card"><h3>Manage Employee Names</h3><label>Department</label><select id="employeeDepartment"></select><label>Section</label><select id="employeeSection"></select><label>Employee name</label><input id="newEmployeeName" placeholder="Enter employee name"><button class="btn btn-save" type="button" onclick="addEmployee()">Add Employee</button><div class="settings-list" id="employeeSettingsList"></div></div>
+    </div>
+    <div class="settings-note">Settings are stored in Firestore collections <b>telephone_manners_catalog</b> and <b>telephone_manners_employees</b>. Make sure Firestore Rules allow authenticated users to read and write to these collections.</div>
+  </section>
+
+</main>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>✏️ Edit Telephone Check</h3>
+    <div class="modal-grid">
+      <div class="field"><label>Department</label><select id="editDepartment"></select></div>
+      <div class="field"><label>Section / Location</label><select id="editSection"></select></div>
+      <div class="field"><label>Name</label><input id="editName" type="text" maxlength="100"></div>
+      <div class="field"><label>Time</label><input id="editTime" type="time"></div>
+      <div class="field"><label>No. of rings</label><input id="editRings" type="number" min="1" max="10"></div>
+      <div class="field"><label>Reply</label><select id="editReply">
+        <option>Satisfactory</option><option>Needs Improvement</option><option>Not Satisfactory</option><option>N.A</option>
+      </select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-clear" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { auth, DB } from './database.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+const COLLECTION = 'telephone_manners_records';
+const CATALOG_COLLECTION = 'telephone_manners_catalog';
+const EMPLOYEE_COLLECTION = 'telephone_manners_employees';
+let employeeRecords = [];
+let settingsVisible = false;
+let CATALOG = [
+  {department:'Front Office', section:'Reception Desk', ext:'4363/4364/4366'},
+  {department:'Front Office', section:'Telephone Operator', ext:'0'},
+  {department:'Front Office', section:'Concierge/Bellman', ext:'4030'},
+  {department:'Housekeeping', section:'Order Taker Housekeeping', ext:'4031'},
+  {department:'Housekeeping', section:'Uniform Room', ext:'4095'},
+  {department:'Housekeeping', section:'Laundry', ext:'4094'},
+  {department:'Reservations', section:'Reservation Office', ext:'4115-4013'},
+  {department:'Purchasing', section:'Purchasing', ext:'4070'},
+  {department:'IT', section:'IT Office', ext:'4201-4202'},
+  {department:'Engineering', section:'Eng. Store', ext:'4303'},
+  {department:'Engineering', section:'Order Taker Engineering', ext:'4309'},
+  {department:'Human Resources', section:'HR Office', ext:'4212-4213'},
+  {department:'Human Resources', section:'Staff Cafeteria', ext:'4217'},
+  {department:'Finance', section:'Credit', ext:'4064'},
+  {department:'Finance', section:'Paybal', ext:'4062/4061'},
+  {department:'Finance', section:'Income', ext:'4063'},
+  {department:'Finance', section:'Cost Control', ext:'4071'},
+  {department:'Finance', section:'General Cashier', ext:'4069'},
+  {department:'Kitchen', section:'Pastry Kitchen', ext:'4235'},
+  {department:'Kitchen', section:'Chief Steward', ext:'4233'},
+  {department:'Security', section:'Security Lobby', ext:'4346'},
+  {department:'Security', section:'Main Gate Sec', ext:'4342'},
+  {department:'Security', section:'Staff Gate Sec', ext:'4343'},
+  {department:'Security', section:'CCTV Room', ext:'4341'},
+  {department:'Security', section:'Safety occupati', ext:'4306'},
+  {department:'Food & Beverage', section:'Room Service', ext:'4239'},
+  {department:'Food & Beverage', section:'Aqua Park', ext:'4215'},
+  {department:'Food & Beverage', section:'Family Pool Bar', ext:'4241'},
+  {department:'Food & Beverage', section:'Cascade Pool Bar', ext:'4032'},
+  {department:'Food & Beverage', section:'Beach Bar', ext:'4260'},
+  {department:'Food & Beverage', section:'Boho Bar', ext:'4248'},
+  {department:'Food & Beverage', section:'Hola Bar', ext:'4255'},
+  {department:'Food & Beverage', section:'Aldente Restaurant', ext:'4238'},
+  {department:'Food & Beverage', section:'Yiasou Bar', ext:'4236'},
+  {department:'Food & Beverage', section:'Sports Bar', ext:'4254'},
+  {department:'Food & Beverage', section:'Eclipse Bar', ext:'4243'}
+];
+
+let currentUser = null;
+let allRecords = [];
+let editingId = null;
+let selectedDate = todayISO();
+
+function makeId(prefix){return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;}
+async function loadSettingsData(){
+  try{
+    const savedCatalog=await DB.getAll(CATALOG_COLLECTION)||[];
+    if(savedCatalog.length){CATALOG=savedCatalog.filter(x=>x.isActive!==false).map(x=>({department:x.department,section:x.section,ext:x.ext||''}));}
+    employeeRecords=(await DB.getAll(EMPLOYEE_COLLECTION)||[]).filter(x=>x.isActive!==false);
+  }catch(err){console.warn('Settings collections not available yet; using built-in departments and sections.',err);}
+}
+function todayISO(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function escapeHtml(v){
+  return String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(message,type=''){
+  const el=document.createElement('div');el.className='toast '+type;el.textContent=message;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),3200);
+}
+function defaultReply(rings){
+  const n=Number(rings);
+  if(n===10)return 'N.A';
+  if(n>=1&&n<=3)return 'Satisfactory';
+  if(n>=4&&n<=9)return 'Needs Improvement';
+  return 'Satisfactory';
+}
+function getCatalogItem(dept,section){return CATALOG.find(x=>x.department===dept&&x.section===section);}
+function populateDepartments(select,includeAll=false){
+  const depts=[...new Set(CATALOG.map(x=>x.department))];
+  select.innerHTML=(includeAll?'<option value="">All Departments</option>':'<option value="">— Select Department —</option>')+
+    depts.map(d=>`<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+}
+function populateSections(dept,select,includeAll=false,selected=''){
+  const rows=CATALOG.filter(x=>x.department===dept);
+  select.innerHTML=(includeAll?'<option value="">All Sections</option>':'<option value="">— Select Section —</option>')+
+    rows.map(x=>`<option value="${escapeHtml(x.section)}" ${x.section===selected?'selected':''}>${escapeHtml(x.section)} — ${escapeHtml(x.ext)}</option>`).join('');
+}
+function initDateFilters(){
+  const y=document.getElementById('filterYear'),m=document.getElementById('filterMonth'),d=document.getElementById('filterDay');
+  const now=new Date(),year=now.getFullYear();
+  y.innerHTML=Array.from({length:5},(_,i)=>year-2+i).map(v=>`<option>${v}</option>`).join('');
+  m.innerHTML=['January','February','March','April','May','June','July','August','September','October','November','December'].map((v,i)=>`<option value="${String(i+1).padStart(2,'0')}">${v}</option>`).join('');
+  y.value=year;m.value=String(now.getMonth()+1).padStart(2,'0');
+  rebuildDays();d.value=String(now.getDate()).padStart(2,'0');syncDate();
+  y.addEventListener('change',syncDate);m.addEventListener('change',()=>{rebuildDays();syncDate();});
+  d.addEventListener('change',syncDate);
+}
+function rebuildDays(){
+  const y=Number(document.getElementById('filterYear').value),m=Number(document.getElementById('filterMonth').value);
+  const d=document.getElementById('filterDay'),previous=Number(d.value)||1,days=new Date(y,m,0).getDate();
+  d.innerHTML=Array.from({length:days},(_,i)=>i+1).map(v=>`<option value="${String(v).padStart(2,'0')}">${String(v).padStart(2,'0')}</option>`).join('');
+  d.value=String(Math.min(previous,days)).padStart(2,'0');
+}
+async function syncDate(){
+  selectedDate=`${document.getElementById('filterYear').value}-${document.getElementById('filterMonth').value}-${document.getElementById('filterDay').value}`;
+  document.getElementById('selectedDateText').textContent='📅 '+new Date(selectedDate+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  renderTable();
+}
+function populateEmployeeOptions(){
+  const dept=document.getElementById('departmentInput').value,section=document.getElementById('sectionInput').value;
+  const names=employeeRecords.filter(x=>x.department===dept&&x.section===section).map(x=>x.name).sort((a,b)=>a.localeCompare(b));
+  document.getElementById('employeeOptions').innerHTML=names.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+}
+function renderSettings(){
+  const depts=[...new Set(CATALOG.map(x=>x.department))];
+  const ds=document.getElementById('settingsDepartment'),ed=document.getElementById('employeeDepartment');
+  ds.innerHTML=depts.map(d=>`<option>${escapeHtml(d)}</option>`).join('');ed.innerHTML=ds.innerHTML;
+  const selected=ds.value||depts[0]||'';ds.value=selected;ed.value=selected;
+  document.getElementById('departmentSettingsList').innerHTML=depts.map(d=>`<div class="settings-item"><span>${escapeHtml(d)}</span><span><button class="small-edit" onclick="renameDepartment('${escapeHtml(d)}')">Edit</button> <button class="small-delete" onclick="removeDepartment('${escapeHtml(d)}')">Delete</button></span></div>`).join('');
+  renderSettingsSections();renderEmployeeSectionOptions();renderEmployeeList();
+}
+function renderSettingsSections(){
+  const dept=document.getElementById('settingsDepartment').value;
+  document.getElementById('sectionSettingsList').innerHTML=CATALOG.filter(x=>x.department===dept).map(x=>`<div class="settings-item"><span>${escapeHtml(x.section)} <small>(${escapeHtml(x.ext)})</small></span><span><button class="small-edit" onclick="editSection('${escapeHtml(x.department)}','${escapeHtml(x.section)}')">Edit</button> <button class="small-delete" onclick="removeSection('${escapeHtml(x.department)}','${escapeHtml(x.section)}')">Delete</button></span></div>`).join('');
+}
+function renderEmployeeSectionOptions(){
+  const dept=document.getElementById('employeeDepartment').value;const sel=document.getElementById('employeeSection');
+  sel.innerHTML=CATALOG.filter(x=>x.department===dept).map(x=>`<option value="${escapeHtml(x.section)}">${escapeHtml(x.section)}</option>`).join('');renderEmployeeList();
+}
+function renderEmployeeList(){
+  const dept=document.getElementById('employeeDepartment').value,section=document.getElementById('employeeSection').value;
+  const rows=employeeRecords.filter(x=>x.department===dept&&x.section===section);
+  document.getElementById('employeeSettingsList').innerHTML=rows.map(x=>`<div class="settings-item"><span>${escapeHtml(x.name)}</span><button class="small-delete" onclick="removeEmployee('${escapeHtml(x.id)}')">Delete</button></div>`).join('');
+}
+async function syncEmployeeSettings(){
+  const stored=await DB.getAll(EMPLOYEE_COLLECTION)||[];
+  for(const old of stored){const current=employeeRecords.find(x=>x.id===old.id);if(!current)await DB.delete(EMPLOYEE_COLLECTION,old.id);else if(JSON.stringify(old)!==JSON.stringify(current))await DB.update(EMPLOYEE_COLLECTION,current);}
+}
+async function persistCatalog(){
+  try{const old=await DB.getAll(CATALOG_COLLECTION)||[];for(const x of old){if(!CATALOG.some(c=>c.department===x.department&&c.section===x.section)&&x.isActive!==false)await DB.update(CATALOG_COLLECTION,{...x,isActive:false});}
+    for(const c of CATALOG){const found=old.find(x=>x.department===c.department&&x.section===c.section);if(found)await DB.update(CATALOG_COLLECTION,{...found,...c,isActive:true});else await DB.insert(CATALOG_COLLECTION,{id:`${c.department}::${c.section}`.replace(/\//g,'_'),...c,isActive:true,created_at:Date.now()});}
+    await syncEmployeeSettings();
+    populateDepartments(document.getElementById('departmentInput'));populateDepartments(document.getElementById('departmentFilter'),true);populateDepartments(document.getElementById('editDepartment'));renderSettings();
+    const d=document.getElementById('departmentInput').value||CATALOG[0]?.department;populateSections(d,document.getElementById('sectionInput'));populateEmployeeOptions();
+  }catch(err){console.error(err);toast('Settings save failed: '+(err.message||''),'error');}
+}
+async function addDepartment(){const name=document.getElementById('newDepartmentName').value.trim();if(!name)return toast('Enter department name','error');if(CATALOG.some(x=>x.department.toLowerCase()===name.toLowerCase()))return toast('Department already exists','warn');CATALOG.push({department:name,section:'General',ext:'—'});document.getElementById('newDepartmentName').value='';await persistCatalog();toast('Department added');}
+async function renameDepartment(oldName){const next=prompt('New department name:',oldName);if(!next||!next.trim()||next.trim()===oldName)return;const name=next.trim();if(CATALOG.some(x=>x.department.toLowerCase()===name.toLowerCase()))return toast('Department already exists','warn');CATALOG=CATALOG.map(x=>x.department===oldName?{...x,department:name}:x);employeeRecords=employeeRecords.map(x=>x.department===oldName?{...x,department:name}:x);await persistCatalog();toast('Department updated');}
+async function removeDepartment(name){if(!confirm(`Remove ${name} and its sections from active settings? Historical records will remain.`))return;CATALOG=CATALOG.filter(x=>x.department!==name);employeeRecords=employeeRecords.filter(x=>x.department!==name);await persistCatalog();toast('Department removed from settings');}
+async function addSection(){const dept=document.getElementById('settingsDepartment').value,name=document.getElementById('newSectionName').value.trim(),ext=document.getElementById('newSectionExt').value.trim();if(!dept||!name||!ext)return toast('Complete department, section and extension','error');if(CATALOG.some(x=>x.department===dept&&x.section.toLowerCase()===name.toLowerCase()))return toast('Section already exists','warn');CATALOG.push({department:dept,section:name,ext});document.getElementById('newSectionName').value='';document.getElementById('newSectionExt').value='';await persistCatalog();toast('Section added');}
+async function editSection(dept,section){const row=CATALOG.find(x=>x.department===dept&&x.section===section);if(!row)return;const name=prompt('Section name:',row.section);if(!name||!name.trim())return;const ext=prompt('Extension:',row.ext);if(ext===null)return;if(CATALOG.some(x=>x.department===dept&&x.section.toLowerCase()===name.trim().toLowerCase()&&x.section!==section))return toast('Section already exists','warn');CATALOG=CATALOG.map(x=>x===row?{...x,section:name.trim(),ext:ext.trim()}:x);employeeRecords=employeeRecords.map(x=>x.department===dept&&x.section===section?{...x,section:name.trim()}:x);await persistCatalog();toast('Section updated');}
+async function removeSection(dept,section){if(!confirm(`Remove ${section} from active settings? Historical records will remain.`))return;CATALOG=CATALOG.filter(x=>!(x.department===dept&&x.section===section));employeeRecords=employeeRecords.filter(x=>!(x.department===dept&&x.section===section));await persistCatalog();toast('Section removed');}
+async function addEmployee(){const department=document.getElementById('employeeDepartment').value,section=document.getElementById('employeeSection').value,name=document.getElementById('newEmployeeName').value.trim();if(!department||!section||!name)return toast('Complete all employee fields','error');if(employeeRecords.some(x=>x.department===department&&x.section===section&&x.name.toLowerCase()===name.toLowerCase()))return toast('Employee already exists for this section','warn');const record={id:makeId('emp'),department,section,name,isActive:true,created_at:Date.now()};try{await DB.insert(EMPLOYEE_COLLECTION,record);employeeRecords.push(record);document.getElementById('newEmployeeName').value='';renderEmployeeList();populateEmployeeOptions();toast('Employee added');}catch(err){console.error(err);toast('Could not add employee: '+err.message,'error');}}
+async function removeEmployee(id){const row=employeeRecords.find(x=>x.id===id);if(!row||!confirm(`Remove employee ${row.name}?`))return;try{await DB.delete(EMPLOYEE_COLLECTION,id);employeeRecords=employeeRecords.filter(x=>x.id!==id);renderEmployeeList();populateEmployeeOptions();toast('Employee removed');}catch(err){console.error(err);toast('Could not remove employee: '+err.message,'error');}}
+function toggleSettings(force){settingsVisible=typeof force==='boolean'?force:!settingsVisible;document.getElementById('settingsPanel').style.display=settingsVisible?'block':'none';document.getElementById('entrySection').style.display=settingsVisible?'none':'block';document.getElementById('recordsSection').style.display=settingsVisible?'none':'block';document.querySelector('.header-card').style.display=settingsVisible?'none':'block';document.querySelector('.summary-grid').style.display=settingsVisible?'none':'grid';if(settingsVisible)renderSettings();}
+function initUI(){
+  populateDepartments(document.getElementById('departmentInput'));
+  populateDepartments(document.getElementById('departmentFilter'),true);
+  populateDepartments(document.getElementById('editDepartment'));
+  const firstDept=CATALOG[0].department;
+  document.getElementById('departmentInput').value=firstDept;
+  populateSections(firstDept,document.getElementById('sectionInput'));
+  populateSections(firstDept,document.getElementById('editSection'));
+  document.getElementById('departmentInput').addEventListener('change',e=>{populateSections(e.target.value,document.getElementById('sectionInput'));populateEmployeeOptions();});
+  document.getElementById('sectionInput').addEventListener('change',()=>{document.getElementById('checkTime').value=new Date().toTimeString().slice(0,5);populateEmployeeOptions();});
+  document.getElementById('settingsDepartment').addEventListener('change',renderSettingsSections);document.getElementById('employeeDepartment').addEventListener('change',renderEmployeeSectionOptions);document.getElementById('employeeSection').addEventListener('change',renderEmployeeList);
+  document.getElementById('editDepartment').addEventListener('change',e=>populateSections(e.target.value,document.getElementById('editSection')));
+  document.getElementById('departmentFilter').addEventListener('change',()=>{populateSections(document.getElementById('departmentFilter').value,document.getElementById('sectionFilter'),true);renderTable();});
+  document.getElementById('sectionFilter').addEventListener('change',renderTable);
+  document.getElementById('searchInput').addEventListener('input',renderTable);
+  document.getElementById('rings').addEventListener('input',e=>{document.getElementById('reply').value=defaultReply(e.target.value);});
+  document.getElementById('editRings').addEventListener('input',e=>{document.getElementById('editReply').value=defaultReply(e.target.value);});
+  document.getElementById('checkForm').addEventListener('submit',saveRecord);
+  document.getElementById('checkTime').value='';
+  populateEmployeeOptions();
+  document.getElementById('rings').value=1;
+  document.getElementById('reply').value='Satisfactory';
+}
+async function loadRecords(){
+  try{
+    if(DB.refresh) await DB.refresh(COLLECTION).catch(()=>null);
+    allRecords=await DB.getAll(COLLECTION)||[];
+    renderTable();
+  }catch(err){console.error(err);toast('Could not load telephone check records','error');}
+}
+function getVisibleRecords(){
+  const dept=document.getElementById('departmentFilter').value;
+  const section=document.getElementById('sectionFilter').value;
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  return allRecords.filter(r=>r.date===selectedDate&&(!dept||r.department===dept)&&(!section||r.section===section)&&
+    (!q||[r.name,r.extension,r.section,r.department].some(v=>String(v||'').toLowerCase().includes(q))))
+    .sort((a,b)=>a.department.localeCompare(b.department)||a.section.localeCompare(b.section)||String(a.time).localeCompare(String(b.time)));
+}
+function replyClass(reply){
+  if(reply==='Satisfactory')return 'satisfactory';
+  if(reply==='Needs Improvement')return 'needs';
+  if(reply==='Not Satisfactory')return 'not';
+  return 'na';
+}
+function renderTable(){
+  const rows=getVisibleRecords(),body=document.getElementById('recordsBody');
+  document.getElementById('recordCount').textContent=`${rows.length} records`;
+  const counts={'Satisfactory':0,'Needs Improvement':0,'Not Satisfactory':0,'N.A':0};
+  rows.forEach(r=>counts[r.reply]=(counts[r.reply]||0)+1);
+  document.getElementById('statTotal').textContent=rows.length;
+  document.getElementById('statGood').textContent=counts['Satisfactory']||0;
+  document.getElementById('statNeeds').textContent=counts['Needs Improvement']||0;
+  document.getElementById('statNot').textContent=counts['Not Satisfactory']||0;
+  document.getElementById('statNA').textContent=counts['N.A']||0;
+  const total=rows.length;[['statTotal',total],['statGood',counts['Satisfactory']||0],['statNeeds',counts['Needs Improvement']||0],['statNot',counts['Not Satisfactory']||0],['statNA',counts['N.A']||0]].forEach(([id,n])=>{document.getElementById(id+'Pct').textContent=(total?((n/total)*100).toFixed(1):'0.0')+'%';});
+  if(!rows.length){body.innerHTML='<tr><td colspan="7" class="empty">No telephone checks found for this date.</td></tr>';return;}
+  let html='',lastDept='';
+  rows.forEach(r=>{
+    if(r.department!==lastDept){lastDept=r.department;html+=`<tr class="dept-row"><td colspan="7">${escapeHtml(lastDept)}</td></tr>`;}
+    html+=`<tr class="data-row">
+      <td class="section-cell">${escapeHtml(r.section)}</td>
+      <td>${escapeHtml(r.extension)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.time)}</td>
+      <td>${Number(r.rings)}</td><td class="status-cell ${replyClass(r.reply)}"><span class="reply ${replyClass(r.reply)}">${escapeHtml(r.reply)}</span></td>
+      <td class="action-col no-print"><div class="row-actions">
+        <button class="btn-action edit" onclick="openEdit('${escapeHtml(r.id)}')">Edit</button>
+        <button class="btn-action delete" onclick="deleteRecord('${escapeHtml(r.id)}')">Delete</button>
+      </div></td></tr>`;
+  });
+  body.innerHTML=html;
+}
+async function saveRecord(e){
+  e.preventDefault();
+  const dept=document.getElementById('departmentInput').value,section=document.getElementById('sectionInput').value;
+  const item=getCatalogItem(dept,section),name=document.getElementById('employeeName').value.trim();
+  const rings=Number(document.getElementById('rings').value),reply=document.getElementById('reply').value;
+  const time=document.getElementById('checkTime').value;
+  if(!item||!name||!time||!Number.isInteger(rings)||rings<1||rings>10||!reply){toast('Please complete all fields correctly','error');return;}
+  if(allRecords.some(r=>r.date===selectedDate&&r.department===dept&&r.section===section)){toast('This section has already been checked on the selected date.','error');return;}
+  const now=Date.now();
+  const record={
+    id:`${selectedDate}::${now}::${Math.random().toString(36).slice(2,8)}`,
+    date:selectedDate,department:dept,section,extension:item.ext,name,
+    time,rings,reply,
+    created_by:currentUser?.uid||'unknown',created_at:now,updated_at:now
+  };
+  const btn=document.getElementById('saveBtn');btn.disabled=true;
+  try{
+    await DB.insert(COLLECTION,record);allRecords.push(record);renderTable();resetForm();
+    toast('Telephone check saved successfully');
+  }catch(err){console.error(err);toast('Save failed: '+(err.message||''),'error');}
+  finally{btn.disabled=false;}
+}
+function resetForm(){
+  document.getElementById('checkForm').reset();
+  document.getElementById('departmentInput').value=CATALOG[0].department;
+  populateSections(CATALOG[0].department,document.getElementById('sectionInput'));
+  document.getElementById('checkTime').value='';
+  populateEmployeeOptions();
+  document.getElementById('rings').value=1;document.getElementById('reply').value='Satisfactory';
+}
+function openEdit(id){
+  const r=allRecords.find(x=>String(x.id)===String(id));if(!r)return;
+  editingId=id;
+  document.getElementById('editDepartment').value=r.department;
+  populateSections(r.department,document.getElementById('editSection'),false,r.section);
+  document.getElementById('editName').value=r.name;document.getElementById('editTime').value=r.time;
+  document.getElementById('editRings').value=r.rings;document.getElementById('editReply').value=r.reply;
+  document.getElementById('editModal').classList.add('active');
+}
+function closeEditModal(){document.getElementById('editModal').classList.remove('active');editingId=null;}
+async function saveEdit(){
+  const r=allRecords.find(x=>String(x.id)===String(editingId));if(!r)return;
+  const dept=document.getElementById('editDepartment').value,section=document.getElementById('editSection').value,item=getCatalogItem(dept,section);
+  const name=document.getElementById('editName').value.trim(),rings=Number(document.getElementById('editRings').value);
+  const time=document.getElementById('editTime').value,reply=document.getElementById('editReply').value;
+  if(!item||!name||!time||!Number.isInteger(rings)||rings<1||rings>10||!reply){toast('Please check the entered data','error');return;}
+  if(allRecords.some(x=>x.id!==r.id&&x.date===r.date&&x.department===dept&&x.section===section)){toast('This section already has a check on this date.','error');return;}
+  const updated={...r,department:dept,section,extension:item.ext,name,time,rings,reply,updated_at:Date.now()};
+  try{await DB.update(COLLECTION,updated);const i=allRecords.findIndex(x=>String(x.id)===String(editingId));if(i>=0)allRecords[i]=updated;closeEditModal();renderTable();toast('Record updated');}
+  catch(err){console.error(err);toast('Update failed: '+(err.message||''),'error');}
+}
+async function deleteRecord(id){
+  const r=allRecords.find(x=>String(x.id)===String(id));if(!r)return;
+  if(!confirm(`Delete telephone check for ${r.name}?`))return;
+  try{await DB.delete(COLLECTION,id);allRecords=allRecords.filter(x=>String(x.id)!==String(id));renderTable();toast('Record deleted');}
+  catch(err){console.error(err);toast('Delete failed: '+(err.message||''),'error');}
+}
+async function refreshData(){toast('Refreshing records...','info');await loadRecords();toast('Data refreshed');}
+function exportExcel() {
+    const rows = getVisibleRecords();
+
+    if (!rows.length) {
+        toast('No records to export', 'warn');
+        return;
+    }
+
+    if (!window.XLSX) {
+        toast('Excel library is not loaded', 'error');
+        return;
+    }
+
+    const data = [
+        ['☎️ Daily Check Telephone Manners'],
+        [],
+        ['Dep', 'Ext.', 'Name', 'Time', 'No. of rings', 'Reply']
+    ];
+
+    rows.forEach(r => {
+        data.push([
+            r.department + ' – ' + r.section,
+            r.extension,
+            r.name,
+            r.time,
+            r.rings,
+            r.reply
+        ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }
+    ];
+
+    ws['!cols'] = [
+        { wch: 28 },
+        { wch: 12 },
+        { wch: 22 },
+        { wch: 15 },
+        { wch: 16 },
+        { wch: 24 }
+    ];
+
+    // تنسيق العنوان
+    if (ws['A1']) {
+        ws['A1'].s = {
+            font: { bold: true, sz: 16, color: { rgb: '1E3A5F' } },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        };
+    }
+
+    // تنسيق رؤوس الأعمدة
+    for (let c = 0; c < 6; c++) {
+        const cell = ws[XLSX.utils.encode_cell({ r: 2, c })];
+        if (cell) {
+            cell.s = {
+                font: { bold: true, color: { rgb: 'FFFFFF' } },
+                fill: { fgColor: { rgb: '1E3A5F' } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                border: {
+                    top: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    left: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            };
+        }
+    }
+
+    // تلوين خلايا Reply
+    rows.forEach((r, i) => {
+        const cell = ws[XLSX.utils.encode_cell({ r: i + 3, c: 5 })];
+
+        if (!cell) return;
+
+        let color = 'E2E8F0';
+
+        if (r.reply === 'Satisfactory') color = 'C6F6D5';
+        else if (r.reply === 'Needs Improvement') color = 'FEEBC8';
+        else if (r.reply === 'Not Satisfactory') color = 'FED7D7';
+
+        cell.s = {
+            fill: { fgColor: { rgb: color } },
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: {
+                top: { style: 'thin' },
+                bottom: { style: 'thin' },
+                left: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        };
+    });
+
+    ws['!rows'] = [
+        { hpt: 30 },
+        { hpt: 8 },
+        { hpt: 24 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Telephone Manners');
+
+    XLSX.writeFile(wb, 'Daily_Check_Telephone_Manners.xlsx');
+}
+async function logout(){
+  if(!confirm('Log out?'))return;
+  try{await signOut(auth);window.location.href='login.html';}catch(err){toast('Logout failed','error');}
+}
+window.openEdit=openEdit;window.closeEditModal=closeEditModal;window.saveEdit=saveEdit;
+window.deleteRecord=deleteRecord;window.resetForm=resetForm;window.refreshData=refreshData;
+window.exportExcel=exportExcel;window.logout=logout;window.toggleSettings=toggleSettings;window.addDepartment=addDepartment;window.renameDepartment=renameDepartment;window.removeDepartment=removeDepartment;window.addSection=addSection;window.editSection=editSection;window.removeSection=removeSection;window.addEmployee=addEmployee;window.removeEmployee=removeEmployee;
+
+onAuthStateChanged(auth,async user=>{
+  if(!user){window.location.href='login.html';return;}
+  currentUser=user;await loadSettingsData();initDateFilters();initUI();await loadRecords();
+});
+</script>
+</body>
+</html>
