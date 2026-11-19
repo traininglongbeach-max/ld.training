@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checklist Management - L&D System</title>
+<title>Checklist Management </title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -87,15 +87,19 @@ body{background:#f0f4f8;padding-bottom:60px}
 .excel-table td{padding:.45rem .5rem;border:1px solid #e2e8f0;font-size:.88rem;text-align:center;vertical-align:middle;background:#fff}
 .excel-table td.sn-cell{color:#718096;font-weight:700;background:#f7fafc}
 .excel-table td.dept-cell{font-weight:700;color:#1e3a5f;background:#f7fafc}
-.excel-table td.section-cell{    text-align: left; color: #1e3a5f; font-weight: 900;}
+.excel-table td.section-cell{text-align: left; color: #1e3a5f; font-weight: 900;}
 .excel-table td.date-cell{color:#718096;font-size:.8rem}
 .excel-table tbody tr:hover td{background:#f7fafc}
 .excel-table tbody tr:hover td.dept-cell,
 .excel-table tbody tr:hover td.sn-cell{background:#edf2f7}
 
-.status-badge{display:inline-block;padding:.25rem .7rem;border-radius:1rem;font-weight:700;font: size 0.15px;;white-space:nowrap;min-width:42px}
+.status-badge{display:inline-block;padding:.25rem .7rem;border-radius:1rem;font-weight:700;font-size:.75rem;white-space:nowrap;min-width:42px}
 .status-badge.yes{background:#c6f6d5;color:#22543d}
 .status-badge.no{background:#fed7d7;color:#822727}
+
+/* Cell coloring for status */
+td.status-cell.yes{background:#c6f6d5 !important;color:#22543d !important;font-weight:900}
+td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-weight:900}
 
 .btn-action{padding:.35rem .7rem;border:none;border-radius:1rem;font-size:.72rem;font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:.25rem;font-family:'Tajawal',sans-serif;margin:0 .15rem}
 .btn-action.edit{background:#4299e1;color:#fff}
@@ -145,7 +149,109 @@ body{background:#f0f4f8;padding-bottom:60px}
 .dept-item .dept-name{font-weight:700;color:#1e3a5f;flex:1;min-width:120px}
 .dept-item .dept-count{background:#ebf8ff;color:#2b6cb0;padding:.2rem .6rem;border-radius:1rem;font-size:.75rem;font-weight:700}
 .dept-item .dept-actions{display:flex;gap:.3rem}
+/* Settings Management */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
 
+.settings-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 3px 12px rgba(0,0,0,.04);
+}
+
+.settings-card h3 {
+  color: #1e3a5f;
+  font-size: 1rem;
+  margin-bottom: .8rem;
+}
+
+.settings-form {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.settings-form input,
+.settings-form select {
+  flex: 1;
+  min-width: 140px;
+  padding: .65rem .8rem;
+  border: 2px solid #e2e8f0;
+  border-radius: .7rem;
+  font-family: 'Tajawal', sans-serif;
+  font-size: .85rem;
+}
+
+.settings-form input:focus,
+.settings-form select:focus {
+  outline: none;
+  border-color: #2b7a4b;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: .7rem;
+  padding: .65rem .8rem;
+}
+
+.settings-item-name {
+  font-weight: 700;
+  color: #1e3a5f;
+  flex: 1;
+  min-width: 100px;
+}
+
+.settings-item-count {
+  background: #ebf8ff;
+  color: #2b6cb0;
+  padding: .2rem .55rem;
+  border-radius: 1rem;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.settings-actions {
+  display: flex;
+  gap: .3rem;
+}
+
+.settings-empty {
+  text-align: center;
+  padding: 1.2rem;
+  color: #a0aec0;
+  font-size: .85rem;
+}
+
+.settings-note {
+  background: #ebf8ff;
+  border: 1px solid #90cdf4;
+  color: #2c5282;
+  border-radius: .7rem;
+  padding: .7rem .9rem;
+  margin-bottom: 1rem;
+  font-size: .82rem;
+  font-weight: 700;
+}
 /* Loading */
 .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.88);display:none;justify-content:center;align-items:center;flex-direction:column;gap:1rem;z-index:9999;font-weight:700;color:#1e3a5f}
 .loading-overlay.active{display:flex}
@@ -226,6 +332,8 @@ body{background:#f0f4f8;padding-bottom:60px}
   .excel-table td.dept-cell{background:#f7fafc !important}
   .status-badge.yes{background:#c6f6d5 !important;color:#22543d !important}
   .status-badge.no{background:#fed7d7 !important;color:#822727 !important}
+  td.status-cell.yes{background:#c6f6d5 !important;color:#22543d !important}
+  td.status-cell.no{background:#fed7d7 !important;color:#822727 !important}
   .btn-action,.actions-col{display:none !important}
 
   tr{page-break-inside:avoid !important}
@@ -239,14 +347,9 @@ body{background:#f0f4f8;padding-bottom:60px}
 </head>
 <body>
 
-<!-- Print header -->
+<!-- Print header (بدون التاريخ والقسم والإجمالي) -->
 <div class="print-header print-only">
   <h1>Checklist Implementation Report</h1>
-  <div class="print-meta">
-    <span>Date: <strong id="printDate">—</strong></span>
-    <span>Department: <strong id="printDept">All</strong></span>
-    <span>Total: <strong id="printTotal">0</strong></span>
-  </div>
 </div>
 
 <!-- Navbar -->
@@ -340,88 +443,80 @@ body{background:#f0f4f8;padding-bottom:60px}
             </tr>
           </thead>
           <tbody id="mainBody">
-            <tr><td colspan="7" class="empty">No records for this date yet</td></tr>
+            <tr><td colspan="6" class="empty">No records for this date yet</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ================= SETTINGS TAB ================= -->
-  <div id="settingsTab" style="display:none">
-    <div class="header-card">
-      <h2>⚙️ Settings — Departments &amp; Sections</h2>
+  <!-- ================= SETTINGS TAB (بدون إدارة الأقسام والإدارات) ================= -->
+<!-- ================= SETTINGS TAB ================= -->
+<div id="settingsTab" style="display:none">
 
-      <div class="tab-bar">
-        <button class="tab-btn active" id="tabDeptBtn" onclick="switchSettingsTab('dept')">🏢 Departments</button>
-        <button class="tab-btn" id="tabSecBtn" onclick="switchSettingsTab('sec')">📂 Sections</button>
+  <div class="header-card">
+    <h2>⚙️ Settings - Departments & Sections</h2>
+
+
+
+    <div class="action-row">
+      <button class="btn btn-clear" onclick="loadSettings()">🔄 Refresh Settings</button>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+
+    <!-- Departments -->
+    <div class="settings-card">
+      <h3>🏢 Department Management</h3>
+
+      <div class="settings-form">
+        <input
+          type="text"
+          id="newDepartmentName"
+          placeholder="Enter department name"
+          maxlength="100"
+        >
+        <button class="btn btn-add" onclick="addDepartment()">
+          ➕ Add
+        </button>
       </div>
 
-      <div id="deptSubTab">
-        <div class="action-row" style="margin-bottom:1rem">
-          <button class="btn btn-add" onclick="openDeptModal()">➕ Add Department</button>
-          <button class="btn btn-clear" onclick="seedFromExcel()">🌱 Seed from Excel Template</button>
-        </div>
-        <div id="deptList" class="dept-list">
-          <div class="empty">Loading...</div>
-        </div>
-      </div>
-
-      <div id="secSubTab" style="display:none">
-        <div class="setup-item" style="margin-bottom:1rem">
-          <label>Filter by Department</label>
-          <select id="settingsDeptFilter" onchange="renderSectionsList()">
-            <option value="">— All Departments —</option>
-          </select>
-        </div>
-        <div class="action-row" style="margin-bottom:1rem">
-          <button class="btn btn-add" onclick="openSectionModal()">➕ Add Section</button>
-        </div>
-        <div id="sectionList" class="dept-list">
-          <div class="empty">Loading...</div>
-        </div>
+      <div id="departmentsSettingsList" class="settings-list">
+        <div class="settings-empty">Loading departments...</div>
       </div>
     </div>
+
+    <!-- Sections -->
+    <div class="settings-card">
+      <h3>📂 Section Management</h3>
+
+      <div class="settings-form">
+        <select id="sectionDepartmentSelect">
+          <option value="">— Select Department —</option>
+        </select>
+
+        <input
+          type="text"
+          id="newSectionName"
+          placeholder="Enter section name"
+          maxlength="100"
+        >
+
+        <button class="btn btn-add" onclick="addSection()">
+          ➕ Add Section
+        </button>
+      </div>
+
+      <div id="sectionsSettingsList" class="settings-list">
+        <div class="settings-empty">Select a department first.</div>
+      </div>
+    </div>
+
   </div>
 
 </div>
 
-<!-- Department Modal -->
-<div class="modal-overlay" id="deptModal" onclick="closeModal(event,'deptModal')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <h3><span id="deptModalTitle">Add Department</span><button class="close-x" onclick="closeModal(null,'deptModal')">✕</button></h3>
-    <div class="modal-body">
-      <div class="setup-item">
-        <label>Department Name</label>
-        <input type="text" id="deptModalInput" placeholder="e.g., F&B, FO, HK, Rec" maxlength="60">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-clear" onclick="closeModal(null,'deptModal')">Cancel</button>
-      <button class="btn btn-save" onclick="saveDeptModal()">💾 Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- Section Modal -->
-<div class="modal-overlay" id="secModal" onclick="closeModal(event,'secModal')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <h3><span id="secModalTitle">Add Section</span><button class="close-x" onclick="closeModal(null,'secModal')">✕</button></h3>
-    <div class="modal-body">
-      <div class="setup-item">
-        <label>Department</label>
-        <select id="secModalDept"><option value="">— Select —</option></select>
-      </div>
-      <div class="setup-item">
-        <label>Section Name</label>
-        <input type="text" id="secModalInput" placeholder="e.g., Cascade Bar" maxlength="80">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-clear" onclick="closeModal(null,'secModal')">Cancel</button>
-      <button class="btn btn-save" onclick="saveSecModal()">💾 Save</button>
-    </div>
-  </div>
 </div>
 
 <!-- Edit Record Modal -->
@@ -470,7 +565,6 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 let currentUser = null;
 let currentDate = todayISO();
 let activeTab = 'main';
-let activeSettingsTab = 'dept';
 
 let catalog = [];
 let departments = [];
@@ -525,14 +619,21 @@ function hideLoading() {
 async function loadCatalog() {
   try {
     const rows = await DB.getChecklistCatalog();
-    catalog = (rows || []).sort((a, b) => {
-      if (a.department !== b.department) return a.department.localeCompare(b.department);
-      return a.section.localeCompare(b.section);
-    });
+
+    // السجلات القديمة بدون isActive تعتبر نشطة
+    catalog = (rows || [])
+      .filter(c => c.isActive !== false)
+      .sort((a, b) => {
+        if (a.department !== b.department) {
+          return a.department.localeCompare(b.department);
+        }
+        return a.section.localeCompare(b.section);
+      });
+
     departments = [...new Set(catalog.map(c => c.department))];
+
     populateDeptSelects();
-    renderDeptList();
-    renderSectionsList();
+
   } catch (err) {
     console.error('loadCatalog failed:', err);
     toast('Failed to load catalog: ' + (err.message || ''), 'error');
@@ -562,16 +663,552 @@ async function loadDailyRecords() {
    ===================================================================== */
 function populateDeptSelects() {
   const deptSel = document.getElementById('deptSelect');
-  const secFilterSel = document.getElementById('settingsDeptFilter');
-  const secModalSel = document.getElementById('secModalDept');
+  const previousValue = deptSel.value;
 
-  const opts = departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  const opts = departments
+    .map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`)
+    .join('');
 
-  deptSel.innerHTML = '<option value="">— Select Department —</option>' + opts;
-  secFilterSel.innerHTML = '<option value="">— All Departments —</option>' + opts;
-  secModalSel.innerHTML = '<option value="">— Select —</option>' + opts;
+  deptSel.innerHTML =
+    '<option value="">— Select Department —</option>' + opts;
+
+  if (departments.includes(previousValue)) {
+    deptSel.value = previousValue;
+  }
+}
+/* =====================================================================
+   SETTINGS - DEPARTMENTS & SECTIONS MANAGEMENT
+   Soft Delete: isActive = false
+   ===================================================================== */
+
+function getAllCatalogRows() {
+  return DB.getChecklistCatalog();
 }
 
+function getActiveCatalogRows(rows) {
+  return (rows || []).filter(r => r.isActive !== false);
+}
+
+function getActiveDepartments(rows) {
+  return [...new Set(
+    getActiveCatalogRows(rows).map(r => r.department)
+  )].sort((a, b) => a.localeCompare(b));
+}
+
+async function refreshSettingsData() {
+  if (typeof DB.refresh === 'function') {
+    await DB.refresh('checklist_catalog');
+  }
+
+  await loadCatalog();
+
+  // إذا كانت الإدارة المختارة قد حُذفت، يتم إلغاء اختيارها
+  const deptSelect = document.getElementById('deptSelect');
+
+  if (deptSelect.value && !departments.includes(deptSelect.value)) {
+    deptSelect.value = '';
+    pickerState.clear();
+    buildSectionsPicker();
+  } else if (deptSelect.value) {
+    buildSectionsPicker();
+  }
+
+  await renderSettings();
+}
+
+async function loadSettings() {
+  try {
+    showLoading('Loading Settings...');
+    await refreshSettingsData();
+  } catch (err) {
+    console.error(err);
+    toast('Failed to load settings: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function renderSettings() {
+  const rows = await getAllCatalogRows();
+  const activeRows = getActiveCatalogRows(rows);
+
+  renderDepartmentsSettings(activeRows);
+  populateSettingsDepartmentSelect(activeRows);
+  renderSectionsSettings(activeRows);
+}
+
+/* ==================== DEPARTMENTS LIST ==================== */
+
+function renderDepartmentsSettings(rows) {
+  const container = document.getElementById('departmentsSettingsList');
+
+  const deps = [...new Set(rows.map(r => r.department))]
+    .sort((a, b) => a.localeCompare(b));
+
+  if (!deps.length) {
+    container.innerHTML =
+      '<div class="settings-empty">No departments found.</div>';
+    return;
+  }
+
+  container.innerHTML = deps.map(dep => {
+    const count = rows.filter(
+      r => r.department === dep && r.section !== '__placeholder__'
+    ).length;
+
+    return `
+      <div class="settings-item">
+        <div class="settings-item-name">
+          ${escapeHtml(dep)}
+        </div>
+
+        <span class="settings-item-count">
+          ${count} Sections
+        </span>
+
+        <div class="settings-actions">
+          <button
+            class="btn-action edit"
+            onclick="editDepartment('${escapeJs(dep)}')">
+            ✏️ Edit
+          </button>
+
+          <button
+            class="btn-action delete"
+            onclick="deleteDepartment('${escapeJs(dep)}')">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ==================== DEPARTMENT DROPDOWN ==================== */
+
+function populateSettingsDepartmentSelect(rows) {
+  const select = document.getElementById('sectionDepartmentSelect');
+  const previousValue = select.value;
+
+  const deps = getActiveDepartments(rows);
+
+  select.innerHTML =
+    '<option value="">— Select Department —</option>' +
+    deps.map(dep => `
+      <option value="${escapeHtml(dep)}">${escapeHtml(dep)}</option>
+    `).join('');
+
+  if (deps.includes(previousValue)) {
+    select.value = previousValue;
+  }
+}
+
+/* ==================== SECTIONS LIST ==================== */
+
+function renderSectionsSettings(rows) {
+  const container = document.getElementById('sectionsSettingsList');
+  const department = document.getElementById('sectionDepartmentSelect').value;
+
+  if (!department) {
+    container.innerHTML =
+      '<div class="settings-empty">Select a department first.</div>';
+    return;
+  }
+
+  const sections = rows
+    .filter(r =>
+      r.department === department &&
+      r.section !== '__placeholder__'
+    )
+    .sort((a, b) => a.section.localeCompare(b.section));
+
+  if (!sections.length) {
+    container.innerHTML =
+      '<div class="settings-empty">No sections in this department.</div>';
+    return;
+  }
+
+  container.innerHTML = sections.map(sec => `
+    <div class="settings-item">
+      <div class="settings-item-name">
+        ${escapeHtml(sec.section)}
+      </div>
+
+      <div class="settings-actions">
+        <button
+          class="btn-action edit"
+          onclick="editSection('${escapeJs(sec.id)}')">
+          ✏️ Edit
+        </button>
+
+        <button
+          class="btn-action delete"
+          onclick="deleteSection('${escapeJs(sec.id)}')">
+          🗑️ Delete
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ==================== ADD DEPARTMENT ==================== */
+
+async function addDepartment() {
+  const input = document.getElementById('newDepartmentName');
+  const department = input.value.trim();
+
+  if (!department) {
+    toast('Enter department name first', 'warn');
+    return;
+  }
+
+  showLoading('Adding Department...');
+
+  try {
+    const rows = await getAllCatalogRows();
+
+    const duplicate = getActiveDepartments(rows)
+      .some(d => d.toLowerCase() === department.toLowerCase());
+
+    if (duplicate) {
+      toast('Department already exists', 'warn');
+      return;
+    }
+
+    // استخدام placeholder الموجود في النظام الحالي
+    const placeholderId = `dept::${department}::__placeholder__`;
+
+    const existing = rows.find(r => r.id === placeholderId);
+
+    if (existing) {
+      // إعادة تفعيل سجل الإدارة السابق بدل إنشاء سجل مكرر
+      await DB.update('checklist_catalog', {
+        ...existing,
+        department,
+        section: '__placeholder__',
+        isActive: true,
+        updatedAt: Date.now(),
+        updatedBy: currentUser?.uid || 'unknown'
+      });
+    } else {
+      await DB.insert('checklist_catalog', {
+        id: placeholderId,
+        department,
+        section: '__placeholder__',
+        isActive: true,
+        createdAt: Date.now(),
+        createdBy: currentUser?.uid || 'unknown'
+      });
+    }
+
+    input.value = '';
+
+    await refreshSettingsData();
+
+    toast('✅ Department added successfully');
+
+  } catch (err) {
+    console.error(err);
+    toast('Failed to add department: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* ==================== EDIT DEPARTMENT ==================== */
+
+async function editDepartment(oldName) {
+  const newName = prompt('Enter the new department name:', oldName);
+
+  if (newName === null) return;
+
+  const department = newName.trim();
+
+  if (!department) {
+    toast('Department name cannot be empty', 'warn');
+    return;
+  }
+
+  if (department === oldName) return;
+
+  showLoading('Updating Department...');
+
+  try {
+    const rows = await getAllCatalogRows();
+    const activeRows = getActiveCatalogRows(rows);
+
+    const duplicate = activeRows.some(r =>
+      r.department.toLowerCase() === department.toLowerCase()
+    );
+
+    if (duplicate) {
+      toast('Another department already uses this name', 'warn');
+      return;
+    }
+
+    const targets = rows.filter(r => r.department === oldName);
+
+    if (!targets.length) {
+      toast('Department not found', 'error');
+      return;
+    }
+
+    // تغيير الاسم داخل الكتالوج دون حذف المستندات أو تغيير IDs
+    for (const item of targets) {
+      await DB.update('checklist_catalog', {
+        ...item,
+        department,
+        updatedAt: Date.now(),
+        updatedBy: currentUser?.uid || 'unknown'
+      });
+    }
+
+    await refreshSettingsData();
+
+    toast('✅ Department updated successfully');
+
+  } catch (err) {
+    console.error(err);
+    toast('Failed to update department: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* ==================== DELETE DEPARTMENT ==================== */
+
+async function deleteDepartment(department) {
+  const rows = await getAllCatalogRows();
+
+  const targets = rows.filter(r =>
+    r.department === department && r.isActive !== false
+  );
+
+  if (!targets.length) {
+    toast('Department not found', 'warn');
+    return;
+  }
+
+  const sectionCount = targets.filter(
+    r => r.section !== '__placeholder__'
+  ).length;
+
+  const confirmed = confirm(
+    `Delete department: ${department}?\n\n` +
+    `Sections: ${sectionCount}\n\n` +
+    `The department and its sections will be archived.\n` +
+    `Historical Checklist records will NOT be deleted.\n\n` +
+    `Continue?`
+  );
+
+  if (!confirmed) return;
+
+  showLoading('Archiving Department...');
+
+  try {
+    // أرشفة جميع سجلات الإدارة وأقسامها
+    for (const item of targets) {
+      await DB.update('checklist_catalog', {
+        ...item,
+        isActive: false,
+        deletedAt: Date.now(),
+        deletedBy: currentUser?.uid || 'unknown'
+      });
+    }
+
+    await refreshSettingsData();
+
+    toast('✅ Department archived. Historical records preserved.');
+
+  } catch (err) {
+    console.error(err);
+    toast('Failed to archive department: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* ==================== ADD SECTION ==================== */
+
+async function addSection() {
+  const department = document.getElementById('sectionDepartmentSelect').value;
+  const input = document.getElementById('newSectionName');
+  const section = input.value.trim();
+
+  if (!department) {
+    toast('Select a department first', 'warn');
+    return;
+  }
+
+  if (!section) {
+    toast('Enter section name first', 'warn');
+    return;
+  }
+
+  if (section === '__placeholder__') {
+    toast('This section name is reserved', 'warn');
+    return;
+  }
+
+  showLoading('Adding Section...');
+
+  try {
+    const rows = await getAllCatalogRows();
+
+    const duplicate = getActiveCatalogRows(rows).some(r =>
+      r.department === department &&
+      r.section.toLowerCase() === section.toLowerCase() &&
+      r.section !== '__placeholder__'
+    );
+
+    if (duplicate) {
+      toast('This section already exists in this department', 'warn');
+      return;
+    }
+
+    const id = `cat::${department}::${section}`;
+
+    const existing = rows.find(r =>
+      r.department === department &&
+      r.section.toLowerCase() === section.toLowerCase() &&
+      r.section !== '__placeholder__'
+    );
+
+    if (existing) {
+      // إعادة تفعيل القسم المؤرشف
+      await DB.update('checklist_catalog', {
+        ...existing,
+        isActive: true,
+        updatedAt: Date.now(),
+        updatedBy: currentUser?.uid || 'unknown',
+        deletedAt: null,
+        deletedBy: null
+      });
+    } else {
+      await DB.insert('checklist_catalog', {
+        id,
+        department,
+        section,
+        isActive: true,
+        createdAt: Date.now(),
+        createdBy: currentUser?.uid || 'unknown'
+      });
+    }
+
+    input.value = '';
+
+    await refreshSettingsData();
+
+    toast('✅ Section added successfully');
+
+  } catch (err) {
+    console.error(err);
+    toast('Failed to add section: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* ==================== EDIT SECTION ==================== */
+
+async function editSection(sectionId) {
+  const rows = await getAllCatalogRows();
+  const item = rows.find(r => r.id === sectionId);
+
+  if (!item) {
+    toast('Section not found', 'error');
+    return;
+  }
+
+  const newName = prompt('Enter the new section name:', item.section);
+
+  if (newName === null) return;
+
+  const section = newName.trim();
+
+  if (!section || section === '__placeholder__') {
+    toast('Invalid section name', 'warn');
+    return;
+  }
+
+  if (section === item.section) return;
+
+  showLoading('Updating Section...');
+
+  try {
+    const duplicate = getActiveCatalogRows(rows).some(r =>
+      r.department === item.department &&
+      r.section.toLowerCase() === section.toLowerCase() &&
+      r.id !== item.id
+    );
+
+    if (duplicate) {
+      toast('Another section already uses this name', 'warn');
+      return;
+    }
+
+    // الاحتفاظ بنفس ID لتجنب حذف المستند القديم
+    await DB.update('checklist_catalog', {
+      ...item,
+      section,
+      updatedAt: Date.now(),
+      updatedBy: currentUser?.uid || 'unknown'
+    });
+
+    await refreshSettingsData();
+
+    toast('✅ Section updated successfully');
+
+  } catch (err) {
+    console.error(err);
+    toast('Failed to update section: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* ==================== DELETE SECTION ==================== */
+
+async function deleteSection(sectionId) {
+  const rows = await getAllCatalogRows();
+  const item = rows.find(r => r.id === sectionId);
+
+  if (!item) {
+    toast('Section not found', 'error');
+    return;
+  }
+
+  const confirmed = confirm(
+    `Delete section: ${item.section}?\n\n` +
+    `Department: ${item.department}\n\n` +
+    `The section will be archived.\n` +
+    `Historical Checklist records will NOT be deleted.\n\n` +
+    `Continue?`
+  );
+
+  if (!confirmed) return;
+
+  showLoading('Archiving Section...');
+
+  try {
+    await DB.update('checklist_catalog', {
+      ...item,
+      isActive: false,
+      deletedAt: Date.now(),
+      deletedBy: currentUser?.uid || 'unknown'
+    });
+
+    await refreshSettingsData();
+
+    toast('✅ Section archived. Historical records preserved.');
+
+  } catch (err) {
+    console.error(err);
+    toast('Failed to archive section: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
 /* =====================================================================
    DEPARTMENT LOCK
    ===================================================================== */
@@ -621,7 +1258,7 @@ function buildSectionsPicker() {
 
   if (!sections.length) {
     wrap.style.display = 'block';
-    list.innerHTML = '<div class="empty">No sections in this department. Add some in Settings ⚙️</div>';
+    list.innerHTML = '<div class="empty">No sections in this department.</div>';
     pickerState.clear();
     updateSaveMultiBtn();
     updateDeptLock();
@@ -631,7 +1268,7 @@ function buildSectionsPicker() {
   const newState = new Map();
   sections.forEach(s => {
     if (pickerState.has(s)) newState.set(s, pickerState.get(s));
-    else newState.set(s, { existStatus: null, implementedStatus: null, checked: false });
+    else newState.set(s, { existStatus: 'YES', implementedStatus: 'YES', checked: false });
   });
   pickerState = newState;
 
@@ -702,6 +1339,10 @@ function togglePickerCheck(sec, checked) {
   const st = pickerState.get(sec);
   if (!st) return;
   st.checked = checked;
+  if (checked) {
+    if (!st.existStatus) st.existStatus = 'YES';
+    if (!st.implementedStatus) st.implementedStatus = 'YES';
+  }
   renderSectionsPicker();
   updateSaveMultiBtn();
   updateDeptLock();
@@ -719,7 +1360,11 @@ function setPickerStatus(sec, field, val) {
 }
 
 function selectAllSections() {
-  pickerState.forEach(st => st.checked = true);
+  pickerState.forEach(st => {
+    st.checked = true;
+    if (!st.existStatus) st.existStatus = 'YES';
+    if (!st.implementedStatus) st.implementedStatus = 'YES';
+  });
   renderSectionsPicker();
   updateSaveMultiBtn();
   updateDeptLock();
@@ -875,7 +1520,7 @@ function renderTable() {
     currentDate === todayISO() ? 'Today' : fmtDate(currentDate);
 
   if (!dailyRecords.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">No records for this date yet. Use the form above to add.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No records for this date yet. Use the form above to add.</td></tr>';
     return;
   }
 
@@ -886,8 +1531,8 @@ function renderTable() {
       <td class="sn-cell">${i + 1}</td>
       <td class="dept-cell">${escapeHtml(r.department)}</td>
       <td class="section-cell">${escapeHtml(r.section)}</td>
-      <td><span class="status-badge ${eYes ? 'yes' : 'no'}">${eYes ? '✔' : '✖'}</span></td>
-      <td><span class="status-badge ${iYes ? 'yes' : 'no'}">${iYes ? '✔' : '✖'}</span></td>
+      <td class="status-cell ${eYes ? 'yes' : 'no'}">${eYes ? '✔' : '✖'}</td>
+      <td class="status-cell ${iYes ? 'yes' : 'no'}">${iYes ? '✔' : '✖'}</td>
       <td class="actions-col no-print">
         <button class="btn-action edit" onclick="openEditModal('${escapeJs(r.id)}')">✏️ Edit</button>
         <button class="btn-action delete" onclick="deleteRecord('${escapeJs(r.id)}')">🗑️ Delete</button>
@@ -987,260 +1632,26 @@ async function deleteRecord(recordId) {
 }
 
 /* =====================================================================
-   SETTINGS — Departments
-   ===================================================================== */
-function renderDeptList() {
-  const el = document.getElementById('deptList');
-  if (!departments.length) {
-    el.innerHTML = '<div class="empty">No departments yet. Click "Add Department" or "Seed from Excel Template" to start.</div>';
-    return;
-  }
-  el.innerHTML = departments.map(d => {
-    const count = catalog.filter(c => c.department === d && c.section !== '__placeholder__').length;
-    return `<div class="dept-item">
-      <div class="dept-name">🏢 ${escapeHtml(d)}</div>
-      <div class="dept-count">${count} section${count !== 1 ? 's' : ''}</div>
-      <div class="dept-actions">
-        <button class="btn-action edit" onclick="renameDept('${escapeJs(d)}')">✏️ Rename</button>
-        <button class="btn-action delete" onclick="deleteDept('${escapeJs(d)}')">🗑️ Delete</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-let editingDept = null;
-function openDeptModal(deptName) {
-  editingDept = deptName || null;
-  document.getElementById('deptModalTitle').textContent = deptName ? 'Rename Department' : 'Add Department';
-  document.getElementById('deptModalInput').value = deptName || '';
-  document.getElementById('deptModal').classList.add('active');
-  setTimeout(() => document.getElementById('deptModalInput').focus(), 100);
-}
-function renameDept(d) { openDeptModal(d); }
-
-async function saveDeptModal() {
-  const val = document.getElementById('deptModalInput').value.trim();
-  if (!val) { toast('Department name required', 'warn'); return; }
-
-  showLoading('Saving...');
-  try {
-    if (editingDept) {
-      if (val === editingDept) { closeModal(null, 'deptModal'); hideLoading(); return; }
-      if (departments.includes(val)) { toast('Department already exists', 'warn'); hideLoading(); return; }
-      await DB.renameCatalogDepartment(editingDept, val);
-      toast(`✅ Renamed "${editingDept}" → "${val}"`);
-    } else {
-      if (departments.includes(val)) { toast('Department already exists', 'warn'); hideLoading(); return; }
-      await DB.addCatalogDepartment(val, currentUser?.uid || 'unknown');
-      toast(`✅ Department added: ${val}`);
-    }
-    closeModal(null, 'deptModal');
-    await loadCatalog();
-  } catch (err) {
-    console.error(err);
-    toast('Failed: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-async function deleteDept(d) {
-  const count = catalog.filter(c => c.department === d).length;
-  if (!confirm(`Delete department "${d}"?\n\nThis will remove ${count} section(s) from the catalog.\n(Historical daily records are kept.)`)) return;
-
-  showLoading('Deleting...');
-  try {
-    await DB.deleteCatalogDepartment(d);
-    toast(`🗑️ Department deleted: ${d}`);
-    await loadCatalog();
-  } catch (err) {
-    console.error(err);
-    toast('Delete failed: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-async function seedFromExcel() {
-  if (!confirm('Seed 39 sections from Excel template?\n\nThis adds all original data once. Existing sections will be preserved.')) return;
-  const SEED = [
-    { department: 'F&B', section: 'Cascade Bar' },
-    { department: 'F&B', section: 'Cactus Maxican Resto Bar' },
-    { department: 'F&B', section: 'Beach Bar' },
-    { department: 'F&B', section: 'Eclipse Bar' },
-    { department: 'F&B', section: 'Breeze Restaurant' },
-    { department: 'F&B', section: 'Swim Up Bar' },
-    { department: 'F&B', section: 'Zetas Bar' },
-    { department: 'F&B', section: 'Boho Bar' },
-    { department: 'F&B', section: 'Family Bar' },
-    { department: 'F&B', section: 'Water Do Bar' },
-    { department: 'F&B', section: 'Milly Bar' },
-    { department: 'F&B', section: 'Main Pool Bar' },
-    { department: 'F&B', section: 'Lobby Bar' },
-    { department: 'F&B', section: 'Hola Bar' },
-    { department: 'F&B', section: 'The Point Lounge Bar' },
-    { department: 'F&B', section: 'D White Restaurant' },
-    { department: 'F&B', section: 'Al Dente Restaurant' },
-    { department: 'FO', section: 'Front Desk' },
-    { department: 'FO', section: 'FO Concierge' },
-    { department: 'HK', section: 'Toilet - Villa 89' },
-    { department: 'HK', section: 'Toilet - New Beach' },
-    { department: 'HK', section: 'Toilet - Cascade' },
-    { department: 'HK', section: 'Toilet - Spa' },
-    { department: 'HK', section: 'Toilet - Main Pool' },
-    { department: 'HK', section: 'Toilet - The Point' },
-    { department: 'HK', section: 'Toilet - The Point Pool' },
-    { department: 'HK', section: 'Toilet - Looby' },
-    { department: 'Rec', section: 'Cascade Pool' },
-    { department: 'Rec', section: 'Swim up Pool' },
-    { department: 'Rec', section: 'Eclipse Pool' },
-    { department: 'Rec', section: 'Pool 93' },
-    { department: 'Rec', section: 'Pool 87' },
-    { department: 'Rec', section: 'Pool 76' },
-    { department: 'Rec', section: 'Inflatable Aqua park' },
-    { department: 'Rec', section: 'Beach' },
-    { department: 'Rec', section: 'Family Pool' },
-    { department: 'Rec', section: 'Aqua Park' },
-    { department: 'Rec', section: 'Main Pool' },
-    { department: 'Rec', section: 'The Point Pool' }
-  ];
-  showLoading('Seeding catalog...');
-  try {
-    const n = await DB.seedCatalog(SEED, currentUser?.uid || 'seed');
-    toast(`✅ Seeded ${n} sections`);
-    await loadCatalog();
-  } catch (err) {
-    console.error(err);
-    toast('Seed failed: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-/* =====================================================================
-   SETTINGS — Sections
-   ===================================================================== */
-function renderSectionsList() {
-  const filterDep = document.getElementById('settingsDeptFilter').value;
-  const el = document.getElementById('sectionList');
-
-  let list = catalog.filter(c => c.section !== '__placeholder__');
-  if (filterDep) list = list.filter(c => c.department === filterDep);
-
-  if (!list.length) {
-    el.innerHTML = '<div class="empty">No sections found. Click "Add Section" to create one.</div>';
-    return;
-  }
-
-  el.innerHTML = list.map(c => `<div class="dept-item">
-    <div class="dept-name">
-      <span style="color:#718096;font-size:.85rem;font-weight:700">${escapeHtml(c.department)}</span>
-      &nbsp;›&nbsp; ${escapeHtml(c.section)}
-    </div>
-    <div class="dept-actions">
-      <button class="btn-action edit" onclick="renameSection('${escapeJs(c.id)}')">✏️ Edit</button>
-      <button class="btn-action delete" onclick="deleteSection('${escapeJs(c.id)}')">🗑️ Delete</button>
-    </div>
-  </div>`).join('');
-}
-
-let editingSection = null;
-function openSectionModal(catalogId) {
-  editingSection = catalogId || null;
-  if (catalogId) {
-    const c = catalog.find(x => x.id === catalogId);
-    if (c) {
-      document.getElementById('secModalTitle').textContent = 'Edit Section';
-      document.getElementById('secModalDept').value = c.department;
-      document.getElementById('secModalInput').value = c.section;
-    }
-  } else {
-    document.getElementById('secModalTitle').textContent = 'Add Section';
-    document.getElementById('secModalDept').value = document.getElementById('settingsDeptFilter').value || '';
-    document.getElementById('secModalInput').value = '';
-  }
-  document.getElementById('secModal').classList.add('active');
-  setTimeout(() => document.getElementById('secModalInput').focus(), 100);
-}
-function renameSection(id) { openSectionModal(id); }
-
-async function saveSecModal() {
-  const dep = document.getElementById('secModalDept').value;
-  const sec = document.getElementById('secModalInput').value.trim();
-  if (!dep || !sec) { toast('Department and section name required', 'warn'); return; }
-
-  showLoading('Saving...');
-  try {
-    if (editingSection) {
-      const existing = catalog.find(c => c.id === editingSection);
-      if (!existing) throw new Error('Section not found');
-
-      const dup = catalog.find(c =>
-        c.id !== editingSection && c.department === dep && c.section === sec
-      );
-      if (dup) { toast('This section already exists in that department', 'warn'); hideLoading(); return; }
-
-      const newId = `cat::${dep}::${sec}`;
-      if (newId !== existing.id) {
-        await DB.delete('checklist_catalog', existing.id);
-        await DB.insert('checklist_catalog', {
-          ...existing, id: newId, department: dep, section: sec, updatedAt: Date.now()
-        });
-      } else {
-        await DB.update('checklist_catalog', {
-          ...existing, department: dep, section: sec, updatedAt: Date.now()
-        });
-      }
-      toast(`✅ Section updated: ${dep} / ${sec}`);
-    } else {
-      await DB.addCatalogSection(dep, sec, currentUser?.uid || 'unknown');
-      toast(`✅ Section added: ${dep} / ${sec}`);
-    }
-    closeModal(null, 'secModal');
-    await loadCatalog();
-  } catch (err) {
-    console.error(err);
-    toast('Failed: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-async function deleteSection(catalogId) {
-  const c = catalog.find(x => x.id === catalogId);
-  if (!c) return;
-  if (!confirm(`Delete section "${c.section}" from "${c.department}"?`)) return;
-
-  showLoading('Deleting...');
-  try {
-    await DB.delete('checklist_catalog', catalogId);
-    await loadCatalog();
-    toast('🗑️ Section deleted');
-  } catch (err) {
-    console.error(err);
-    toast('Delete failed: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
-}
-
-/* =====================================================================
    TABS
    ===================================================================== */
-function switchTab(tab) {
+async function switchTab(tab) {
   activeTab = tab;
-  document.getElementById('mainTab').style.display = tab === 'main' ? 'block' : 'none';
-  document.getElementById('settingsTab').style.display = tab === 'settings' ? 'block' : 'none';
-  document.getElementById('tabMainBtn').style.background = tab === 'main' ? '#2b7a4b' : '';
-  document.getElementById('tabSettingsBtn').classList.toggle('active', tab === 'settings');
-}
 
-function switchSettingsTab(t) {
-  activeSettingsTab = t;
-  document.getElementById('deptSubTab').style.display = t === 'dept' ? 'block' : 'none';
-  document.getElementById('secSubTab').style.display = t === 'sec' ? 'block' : 'none';
-  document.getElementById('tabDeptBtn').classList.toggle('active', t === 'dept');
-  document.getElementById('tabSecBtn').classList.toggle('active', t === 'sec');
+  document.getElementById('mainTab').style.display =
+    tab === 'main' ? 'block' : 'none';
+
+  document.getElementById('settingsTab').style.display =
+    tab === 'settings' ? 'block' : 'none';
+
+  document.getElementById('tabMainBtn').style.background =
+    tab === 'main' ? '#2b7a4b' : '';
+
+  document.getElementById('tabSettingsBtn')
+    .classList.toggle('active', tab === 'settings');
+
+  if (tab === 'settings') {
+    await loadSettings();
+  }
 }
 
 function closeModal(event, id) {
@@ -1294,7 +1705,7 @@ async function onDateChange() {
 }
 
 /* =====================================================================
-   EXPORT EXCEL
+   EXPORT EXCEL (بدون تاريخ وبدون معلومات إضافية)
    ===================================================================== */
 async function exportExcel() {
   if (!dailyRecords.length) { toast('No records to export', 'warn'); return; }
@@ -1312,7 +1723,8 @@ async function exportExcel() {
     const thin = { style:'thin', color:{ argb:BORDER } };
     const allB = { top:thin, left:thin, bottom:thin, right:thin };
 
-    ws.mergeCells('A1:F1');
+    // Title only
+    ws.mergeCells('A1:E1');
     const t = ws.getCell('A1');
     t.value = 'Checklist Implementation Report';
     t.font = { name:'Tajawal', size:16, bold:true, color:{ argb:WHITE } };
@@ -1320,43 +1732,48 @@ async function exportExcel() {
     t.alignment = { horizontal:'center', vertical:'middle' };
     ws.getRow(1).height = 30;
 
-    ws.mergeCells('A2:F2');
-    const info = ws.getCell('A2');
-    info.value = `Date: ${fmtDate(currentDate)}   |   Total: ${dailyRecords.length} records   |   Exported: ${new Date().toLocaleString('en-GB')}`;
-    info.font = { name:'Tajawal', size:10, italic:true, color:{ argb:'FF4A5568' } };
-    info.alignment = { horizontal:'center' };
-
-    const headers = ['#', 'Date', 'Dep', 'Section', 'Exist', 'Implemented'];
+    // Headers (no Date column)
+    const headers = ['#', 'Dep', 'Section', 'Exist', 'Implemented'];
     headers.forEach((h, i) => {
-      const c = ws.getCell(3, i + 1);
+      const c = ws.getCell(2, i + 1);
       c.value = h;
       c.font = { name:'Tajawal', size:11, bold:true, color:{ argb:WHITE } };
       c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:NAVY } };
       c.alignment = { horizontal:'center', vertical:'middle' };
       c.border = allB;
     });
-    ws.getRow(3).height = 22;
+    ws.getRow(2).height = 22;
 
     dailyRecords.forEach((r, i) => {
-      const row = 4 + i;
+      const row = 3 + i;
       const eY = r.existStatus === 'YES';
       const iY = r.implementedStatus === 'YES';
-      const vals = [i + 1, fmtDate(r.date), r.department, r.section, eY ? '✔' : '✖', iY ? '✔' : '✖'];
+      const vals = [i + 1, r.department, r.section, eY ? '✔' : '✖', iY ? '✔' : '✖'];
       vals.forEach((v, j) => {
         const c = ws.getCell(row, j + 1);
         c.value = v;
         c.border = allB;
-        c.alignment = { horizontal: j === 3 ? 'left' : 'center', vertical: 'middle' };
-        if (j === 0) { c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } }; c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:'FF718096' } }; }
-        else if (j === 2) { c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } }; c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:NAVY } }; }
-        else if (j === 3) { c.font = { name:'Tajawal', size:10, color:{ argb:'FF2D3748' } }; }
-        else if (j === 4) { c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: eY ? GREEN : RED } }; c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: eY ? LGREEN : LRED } }; }
-        else if (j === 5) { c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: iY ? GREEN : RED } }; c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: iY ? LGREEN : LRED } }; }
+        c.alignment = { horizontal: j === 2 ? 'left' : 'center', vertical: 'middle' };
+        if (j === 0) {
+          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } };
+          c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:'FF718096' } };
+        } else if (j === 1) {
+          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } };
+          c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:NAVY } };
+        } else if (j === 2) {
+          c.font = { name:'Tajawal', size:10, color:{ argb:'FF2D3748' } };
+        } else if (j === 3) {
+          c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: eY ? GREEN : RED } };
+          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: eY ? LGREEN : LRED } };
+        } else if (j === 4) {
+          c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: iY ? GREEN : RED } };
+          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: iY ? LGREEN : LRED } };
+        }
       });
     });
 
-    ws.columns = [{ width:6 },{ width:14 },{ width:10 },{ width:32 },{ width:10 },{ width:14 }];
-    ws.views = [{ state:'frozen', ySplit:3 }];
+    ws.columns = [{ width:6 },{ width:10 },{ width:32 },{ width:10 },{ width:14 }];
+    ws.views = [{ state:'frozen', ySplit:2 }];
 
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -1376,9 +1793,6 @@ async function exportExcel() {
    PRINT
    ===================================================================== */
 function printReport() {
-  document.getElementById('printDate').textContent = fmtDate(currentDate);
-  document.getElementById('printDept').textContent = 'All';
-  document.getElementById('printTotal').textContent = dailyRecords.length;
   window.print();
 }
 
@@ -1431,15 +1845,17 @@ function initEventListeners() {
   document.getElementById('filterDay').addEventListener('change', onDateChange);
 
   document.getElementById('deptSelect').addEventListener('change', onDeptChange);
-
-  document.getElementById('settingsDeptFilter').addEventListener('change', renderSectionsList);
+  document.getElementById('sectionDepartmentSelect')
+  .addEventListener('change', async () => {
+    const rows = await getAllCatalogRows();
+    renderSectionsSettings(getActiveCatalogRows(rows));
+  });
 }
 
 /* =====================================================================
    EXPOSE
    ===================================================================== */
 window.switchTab = switchTab;
-window.switchSettingsTab = switchSettingsTab;
 window.saveMultiSections = saveMultiSections;
 window.togglePickerCheck = togglePickerCheck;
 window.setPickerStatus = setPickerStatus;
@@ -1451,20 +1867,19 @@ window.pickEdit = pickEdit;
 window.openEditModal = openEditModal;
 window.saveEditModal = saveEditModal;
 window.deleteRecord = deleteRecord;
-window.openDeptModal = openDeptModal;
-window.renameDept = renameDept;
-window.saveDeptModal = saveDeptModal;
-window.deleteDept = deleteDept;
-window.seedFromExcel = seedFromExcel;
-window.openSectionModal = openSectionModal;
-window.renameSection = renameSection;
-window.saveSecModal = saveSecModal;
-window.deleteSection = deleteSection;
 window.closeModal = closeModal;
-window.renderSectionsList = renderSectionsList;
 window.refreshData = refreshData;
 window.exportExcel = exportExcel;
 window.printReport = printReport;
+window.loadSettings = loadSettings;
+
+window.addDepartment = addDepartment;
+window.editDepartment = editDepartment;
+window.deleteDepartment = deleteDepartment;
+
+window.addSection = addSection;
+window.editSection = editSection;
+window.deleteSection = deleteSection;
 
 /* =====================================================================
    BOOT
