@@ -60,9 +60,23 @@ body{background:#f0f4f8;padding-bottom:70px;color:#2d3748}
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;min-width:900px;direction:ltr}
 th,td{padding:.68rem .6rem;text-align:center;border:1px solid #dce3eb;font-size:15px;font-weight:900}
-th{background:#1e3a5f;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+
+/* ✅ ألوان الجدول المطلوبة */
+#recordsTable th{
+  background:#e9f0f7;
+  color:#000000;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.3px;
+}
 td.section-cell{text-align:center;font-weight:700;padding-left:1.4rem}
-tr.dept-row td{background:#e9f0f7;color:#1e3a5f;font-weight:900;text-align:center;border-top:2px solid #1e3a5f}
+#recordsTable tr.dept-row td{
+  background:#1e3a5f;
+  color:#ffffff;
+  font-weight:900;
+  text-align:center;
+  border-top:2px solid #1e3a5f;
+}
 tr.data-row:hover{background:#f7fafc}
 td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weight:800}
 td.status-cell.needs{background:#fff4d6!important;color:#7b341e;font-weight:800}
@@ -115,7 +129,7 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
 .exp-page {
   width: 1920px;
   height: 1080px;
-  padding: 20px; /* ✅ هوامش صغيرة 20px فقط */
+  padding: 20px;
   box-sizing: border-box;
   background: #ffffff;
   display: flex;
@@ -156,13 +170,15 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
   table-layout: fixed;
   direction: ltr;
 }
+/* ✅ نفس ألوان الجدول المطلوبة في التصدير والطباعة */
 .exp-table th {
-  background: #1e3a5f;
-  color: #fff;
+  background: #e9f0f7;
+  color: #000000;
   padding: 11px 8px;
   font-weight: 800;
-  border: 2px solid #2c5282;
+  border: 2px solid #cbd5e0;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
   font-size: 18px;
   text-align: center;
 }
@@ -177,8 +193,8 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
   word-wrap: break-word;
 }
 .exp-table tr.exp-dept-row td {
-  background: #e9f0f7;
-  color: #1e3a5f;
+  background: #1e3a5f;
+  color: #ffffff;
   font-weight: 900;
   font-size: 20px;
   text-align: center;
@@ -191,33 +207,6 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
 .exp-table td.exp-needs { background: #feebc8; color: #7b341e; font-weight: 900; }
 .exp-table td.exp-not { background: #fed7d7; color: #822727; font-weight: 900; }
 .exp-table td.exp-na { background: #edf2f7; color: #4a5568; font-weight: 900; }
-
-.exp-footer {
-  flex-shrink: 0;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 2px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 15px;
-  color: #4a5568;
-  font-weight: 700;
-  gap: 12px;
-}
-.exp-footer .exp-stats-inline {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.exp-footer .exp-page-num {
-  background: #ebf8ff;
-  color: #1e3a5f;
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-weight: 900;
-  white-space: nowrap;
-}
 
 @media(max-width:1000px){.form-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:650px){.container{padding:0 .65rem}.header-card,.section{padding:.9rem}.form-grid{grid-template-columns:1fr 1fr}.date-filters{grid-template-columns:1fr}.modal-grid{grid-template-columns:1fr}.navbar{padding:.65rem .8rem}.logo h2{font-size:.95rem}}
@@ -307,13 +296,14 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
     </div>
   </section>
 
-  <div class="summary-grid">
-    <div class="summary-box"><div class="lbl">Total Checks</div><div class="val" id="statTotal">0</div><div class="pct" id="statTotalPct">0%</div></div>
-    <div class="summary-box good"><div class="lbl">Satisfactory</div><div class="val" id="statGood">0</div><div class="pct" id="statGoodPct">0%</div></div>
-    <div class="summary-box mid"><div class="lbl">Needs Improvement</div><div class="val" id="statNeeds">0</div><div class="pct" id="statNeedsPct">0%</div></div>
-    <div class="summary-box bad"><div class="lbl">Not Satisfactory</div><div class="val" id="statNot">0</div><div class="pct" id="statNotPct">0%</div></div>
-    <div class="summary-box"><div class="lbl">N.A – No Answer</div><div class="val" id="statNA">0</div><div class="pct" id="statNAPct">0%</div></div>
-  </div>
+<div class="summary-grid">
+  <div class="summary-box"><div class="lbl">Total Checks</div><div class="val" id="statTotal">0</div><div class="pct" id="statTotalPct">0%</div></div>
+  <div class="summary-box"><div class="lbl">Total Reply</div><div class="val" id="statReply">0</div><div class="pct" id="statReplyPct">0%</div></div>
+  <div class="summary-box good"><div class="lbl">Satisfactory</div><div class="val" id="statGood">0</div><div class="pct" id="statGoodPct">0%</div></div>
+  <div class="summary-box mid"><div class="lbl">Needs Improvement</div><div class="val" id="statNeeds">0</div><div class="pct" id="statNeedsPct">0%</div></div>
+  <div class="summary-box bad"><div class="lbl">Not Satisfactory</div><div class="val" id="statNot">0</div><div class="pct" id="statNotPct">0%</div></div>
+  <div class="summary-box"><div class="lbl">N.A – No Answer</div><div class="val" id="statNA">0</div><div class="pct" id="statNAPct">0%</div></div>
+</div>
 
   <section class="section no-print" id="entrySection">
     <div class="section-title"><span id="formTitle">➕ Add Telephone Check</span><span class="badge" id="formMode">New Record</span></div>
@@ -365,7 +355,7 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
       <div class="section-title" style="margin:0"><span>📋 Daily Telephone Check Records</span><span class="badge" id="recordCount"></span></div>
       <div class="filters">
         <input id="searchInput" type="search" placeholder="Search name / extension..." aria-label="Search records">
-        <button class="btn btn-clear" onclick="printReport()">🖨️ Print Report</button>
+        
       </div>
     </div>
     <div class="table-wrap">
@@ -414,7 +404,7 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
 <!-- ✅ حاوية التصدير والطباعة الموحّدة -->
 <div id="exportContainer"></div>
 
-<!-- ✅ مؤشر التحميل أثناء التصدير -->
+<!-- ✅ مؤشر التحميل -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
   <div id="loadingText">Loading...</div>
@@ -423,10 +413,13 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
 <script type="module">
 import { auth, DB } from './database.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const COLLECTION = 'telephone_manners_records';
 const CATALOG_COLLECTION = 'telephone_manners_catalog';
 const EMPLOYEE_COLLECTION = 'telephone_manners_employees';
+const fsDb = getFirestore(auth.app);
+
 let employeeRecords = [];
 let settingsVisible = false;
 let CATALOG = [
@@ -469,10 +462,34 @@ let CATALOG = [
 ];
 
 let currentUser = null;
-let allRecords = [];
+let dailyRecords = []; // ✅ سجلات اليوم المختار فقط
+const recordsCacheByDate = new Map(); // ✅ كاش محلي لكل تاريخ لتقليل القراءات
 let editingId = null;
 let selectedDate = todayISO();
+let appInitialized = false;
+let isSaving = false;
 
+/* =====================================================================
+   HELPERS & ALPHABETICAL SORTING
+   ===================================================================== */
+function sortAlpha(a, b) {
+  return String(a ?? '').localeCompare(String(b ?? ''), 'en', { sensitivity: 'base' });
+}
+function getSortedDepartments() {
+  return [...new Set(CATALOG.map(x => x.department))].sort(sortAlpha);
+}
+function getSortedSections(dept) {
+  return CATALOG
+    .filter(x => x.department === dept)
+    .sort((a, b) => sortAlpha(a.section, b.section));
+}
+function deduplicateById(list) {
+  const map = new Map();
+  (list || []).forEach(item => {
+    if (item && item.id != null) map.set(String(item.id), { ...item });
+  });
+  return [...map.values()];
+}
 function makeId(prefix){return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;}
 function showLoading(msg){
   document.getElementById('loadingText').textContent = msg || 'Loading...';
@@ -480,13 +497,6 @@ function showLoading(msg){
 }
 function hideLoading(){
   document.getElementById('loadingOverlay').classList.remove('active');
-}
-async function loadSettingsData(){
-  try{
-    const savedCatalog=await DB.getAll(CATALOG_COLLECTION)||[];
-    if(savedCatalog.length){CATALOG=savedCatalog.filter(x=>x.isActive!==false).map(x=>({department:x.department,section:x.section,ext:x.ext||''}));}
-    employeeRecords=(await DB.getAll(EMPLOYEE_COLLECTION)||[]).filter(x=>x.isActive!==false);
-  }catch(err){console.warn('Settings collections not available yet; using built-in departments and sections.',err);}
 }
 function todayISO(){
   const d=new Date();
@@ -512,132 +522,249 @@ function defaultReply(rings){
 }
 function getCatalogItem(dept,section){return CATALOG.find(x=>x.department===dept&&x.section===section);}
 
+async function loadSettingsData(){
+  try{
+    const savedCatalog=await DB.getAll(CATALOG_COLLECTION)||[];
+    if(savedCatalog.length){
+      CATALOG=savedCatalog
+        .filter(x=>x.isActive!==false)
+        .map(x=>({department:x.department,section:x.section,ext:x.ext||''}));
+    }
+    CATALOG.sort((a,b)=>sortAlpha(a.department,b.department)||sortAlpha(a.section,b.section));
+    employeeRecords=(await DB.getAll(EMPLOYEE_COLLECTION)||[]).filter(x=>x.isActive!==false).map(x=>({...x}));
+  }catch(err){
+    CATALOG.sort((a,b)=>sortAlpha(a.department,b.department)||sortAlpha(a.section,b.section));
+    console.warn('Settings collections not available yet; using built-in departments and sections.',err);
+  }
+}
+
 /* =====================================================================
-   ✅ إخفاء الأقسام المحفوظة في اليوم المختار داخل نموذج الإدخال
+   ✅ جلب بيانات اليوم المختار فقط من Firestore لتقليل عدد القراءات
+   ===================================================================== */
+async function loadRecordsForDate(date, forceRefresh = false) {
+  if (!forceRefresh && recordsCacheByDate.has(date)) {
+    dailyRecords = deduplicateById(recordsCacheByDate.get(date));
+    renderTable();
+    refreshEntryDropdowns();
+    return;
+  }
+
+  try {
+    let rows = [];
+    if (typeof DB.getTelephoneRecordsByDate === 'function') {
+      rows = await DB.getTelephoneRecordsByDate(date) || [];
+    } else {
+      const q = query(collection(fsDb, COLLECTION), where('date', '==', date));
+      const snap = await getDocs(q);
+      rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    dailyRecords = deduplicateById(rows);
+    recordsCacheByDate.set(date, dailyRecords.map(r => ({ ...r })));
+    renderTable();
+    refreshEntryDropdowns();
+  } catch (err) {
+    console.error('Date query failed, falling back:', err);
+    try {
+      const all = await DB.getAll(COLLECTION) || [];
+      dailyRecords = deduplicateById(all.filter(r => r.date === date));
+      recordsCacheByDate.set(date, dailyRecords.map(r => ({ ...r })));
+      renderTable();
+      refreshEntryDropdowns();
+    } catch (fallbackErr) {
+      console.error(fallbackErr);
+      toast('Could not load telephone check records', 'error');
+    }
+  }
+}
+
+/* =====================================================================
+   ✅ إخفاء الأقسام المحفوظة في اليوم المختار + ترتيب أبجدي في كل القوائم
    ===================================================================== */
 function getSavedSectionsSet(date, dept){
   return new Set(
-    allRecords
+    dailyRecords
       .filter(r => r.date === date && r.department === dept)
       .map(r => r.section)
   );
 }
 
-function populateDepartments(select,includeAll=false){
-  const depts=[...new Set(CATALOG.map(x=>x.department))];
-  const prev=select.value;
-  select.innerHTML=(includeAll?'<option value="">All Departments</option>':'<option value="">— Select Department —</option>')+
-    depts.map(d=>`<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
-  if(prev && depts.includes(prev)) select.value=prev;
+function populateDepartments(select, includeAll=false){
+  const depts = getSortedDepartments();
+  const prev = select.value;
+  select.innerHTML = (includeAll ? '<option value="">All Departments</option>' : '<option value="">— Select Department —</option>') +
+    depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  if (prev && depts.includes(prev)) select.value = prev;
+}
+
+function populateSections(dept, select, includeAll=false, selected=''){
+  const rows = getSortedSections(dept);
+  select.innerHTML = (includeAll ? '<option value="">All Sections</option>' : '<option value="">— Select Section —</option>') +
+    rows.map(x => `<option value="${escapeHtml(x.section)}" ${x.section===selected?'selected':''}>${escapeHtml(x.section)} — ${escapeHtml(x.ext)}</option>`).join('');
 }
 
 function populateEntryDepartments(preferredDept=''){
-  const select=document.getElementById('departmentInput');
-  const depts=[...new Set(CATALOG.map(x=>x.department))];
-  const current=preferredDept || select.value || depts[0] || '';
-  select.innerHTML='<option value="">— Select Department —</option>'+
-    depts.map(d=>{
-      const total=CATALOG.filter(x=>x.department===d).length;
-      const saved=getSavedSectionsSet(selectedDate,d).size;
-      const rem=Math.max(0,total-saved);
-      const label=rem===0 ? `${d} (✓ Completed)` : `${d} (${rem} left)`;
+  const select = document.getElementById('departmentInput');
+  const depts = getSortedDepartments();
+  const current = preferredDept || select.value || depts[0] || '';
+  select.innerHTML = '<option value="">— Select Department —</option>' +
+    depts.map(d => {
+      const total = getSortedSections(d).length;
+      const saved = getSavedSectionsSet(selectedDate, d).size;
+      const rem = Math.max(0, total - saved);
+      const label = rem === 0 ? `${d} (✓ Completed)` : `${d} (${rem} left)`;
       return `<option value="${escapeHtml(d)}">${escapeHtml(label)}</option>`;
     }).join('');
-  if(current && depts.includes(current)) select.value=current;
-  else if(depts.length) select.value=depts[0];
+  if (current && depts.includes(current)) select.value = current;
+  else if (depts.length) select.value = depts[0];
 }
 
 function populateEntrySections(dept){
-  const select=document.getElementById('sectionInput');
-  const savedSet=getSavedSectionsSet(selectedDate,dept);
-  const available=CATALOG.filter(x=>x.department===dept && !savedSet.has(x.section));
-  if(!dept){
-    select.disabled=true;
-    select.innerHTML='<option value="">— Select Department First —</option>';
+  const select = document.getElementById('sectionInput');
+  const savedSet = getSavedSectionsSet(selectedDate, dept);
+  const available = getSortedSections(dept).filter(x => !savedSet.has(x.section));
+  if (!dept) {
+    select.disabled = true;
+    select.innerHTML = '<option value="">— Select Department First —</option>';
     return;
   }
-  if(!available.length){
-    select.disabled=true;
-    select.innerHTML='<option value="">✅ All sections completed for this date</option>';
+  if (!available.length) {
+    select.disabled = true;
+    select.innerHTML = '<option value="">✅ All sections completed for this date</option>';
     return;
   }
-  select.disabled=false;
-  select.innerHTML='<option value="">— Select Section —</option>'+
-    available.map(x=>`<option value="${escapeHtml(x.section)}">${escapeHtml(x.section)} — ${escapeHtml(x.ext)}</option>`).join('');
+  select.disabled = false;
+  select.innerHTML = '<option value="">— Select Section —</option>' +
+    available.map(x => `<option value="${escapeHtml(x.section)}">${escapeHtml(x.section)} — ${escapeHtml(x.ext)}</option>`).join('');
 }
 
 function refreshEntryDropdowns(preferredDept=''){
   populateEntryDepartments(preferredDept);
-  const dept=document.getElementById('departmentInput').value;
+  const dept = document.getElementById('departmentInput').value;
   populateEntrySections(dept);
   populateEmployeeOptions();
 }
 
-function populateSections(dept,select,includeAll=false,selected=''){
-  const rows=CATALOG.filter(x=>x.department===dept);
-  select.innerHTML=(includeAll?'<option value="">All Sections</option>':'<option value="">— Select Section —</option>')+
-    rows.map(x=>`<option value="${escapeHtml(x.section)}" ${x.section===selected?'selected':''}>${escapeHtml(x.section)} — ${escapeHtml(x.ext)}</option>`).join('');
+/* =====================================================================
+   DATE FILTERS (تفتح تلقائيًا على اليوم الحالي)
+   ===================================================================== */
+function initDateFilters(){
+  const y = document.getElementById('filterYear');
+  const m = document.getElementById('filterMonth');
+  const d = document.getElementById('filterDay');
+  const now = new Date();
+  const year = now.getFullYear();
+
+  y.innerHTML = Array.from({length: 5}, (_, i) => year - 2 + i)
+    .map(v => `<option value="${v}">${v}</option>`).join('');
+  m.innerHTML = ['January','February','March','April','May','June','July','August','September','October','November','December']
+    .map((v, i) => `<option value="${String(i+1).padStart(2,'0')}">${v}</option>`).join('');
+
+  y.value = String(year);
+  m.value = String(now.getMonth() + 1).padStart(2, '0');
+  rebuildDays();
+  d.value = String(now.getDate()).padStart(2, '0');
+
+  selectedDate = todayISO();
+  document.getElementById('selectedDateText').textContent = '📅 ' + fmtDateLong(selectedDate);
+
+  y.addEventListener('change', () => { rebuildDays(); syncDate(); });
+  m.addEventListener('change', () => { rebuildDays(); syncDate(); });
+  d.addEventListener('change', syncDate);
 }
 
-function initDateFilters(){
-  const y=document.getElementById('filterYear'),m=document.getElementById('filterMonth'),d=document.getElementById('filterDay');
-  const now=new Date(),year=now.getFullYear();
-  y.innerHTML=Array.from({length:5},(_,i)=>year-2+i).map(v=>`<option>${v}</option>`).join('');
-  m.innerHTML=['January','February','March','April','May','June','July','August','September','October','November','December'].map((v,i)=>`<option value="${String(i+1).padStart(2,'0')}">${v}</option>`).join('');
-  y.value=year;m.value=String(now.getMonth()+1).padStart(2,'0');
-  rebuildDays();d.value=String(now.getDate()).padStart(2,'0');syncDate();
-  y.addEventListener('change',syncDate);m.addEventListener('change',()=>{rebuildDays();syncDate();});
-  d.addEventListener('change',syncDate);
-}
 function rebuildDays(){
-  const y=Number(document.getElementById('filterYear').value),m=Number(document.getElementById('filterMonth').value);
-  const d=document.getElementById('filterDay'),previous=Number(d.value)||1,days=new Date(y,m,0).getDate();
-  d.innerHTML=Array.from({length:days},(_,i)=>i+1).map(v=>`<option value="${String(v).padStart(2,'0')}">${String(v).padStart(2,'0')}</option>`).join('');
-  d.value=String(Math.min(previous,days)).padStart(2,'0');
+  const y = Number(document.getElementById('filterYear').value);
+  const m = Number(document.getElementById('filterMonth').value);
+  const d = document.getElementById('filterDay');
+  const previous = Number(d.value) || new Date().getDate();
+  const days = new Date(y, m, 0).getDate();
+  d.innerHTML = Array.from({length: days}, (_, i) => i + 1)
+    .map(v => `<option value="${String(v).padStart(2,'0')}">${String(v).padStart(2,'0')}</option>`).join('');
+  d.value = String(Math.min(previous, days)).padStart(2, '0');
 }
+
 async function syncDate(){
-  selectedDate=`${document.getElementById('filterYear').value}-${document.getElementById('filterMonth').value}-${document.getElementById('filterDay').value}`;
-  document.getElementById('selectedDateText').textContent='📅 '+fmtDateLong(selectedDate);
-  renderTable();
-  refreshEntryDropdowns();
+  selectedDate = `${document.getElementById('filterYear').value}-${document.getElementById('filterMonth').value}-${document.getElementById('filterDay').value}`;
+  document.getElementById('selectedDateText').textContent = '📅 ' + fmtDateLong(selectedDate);
+  await loadRecordsForDate(selectedDate);
 }
+
 function populateEmployeeOptions(){
-  const dept=document.getElementById('departmentInput').value,section=document.getElementById('sectionInput').value;
-  const names=employeeRecords.filter(x=>x.department===dept&&x.section===section).map(x=>x.name).sort((a,b)=>a.localeCompare(b));
-  document.getElementById('employeeOptions').innerHTML=names.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+  const dept = document.getElementById('departmentInput').value;
+  const section = document.getElementById('sectionInput').value;
+  const names = employeeRecords
+    .filter(x => x.department === dept && x.section === section)
+    .map(x => x.name)
+    .sort(sortAlpha);
+  document.getElementById('employeeOptions').innerHTML = names.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
 }
+
+/* =====================================================================
+   SETTINGS (مرتبة أبجديًا)
+   ===================================================================== */
 function renderSettings(){
-  const depts=[...new Set(CATALOG.map(x=>x.department))];
-  const ds=document.getElementById('settingsDepartment'),ed=document.getElementById('employeeDepartment');
-  ds.innerHTML=depts.map(d=>`<option>${escapeHtml(d)}</option>`).join('');ed.innerHTML=ds.innerHTML;
-  const selected=ds.value||depts[0]||'';ds.value=selected;ed.value=selected;
-  document.getElementById('departmentSettingsList').innerHTML=depts.map(d=>`<div class="settings-item"><span>${escapeHtml(d)}</span><span><button class="small-edit" onclick="renameDepartment('${escapeHtml(d)}')">Edit</button> <button class="small-delete" onclick="removeDepartment('${escapeHtml(d)}')">Delete</button></span></div>`).join('');
-  renderSettingsSections();renderEmployeeSectionOptions();renderEmployeeList();
+  const depts = getSortedDepartments();
+  const ds = document.getElementById('settingsDepartment');
+  const ed = document.getElementById('employeeDepartment');
+  const prevDs = ds.value;
+  const prevEd = ed.value;
+
+  ds.innerHTML = depts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  ed.innerHTML = ds.innerHTML;
+  ds.value = depts.includes(prevDs) ? prevDs : (depts[0] || '');
+  ed.value = depts.includes(prevEd) ? prevEd : (depts[0] || '');
+
+  document.getElementById('departmentSettingsList').innerHTML = depts.map(d =>
+    `<div class="settings-item"><span>${escapeHtml(d)}</span><span><button class="small-edit" onclick="renameDepartment('${escapeHtml(d)}')">Edit</button> <button class="small-delete" onclick="removeDepartment('${escapeHtml(d)}')">Delete</button></span></div>`
+  ).join('');
+  renderSettingsSections();
+  renderEmployeeSectionOptions();
+  renderEmployeeList();
 }
 function renderSettingsSections(){
-  const dept=document.getElementById('settingsDepartment').value;
-  document.getElementById('sectionSettingsList').innerHTML=CATALOG.filter(x=>x.department===dept).map(x=>`<div class="settings-item"><span>${escapeHtml(x.section)} <small>(${escapeHtml(x.ext)})</small></span><span><button class="small-edit" onclick="editSection('${escapeHtml(x.department)}','${escapeHtml(x.section)}')">Edit</button> <button class="small-delete" onclick="removeSection('${escapeHtml(x.department)}','${escapeHtml(x.section)}')">Delete</button></span></div>`).join('');
+  const dept = document.getElementById('settingsDepartment').value;
+  document.getElementById('sectionSettingsList').innerHTML = getSortedSections(dept).map(x =>
+    `<div class="settings-item"><span>${escapeHtml(x.section)} <small>(${escapeHtml(x.ext)})</small></span><span><button class="small-edit" onclick="editSection('${escapeHtml(x.department)}','${escapeHtml(x.section)}')">Edit</button> <button class="small-delete" onclick="removeSection('${escapeHtml(x.department)}','${escapeHtml(x.section)}')">Delete</button></span></div>`
+  ).join('');
 }
 function renderEmployeeSectionOptions(){
-  const dept=document.getElementById('employeeDepartment').value;const sel=document.getElementById('employeeSection');
-  sel.innerHTML=CATALOG.filter(x=>x.department===dept).map(x=>`<option value="${escapeHtml(x.section)}">${escapeHtml(x.section)}</option>`).join('');renderEmployeeList();
+  const dept = document.getElementById('employeeDepartment').value;
+  const sel = document.getElementById('employeeSection');
+  sel.innerHTML = getSortedSections(dept).map(x => `<option value="${escapeHtml(x.section)}">${escapeHtml(x.section)}</option>`).join('');
+  renderEmployeeList();
 }
 function renderEmployeeList(){
-  const dept=document.getElementById('employeeDepartment').value,section=document.getElementById('employeeSection').value;
-  const rows=employeeRecords.filter(x=>x.department===dept&&x.section===section);
-  document.getElementById('employeeSettingsList').innerHTML=rows.map(x=>`<div class="settings-item"><span>${escapeHtml(x.name)}</span><button class="small-delete" onclick="removeEmployee('${escapeHtml(x.id)}')">Delete</button></div>`).join('');
+  const dept = document.getElementById('employeeDepartment').value;
+  const section = document.getElementById('employeeSection').value;
+  const rows = employeeRecords.filter(x => x.department === dept && x.section === section).sort((a,b) => sortAlpha(a.name, b.name));
+  document.getElementById('employeeSettingsList').innerHTML = rows.map(x =>
+    `<div class="settings-item"><span>${escapeHtml(x.name)}</span><button class="small-delete" onclick="removeEmployee('${escapeHtml(x.id)}')">Delete</button></div>`
+  ).join('');
 }
 async function syncEmployeeSettings(){
-  const stored=await DB.getAll(EMPLOYEE_COLLECTION)||[];
-  for(const old of stored){const current=employeeRecords.find(x=>x.id===old.id);if(!current)await DB.delete(EMPLOYEE_COLLECTION,old.id);else if(JSON.stringify(old)!==JSON.stringify(current))await DB.update(EMPLOYEE_COLLECTION,current);}
+  const stored = await DB.getAll(EMPLOYEE_COLLECTION) || [];
+  for(const old of stored){
+    const current = employeeRecords.find(x => x.id === old.id);
+    if(!current) await DB.delete(EMPLOYEE_COLLECTION, old.id);
+    else if(JSON.stringify(old) !== JSON.stringify(current)) await DB.update(EMPLOYEE_COLLECTION, current);
+  }
 }
 async function persistCatalog(){
   try{
-    const old=await DB.getAll(CATALOG_COLLECTION)||[];
-    for(const x of old){if(!CATALOG.some(c=>c.department===x.department&&c.section===x.section)&&x.isActive!==false)await DB.update(CATALOG_COLLECTION,{...x,isActive:false});}
-    for(const c of CATALOG){const found=old.find(x=>x.department===c.department&&x.section===c.section);if(found)await DB.update(CATALOG_COLLECTION,{...found,...c,isActive:true});else await DB.insert(CATALOG_COLLECTION,{id:`${c.department}::${c.section}`.replace(/\//g,'_'),...c,isActive:true,created_at:Date.now()});}
+    CATALOG.sort((a,b) => sortAlpha(a.department, b.department) || sortAlpha(a.section, b.section));
+    const old = await DB.getAll(CATALOG_COLLECTION) || [];
+    for(const x of old){
+      if(!CATALOG.some(c => c.department === x.department && c.section === x.section) && x.isActive !== false)
+        await DB.update(CATALOG_COLLECTION, {...x, isActive: false});
+    }
+    for(const c of CATALOG){
+      const found = old.find(x => x.department === c.department && x.section === c.section);
+      if(found) await DB.update(CATALOG_COLLECTION, {...found, ...c, isActive: true});
+      else await DB.insert(CATALOG_COLLECTION, {id:`${c.department}::${c.section}`.replace(/\//g,'_'), ...c, isActive: true, created_at: Date.now()});
+    }
     await syncEmployeeSettings();
-    populateDepartments(document.getElementById('departmentFilter'),true);
+    populateDepartments(document.getElementById('departmentFilter'), true);
     populateDepartments(document.getElementById('editDepartment'));
     renderSettings();
     refreshEntryDropdowns();
@@ -649,56 +776,62 @@ async function removeDepartment(name){if(!confirm(`Remove ${name} and its sectio
 async function addSection(){const dept=document.getElementById('settingsDepartment').value,name=document.getElementById('newSectionName').value.trim(),ext=document.getElementById('newSectionExt').value.trim();if(!dept||!name||!ext)return toast('Complete department, section and extension','error');if(CATALOG.some(x=>x.department===dept&&x.section.toLowerCase()===name.toLowerCase()))return toast('Section already exists','warn');CATALOG.push({department:dept,section:name,ext});document.getElementById('newSectionName').value='';document.getElementById('newSectionExt').value='';await persistCatalog();toast('Section added');}
 async function editSection(dept,section){const row=CATALOG.find(x=>x.department===dept&&x.section===section);if(!row)return;const name=prompt('Section name:',row.section);if(!name||!name.trim())return;const ext=prompt('Extension:',row.ext);if(ext===null)return;if(CATALOG.some(x=>x.department===dept&&x.section.toLowerCase()===name.trim().toLowerCase()&&x.section!==section))return toast('Section already exists','warn');CATALOG=CATALOG.map(x=>x===row?{...x,section:name.trim(),ext:ext.trim()}:x);employeeRecords=employeeRecords.map(x=>x.department===dept&&x.section===section?{...x,section:name.trim()}:x);await persistCatalog();toast('Section updated');}
 async function removeSection(dept,section){if(!confirm(`Remove ${section} from active settings? Historical records will remain.`))return;CATALOG=CATALOG.filter(x=>!(x.department===dept&&x.section===section));employeeRecords=employeeRecords.filter(x=>!(x.department===dept&&x.section===section));await persistCatalog();toast('Section removed');}
-async function addEmployee(){const department=document.getElementById('employeeDepartment').value,section=document.getElementById('employeeSection').value,name=document.getElementById('newEmployeeName').value.trim();if(!department||!section||!name)return toast('Complete all employee fields','error');if(employeeRecords.some(x=>x.department===department&&x.section===section&&x.name.toLowerCase()===name.toLowerCase()))return toast('Employee already exists for this section','warn');const record={id:makeId('emp'),department,section,name,isActive:true,created_at:Date.now()};try{await DB.insert(EMPLOYEE_COLLECTION,record);employeeRecords.push(record);document.getElementById('newEmployeeName').value='';renderEmployeeList();populateEmployeeOptions();toast('Employee added');}catch(err){console.error(err);toast('Could not add employee: '+err.message,'error');}}
+async function addEmployee(){const department=document.getElementById('employeeDepartment').value,section=document.getElementById('employeeSection').value,name=document.getElementById('newEmployeeName').value.trim();if(!department||!section||!name)return toast('Complete all employee fields','error');if(employeeRecords.some(x=>x.department===department&&x.section===section&&x.name.toLowerCase()===name.toLowerCase()))return toast('Employee already exists for this section','warn');const record={id:makeId('emp'),department,section,name,isActive:true,created_at:Date.now()};try{await DB.insert(EMPLOYEE_COLLECTION,record);if(!employeeRecords.some(x=>x.id===record.id))employeeRecords.push(record);document.getElementById('newEmployeeName').value='';renderEmployeeList();populateEmployeeOptions();toast('Employee added');}catch(err){console.error(err);toast('Could not add employee: '+err.message,'error');}}
 async function removeEmployee(id){const row=employeeRecords.find(x=>x.id===id);if(!row||!confirm(`Remove employee ${row.name}?`))return;try{await DB.delete(EMPLOYEE_COLLECTION,id);employeeRecords=employeeRecords.filter(x=>x.id!==id);renderEmployeeList();populateEmployeeOptions();toast('Employee removed');}catch(err){console.error(err);toast('Could not remove employee: '+err.message,'error');}}
 function toggleSettings(force){settingsVisible=typeof force==='boolean'?force:!settingsVisible;document.getElementById('settingsPanel').style.display=settingsVisible?'block':'none';document.getElementById('entrySection').style.display=settingsVisible?'none':'block';document.getElementById('recordsSection').style.display=settingsVisible?'none':'block';document.querySelector('.header-card').style.display=settingsVisible?'none':'block';document.querySelector('.summary-grid').style.display=settingsVisible?'none':'grid';if(settingsVisible)renderSettings();}
 
 function initUI(){
-  populateDepartments(document.getElementById('departmentFilter'),true);
+  populateDepartments(document.getElementById('departmentFilter'), true);
   populateDepartments(document.getElementById('editDepartment'));
-  const firstDept=CATALOG[0]?.department || '';
+  const firstDept = getSortedDepartments()[0] || '';
   refreshEntryDropdowns(firstDept);
-  populateSections(firstDept,document.getElementById('editSection'));
-  document.getElementById('departmentInput').addEventListener('change',e=>{
+  populateSections(firstDept, document.getElementById('editSection'));
+
+  document.getElementById('departmentInput').addEventListener('change', e => {
     populateEntrySections(e.target.value);
     populateEmployeeOptions();
   });
-  document.getElementById('sectionInput').addEventListener('change',()=>{
-    document.getElementById('checkTime').value=new Date().toTimeString().slice(0,5);
+  document.getElementById('sectionInput').addEventListener('change', () => {
+    document.getElementById('checkTime').value = new Date().toTimeString().slice(0,5);
     populateEmployeeOptions();
   });
-  document.getElementById('settingsDepartment').addEventListener('change',renderSettingsSections);
-  document.getElementById('employeeDepartment').addEventListener('change',renderEmployeeSectionOptions);
-  document.getElementById('employeeSection').addEventListener('change',renderEmployeeList);
-  document.getElementById('editDepartment').addEventListener('change',e=>populateSections(e.target.value,document.getElementById('editSection')));
-  document.getElementById('departmentFilter').addEventListener('change',()=>{populateSections(document.getElementById('departmentFilter').value,document.getElementById('sectionFilter'),true);renderTable();});
-  document.getElementById('sectionFilter').addEventListener('change',renderTable);
-  document.getElementById('searchInput').addEventListener('input',renderTable);
-  document.getElementById('rings').addEventListener('input',e=>{document.getElementById('reply').value=defaultReply(e.target.value);});
-  document.getElementById('editRings').addEventListener('input',e=>{document.getElementById('editReply').value=defaultReply(e.target.value);});
-  document.getElementById('checkForm').addEventListener('submit',saveRecord);
-  document.getElementById('checkTime').value='';
-  populateEmployeeOptions();
-  document.getElementById('rings').value=1;
-  document.getElementById('reply').value='Satisfactory';
-}
-
-async function loadRecords(){
-  try{
-    if(DB.refresh) await DB.refresh(COLLECTION).catch(()=>null);
-    allRecords=await DB.getAll(COLLECTION)||[];
+  document.getElementById('settingsDepartment').addEventListener('change', renderSettingsSections);
+  document.getElementById('employeeDepartment').addEventListener('change', renderEmployeeSectionOptions);
+  document.getElementById('employeeSection').addEventListener('change', renderEmployeeList);
+  document.getElementById('editDepartment').addEventListener('change', e => populateSections(e.target.value, document.getElementById('editSection')));
+  document.getElementById('departmentFilter').addEventListener('change', () => {
+    populateSections(document.getElementById('departmentFilter').value, document.getElementById('sectionFilter'), true);
     renderTable();
-    refreshEntryDropdowns();
-  }catch(err){console.error(err);toast('Could not load telephone check records','error');}
+  });
+  document.getElementById('sectionFilter').addEventListener('change', renderTable);
+  document.getElementById('searchInput').addEventListener('input', renderTable);
+  document.getElementById('rings').addEventListener('input', e => { document.getElementById('reply').value = defaultReply(e.target.value); });
+  document.getElementById('editRings').addEventListener('input', e => { document.getElementById('editReply').value = defaultReply(e.target.value); });
+  document.getElementById('checkForm').addEventListener('submit', saveRecord);
+
+  document.getElementById('checkTime').value = '';
+  populateEmployeeOptions();
+  document.getElementById('rings').value = 1;
+  document.getElementById('reply').value = 'Satisfactory';
 }
 
+/* =====================================================================
+   TABLE RENDER (مرتبة أبجديًا: الإدارات ثم الأقسام)
+   ===================================================================== */
 function getVisibleRecords(){
-  const dept=document.getElementById('departmentFilter').value;
-  const section=document.getElementById('sectionFilter').value;
-  const q=document.getElementById('searchInput').value.trim().toLowerCase();
-  return allRecords.filter(r=>r.date===selectedDate&&(!dept||r.department===dept)&&(!section||r.section===section)&&
-    (!q||[r.name,r.extension,r.section,r.department].some(v=>String(v||'').toLowerCase().includes(q))))
-    .sort((a,b)=>a.department.localeCompare(b.department)||a.section.localeCompare(b.section)||String(a.time).localeCompare(String(b.time)));
+  const dept = document.getElementById('departmentFilter').value;
+  const section = document.getElementById('sectionFilter').value;
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  return dailyRecords
+    .filter(r => r.date === selectedDate &&
+      (!dept || r.department === dept) &&
+      (!section || r.section === section) &&
+      (!q || [r.name, r.extension, r.section, r.department].some(v => String(v||'').toLowerCase().includes(q))))
+    .sort((a, b) =>
+      sortAlpha(a.department, b.department) ||
+      sortAlpha(a.section, b.section) ||
+      String(a.time || '').localeCompare(String(b.time || ''))
+    );
 }
 
 function replyClass(reply){
@@ -709,24 +842,47 @@ function replyClass(reply){
 }
 
 function renderTable(){
-  const rows=getVisibleRecords(),body=document.getElementById('recordsBody');
-  document.getElementById('recordCount').textContent=`${rows.length} records`;
-  const counts={'Satisfactory':0,'Needs Improvement':0,'Not Satisfactory':0,'N.A':0};
-  rows.forEach(r=>counts[r.reply]=(counts[r.reply]||0)+1);
-  document.getElementById('statTotal').textContent=rows.length;
-  document.getElementById('statGood').textContent=counts['Satisfactory']||0;
-  document.getElementById('statNeeds').textContent=counts['Needs Improvement']||0;
-  document.getElementById('statNot').textContent=counts['Not Satisfactory']||0;
-  document.getElementById('statNA').textContent=counts['N.A']||0;
-  const total=rows.length;
-  [['statTotal',total],['statGood',counts['Satisfactory']||0],['statNeeds',counts['Needs Improvement']||0],['statNot',counts['Not Satisfactory']||0],['statNA',counts['N.A']||0]].forEach(([id,n])=>{
-    document.getElementById(id+'Pct').textContent=(total?((n/total)*100).toFixed(1):'0.0')+'%';
-  });
-  if(!rows.length){body.innerHTML='<tr><td colspan="7" class="empty">No telephone checks found for this date.</td></tr>';return;}
-  let html='',lastDept='';
-  rows.forEach(r=>{
-    if(r.department!==lastDept){lastDept=r.department;html+=`<tr class="dept-row"><td colspan="7">${escapeHtml(lastDept)}</td></tr>`;}
-    html+=`<tr class="data-row">
+  const rows = getVisibleRecords();
+  const body = document.getElementById('recordsBody');
+  document.getElementById('recordCount').textContent = `${rows.length} records`;
+
+  const counts = {'Satisfactory':0, 'Needs Improvement':0, 'Not Satisfactory':0, 'N.A':0};
+  rows.forEach(r => counts[r.reply] = (counts[r.reply] || 0) + 1);
+
+  const total = rows.length;
+  const good = counts['Satisfactory'] || 0;
+  const needs = counts['Needs Improvement'] || 0;
+  const notSat = counts['Not Satisfactory'] || 0;
+  const na = counts['N.A'] || 0;
+  const totalReply = good + needs + notSat;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statReply').textContent = totalReply;
+  document.getElementById('statGood').textContent = good;
+  document.getElementById('statNeeds').textContent = needs;
+  document.getElementById('statNot').textContent = notSat;
+  document.getElementById('statNA').textContent = na;
+
+  document.getElementById('statTotalPct').textContent = (total ? '100.0' : '0.0') + '%';
+  document.getElementById('statReplyPct').textContent = (total ? ((totalReply / total) * 100).toFixed(1) : '0.0') + '%';
+  document.getElementById('statNAPct').textContent = (total ? ((na / total) * 100).toFixed(1) : '0.0') + '%';
+
+  document.getElementById('statGoodPct').textContent = (totalReply ? ((good / totalReply) * 100).toFixed(1) : '0.0') + '%';
+  document.getElementById('statNeedsPct').textContent = (totalReply ? ((needs / totalReply) * 100).toFixed(1) : '0.0') + '%';
+  document.getElementById('statNotPct').textContent = (totalReply ? ((notSat / totalReply) * 100).toFixed(1) : '0.0') + '%';
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="7" class="empty">No telephone checks found for this date.</td></tr>';
+    return;
+  }
+
+  let html = '', lastDept = '';
+  rows.forEach(r => {
+    if (r.department !== lastDept) {
+      lastDept = r.department;
+      html += `<tr class="dept-row"><td colspan="7">${escapeHtml(lastDept)}</td></tr>`;
+    }
+    html += `<tr class="data-row">
       <td class="section-cell">${escapeHtml(r.section)}</td>
       <td>${escapeHtml(r.extension)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.time)}</td>
       <td>${Number(r.rings)}</td><td class="status-cell ${replyClass(r.reply)}"><span class="reply ${replyClass(r.reply)}">${escapeHtml(r.reply)}</span></td>
@@ -735,156 +891,219 @@ function renderTable(){
         <button class="btn-action delete" onclick="deleteRecord('${escapeHtml(r.id)}')">Delete</button>
       </div></td></tr>`;
   });
-  body.innerHTML=html;
+  body.innerHTML = html;
 }
 
+/* =====================================================================
+   SAVE / EDIT / DELETE (بدون تكرار نهائيًا)
+   ===================================================================== */
 async function saveRecord(e){
   e.preventDefault();
-  const dept=document.getElementById('departmentInput').value,section=document.getElementById('sectionInput').value;
-  const item=getCatalogItem(dept,section),name=document.getElementById('employeeName').value.trim();
-  const rings=Number(document.getElementById('rings').value),reply=document.getElementById('reply').value;
-  const time=document.getElementById('checkTime').value;
-  if(!item||!name||!time||!Number.isInteger(rings)||rings<1||rings>10||!reply){toast('Please complete all fields correctly','error');return;}
-  if(allRecords.some(r=>r.date===selectedDate&&r.department===dept&&r.section===section)){toast('This section has already been checked on the selected date.','error');return;}
-  const now=Date.now();
-  const record={
-    id:`${selectedDate}::${now}::${Math.random().toString(36).slice(2,8)}`,
-    date:selectedDate,department:dept,section,extension:item.ext,name,
-    time,rings,reply,
-    created_by:currentUser?.uid||'unknown',created_at:now,updated_at:now
+  if (isSaving) return;
+
+  const dept = document.getElementById('departmentInput').value;
+  const section = document.getElementById('sectionInput').value;
+  const item = getCatalogItem(dept, section);
+  const name = document.getElementById('employeeName').value.trim();
+  const rings = Number(document.getElementById('rings').value);
+  const reply = document.getElementById('reply').value;
+  const time = document.getElementById('checkTime').value;
+
+  if (!item || !name || !time || !Number.isInteger(rings) || rings < 1 || rings > 10 || !reply) {
+    toast('Please complete all fields correctly', 'error');
+    return;
+  }
+  if (dailyRecords.some(r => r.date === selectedDate && r.department === dept && r.section === section)) {
+    toast('This section has already been checked on the selected date.', 'error');
+    return;
+  }
+
+  const now = Date.now();
+  const record = {
+    id: `${selectedDate}::${now}::${Math.random().toString(36).slice(2,8)}`,
+    date: selectedDate,
+    department: dept,
+    section,
+    extension: item.ext,
+    name,
+    time,
+    rings,
+    reply,
+    created_by: currentUser?.uid || 'unknown',
+    created_at: now,
+    updated_at: now
   };
-  const btn=document.getElementById('saveBtn');btn.disabled=true;
-  try{
-    await DB.insert(COLLECTION,record);
-    allRecords.push(record);
+
+  isSaving = true;
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  try {
+    await DB.insert(COLLECTION, { ...record });
+    // ✅ إضافة آمنة بدون تكرار حتى لو قام DB بتحديث الكاش الداخلي
+    if (!dailyRecords.some(r => String(r.id) === String(record.id))) {
+      dailyRecords = [...dailyRecords, { ...record }];
+    }
+    recordsCacheByDate.set(selectedDate, dailyRecords.map(r => ({ ...r })));
     renderTable();
-    // ✅ الحفاظ على الإدارة المختارة وإخفاء القسم المحفوظ فورًا
     resetForm(dept);
     toast('Telephone check saved successfully');
-  }catch(err){console.error(err);toast('Save failed: '+(err.message||''),'error');}
-  finally{btn.disabled=false;}
+  } catch (err) {
+    console.error(err);
+    toast('Save failed: ' + (err.message || ''), 'error');
+  } finally {
+    isSaving = false;
+    btn.disabled = false;
+  }
 }
 
 function resetForm(keepDept=''){
-  const targetDept = keepDept || document.getElementById('departmentInput').value || CATALOG[0]?.department || '';
+  const targetDept = keepDept || document.getElementById('departmentInput').value || getSortedDepartments()[0] || '';
   document.getElementById('checkForm').reset();
   refreshEntryDropdowns(targetDept);
-  document.getElementById('checkTime').value='';
-  document.getElementById('rings').value=1;
-  document.getElementById('reply').value='Satisfactory';
+  document.getElementById('checkTime').value = '';
+  document.getElementById('rings').value = 1;
+  document.getElementById('reply').value = 'Satisfactory';
 }
 
 function openEdit(id){
-  const r=allRecords.find(x=>String(x.id)===String(id));if(!r)return;
-  editingId=id;
-  document.getElementById('editDepartment').value=r.department;
-  populateSections(r.department,document.getElementById('editSection'),false,r.section);
-  document.getElementById('editName').value=r.name;document.getElementById('editTime').value=r.time;
-  document.getElementById('editRings').value=r.rings;document.getElementById('editReply').value=r.reply;
+  const r = dailyRecords.find(x => String(x.id) === String(id));
+  if (!r) return;
+  editingId = id;
+  document.getElementById('editDepartment').value = r.department;
+  populateSections(r.department, document.getElementById('editSection'), false, r.section);
+  document.getElementById('editName').value = r.name;
+  document.getElementById('editTime').value = r.time;
+  document.getElementById('editRings').value = r.rings;
+  document.getElementById('editReply').value = r.reply;
   document.getElementById('editModal').classList.add('active');
 }
-function closeEditModal(){document.getElementById('editModal').classList.remove('active');editingId=null;}
+function closeEditModal(){ document.getElementById('editModal').classList.remove('active'); editingId = null; }
+
 async function saveEdit(){
-  const r=allRecords.find(x=>String(x.id)===String(editingId));if(!r)return;
-  const dept=document.getElementById('editDepartment').value,section=document.getElementById('editSection').value,item=getCatalogItem(dept,section);
-  const name=document.getElementById('editName').value.trim(),rings=Number(document.getElementById('editRings').value);
-  const time=document.getElementById('editTime').value,reply=document.getElementById('editReply').value;
-  if(!item||!name||!time||!Number.isInteger(rings)||rings<1||rings>10||!reply){toast('Please check the entered data','error');return;}
-  if(allRecords.some(x=>x.id!==r.id&&x.date===r.date&&x.department===dept&&x.section===section)){toast('This section already has a check on this date.','error');return;}
-  const updated={...r,department:dept,section,extension:item.ext,name,time,rings,reply,updated_at:Date.now()};
-  try{
-    await DB.update(COLLECTION,updated);
-    const i=allRecords.findIndex(x=>String(x.id)===String(editingId));
-    if(i>=0)allRecords[i]=updated;
+  const r = dailyRecords.find(x => String(x.id) === String(editingId));
+  if (!r) return;
+  const dept = document.getElementById('editDepartment').value;
+  const section = document.getElementById('editSection').value;
+  const item = getCatalogItem(dept, section);
+  const name = document.getElementById('editName').value.trim();
+  const rings = Number(document.getElementById('editRings').value);
+  const time = document.getElementById('editTime').value;
+  const reply = document.getElementById('editReply').value;
+
+  if (!item || !name || !time || !Number.isInteger(rings) || rings < 1 || rings > 10 || !reply) {
+    toast('Please check the entered data', 'error');
+    return;
+  }
+  if (dailyRecords.some(x => String(x.id) !== String(r.id) && x.date === r.date && x.department === dept && x.section === section)) {
+    toast('This section already has a check on this date.', 'error');
+    return;
+  }
+
+  const updated = { ...r, department: dept, section, extension: item.ext, name, time, rings, reply, updated_at: Date.now() };
+  try {
+    await DB.update(COLLECTION, { ...updated });
+    dailyRecords = dailyRecords.map(x => String(x.id) === String(editingId) ? { ...updated } : x);
+    recordsCacheByDate.set(selectedDate, dailyRecords.map(x => ({ ...x })));
     closeEditModal();
     renderTable();
     refreshEntryDropdowns();
     toast('Record updated');
-  }catch(err){console.error(err);toast('Update failed: '+(err.message||''),'error');}
+  } catch (err) {
+    console.error(err);
+    toast('Update failed: ' + (err.message || ''), 'error');
+  }
 }
 
 async function deleteRecord(id){
-  const r=allRecords.find(x=>String(x.id)===String(id));if(!r)return;
-  if(!confirm(`Delete telephone check for ${r.name}?`))return;
-  try{
-    await DB.delete(COLLECTION,id);
-    allRecords=allRecords.filter(x=>String(x.id)!==String(id));
+  const r = dailyRecords.find(x => String(x.id) === String(id));
+  if (!r) return;
+  if (!confirm(`Delete telephone check for ${r.name}?`)) return;
+  try {
+    await DB.delete(COLLECTION, id);
+    dailyRecords = dailyRecords.filter(x => String(x.id) !== String(id));
+    recordsCacheByDate.set(selectedDate, dailyRecords.map(x => ({ ...x })));
     renderTable();
-    // ✅ إعادة إظهار القسم المحذوف في قائمة الإدخال فورًا
     refreshEntryDropdowns();
     toast('Record deleted');
-  }catch(err){console.error(err);toast('Delete failed: '+(err.message||''),'error');}
+  } catch (err) {
+    console.error(err);
+    toast('Delete failed: ' + (err.message || ''), 'error');
+  }
 }
 
-async function refreshData(){toast('Refreshing records...','info');await loadRecords();toast('Data refreshed');}
+async function refreshData(){
+  toast('Refreshing records...', 'info');
+  await loadRecordsForDate(selectedDate, true);
+  toast('Data refreshed');
+}
 
 /* =====================================================================
    EXPORT EXCEL
    ===================================================================== */
 function exportExcel() {
-    const rows = getVisibleRecords();
-    if (!rows.length) { toast('No records to export', 'warn'); return; }
-    if (!window.XLSX) { toast('Excel library is not loaded', 'error'); return; }
+  const rows = getVisibleRecords();
+  if (!rows.length) { toast('No records to export', 'warn'); return; }
+  if (!window.XLSX) { toast('Excel library is not loaded', 'error'); return; }
 
-    const data = [
-        ['☎️ Daily Check Telephone Manners'],
-        [],
-        ['Dep', 'Ext.', 'Name', 'Time', 'No. of rings', 'Reply']
-    ];
+  const data = [
+    ['☎️ Daily Check Telephone Manners'],
+    [],
+    ['Dep', 'Ext.', 'Name', 'Time', 'No. of rings', 'Reply']
+  ];
 
-    rows.forEach(r => {
-        data.push([
-            r.department + ' – ' + r.section,
-            r.extension,
-            r.name,
-            r.time,
-            r.rings,
-            r.reply
-        ]);
-    });
+  rows.forEach(r => {
+    data.push([
+      r.department + ' – ' + r.section,
+      r.extension,
+      r.name,
+      r.time,
+      r.rings,
+      r.reply
+    ]);
+  });
 
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
-    ws['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 22 }, { wch: 15 }, { wch: 16 }, { wch: 24 }];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+  ws['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 22 }, { wch: 15 }, { wch: 16 }, { wch: 24 }];
 
-    if (ws['A1']) {
-        ws['A1'].s = {
-            font: { bold: true, sz: 16, color: { rgb: '1E3A5F' } },
-            alignment: { horizontal: 'center', vertical: 'center' }
-        };
+  if (ws['A1']) {
+    ws['A1'].s = {
+      font: { bold: true, sz: 16, color: { rgb: '1E3A5F' } },
+      alignment: { horizontal: 'center', vertical: 'center' }
+    };
+  }
+
+  for (let c = 0; c < 6; c++) {
+    const cell = ws[XLSX.utils.encode_cell({ r: 2, c })];
+    if (cell) {
+      cell.s = {
+        font: { bold: true, color: { rgb: '000000' } },
+        fill: { fgColor: { rgb: 'E9F0F7' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+      };
     }
+  }
 
-    for (let c = 0; c < 6; c++) {
-        const cell = ws[XLSX.utils.encode_cell({ r: 2, c })];
-        if (cell) {
-            cell.s = {
-                font: { bold: true, color: { rgb: 'FFFFFF' } },
-                fill: { fgColor: { rgb: '1E3A5F' } },
-                alignment: { horizontal: 'center', vertical: 'center' },
-                border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
-            };
-        }
-    }
+  rows.forEach((r, i) => {
+    const cell = ws[XLSX.utils.encode_cell({ r: i + 3, c: 5 })];
+    if (!cell) return;
+    let color = 'E2E8F0';
+    if (r.reply === 'Satisfactory') color = 'C6F6D5';
+    else if (r.reply === 'Needs Improvement') color = 'FEEBC8';
+    else if (r.reply === 'Not Satisfactory') color = 'FED7D7';
 
-    rows.forEach((r, i) => {
-        const cell = ws[XLSX.utils.encode_cell({ r: i + 3, c: 5 })];
-        if (!cell) return;
-        let color = 'E2E8F0';
-        if (r.reply === 'Satisfactory') color = 'C6F6D5';
-        else if (r.reply === 'Needs Improvement') color = 'FEEBC8';
-        else if (r.reply === 'Not Satisfactory') color = 'FED7D7';
+    cell.s = {
+      fill: { fgColor: { rgb: color } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+    };
+  });
 
-        cell.s = {
-            fill: { fgColor: { rgb: color } },
-            alignment: { horizontal: 'center', vertical: 'center' },
-            border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
-        };
-    });
-
-    ws['!rows'] = [{ hpt: 30 }, { hpt: 8 }, { hpt: 24 }];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Telephone Manners');
-    XLSX.writeFile(wb, `Daily_Check_Telephone_Manners_${selectedDate}.xlsx`);
+  ws['!rows'] = [{ hpt: 30 }, { hpt: 8 }, { hpt: 24 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Telephone Manners');
+  XLSX.writeFile(wb, `Daily_Check_Telephone_Manners_${selectedDate}.xlsx`);
 }
 
 /* =====================================================================
@@ -946,19 +1165,9 @@ async function buildExportPages(records) {
   const container = document.getElementById('exportContainer');
   container.innerHTML = '';
 
-  const stats = {
-    total: records.length,
-    good: records.filter(r => r.reply === 'Satisfactory').length,
-    needs: records.filter(r => r.reply === 'Needs Improvement').length,
-    not: records.filter(r => r.reply === 'Not Satisfactory').length,
-    na: records.filter(r => r.reply === 'N.A').length
-  };
-
-  const generatedAt = new Date().toLocaleString();
   const pages = [];
-
   const startNewPage = () => {
-    const p = createExportPageElement(generatedAt, stats);
+    const p = createExportPageElement();
     container.appendChild(p);
     pages.push(p);
     return {
@@ -985,12 +1194,10 @@ async function buildExportPages(records) {
     const dataRow = createExportDataRow(r);
     ctx.tbody.appendChild(dataRow);
 
-    // إذا تجاوز ارتفاع الجدول المساحة المتاحة في الصفحة الحالية
     if (ctx.table.offsetHeight > ctx.bodyWrap.clientHeight && ctx.tbody.children.length > (isNewDept ? 2 : 1)) {
       ctx.tbody.removeChild(dataRow);
       if (deptRow) ctx.tbody.removeChild(deptRow);
 
-      // فتح صفحة جديدة ونقل الصف (مع عنوان الإدارة) إليها بدون قطع
       ctx = startNewPage();
       const nextDeptRow = createExportDeptRow(r.department, !isNewDept);
       ctx.tbody.appendChild(nextDeptRow);
@@ -999,11 +1206,6 @@ async function buildExportPages(records) {
 
     lastDept = r.department;
   }
-
-  pages.forEach((p, idx) => {
-    const badge = p.querySelector('.exp-page-num');
-    if (badge) badge.textContent = `Page ${idx + 1} of ${pages.length}`;
-  });
 
   await new Promise(res => requestAnimationFrame(() => setTimeout(res, 150)));
   return pages;
@@ -1069,7 +1271,6 @@ async function exportPDF() {
     const pages = await buildExportPages(rows);
     const { jsPDF } = window.jspdf;
 
-    // 1920×1080 px = 1440×810 pt
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'pt',
@@ -1141,9 +1342,24 @@ window.deleteRecord=deleteRecord;window.resetForm=resetForm;window.refreshData=r
 window.exportExcel=exportExcel;window.exportImage=exportImage;window.exportPDF=exportPDF;window.printReport=printReport;
 window.logout=logout;window.toggleSettings=toggleSettings;window.addDepartment=addDepartment;window.renameDepartment=renameDepartment;window.removeDepartment=removeDepartment;window.addSection=addSection;window.editSection=editSection;window.removeSection=removeSection;window.addEmployee=addEmployee;window.removeEmployee=removeEmployee;
 
-onAuthStateChanged(auth,async user=>{
-  if(!user){window.location.href='login.html';return;}
-  currentUser=user;await loadSettingsData();initDateFilters();initUI();await loadRecords();
+/* =====================================================================
+   BOOT (تفتح على اليوم الحالي وتجلب بيانات اليوم فقط)
+   ===================================================================== */
+onAuthStateChanged(auth, async user => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+  if (appInitialized) return;
+  appInitialized = true;
+
+  showLoading('Loading...');
+  try {
+    await loadSettingsData();
+    initDateFilters();
+    initUI();
+    await loadRecordsForDate(selectedDate);
+  } finally {
+    hideLoading();
+  }
 });
 </script>
 </body>
