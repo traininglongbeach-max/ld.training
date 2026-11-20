@@ -1269,7 +1269,7 @@ async function exportExcel() {
     const allB = { top:thin, left:thin, bottom:thin, right:thin };
     ws.mergeCells('A1:E1');
     const t = ws.getCell('A1');
-    t.value = 'Checklist Implementation Report';
+    t.value = 'Checklist Implementation';
     t.font = { name:'Tajawal', size:16, bold:true, color:{ argb:WHITE } };
     t.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:NAVY } };
     t.alignment = { horizontal:'center', vertical:'middle' };
@@ -1322,7 +1322,7 @@ function createExportPageElement() {
   page.className = 'exp-page';
   page.innerHTML = `
     <div class="exp-header">
-      <h1>Checklist Implementation Report</h1>
+      <h1>Checklist Implementation</h1>
       <div class="exp-sub">${escapeHtml(fmtDate(currentDate))}</div>
     </div>
     <div class="exp-body">
