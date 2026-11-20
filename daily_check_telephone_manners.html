@@ -276,7 +276,6 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
 <main class="container no-print">
   <section class="header-card">
     <h1>Daily Check – Telephone Manners</h1>
-    <div class="subtitle">Daily telephone response monitoring and greeting quality assessment</div>
     <div class="setup-grid">
       <div class="setup-item">
         <label>📅 Report Date</label>
@@ -377,7 +376,6 @@ td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
       <div class="settings-card"><h3>Manage Sections</h3><label>Department</label><select id="settingsDepartment"></select><label>Section name</label><input id="newSectionName" placeholder="Enter section / location"><label>Extension</label><input id="newSectionExt" placeholder="Enter extension"><button class="btn btn-save" type="button" onclick="addSection()">Add Section</button><div class="settings-list" id="sectionSettingsList"></div></div>
       <div class="settings-card"><h3>Manage Employee Names</h3><label>Department</label><select id="employeeDepartment"></select><label>Section</label><select id="employeeSection"></select><label>Employee name</label><input id="newEmployeeName" placeholder="Enter employee name"><button class="btn btn-save" type="button" onclick="addEmployee()">Add Employee</button><div class="settings-list" id="employeeSettingsList"></div></div>
     </div>
-    <div class="settings-note">Settings are stored in Firestore collections <b>telephone_manners_catalog</b> and <b>telephone_manners_employees</b>. Make sure Firestore Rules allow authenticated users to read and write to these collections.</div>
   </section>
 </main>
 
