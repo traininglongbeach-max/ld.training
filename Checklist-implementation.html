@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checklist Management </title>
+<title>Checklist Management - L&D System</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<!-- ✅ مكتبات تصدير الصورة والـ PDF -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
 body{background:#f0f4f8;padding-bottom:60px}
@@ -30,6 +33,10 @@ body{background:#f0f4f8;padding-bottom:60px}
 .nav-links .settings{background:#d69e2e;color:#fff}
 .nav-links .settings:hover{background:#b7791f}
 .nav-links .settings.active{background:#1e3a5f;box-shadow:inset 0 0 0 2px #fff}
+.nav-links .export-img{background:#dd6b20;color:#fff}
+.nav-links .export-img:hover{background:#c05621}
+.nav-links .export-pdf{background:#c53030;color:#fff}
+.nav-links .export-pdf:hover{background:#9b2c2c}
 
 .container{max-width:1400px;margin:1.2rem auto;padding:0 1rem}
 
@@ -78,7 +85,7 @@ body{background:#f0f4f8;padding-bottom:60px}
 .stat-pill.pct .val{color:#2b7a4b}
 
 /* Table */
-.section{width:fit-content ;align-items: center; margin-left: 250px; background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.section{width:fit-content;align-items:center;margin-left:250px;background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
 .section-title{color:#1e3a5f;font-size:1rem;font-weight:700;margin-bottom:.8rem;padding-left:.7rem;border-left:4px solid #2b7a4b;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem}
 .section-title .badge{background:#ebf8ff;color:#2b6cb0;padding:.25rem .7rem;border-radius:1rem;font-size:.75rem;font-weight:700}
 
@@ -87,7 +94,7 @@ body{background:#f0f4f8;padding-bottom:60px}
 .excel-table td{padding:.45rem .5rem;border:1px solid #e2e8f0;font-size:.88rem;text-align:center;vertical-align:middle;background:#fff}
 .excel-table td.sn-cell{color:#718096;font-weight:700;background:#f7fafc}
 .excel-table td.dept-cell{font-weight:700;color:#1e3a5f;background:#f7fafc}
-.excel-table td.section-cell{text-align: left; color: #1e3a5f; font-weight: 900;}
+.excel-table td.section-cell{text-align:left;color:#1e3a5f;font-weight:900}
 .excel-table td.date-cell{color:#718096;font-size:.8rem}
 .excel-table tbody tr:hover td{background:#f7fafc}
 .excel-table tbody tr:hover td.dept-cell,
@@ -149,109 +156,22 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
 .dept-item .dept-name{font-weight:700;color:#1e3a5f;flex:1;min-width:120px}
 .dept-item .dept-count{background:#ebf8ff;color:#2b6cb0;padding:.2rem .6rem;border-radius:1rem;font-size:.75rem;font-weight:700}
 .dept-item .dept-actions{display:flex;gap:.3rem}
+
 /* Settings Management */
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.settings-card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.settings-card h3{color:#1e3a5f;font-size:1rem;margin-bottom:.8rem}
+.settings-form{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.settings-form input,.settings-form select{flex:1;min-width:140px;padding:.65rem .8rem;border:2px solid #e2e8f0;border-radius:.7rem;font-family:'Tajawal',sans-serif;font-size:.85rem}
+.settings-form input:focus,.settings-form select:focus{outline:none;border-color:#2b7a4b}
+.settings-list{display:flex;flex-direction:column;gap:.5rem;max-height:450px;overflow-y:auto}
+.settings-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;background:#f7fafc;border:1px solid #e2e8f0;border-radius:.7rem;padding:.65rem .8rem}
+.settings-item-name{font-weight:700;color:#1e3a5f;flex:1;min-width:100px}
+.settings-item-count{background:#ebf8ff;color:#2b6cb0;padding:.2rem .55rem;border-radius:1rem;font-size:.72rem;font-weight:700}
+.settings-actions{display:flex;gap:.3rem}
+.settings-empty{text-align:center;padding:1.2rem;color:#a0aec0;font-size:.85rem}
+.settings-note{background:#ebf8ff;border:1px solid #90cdf4;color:#2c5282;border-radius:.7rem;padding:.7rem .9rem;margin-bottom:1rem;font-size:.82rem;font-weight:700}
 
-.settings-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: 0 3px 12px rgba(0,0,0,.04);
-}
-
-.settings-card h3 {
-  color: #1e3a5f;
-  font-size: 1rem;
-  margin-bottom: .8rem;
-}
-
-.settings-form {
-  display: flex;
-  gap: .5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.settings-form input,
-.settings-form select {
-  flex: 1;
-  min-width: 140px;
-  padding: .65rem .8rem;
-  border: 2px solid #e2e8f0;
-  border-radius: .7rem;
-  font-family: 'Tajawal', sans-serif;
-  font-size: .85rem;
-}
-
-.settings-form input:focus,
-.settings-form select:focus {
-  outline: none;
-  border-color: #2b7a4b;
-}
-
-.settings-list {
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
-  max-height: 450px;
-  overflow-y: auto;
-}
-
-.settings-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: .5rem;
-  flex-wrap: wrap;
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: .7rem;
-  padding: .65rem .8rem;
-}
-
-.settings-item-name {
-  font-weight: 700;
-  color: #1e3a5f;
-  flex: 1;
-  min-width: 100px;
-}
-
-.settings-item-count {
-  background: #ebf8ff;
-  color: #2b6cb0;
-  padding: .2rem .55rem;
-  border-radius: 1rem;
-  font-size: .72rem;
-  font-weight: 700;
-}
-
-.settings-actions {
-  display: flex;
-  gap: .3rem;
-}
-
-.settings-empty {
-  text-align: center;
-  padding: 1.2rem;
-  color: #a0aec0;
-  font-size: .85rem;
-}
-
-.settings-note {
-  background: #ebf8ff;
-  border: 1px solid #90cdf4;
-  color: #2c5282;
-  border-radius: .7rem;
-  padding: .7rem .9rem;
-  margin-bottom: 1rem;
-  font-size: .82rem;
-  font-weight: 700;
-}
 /* Loading */
 .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.88);display:none;justify-content:center;align-items:center;flex-direction:column;gap:1rem;z-index:9999;font-weight:700;color:#1e3a5f}
 .loading-overlay.active{display:flex}
@@ -265,16 +185,110 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
 .toast.info{background:#4299e1}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* Print */
-.print-only{display:none}
-.print-header{text-align:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #1e3a5f}
-.print-header h1{font-size:18pt;font-weight:900;color:#1e3a5f;margin-bottom:6px}
-.print-meta{display:flex;justify-content:center;gap:2rem;font-size:10pt;color:#2d3748;flex-wrap:wrap}
-.print-meta strong{color:#1e3a5f}
+/* ✅ حاوية التصدير والطباعة الموحّدة (1920×1080 بهوامش 20px) */
+#exportContainer {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  width: 1920px;
+  background: #ffffff;
+  font-family: 'Tajawal', sans-serif;
+  z-index: -1;
+}
+.exp-page {
+  width: 1920px;
+  height: 1080px;
+  padding: 20px; /* ✅ هوامش صغيرة 20px فقط */
+  box-sizing: border-box;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.exp-header {
+  text-align: center;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2b7a4b 100%);
+  color: #fff;
+  padding: 18px 20px;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.exp-header h1 {
+  font-size: 36px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  letter-spacing: 0.8px;
+  line-height: 1.2;
+}
+.exp-header .exp-sub {
+  font-size: 18px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+.exp-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.exp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 20px;
+  table-layout: fixed;
+}
+.exp-table th {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 12px 10px;
+  font-weight: 700;
+  border: 2px solid #2c5282;
+  text-transform: uppercase;
+  font-size: 19px;
+  text-align: center;
+}
+.exp-table td {
+  padding: 10px 12px;
+  border: 2px solid #cbd5e0;
+  text-align: center;
+  font-size: 20px;
+  color: #2d3748;
+  vertical-align: middle;
+  word-wrap: break-word;
+}
+.exp-table th.col-sn, .exp-table td.exp-sn { width: 80px; }
+.exp-table th.col-dept, .exp-table td.exp-dept { width: 220px; }
+.exp-table th.col-status, .exp-table td.exp-yes, .exp-table td.exp-no { width: 190px; }
+.exp-table td.exp-sn { background: #f7fafc; color: #718096; font-weight: 900; }
+.exp-table td.exp-dept { background: #f7fafc; color: #1e3a5f; font-weight: 900; }
+.exp-table td.exp-sec { text-align: left; color: #1e3a5f; font-weight: 700; }
+.exp-table td.exp-yes { background: #c6f6d5; color: #22543d; font-weight: 900; font-size: 24px; }
+.exp-table td.exp-no { background: #fed7d7; color: #822727; font-weight: 900; font-size: 24px; }
+
+.exp-footer {
+  flex-shrink: 0;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #718096;
+  font-weight: 700;
+}
+.exp-footer .exp-page-num {
+  background: #ebf8ff;
+  color: #1e3a5f;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-weight: 900;
+}
 
 @media(max-width:768px){
   .container{padding:0 .7rem}
-  .header-card,.section{padding:.9rem}
+  .header-card,.section{padding:.9rem;margin-left:0;width:100%}
   .setup-grid{grid-template-columns:1fr}
   .date-filters{grid-template-columns:1fr}
   .navbar{padding:.6rem .8rem}
@@ -285,72 +299,54 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
   .picker-name{min-width:100%}
 }
 
-@media print{
-  .no-print,.navbar,.toast,.loading-overlay,.action-row,.stats-bar,.tab-bar,.modal-overlay{display:none !important}
-  .print-only{display:block !important}
-  body{background:#fff !important;padding:0 !important;margin:0 !important}
-  .container{max-width:100% !important;padding:0 !important;margin:0 !important}
-
-  /* إخفاء الفلاتر */
-  .header-card{display:none !important}
-
-  /* توسيط الجدول */
-  .section{
-    box-shadow:none !important;
-    border:none !important;
-    padding:0 !important;
-    border-radius:0 !important;
-
-    width: 100% !important;
-    margin: 0 auto !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+/* ✅ Print بنفس المقاس 1920×1080 landscape وبنفس تقسيم الصفحات وهوامش 20px */
+@page {
+  size: 1920px 1080px;
+  margin: 0;
+}
+@media print {
+  html, body {
+    width: 1920px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+  .no-print, .navbar, .container, .toast, .loading-overlay, .modal-overlay {
+    display: none !important;
+  }
+  #exportContainer {
     display: block !important;
+    position: static !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 1920px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: auto !important;
   }
-  .section-title{display:none !important}
-
-  .table-wrap,
-  #mainTable{
-    margin: 0 auto !important;
-    width: 65% !important;
+  .exp-page {
+    width: 1920px !important;
+    height: 1080px !important;
+    padding: 20px !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
-  #mainTable{
-    width: 95% !important;
-    max-width: 95% !important;
-    font-size:10pt !important;
+  .exp-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
-
-  .excel-table th{
-    background:#1e3a5f !important;color:#fff !important;
-    padding:6pt 5pt !important;font-size:9pt !important;
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
-  .excel-table td{
-    padding:5pt !important;font-size:10pt !important;
-    border:1px solid #999 !important;
-  }
-  .excel-table td.sn-cell,
-  .excel-table td.dept-cell{background:#f7fafc !important}
-  .status-badge.yes{background:#c6f6d5 !important;color:#22543d !important}
-  .status-badge.no{background:#fed7d7 !important;color:#822727 !important}
-  td.status-cell.yes{background:#c6f6d5 !important;color:#22543d !important}
-  td.status-cell.no{background:#fed7d7 !important;color:#822727 !important}
-  .btn-action,.actions-col{display:none !important}
-
-  tr{page-break-inside:avoid !important}
-  thead{display:table-header-group}
-
-  @page{size:A4 landscape;margin:10mm}
-
-  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
 }
 </style>
 </head>
 <body>
-
-<!-- Print header (بدون التاريخ والقسم والإجمالي) -->
-<div class="print-header print-only">
-  <h1>Checklist Implementation Report</h1>
-</div>
 
 <!-- Navbar -->
 <div class="navbar no-print">
@@ -361,17 +357,18 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
     <button onclick="switchTab('settings')" id="tabSettingsBtn" class="settings">⚙️ Settings</button>
     <button onclick="refreshData()" class="refresh">🔄 Refresh</button>
     <button onclick="exportExcel()" class="export">📊 Export Excel</button>
+    <button onclick="exportImage()" class="export-img">🖼️ Export Image</button>
+    <button onclick="exportPDF()" class="export-pdf">📄 Export PDF</button>
     <button onclick="printReport()" class="print">🖨️ Print</button>
     <button onclick="logout()" class="logout">🚪 Logout</button>
   </div>
 </div>
 
-<div class="container">
+<div class="container no-print">
 
   <!-- ================= MAIN TAB ================= -->
   <div id="mainTab">
 
-    <!-- Filters + Multi-section Entry -->
     <div class="header-card no-print">
       <h2>📋 Record Checklist Entry <span class="badge" id="todayBadge"></span></h2>
 
@@ -395,7 +392,6 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
         </div>
       </div>
 
-      <!-- Lock banner -->
       <div class="info-banner danger no-print" id="deptLockBanner" style="display:none">
         <span>🔒</span>
         <span>لديك <strong id="deptLockCount">0</strong> قسم غير محفوظ في هذه الإدارة — يجب <strong>الحفظ</strong> أو <strong> الحذف</strong> قبل تغيير الإدارة.</span>
@@ -419,12 +415,10 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
       </div>
     </div>
 
-    <!-- Stats -->
     <div class="header-card no-print">
       <div class="stats-bar" id="statsBar"></div>
     </div>
 
-    <!-- Table -->
     <div class="section">
       <div class="section-title no-print">
         <span>📋 Records for <span id="tableDateLabel">—</span></span>
@@ -450,72 +444,42 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
     </div>
   </div>
 
-  <!-- ================= SETTINGS TAB (بدون إدارة الأقسام والإدارات) ================= -->
-<!-- ================= SETTINGS TAB ================= -->
-<div id="settingsTab" style="display:none">
+  <!-- ================= SETTINGS TAB ================= -->
+  <div id="settingsTab" style="display:none">
+    <div class="header-card">
+      <h2>⚙️ Settings - Departments & Sections</h2>
+      <div class="action-row">
+        <button class="btn btn-clear" onclick="loadSettings()">🔄 Refresh Settings</button>
+      </div>
+    </div>
 
-  <div class="header-card">
-    <h2>⚙️ Settings - Departments & Sections</h2>
+    <div class="settings-grid">
+      <div class="settings-card">
+        <h3>🏢 Department Management</h3>
+        <div class="settings-form">
+          <input type="text" id="newDepartmentName" placeholder="Enter department name" maxlength="100">
+          <button class="btn btn-add" onclick="addDepartment()">➕ Add</button>
+        </div>
+        <div id="departmentsSettingsList" class="settings-list">
+          <div class="settings-empty">Loading departments...</div>
+        </div>
+      </div>
 
-
-
-    <div class="action-row">
-      <button class="btn btn-clear" onclick="loadSettings()">🔄 Refresh Settings</button>
+      <div class="settings-card">
+        <h3>📂 Section Management</h3>
+        <div class="settings-form">
+          <select id="sectionDepartmentSelect">
+            <option value="">— Select Department —</option>
+          </select>
+          <input type="text" id="newSectionName" placeholder="Enter section name" maxlength="100">
+          <button class="btn btn-add" onclick="addSection()">➕ Add Section</button>
+        </div>
+        <div id="sectionsSettingsList" class="settings-list">
+          <div class="settings-empty">Select a department first.</div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="settings-grid">
-
-    <!-- Departments -->
-    <div class="settings-card">
-      <h3>🏢 Department Management</h3>
-
-      <div class="settings-form">
-        <input
-          type="text"
-          id="newDepartmentName"
-          placeholder="Enter department name"
-          maxlength="100"
-        >
-        <button class="btn btn-add" onclick="addDepartment()">
-          ➕ Add
-        </button>
-      </div>
-
-      <div id="departmentsSettingsList" class="settings-list">
-        <div class="settings-empty">Loading departments...</div>
-      </div>
-    </div>
-
-    <!-- Sections -->
-    <div class="settings-card">
-      <h3>📂 Section Management</h3>
-
-      <div class="settings-form">
-        <select id="sectionDepartmentSelect">
-          <option value="">— Select Department —</option>
-        </select>
-
-        <input
-          type="text"
-          id="newSectionName"
-          placeholder="Enter section name"
-          maxlength="100"
-        >
-
-        <button class="btn btn-add" onclick="addSection()">
-          ➕ Add Section
-        </button>
-      </div>
-
-      <div id="sectionsSettingsList" class="settings-list">
-        <div class="settings-empty">Select a department first.</div>
-      </div>
-    </div>
-
-  </div>
-
-</div>
 
 </div>
 
@@ -550,6 +514,9 @@ td.status-cell.no{background:#fed7d7 !important;color:#822727 !important;font-we
   </div>
 </div>
 
+<!-- ✅ حاوية التصدير والطباعة (مخفية على الشاشة وتظهر في الطباعة) -->
+<div id="exportContainer"></div>
+
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
   <div id="loadingText">Loading...</div>
@@ -570,7 +537,7 @@ let catalog = [];
 let departments = [];
 let dailyRecords = [];
 
-let pickerState = new Map();   // section -> { existStatus, implementedStatus, checked }
+let pickerState = new Map();
 
 let editRecord = null;
 let editExist = null;
@@ -619,21 +586,14 @@ function hideLoading() {
 async function loadCatalog() {
   try {
     const rows = await DB.getChecklistCatalog();
-
-    // السجلات القديمة بدون isActive تعتبر نشطة
     catalog = (rows || [])
       .filter(c => c.isActive !== false)
       .sort((a, b) => {
-        if (a.department !== b.department) {
-          return a.department.localeCompare(b.department);
-        }
+        if (a.department !== b.department) return a.department.localeCompare(b.department);
         return a.section.localeCompare(b.section);
       });
-
     departments = [...new Set(catalog.map(c => c.department))];
-
     populateDeptSelects();
-
   } catch (err) {
     console.error('loadCatalog failed:', err);
     toast('Failed to load catalog: ' + (err.message || ''), 'error');
@@ -664,47 +624,24 @@ async function loadDailyRecords() {
 function populateDeptSelects() {
   const deptSel = document.getElementById('deptSelect');
   const previousValue = deptSel.value;
-
-  const opts = departments
-    .map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`)
-    .join('');
-
-  deptSel.innerHTML =
-    '<option value="">— Select Department —</option>' + opts;
-
-  if (departments.includes(previousValue)) {
-    deptSel.value = previousValue;
-  }
+  const opts = departments.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  deptSel.innerHTML = '<option value="">— Select Department —</option>' + opts;
+  if (departments.includes(previousValue)) deptSel.value = previousValue;
 }
+
 /* =====================================================================
    SETTINGS - DEPARTMENTS & SECTIONS MANAGEMENT
-   Soft Delete: isActive = false
    ===================================================================== */
-
-function getAllCatalogRows() {
-  return DB.getChecklistCatalog();
-}
-
-function getActiveCatalogRows(rows) {
-  return (rows || []).filter(r => r.isActive !== false);
-}
-
+function getAllCatalogRows() { return DB.getChecklistCatalog(); }
+function getActiveCatalogRows(rows) { return (rows || []).filter(r => r.isActive !== false); }
 function getActiveDepartments(rows) {
-  return [...new Set(
-    getActiveCatalogRows(rows).map(r => r.department)
-  )].sort((a, b) => a.localeCompare(b));
+  return [...new Set(getActiveCatalogRows(rows).map(r => r.department))].sort((a, b) => a.localeCompare(b));
 }
 
 async function refreshSettingsData() {
-  if (typeof DB.refresh === 'function') {
-    await DB.refresh('checklist_catalog');
-  }
-
+  if (typeof DB.refresh === 'function') await DB.refresh('checklist_catalog');
   await loadCatalog();
-
-  // إذا كانت الإدارة المختارة قد حُذفت، يتم إلغاء اختيارها
   const deptSelect = document.getElementById('deptSelect');
-
   if (deptSelect.value && !departments.includes(deptSelect.value)) {
     deptSelect.value = '';
     pickerState.clear();
@@ -712,7 +649,6 @@ async function refreshSettingsData() {
   } else if (deptSelect.value) {
     buildSectionsPicker();
   }
-
   await renderSettings();
 }
 
@@ -723,513 +659,202 @@ async function loadSettings() {
   } catch (err) {
     console.error(err);
     toast('Failed to load settings: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } finally { hideLoading(); }
 }
 
 async function renderSettings() {
   const rows = await getAllCatalogRows();
   const activeRows = getActiveCatalogRows(rows);
-
   renderDepartmentsSettings(activeRows);
   populateSettingsDepartmentSelect(activeRows);
   renderSectionsSettings(activeRows);
 }
 
-/* ==================== DEPARTMENTS LIST ==================== */
-
 function renderDepartmentsSettings(rows) {
   const container = document.getElementById('departmentsSettingsList');
-
-  const deps = [...new Set(rows.map(r => r.department))]
-    .sort((a, b) => a.localeCompare(b));
-
-  if (!deps.length) {
-    container.innerHTML =
-      '<div class="settings-empty">No departments found.</div>';
-    return;
-  }
-
+  const deps = [...new Set(rows.map(r => r.department))].sort((a, b) => a.localeCompare(b));
+  if (!deps.length) { container.innerHTML = '<div class="settings-empty">No departments found.</div>'; return; }
   container.innerHTML = deps.map(dep => {
-    const count = rows.filter(
-      r => r.department === dep && r.section !== '__placeholder__'
-    ).length;
-
-    return `
-      <div class="settings-item">
-        <div class="settings-item-name">
-          ${escapeHtml(dep)}
-        </div>
-
-        <span class="settings-item-count">
-          ${count} Sections
-        </span>
-
-        <div class="settings-actions">
-          <button
-            class="btn-action edit"
-            onclick="editDepartment('${escapeJs(dep)}')">
-            ✏️ Edit
-          </button>
-
-          <button
-            class="btn-action delete"
-            onclick="deleteDepartment('${escapeJs(dep)}')">
-            🗑️ Delete
-          </button>
-        </div>
+    const count = rows.filter(r => r.department === dep && r.section !== '__placeholder__').length;
+    return `<div class="settings-item">
+      <div class="settings-item-name">${escapeHtml(dep)}</div>
+      <span class="settings-item-count">${count} Sections</span>
+      <div class="settings-actions">
+        <button class="btn-action edit" onclick="editDepartment('${escapeJs(dep)}')">✏️ Edit</button>
+        <button class="btn-action delete" onclick="deleteDepartment('${escapeJs(dep)}')">🗑️ Delete</button>
       </div>
-    `;
+    </div>`;
   }).join('');
 }
-
-/* ==================== DEPARTMENT DROPDOWN ==================== */
 
 function populateSettingsDepartmentSelect(rows) {
   const select = document.getElementById('sectionDepartmentSelect');
   const previousValue = select.value;
-
   const deps = getActiveDepartments(rows);
-
-  select.innerHTML =
-    '<option value="">— Select Department —</option>' +
-    deps.map(dep => `
-      <option value="${escapeHtml(dep)}">${escapeHtml(dep)}</option>
-    `).join('');
-
-  if (deps.includes(previousValue)) {
-    select.value = previousValue;
-  }
+  select.innerHTML = '<option value="">— Select Department —</option>' +
+    deps.map(dep => `<option value="${escapeHtml(dep)}">${escapeHtml(dep)}</option>`).join('');
+  if (deps.includes(previousValue)) select.value = previousValue;
 }
-
-/* ==================== SECTIONS LIST ==================== */
 
 function renderSectionsSettings(rows) {
   const container = document.getElementById('sectionsSettingsList');
   const department = document.getElementById('sectionDepartmentSelect').value;
-
-  if (!department) {
-    container.innerHTML =
-      '<div class="settings-empty">Select a department first.</div>';
-    return;
-  }
-
-  const sections = rows
-    .filter(r =>
-      r.department === department &&
-      r.section !== '__placeholder__'
-    )
-    .sort((a, b) => a.section.localeCompare(b.section));
-
-  if (!sections.length) {
-    container.innerHTML =
-      '<div class="settings-empty">No sections in this department.</div>';
-    return;
-  }
-
+  if (!department) { container.innerHTML = '<div class="settings-empty">Select a department first.</div>'; return; }
+  const sections = rows.filter(r => r.department === department && r.section !== '__placeholder__').sort((a, b) => a.section.localeCompare(b.section));
+  if (!sections.length) { container.innerHTML = '<div class="settings-empty">No sections in this department.</div>'; return; }
   container.innerHTML = sections.map(sec => `
     <div class="settings-item">
-      <div class="settings-item-name">
-        ${escapeHtml(sec.section)}
-      </div>
-
+      <div class="settings-item-name">${escapeHtml(sec.section)}</div>
       <div class="settings-actions">
-        <button
-          class="btn-action edit"
-          onclick="editSection('${escapeJs(sec.id)}')">
-          ✏️ Edit
-        </button>
-
-        <button
-          class="btn-action delete"
-          onclick="deleteSection('${escapeJs(sec.id)}')">
-          🗑️ Delete
-        </button>
+        <button class="btn-action edit" onclick="editSection('${escapeJs(sec.id)}')">✏️ Edit</button>
+        <button class="btn-action delete" onclick="deleteSection('${escapeJs(sec.id)}')">🗑️ Delete</button>
       </div>
     </div>
   `).join('');
 }
 
-/* ==================== ADD DEPARTMENT ==================== */
-
 async function addDepartment() {
   const input = document.getElementById('newDepartmentName');
   const department = input.value.trim();
-
-  if (!department) {
-    toast('Enter department name first', 'warn');
-    return;
-  }
-
+  if (!department) { toast('Enter department name first', 'warn'); return; }
   showLoading('Adding Department...');
-
   try {
     const rows = await getAllCatalogRows();
-
-    const duplicate = getActiveDepartments(rows)
-      .some(d => d.toLowerCase() === department.toLowerCase());
-
-    if (duplicate) {
-      toast('Department already exists', 'warn');
-      return;
-    }
-
-    // استخدام placeholder الموجود في النظام الحالي
+    const duplicate = getActiveDepartments(rows).some(d => d.toLowerCase() === department.toLowerCase());
+    if (duplicate) { toast('Department already exists', 'warn'); return; }
     const placeholderId = `dept::${department}::__placeholder__`;
-
     const existing = rows.find(r => r.id === placeholderId);
-
     if (existing) {
-      // إعادة تفعيل سجل الإدارة السابق بدل إنشاء سجل مكرر
-      await DB.update('checklist_catalog', {
-        ...existing,
-        department,
-        section: '__placeholder__',
-        isActive: true,
-        updatedAt: Date.now(),
-        updatedBy: currentUser?.uid || 'unknown'
-      });
+      await DB.update('checklist_catalog', { ...existing, department, section: '__placeholder__', isActive: true, updatedAt: Date.now(), updatedBy: currentUser?.uid || 'unknown' });
     } else {
-      await DB.insert('checklist_catalog', {
-        id: placeholderId,
-        department,
-        section: '__placeholder__',
-        isActive: true,
-        createdAt: Date.now(),
-        createdBy: currentUser?.uid || 'unknown'
-      });
+      await DB.insert('checklist_catalog', { id: placeholderId, department, section: '__placeholder__', isActive: true, createdAt: Date.now(), createdBy: currentUser?.uid || 'unknown' });
     }
-
     input.value = '';
-
     await refreshSettingsData();
-
     toast('✅ Department added successfully');
-
-  } catch (err) {
-    console.error(err);
-    toast('Failed to add department: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Failed to add department: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
-
-/* ==================== EDIT DEPARTMENT ==================== */
 
 async function editDepartment(oldName) {
   const newName = prompt('Enter the new department name:', oldName);
-
   if (newName === null) return;
-
   const department = newName.trim();
-
-  if (!department) {
-    toast('Department name cannot be empty', 'warn');
-    return;
-  }
-
+  if (!department) { toast('Department name cannot be empty', 'warn'); return; }
   if (department === oldName) return;
-
   showLoading('Updating Department...');
-
   try {
     const rows = await getAllCatalogRows();
     const activeRows = getActiveCatalogRows(rows);
-
-    const duplicate = activeRows.some(r =>
-      r.department.toLowerCase() === department.toLowerCase()
-    );
-
-    if (duplicate) {
-      toast('Another department already uses this name', 'warn');
-      return;
-    }
-
+    const duplicate = activeRows.some(r => r.department.toLowerCase() === department.toLowerCase());
+    if (duplicate) { toast('Another department already uses this name', 'warn'); return; }
     const targets = rows.filter(r => r.department === oldName);
-
-    if (!targets.length) {
-      toast('Department not found', 'error');
-      return;
-    }
-
-    // تغيير الاسم داخل الكتالوج دون حذف المستندات أو تغيير IDs
+    if (!targets.length) { toast('Department not found', 'error'); return; }
     for (const item of targets) {
-      await DB.update('checklist_catalog', {
-        ...item,
-        department,
-        updatedAt: Date.now(),
-        updatedBy: currentUser?.uid || 'unknown'
-      });
+      await DB.update('checklist_catalog', { ...item, department, updatedAt: Date.now(), updatedBy: currentUser?.uid || 'unknown' });
     }
-
     await refreshSettingsData();
-
     toast('✅ Department updated successfully');
-
-  } catch (err) {
-    console.error(err);
-    toast('Failed to update department: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Failed to update department: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
-
-/* ==================== DELETE DEPARTMENT ==================== */
 
 async function deleteDepartment(department) {
   const rows = await getAllCatalogRows();
-
-  const targets = rows.filter(r =>
-    r.department === department && r.isActive !== false
-  );
-
-  if (!targets.length) {
-    toast('Department not found', 'warn');
-    return;
-  }
-
-  const sectionCount = targets.filter(
-    r => r.section !== '__placeholder__'
-  ).length;
-
-  const confirmed = confirm(
-    `Delete department: ${department}?\n\n` +
-    `Sections: ${sectionCount}\n\n` +
-    `The department and its sections will be archived.\n` +
-    `Historical Checklist records will NOT be deleted.\n\n` +
-    `Continue?`
-  );
-
+  const targets = rows.filter(r => r.department === department && r.isActive !== false);
+  if (!targets.length) { toast('Department not found', 'warn'); return; }
+  const sectionCount = targets.filter(r => r.section !== '__placeholder__').length;
+  const confirmed = confirm(`Delete department: ${department}?\n\nSections: ${sectionCount}\n\nThe department and its sections will be archived.\nHistorical Checklist records will NOT be deleted.\n\nContinue?`);
   if (!confirmed) return;
-
   showLoading('Archiving Department...');
-
   try {
-    // أرشفة جميع سجلات الإدارة وأقسامها
     for (const item of targets) {
-      await DB.update('checklist_catalog', {
-        ...item,
-        isActive: false,
-        deletedAt: Date.now(),
-        deletedBy: currentUser?.uid || 'unknown'
-      });
+      await DB.update('checklist_catalog', { ...item, isActive: false, deletedAt: Date.now(), deletedBy: currentUser?.uid || 'unknown' });
     }
-
     await refreshSettingsData();
-
     toast('✅ Department archived. Historical records preserved.');
-
-  } catch (err) {
-    console.error(err);
-    toast('Failed to archive department: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Failed to archive department: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
-
-/* ==================== ADD SECTION ==================== */
 
 async function addSection() {
   const department = document.getElementById('sectionDepartmentSelect').value;
   const input = document.getElementById('newSectionName');
   const section = input.value.trim();
-
-  if (!department) {
-    toast('Select a department first', 'warn');
-    return;
-  }
-
-  if (!section) {
-    toast('Enter section name first', 'warn');
-    return;
-  }
-
-  if (section === '__placeholder__') {
-    toast('This section name is reserved', 'warn');
-    return;
-  }
-
+  if (!department) { toast('Select a department first', 'warn'); return; }
+  if (!section) { toast('Enter section name first', 'warn'); return; }
+  if (section === '__placeholder__') { toast('This section name is reserved', 'warn'); return; }
   showLoading('Adding Section...');
-
   try {
     const rows = await getAllCatalogRows();
-
     const duplicate = getActiveCatalogRows(rows).some(r =>
-      r.department === department &&
-      r.section.toLowerCase() === section.toLowerCase() &&
-      r.section !== '__placeholder__'
-    );
-
-    if (duplicate) {
-      toast('This section already exists in this department', 'warn');
-      return;
-    }
-
+      r.department === department && r.section.toLowerCase() === section.toLowerCase() && r.section !== '__placeholder__');
+    if (duplicate) { toast('This section already exists in this department', 'warn'); return; }
     const id = `cat::${department}::${section}`;
-
     const existing = rows.find(r =>
-      r.department === department &&
-      r.section.toLowerCase() === section.toLowerCase() &&
-      r.section !== '__placeholder__'
-    );
-
+      r.department === department && r.section.toLowerCase() === section.toLowerCase() && r.section !== '__placeholder__');
     if (existing) {
-      // إعادة تفعيل القسم المؤرشف
-      await DB.update('checklist_catalog', {
-        ...existing,
-        isActive: true,
-        updatedAt: Date.now(),
-        updatedBy: currentUser?.uid || 'unknown',
-        deletedAt: null,
-        deletedBy: null
-      });
+      await DB.update('checklist_catalog', { ...existing, isActive: true, updatedAt: Date.now(), updatedBy: currentUser?.uid || 'unknown', deletedAt: null, deletedBy: null });
     } else {
-      await DB.insert('checklist_catalog', {
-        id,
-        department,
-        section,
-        isActive: true,
-        createdAt: Date.now(),
-        createdBy: currentUser?.uid || 'unknown'
-      });
+      await DB.insert('checklist_catalog', { id, department, section, isActive: true, createdAt: Date.now(), createdBy: currentUser?.uid || 'unknown' });
     }
-
     input.value = '';
-
     await refreshSettingsData();
-
     toast('✅ Section added successfully');
-
-  } catch (err) {
-    console.error(err);
-    toast('Failed to add section: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Failed to add section: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
-
-/* ==================== EDIT SECTION ==================== */
 
 async function editSection(sectionId) {
   const rows = await getAllCatalogRows();
   const item = rows.find(r => r.id === sectionId);
-
-  if (!item) {
-    toast('Section not found', 'error');
-    return;
-  }
-
+  if (!item) { toast('Section not found', 'error'); return; }
   const newName = prompt('Enter the new section name:', item.section);
-
   if (newName === null) return;
-
   const section = newName.trim();
-
-  if (!section || section === '__placeholder__') {
-    toast('Invalid section name', 'warn');
-    return;
-  }
-
+  if (!section || section === '__placeholder__') { toast('Invalid section name', 'warn'); return; }
   if (section === item.section) return;
-
   showLoading('Updating Section...');
-
   try {
     const duplicate = getActiveCatalogRows(rows).some(r =>
-      r.department === item.department &&
-      r.section.toLowerCase() === section.toLowerCase() &&
-      r.id !== item.id
-    );
-
-    if (duplicate) {
-      toast('Another section already uses this name', 'warn');
-      return;
-    }
-
-    // الاحتفاظ بنفس ID لتجنب حذف المستند القديم
-    await DB.update('checklist_catalog', {
-      ...item,
-      section,
-      updatedAt: Date.now(),
-      updatedBy: currentUser?.uid || 'unknown'
-    });
-
+      r.department === item.department && r.section.toLowerCase() === section.toLowerCase() && r.id !== item.id);
+    if (duplicate) { toast('Another section already uses this name', 'warn'); return; }
+    await DB.update('checklist_catalog', { ...item, section, updatedAt: Date.now(), updatedBy: currentUser?.uid || 'unknown' });
     await refreshSettingsData();
-
     toast('✅ Section updated successfully');
-
-  } catch (err) {
-    console.error(err);
-    toast('Failed to update section: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Failed to update section: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
-
-/* ==================== DELETE SECTION ==================== */
 
 async function deleteSection(sectionId) {
   const rows = await getAllCatalogRows();
   const item = rows.find(r => r.id === sectionId);
-
-  if (!item) {
-    toast('Section not found', 'error');
-    return;
-  }
-
-  const confirmed = confirm(
-    `Delete section: ${item.section}?\n\n` +
-    `Department: ${item.department}\n\n` +
-    `The section will be archived.\n` +
-    `Historical Checklist records will NOT be deleted.\n\n` +
-    `Continue?`
-  );
-
+  if (!item) { toast('Section not found', 'error'); return; }
+  const confirmed = confirm(`Delete section: ${item.section}?\n\nDepartment: ${item.department}\n\nThe section will be archived.\nHistorical Checklist records will NOT be deleted.\n\nContinue?`);
   if (!confirmed) return;
-
   showLoading('Archiving Section...');
-
   try {
-    await DB.update('checklist_catalog', {
-      ...item,
-      isActive: false,
-      deletedAt: Date.now(),
-      deletedBy: currentUser?.uid || 'unknown'
-    });
-
+    await DB.update('checklist_catalog', { ...item, isActive: false, deletedAt: Date.now(), deletedBy: currentUser?.uid || 'unknown' });
     await refreshSettingsData();
-
     toast('✅ Section archived. Historical records preserved.');
-
-  } catch (err) {
-    console.error(err);
-    toast('Failed to archive section: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Failed to archive section: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
+
 /* =====================================================================
    DEPARTMENT LOCK
    ===================================================================== */
 function hasUnsavedSections() {
-  return [...pickerState.values()].some(st =>
-    st.checked && (st.existStatus || st.implementedStatus)
-  );
+  return [...pickerState.values()].some(st => st.checked && (st.existStatus || st.implementedStatus));
 }
-
 function getUnsavedSectionsCount() {
-  return [...pickerState.values()].filter(st =>
-    st.checked && (st.existStatus || st.implementedStatus)
-  ).length;
+  return [...pickerState.values()].filter(st => st.checked && (st.existStatus || st.implementedStatus)).length;
 }
-
 function updateDeptLock() {
   const deptSel = document.getElementById('deptSelect');
   const banner = document.getElementById('deptLockBanner');
   const countEl = document.getElementById('deptLockCount');
   const locked = hasUnsavedSections() && !!deptSel.value;
-
   deptSel.disabled = locked;
   if (banner) banner.style.display = locked ? 'flex' : 'none';
   if (countEl) countEl.textContent = getUnsavedSectionsCount();
@@ -1251,14 +876,21 @@ function buildSectionsPicker() {
     return;
   }
 
+  const savedSections = new Set(
+    dailyRecords
+      .filter(r => r.department === dep)
+      .map(r => r.section)
+  );
+
   const sections = catalog
     .filter(c => c.department === dep && c.section !== '__placeholder__')
     .map(c => c.section)
+    .filter(sec => !savedSections.has(sec))
     .sort();
 
   if (!sections.length) {
     wrap.style.display = 'block';
-    list.innerHTML = '<div class="empty">No sections in this department.</div>';
+    list.innerHTML = '<div class="empty">✅ All sections in this department are already saved for this date.</div>';
     pickerState.clear();
     updateSaveMultiBtn();
     updateDeptLock();
@@ -1280,22 +912,11 @@ function buildSectionsPicker() {
 
 function renderSectionsPicker() {
   const list = document.getElementById('sectionsPickerList');
-  const dep = document.getElementById('deptSelect').value;
   let html = '';
   let checkedCount = 0;
 
   pickerState.forEach((st, sec) => {
-    const id = makeRecordId(currentDate, dep, sec);
-    const existing = dailyRecords.find(r => r.id === id);
-    const isExisting = !!existing;
-
-    if (isExisting && st.existStatus === null && st.implementedStatus === null) {
-      st.existStatus = existing.existStatus;
-      st.implementedStatus = existing.implementedStatus;
-    }
-
     if (st.checked) checkedCount++;
-
     const eYes = st.existStatus === 'YES';
     const eNo  = st.existStatus === 'NO';
     const iYes = st.implementedStatus === 'YES';
@@ -1307,10 +928,7 @@ function renderSectionsPicker() {
           <input type="checkbox" ${st.checked ? 'checked' : ''}
                  onchange="togglePickerCheck('${escapeJs(sec)}', this.checked)">
         </label>
-        <div class="picker-name">
-          ${escapeHtml(sec)}
-          ${isExisting ? '<span class="picker-badge existing">saved</span>' : ''}
-        </div>
+        <div class="picker-name">${escapeHtml(sec)}</div>
         <div class="picker-status-group">
           <div class="picker-status">
             <span class="picker-label">Exist:</span>
@@ -1347,7 +965,6 @@ function togglePickerCheck(sec, checked) {
   updateSaveMultiBtn();
   updateDeptLock();
 }
-
 function setPickerStatus(sec, field, val) {
   const st = pickerState.get(sec);
   if (!st) return;
@@ -1358,7 +975,6 @@ function setPickerStatus(sec, field, val) {
   updateSaveMultiBtn();
   updateDeptLock();
 }
-
 function selectAllSections() {
   pickerState.forEach(st => {
     st.checked = true;
@@ -1381,33 +997,23 @@ function clearAllSections() {
 }
 function fillAllYes() {
   pickerState.forEach(st => {
-    if (st.checked) {
-      st.existStatus = 'YES';
-      st.implementedStatus = 'YES';
-    }
+    if (st.checked) { st.existStatus = 'YES'; st.implementedStatus = 'YES'; }
   });
   renderSectionsPicker();
   updateDeptLock();
 }
 function fillAllNo() {
   pickerState.forEach(st => {
-    if (st.checked) {
-      st.existStatus = 'NO';
-      st.implementedStatus = 'NO';
-    }
+    if (st.checked) { st.existStatus = 'NO'; st.implementedStatus = 'NO'; }
   });
   renderSectionsPicker();
   updateDeptLock();
 }
-
 function updateSaveMultiBtn() {
   const btn = document.getElementById('saveMultiBtn');
   const dep = document.getElementById('deptSelect').value;
   if (!dep) { btn.disabled = true; btn.textContent = '💾 Save Selected Sections'; return; }
-
-  const ready = [...pickerState.values()].filter(st =>
-    st.checked && st.existStatus && st.implementedStatus
-  );
+  const ready = [...pickerState.values()].filter(st => st.checked && st.existStatus && st.implementedStatus);
   btn.disabled = ready.length === 0;
   btn.textContent = ready.length > 0
     ? `💾 Save ${ready.length} Section${ready.length > 1 ? 's' : ''}`
@@ -1417,11 +1023,9 @@ function updateSaveMultiBtn() {
 async function saveMultiSections() {
   const dep = document.getElementById('deptSelect').value;
   if (!dep) { toast('Select department first', 'warn'); return; }
-
   const toSave = [...pickerState.entries()]
     .filter(([, st]) => st.checked && st.existStatus && st.implementedStatus)
     .map(([sec, st]) => ({ sec, existStatus: st.existStatus, implementedStatus: st.implementedStatus }));
-
   if (!toSave.length) { toast('Select sections and set both statuses', 'warn'); return; }
 
   const btn = document.getElementById('saveMultiBtn');
@@ -1431,49 +1035,24 @@ async function saveMultiSections() {
   showLoading(`Saving ${toSave.length} section(s)...`);
 
   let added = 0, updated = 0, failed = 0;
-
   try {
     for (const item of toSave) {
       try {
         const id = makeRecordId(currentDate, dep, item.sec);
         const existing = dailyRecords.find(r => r.id === id);
         const now = Date.now();
-
         if (existing) {
-          await DB.update('checklist_records', {
-            ...existing,
-            existStatus: item.existStatus,
-            implementedStatus: item.implementedStatus,
-            updatedAt: now,
-            updatedBy: currentUser?.uid || 'unknown'
-          });
+          await DB.update('checklist_records', { ...existing, existStatus: item.existStatus, implementedStatus: item.implementedStatus, updatedAt: now, updatedBy: currentUser?.uid || 'unknown' });
           updated++;
         } else {
-          await DB.insert('checklist_records', {
-            id,
-            date: currentDate,
-            department: dep,
-            section: item.sec,
-            existStatus: item.existStatus,
-            implementedStatus: item.implementedStatus,
-            createdAt: now,
-            updatedAt: now,
-            updatedBy: currentUser?.uid || 'unknown'
-          });
+          await DB.insert('checklist_records', { id, date: currentDate, department: dep, section: item.sec, existStatus: item.existStatus, implementedStatus: item.implementedStatus, createdAt: now, updatedAt: now, updatedBy: currentUser?.uid || 'unknown' });
           added++;
         }
-      } catch (err) {
-        console.error(`Save failed for ${item.sec}:`, err);
-        failed++;
-      }
+      } catch (err) { console.error(`Save failed for ${item.sec}:`, err); failed++; }
     }
 
     await loadDailyRecords();
-
-    pickerState.forEach(st => st.checked = false);
-    renderSectionsPicker();
-    updateSaveMultiBtn();
-    updateDeptLock();
+    buildSectionsPicker();
 
     let msg = `✅ Saved ${toSave.length} section(s) — Added: ${added}, Updated: ${updated}`;
     if (failed) msg += `, Failed: ${failed}`;
@@ -1484,7 +1063,6 @@ async function saveMultiSections() {
     status.style.display = 'flex';
     statusText.textContent = msg;
     setTimeout(() => { status.style.display = 'none'; }, 5000);
-
   } catch (err) {
     console.error('saveMultiSections failed:', err);
     toast('Save failed: ' + (err.message || ''), 'error');
@@ -1550,7 +1128,6 @@ function renderStats() {
   });
   const total = dailyRecords.length;
   const pct = total ? (both / total * 100).toFixed(1) : '0.0';
-
   document.getElementById('statsBar').innerHTML = `
     <div class="stat-pill"><div class="lbl">Total Records</div><div class="val">${total}</div></div>
     <div class="stat-pill yes"><div class="lbl">Exist ✔</div><div class="val">${existYes}</div></div>
@@ -1567,11 +1144,9 @@ function renderStats() {
 function openEditModal(recordId) {
   const rec = dailyRecords.find(r => r.id === recordId);
   if (!rec) { toast('Record not found', 'error'); return; }
-
   editRecord = rec;
   editExist = rec.existStatus;
   editImpl = rec.implementedStatus;
-
   document.getElementById('editSectionName').value = `${rec.department} / ${rec.section}`;
   renderEditPicks();
   document.getElementById('editModal').classList.add('active');
@@ -1592,43 +1167,27 @@ function renderEditPicks() {
 async function saveEditModal() {
   if (!editRecord) return;
   if (!editExist || !editImpl) { toast('Please pick both statuses', 'warn'); return; }
-
   showLoading('Saving...');
   try {
-    await DB.update('checklist_records', {
-      ...editRecord,
-      existStatus: editExist,
-      implementedStatus: editImpl,
-      updatedAt: Date.now(),
-      updatedBy: currentUser?.uid || 'unknown'
-    });
+    await DB.update('checklist_records', { ...editRecord, existStatus: editExist, implementedStatus: editImpl, updatedAt: Date.now(), updatedBy: currentUser?.uid || 'unknown' });
     closeModal(null, 'editModal');
     await loadDailyRecords();
     toast('✅ Record updated');
-  } catch (err) {
-    console.error(err);
-    toast('Failed: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Failed: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
-
 async function deleteRecord(recordId) {
   const rec = dailyRecords.find(r => r.id === recordId);
   if (!rec) return;
   if (!confirm(`Delete record:\n${rec.department} / ${rec.section}\n\nThis cannot be undone.`)) return;
-
   showLoading('Deleting...');
   try {
     await DB.delete('checklist_records', recordId);
     await loadDailyRecords();
+    if (document.getElementById('deptSelect').value) buildSectionsPicker();
     toast('🗑️ Record deleted');
-  } catch (err) {
-    console.error(err);
-    toast('Delete failed: ' + (err.message || ''), 'error');
-  } finally {
-    hideLoading();
-  }
+  } catch (err) { console.error(err); toast('Delete failed: ' + (err.message || ''), 'error'); }
+  finally { hideLoading(); }
 }
 
 /* =====================================================================
@@ -1636,24 +1195,12 @@ async function deleteRecord(recordId) {
    ===================================================================== */
 async function switchTab(tab) {
   activeTab = tab;
-
-  document.getElementById('mainTab').style.display =
-    tab === 'main' ? 'block' : 'none';
-
-  document.getElementById('settingsTab').style.display =
-    tab === 'settings' ? 'block' : 'none';
-
-  document.getElementById('tabMainBtn').style.background =
-    tab === 'main' ? '#2b7a4b' : '';
-
-  document.getElementById('tabSettingsBtn')
-    .classList.toggle('active', tab === 'settings');
-
-  if (tab === 'settings') {
-    await loadSettings();
-  }
+  document.getElementById('mainTab').style.display = tab === 'main' ? 'block' : 'none';
+  document.getElementById('settingsTab').style.display = tab === 'settings' ? 'block' : 'none';
+  document.getElementById('tabMainBtn').style.background = tab === 'main' ? '#2b7a4b' : '';
+  document.getElementById('tabSettingsBtn').classList.toggle('active', tab === 'settings');
+  if (tab === 'settings') await loadSettings();
 }
-
 function closeModal(event, id) {
   if (event && event.target !== event.currentTarget) return;
   document.getElementById(id).classList.remove('active');
@@ -1705,25 +1252,21 @@ async function onDateChange() {
 }
 
 /* =====================================================================
-   EXPORT EXCEL (بدون تاريخ وبدون معلومات إضافية)
+   EXPORT EXCEL
    ===================================================================== */
 async function exportExcel() {
   if (!dailyRecords.length) { toast('No records to export', 'warn'); return; }
-
   const fileName = `Checklist_${currentDate}.xlsx`;
   try {
     if (typeof ExcelJS === 'undefined') throw new Error('ExcelJS not loaded');
     const wb = new ExcelJS.Workbook();
-    wb.creator = 'L&D System';
+    wb.creator = '';
     const ws = wb.addWorksheet('Checklist');
-
     const NAVY = 'FF1E3A5F', WHITE = 'FFFFFFFF', GRAY = 'FFF7FAFC';
     const LGREEN = 'FFF0FFF4', LRED = 'FFFFF5F5', GREEN = 'FF38A169', RED = 'FFE53E3E';
     const BORDER = 'FFD0D7DE';
     const thin = { style:'thin', color:{ argb:BORDER } };
     const allB = { top:thin, left:thin, bottom:thin, right:thin };
-
-    // Title only
     ws.mergeCells('A1:E1');
     const t = ws.getCell('A1');
     t.value = 'Checklist Implementation Report';
@@ -1731,8 +1274,6 @@ async function exportExcel() {
     t.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:NAVY } };
     t.alignment = { horizontal:'center', vertical:'middle' };
     ws.getRow(1).height = 30;
-
-    // Headers (no Date column)
     const headers = ['#', 'Dep', 'Section', 'Exist', 'Implemented'];
     headers.forEach((h, i) => {
       const c = ws.getCell(2, i + 1);
@@ -1743,7 +1284,6 @@ async function exportExcel() {
       c.border = allB;
     });
     ws.getRow(2).height = 22;
-
     dailyRecords.forEach((r, i) => {
       const row = 3 + i;
       const eY = r.existStatus === 'YES';
@@ -1754,27 +1294,15 @@ async function exportExcel() {
         c.value = v;
         c.border = allB;
         c.alignment = { horizontal: j === 2 ? 'left' : 'center', vertical: 'middle' };
-        if (j === 0) {
-          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } };
-          c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:'FF718096' } };
-        } else if (j === 1) {
-          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } };
-          c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:NAVY } };
-        } else if (j === 2) {
-          c.font = { name:'Tajawal', size:10, color:{ argb:'FF2D3748' } };
-        } else if (j === 3) {
-          c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: eY ? GREEN : RED } };
-          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: eY ? LGREEN : LRED } };
-        } else if (j === 4) {
-          c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: iY ? GREEN : RED } };
-          c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: iY ? LGREEN : LRED } };
-        }
+        if (j === 0) { c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } }; c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:'FF718096' } }; }
+        else if (j === 1) { c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:GRAY } }; c.font = { name:'Tajawal', size:10, bold:true, color:{ argb:NAVY } }; }
+        else if (j === 2) { c.font = { name:'Tajawal', size:10, color:{ argb:'FF2D3748' } }; }
+        else if (j === 3) { c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: eY ? GREEN : RED } }; c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: eY ? LGREEN : LRED } }; }
+        else if (j === 4) { c.font = { name:'Tajawal', size:12, bold:true, color:{ argb: iY ? GREEN : RED } }; c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: iY ? LGREEN : LRED } }; }
       });
     });
-
     ws.columns = [{ width:6 },{ width:10 },{ width:32 },{ width:10 },{ width:14 }];
     ws.views = [{ state:'frozen', ySplit:2 }];
-
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
@@ -1783,18 +1311,224 @@ async function exportExcel() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 2000);
     toast('✅ Excel exported');
+  } catch (err) { console.error(err); toast('Export failed: ' + (err.message || ''), 'error'); }
+}
+
+/* =====================================================================
+   ✅ محرك تقسيم الصفحات الديناميكي (1920×1080 بهوامش 20px وبدون قطع)
+   ===================================================================== */
+function createExportPageElement() {
+  const page = document.createElement('div');
+  page.className = 'exp-page';
+  page.innerHTML = `
+    <div class="exp-header">
+      <h1>Checklist Implementation Report</h1>
+      <div class="exp-sub">${escapeHtml(fmtDate(currentDate))}</div>
+    </div>
+    <div class="exp-body">
+      <table class="exp-table">
+        <thead>
+          <tr>
+            <th class="col-sn">#</th>
+            <th class="col-dept">Department</th>
+            <th>Section</th>
+            <th class="col-status">Exist</th>
+            <th class="col-status">Implemented</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  `;
+  return page;
+}
+
+function createExportRowElement(r, index) {
+  const eY = r.existStatus === 'YES';
+  const iY = r.implementedStatus === 'YES';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="exp-sn">${index + 1}</td>
+    <td class="exp-dept">${escapeHtml(r.department)}</td>
+    <td class="exp-sec">${escapeHtml(r.section)}</td>
+    <td class="${eY ? 'exp-yes' : 'exp-no'}">${eY ? '✔' : '✖'}</td>
+    <td class="${iY ? 'exp-yes' : 'exp-no'}">${iY ? '✔' : '✖'}</td>
+  `;
+  return tr;
+}
+
+async function buildExportPages(records) {
+  if (document.fonts && document.fonts.ready) {
+    await document.fonts.ready;
+  }
+
+  const container = document.getElementById('exportContainer');
+  container.innerHTML = '';
+
+  const generatedAt = new Date().toLocaleString();
+  const pages = [];
+
+  let currentPage = createExportPageElement(generatedAt, records.length);
+  container.appendChild(currentPage);
+  pages.push(currentPage);
+
+  let bodyWrap = currentPage.querySelector('.exp-body');
+  let table = currentPage.querySelector('.exp-table');
+  let tbody = table.querySelector('tbody');
+
+  for (let i = 0; i < records.length; i++) {
+    const tr = createExportRowElement(records[i], i);
+    tbody.appendChild(tr);
+
+    // فحص دقيق: إذا تجاوز ارتفاع الجدول المساحة المتاحة داخل الصفحة (1080px - الهوامش - الهيدر - الفوتر)
+    if (table.offsetHeight > bodyWrap.clientHeight && tbody.children.length > 1) {
+      tbody.removeChild(tr);
+
+      // إنشاء صفحة جديدة ووضع الصف فيها
+      currentPage = createExportPageElement(generatedAt, records.length);
+      container.appendChild(currentPage);
+      pages.push(currentPage);
+
+      bodyWrap = currentPage.querySelector('.exp-body');
+      table = currentPage.querySelector('.exp-table');
+      tbody = table.querySelector('tbody');
+      tbody.appendChild(tr);
+    }
+  }
+
+  // ترقيم جميع الصفحات
+  pages.forEach((p, idx) => {
+    const badge = p.querySelector('.exp-page-num');
+    if (badge) badge.textContent = `Page ${idx + 1} of ${pages.length}`;
+  });
+
+  // انتظار إطار رسم واحد للاستقرار التام
+  await new Promise(res => requestAnimationFrame(() => setTimeout(res, 150)));
+  return pages;
+}
+
+/* =====================================================================
+   ✅ EXPORT IMAGE (1920×1080 — متعدد الصفحات تلقائيًا)
+   ===================================================================== */
+async function exportImage() {
+  if (!dailyRecords.length) { toast('No records to export', 'warn'); return; }
+
+  showLoading('Preparing pages for image export...');
+
+  try {
+    const pages = await buildExportPages(dailyRecords);
+
+    for (let i = 0; i < pages.length; i++) {
+      showLoading(`Rendering image ${i + 1} of ${pages.length}...`);
+
+      const canvas = await html2canvas(pages[i], {
+        backgroundColor: '#ffffff',
+        scale: 1,
+        width: 1920,
+        height: 1080,
+        windowWidth: 1920,
+        windowHeight: 1080,
+        useCORS: true,
+        logging: false
+      });
+
+      const suffix = pages.length > 1 ? `_Page${i + 1}_of_${pages.length}` : '';
+      const link = document.createElement('a');
+      link.download = `Checklist_${currentDate}${suffix}.png`;
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // مهلة قصيرة بين التنزيلات المتعددة لتفادي حظر المتصفح
+      if (i < pages.length - 1) {
+        await new Promise(res => setTimeout(res, 400));
+      }
+    }
+
+    document.getElementById('exportContainer').innerHTML = '';
+    toast(`✅ Exported ${pages.length} image${pages.length > 1 ? 's' : ''} (1920×1080)`);
   } catch (err) {
     console.error(err);
-    toast('Export failed: ' + (err.message || ''), 'error');
+    toast('Image export failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
   }
 }
 
 /* =====================================================================
-   PRINT
+   ✅ EXPORT PDF (1920×1080 — متعدد الصفحات تلقائيًا)
    ===================================================================== */
-function printReport() {
+async function exportPDF() {
+  if (!dailyRecords.length) { toast('No records to export', 'warn'); return; }
+
+  showLoading('Preparing pages for PDF...');
+
+  try {
+    const pages = await buildExportPages(dailyRecords);
+    const { jsPDF } = window.jspdf;
+
+    // 1920×1080 px عند 96dpi = 1440×810 pt
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: [1440, 810]
+    });
+
+    for (let i = 0; i < pages.length; i++) {
+      showLoading(`Rendering PDF page ${i + 1} of ${pages.length}...`);
+
+      const canvas = await html2canvas(pages[i], {
+        backgroundColor: '#ffffff',
+        scale: 1,
+        width: 1920,
+        height: 1080,
+        windowWidth: 1920,
+        windowHeight: 1080,
+        useCORS: true,
+        logging: false
+      });
+
+      if (i > 0) pdf.addPage([1440, 810], 'landscape');
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 0, 0, 1440, 810);
+    }
+
+    pdf.save(`Checklist_${currentDate}.pdf`);
+    document.getElementById('exportContainer').innerHTML = '';
+    toast(`✅ PDF exported (${pages.length} page${pages.length > 1 ? 's' : ''}, 1920×1080)`);
+  } catch (err) {
+    console.error(err);
+    toast('PDF export failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* =====================================================================
+   ✅ PRINT (بنفس مقاس 1920×1080 landscape وهوامش 20px وتقسيم الصفحات)
+   ===================================================================== */
+async function printReport() {
+  if (!dailyRecords.length) { toast('No records to print', 'warn'); return; }
+  showLoading('Preparing print layout...');
+  try {
+    await buildExportPages(dailyRecords);
+  } finally {
+    hideLoading();
+  }
   window.print();
 }
+
+// دعم الطباعة المباشرة عبر Ctrl+P وتنظيف الحاوية بعد الطباعة
+window.addEventListener('beforeprint', () => {
+  const container = document.getElementById('exportContainer');
+  if (!container.children.length && dailyRecords.length) {
+    buildExportPages(dailyRecords);
+  }
+});
+window.addEventListener('afterprint', () => {
+  document.getElementById('exportContainer').innerHTML = '';
+});
 
 /* =====================================================================
    REFRESH / LOGOUT
@@ -1810,9 +1544,7 @@ async function refreshData() {
     await loadDailyRecords();
     if (document.getElementById('deptSelect').value) buildSectionsPicker();
     toast('✅ Refreshed');
-  } finally {
-    hideLoading();
-  }
+  } finally { hideLoading(); }
 }
 
 window.logout = async function() {
@@ -1830,10 +1562,7 @@ window.logout = async function() {
    UNSAVED GUARD
    ===================================================================== */
 window.addEventListener('beforeunload', (e) => {
-  if (hasUnsavedSections()) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
+  if (hasUnsavedSections()) { e.preventDefault(); e.returnValue = ''; }
 });
 
 /* =====================================================================
@@ -1843,13 +1572,12 @@ function initEventListeners() {
   document.getElementById('filterYear').addEventListener('change', onDateChange);
   document.getElementById('filterMonth').addEventListener('change', onDateChange);
   document.getElementById('filterDay').addEventListener('change', onDateChange);
-
   document.getElementById('deptSelect').addEventListener('change', onDeptChange);
   document.getElementById('sectionDepartmentSelect')
-  .addEventListener('change', async () => {
-    const rows = await getAllCatalogRows();
-    renderSectionsSettings(getActiveCatalogRows(rows));
-  });
+    .addEventListener('change', async () => {
+      const rows = await getAllCatalogRows();
+      renderSectionsSettings(getActiveCatalogRows(rows));
+    });
 }
 
 /* =====================================================================
@@ -1870,13 +1598,13 @@ window.deleteRecord = deleteRecord;
 window.closeModal = closeModal;
 window.refreshData = refreshData;
 window.exportExcel = exportExcel;
+window.exportImage = exportImage;
+window.exportPDF = exportPDF;
 window.printReport = printReport;
 window.loadSettings = loadSettings;
-
 window.addDepartment = addDepartment;
 window.editDepartment = editDepartment;
 window.deleteDepartment = deleteDepartment;
-
 window.addSection = addSection;
 window.editSection = editSection;
 window.deleteSection = deleteSection;
@@ -1887,22 +1615,16 @@ window.deleteSection = deleteSection;
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
   currentUser = user;
-
   buildYearOptions();
   buildMonthOptions();
   buildDayOptions();
   updateDateFromFilters();
-
   initEventListeners();
-
   showLoading('Loading...');
   try {
     await loadCatalog();
     await loadDailyRecords();
-  } finally {
-    hideLoading();
-  }
-
+  } finally { hideLoading(); }
   console.log('✅ Checklist Management ready — date:', currentDate);
 });
 </script>
