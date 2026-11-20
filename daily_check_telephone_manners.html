@@ -9,6 +9,9 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- ✅ مكتبات تصدير الصورة والـ PDF -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif}
 body{background:#f0f4f8;padding-bottom:70px;color:#2d3748}
@@ -16,7 +19,14 @@ body{background:#f0f4f8;padding-bottom:70px;color:#2d3748}
 .logo h2{color:#1e3a5f;font-size:1.1rem}.logo span{color:#2b7a4b}
 .nav-links{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
 .nav-links a,.nav-links button{text-decoration:none;padding:.45rem .9rem;border-radius:2rem;font-weight:700;cursor:pointer;border:none;font-size:.82rem;transition:.2s}
-.home{background:#2b7a4b;color:#fff}.refresh{background:#4299e1;color:#fff}.export{background:#217346;color:#fff}.logout{background:#e53e3e;color:#fff}
+.home{background:#2b7a4b;color:#fff}
+.refresh{background:#4299e1;color:#fff}
+.export{background:#217346;color:#fff}
+.export-img{background:#dd6b20;color:#fff}.export-img:hover{background:#c05621}
+.export-pdf{background:#c53030;color:#fff}.export-pdf:hover{background:#9b2c2c}
+.print-btn{background:#805ad5;color:#fff}.print-btn:hover{background:#6b46c1}
+.logout{background:#e53e3e;color:#fff}
+
 .container{max-width:1450px;margin:1.2rem auto;padding:0 1rem}
 .header-card,.section{background:#fff;border-radius:1.2rem;padding:1.2rem;margin-bottom:1rem;box-shadow:0 3px 12px rgba(0,0,0,.05)}
 .header-card h1{color:#1e3a5f;font-size:1.45rem;margin-bottom:.35rem}
@@ -34,7 +44,7 @@ body{background:#f0f4f8;padding-bottom:70px;color:#2d3748}
 .field label{display:block;font-size:.82rem;font-weight:700;color:#1e3a5f;margin-bottom:.35rem}
 .field input,.field select{width:100%;padding:.68rem .75rem;border:2px solid #e2e8f0;border-radius:.7rem;background:#fff;font-size:.88rem;min-height:43px}
 .field input:focus,.field select:focus{outline:none;border-color:#2b7a4b}
-.field input[readonly]{background:#f7fafc;color:#4a5568}
+.field input[readonly],.field select:disabled{background:#f7fafc;color:#718096;cursor:not-allowed}
 .btn{padding:.62rem 1rem;border:none;border-radius:2rem;font-weight:800;cursor:pointer;font-size:.82rem;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:.35rem}
 .btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .btn-save{background:#2b7a4b;color:#fff}.btn-clear{background:#e2e8f0;color:#4a5568}.btn-edit{background:#4299e1;color:#fff}.btn-delete{background:#fed7d7;color:#c53030}
@@ -49,18 +59,20 @@ body{background:#f0f4f8;padding-bottom:70px;color:#2d3748}
 .filters select,.filters input{padding:.58rem .75rem;border:2px solid #e2e8f0;border-radius:.7rem;background:#fff;font-size:.83rem}
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;min-width:900px;direction:ltr}
-th,td{    padding: .68rem .6rem;
-    text-align: center;
-    border: 1px solid #dce3eb;
-    font-size: 15px;
-    font-weight: 900;}
+th,td{padding:.68rem .6rem;text-align:center;border:1px solid #dce3eb;font-size:15px;font-weight:900}
 th{background:#1e3a5f;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
 td.section-cell{text-align:center;font-weight:700;padding-left:1.4rem}
 tr.dept-row td{background:#e9f0f7;color:#1e3a5f;font-weight:900;text-align:center;border-top:2px solid #1e3a5f}
 tr.data-row:hover{background:#f7fafc}
-td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weight:800}td.status-cell.needs{background:#fff4d6!important;color:#7b341e;font-weight:800}td.status-cell.not{background:#ffe3e3!important;color:#822727;font-weight:800}td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
+td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weight:800}
+td.status-cell.needs{background:#fff4d6!important;color:#7b341e;font-weight:800}
+td.status-cell.not{background:#ffe3e3!important;color:#822727;font-weight:800}
+td.status-cell.na{background:#edf2f7!important;color:#4a5568;font-weight:800}
 .reply{display:inline-block;padding:.25rem .65rem;border-radius:1rem;font-weight:800;font-size:.77rem;white-space:nowrap}
-.reply.satisfactory{font-size: 15px; color:#22543d }.reply.needs{font-size: 15px; color:#7b341e}.reply.not{font-size: 15px; color:#822727}.reply.na{font-size: 15px; color:#4a5568}
+.reply.satisfactory{font-size:15px;color:#22543d}
+.reply.needs{font-size:15px;color:#7b341e}
+.reply.not{font-size:15px;color:#822727}
+.reply.na{font-size:15px;color:#4a5568}
 .row-actions{display:flex;gap:.35rem;justify-content:center}
 .btn-action{padding:.32rem .65rem;border:0;border-radius:1rem;font-size:.74rem;font-weight:800;cursor:pointer}
 .btn-action.edit{background:#bee3f8;color:#2a4365}.btn-action.delete{background:#fed7d7;color:#822727}
@@ -73,115 +85,187 @@ td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weig
 .modal h3{color:#1e3a5f;margin-bottom:1rem}
 .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .modal-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem}
-.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}.settings-card{border:1px solid #e2e8f0;border-radius:.9rem;padding:1rem}.settings-card h3{color:#1e3a5f;margin-bottom:.75rem}.settings-list{display:grid;gap:.5rem;margin-top:.8rem}.settings-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.55rem;background:#f7fafc;border-radius:.6rem;font-size:.84rem}.settings-item button{border:0;border-radius:.5rem;padding:.35rem .55rem;cursor:pointer;font-weight:700}.settings-item .small-edit{background:#bee3f8;color:#2a4365}.settings-item .small-delete{background:#fed7d7;color:#822727}.settings-actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}.settings-card input,.settings-card select{width:100%;padding:.65rem;border:2px solid #e2e8f0;border-radius:.6rem;margin:.25rem 0 .55rem}.settings-note{font-size:.78rem;color:#718096;line-height:1.5;margin-top:.5rem}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.settings-card{border:1px solid #e2e8f0;border-radius:.9rem;padding:1rem}
+.settings-card h3{color:#1e3a5f;margin-bottom:.75rem}
+.settings-list{display:grid;gap:.5rem;margin-top:.8rem}
+.settings-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.55rem;background:#f7fafc;border-radius:.6rem;font-size:.84rem}
+.settings-item button{border:0;border-radius:.5rem;padding:.35rem .55rem;cursor:pointer;font-weight:700}
+.settings-item .small-edit{background:#bee3f8;color:#2a4365}.settings-item .small-delete{background:#fed7d7;color:#822727}
+.settings-actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}
+.settings-card input,.settings-card select{width:100%;padding:.65rem;border:2px solid #e2e8f0;border-radius:.6rem;margin:.25rem 0 .55rem}
+.settings-note{font-size:.78rem;color:#718096;line-height:1.5;margin-top:.5rem}
+
+/* Loading Overlay */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.88);display:none;justify-content:center;align-items:center;flex-direction:column;gap:1rem;z-index:9999;font-weight:800;color:#1e3a5f}
+.loading-overlay.active{display:flex}
+.spinner{width:48px;height:48px;border:4px solid #e2e8f0;border-top-color:#2b7a4b;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ✅ حاوية التصدير والطباعة الموحّدة (1920×1080 بهوامش 20px) */
+#exportContainer {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  width: 1920px;
+  background: #ffffff;
+  font-family: 'Tajawal', sans-serif;
+  z-index: -1;
+}
+.exp-page {
+  width: 1920px;
+  height: 1080px;
+  padding: 20px; /* ✅ هوامش صغيرة 20px فقط */
+  box-sizing: border-box;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.exp-header {
+  text-align: center;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2b7a4b 100%);
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.exp-header h1 {
+  font-size: 34px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  letter-spacing: 0.6px;
+  line-height: 1.2;
+}
+.exp-header .exp-sub {
+  font-size: 17px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+.exp-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.exp-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  direction: ltr;
+}
+.exp-table th {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 11px 8px;
+  font-weight: 800;
+  border: 2px solid #2c5282;
+  text-transform: uppercase;
+  font-size: 18px;
+  text-align: center;
+}
+.exp-table td {
+  padding: 9px 10px;
+  border: 2px solid #cbd5e0;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 800;
+  color: #2d3748;
+  vertical-align: middle;
+  word-wrap: break-word;
+}
+.exp-table tr.exp-dept-row td {
+  background: #e9f0f7;
+  color: #1e3a5f;
+  font-weight: 900;
+  font-size: 20px;
+  text-align: center;
+  padding: 8px 10px;
+  border-top: 2px solid #1e3a5f;
+  border-bottom: 2px solid #1e3a5f;
+}
+.exp-table td.exp-sec { text-align: left; color: #1e3a5f; padding-left: 16px; }
+.exp-table td.exp-satisfactory { background: #c6f6d5; color: #22543d; font-weight: 900; }
+.exp-table td.exp-needs { background: #feebc8; color: #7b341e; font-weight: 900; }
+.exp-table td.exp-not { background: #fed7d7; color: #822727; font-weight: 900; }
+.exp-table td.exp-na { background: #edf2f7; color: #4a5568; font-weight: 900; }
+
+.exp-footer {
+  flex-shrink: 0;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #4a5568;
+  font-weight: 700;
+  gap: 12px;
+}
+.exp-footer .exp-stats-inline {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.exp-footer .exp-page-num {
+  background: #ebf8ff;
+  color: #1e3a5f;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 @media(max-width:1000px){.form-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:650px){.container{padding:0 .65rem}.header-card,.section{padding:.9rem}.form-grid{grid-template-columns:1fr 1fr}.date-filters{grid-template-columns:1fr}.modal-grid{grid-template-columns:1fr}.navbar{padding:.65rem .8rem}.logo h2{font-size:.95rem}}
+
+/* ✅ Print بنفس المقاس 1920×1080 landscape وهوامش 20px وتقسيم الصفحات */
+@page {
+  size: 1920px 1080px;
+  margin: 0;
+}
 @media print {
-    @page {
-        margin: 10mm;
-    }
-
-    html, body {
-        background: #fff !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    body * {
-        visibility: hidden !important;
-    }
-
-    #recordsSection,
-    #recordsSection * {
-        visibility: visible !important;
-    }
-
-    #recordsSection {
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-    }
-
-    #recordsSection::before {
-        content: "☎️ Daily Check Telephone Manners";
-        display: block;
-        text-align: center;
-        font-size: 18pt;
-        font-weight: bold;
-        color: #1e3a5f;
-        margin-bottom: 18px;
-    }
-
-    #recordsSection .toolbar {
-        display: none !important;
-    }
-
-    #recordsSection .table-wrap {
-        overflow: visible !important;
-    }
-
-    #recordsTable {
-        width: 100% !important;
-        min-width: 0 !important;
-        border-collapse: collapse !important;
-    }
-
-    #recordsTable th,
-    #recordsTable td {
-        padding: 5px 4px !important;
-        font-size: 9pt !important;
-        border: 1px solid #555 !important;
-    }
-
-    #recordsTable th {
-        background: #1e3a5f !important;
-        color: #fff !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    #recordsTable tr.dept-row td {
-        background: #e9f0f7 !important;
-        color: #1e3a5f !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    #recordsTable .status-cell.satisfactory {
-        background: #c6f6d5 !important;
-        color: #22543d !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    #recordsTable .status-cell.needs {
-        background: #feebc8 !important;
-        color: #744210 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    #recordsTable .status-cell.not {
-        background: #fed7d7 !important;
-        color: #822727 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    #recordsTable .status-cell.na {
-        background: #e2e8f0 !important;
-        color: #2d3748 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    #recordsTable .action-col {
-        display: none !important;
-    }
+  html, body {
+    width: 1920px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+  .no-print, .navbar, .container, .toast, .loading-overlay, .modal-overlay {
+    display: none !important;
+  }
+  #exportContainer {
+    display: block !important;
+    position: static !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 1920px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: auto !important;
+  }
+  .exp-page {
+    width: 1920px !important;
+    height: 1080px !important;
+    padding: 20px !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .exp-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
 }
 </style>
 </head>
@@ -191,13 +275,16 @@ td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weig
   <div class="nav-links">
     <a href="index.html" class="home">🏠 Home</a>
     <button class="export" onclick="exportExcel()">📊 Export Excel</button>
+    <button class="export-img" onclick="exportImage()">🖼️ Export Image</button>
+    <button class="export-pdf" onclick="exportPDF()">📄 Export PDF</button>
+    <button class="print-btn" onclick="printReport()">🖨️ Print</button>
     <button class="refresh" onclick="toggleSettings()">⚙️ Settings</button>
     <button class="refresh" onclick="refreshData()">🔄 Refresh</button>
     <button class="logout" onclick="logout()">🚪 Logout</button>
   </div>
 </nav>
 
-<main class="container">
+<main class="container no-print">
   <section class="header-card">
     <h1>Daily Check – Telephone Manners</h1>
     <div class="subtitle">Daily telephone response monitoring and greeting quality assessment</div>
@@ -278,7 +365,7 @@ td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weig
       <div class="section-title" style="margin:0"><span>📋 Daily Telephone Check Records</span><span class="badge" id="recordCount"></span></div>
       <div class="filters">
         <input id="searchInput" type="search" placeholder="Search name / extension..." aria-label="Search records">
-        <button class="btn btn-clear" onclick="window.print()">🖨️ Print Report</button>
+        <button class="btn btn-clear" onclick="printReport()">🖨️ Print Report</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -302,7 +389,6 @@ td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weig
     </div>
     <div class="settings-note">Settings are stored in Firestore collections <b>telephone_manners_catalog</b> and <b>telephone_manners_employees</b>. Make sure Firestore Rules allow authenticated users to read and write to these collections.</div>
   </section>
-
 </main>
 
 <div class="modal-overlay" id="editModal">
@@ -323,6 +409,15 @@ td.status-cell.satisfactory{background:#e6ffed!important;color:#22543d;font-weig
       <button class="btn btn-save" onclick="saveEdit()">Save Changes</button>
     </div>
   </div>
+</div>
+
+<!-- ✅ حاوية التصدير والطباعة الموحّدة -->
+<div id="exportContainer"></div>
+
+<!-- ✅ مؤشر التحميل أثناء التصدير -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingText">Loading...</div>
 </div>
 
 <script type="module">
@@ -379,6 +474,13 @@ let editingId = null;
 let selectedDate = todayISO();
 
 function makeId(prefix){return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;}
+function showLoading(msg){
+  document.getElementById('loadingText').textContent = msg || 'Loading...';
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function hideLoading(){
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
 async function loadSettingsData(){
   try{
     const savedCatalog=await DB.getAll(CATALOG_COLLECTION)||[];
@@ -389,6 +491,10 @@ async function loadSettingsData(){
 function todayISO(){
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDateLong(iso){
+  if(!iso)return '—';
+  return new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
 }
 function escapeHtml(v){
   return String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -405,16 +511,74 @@ function defaultReply(rings){
   return 'Satisfactory';
 }
 function getCatalogItem(dept,section){return CATALOG.find(x=>x.department===dept&&x.section===section);}
+
+/* =====================================================================
+   ✅ إخفاء الأقسام المحفوظة في اليوم المختار داخل نموذج الإدخال
+   ===================================================================== */
+function getSavedSectionsSet(date, dept){
+  return new Set(
+    allRecords
+      .filter(r => r.date === date && r.department === dept)
+      .map(r => r.section)
+  );
+}
+
 function populateDepartments(select,includeAll=false){
   const depts=[...new Set(CATALOG.map(x=>x.department))];
+  const prev=select.value;
   select.innerHTML=(includeAll?'<option value="">All Departments</option>':'<option value="">— Select Department —</option>')+
     depts.map(d=>`<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  if(prev && depts.includes(prev)) select.value=prev;
 }
+
+function populateEntryDepartments(preferredDept=''){
+  const select=document.getElementById('departmentInput');
+  const depts=[...new Set(CATALOG.map(x=>x.department))];
+  const current=preferredDept || select.value || depts[0] || '';
+  select.innerHTML='<option value="">— Select Department —</option>'+
+    depts.map(d=>{
+      const total=CATALOG.filter(x=>x.department===d).length;
+      const saved=getSavedSectionsSet(selectedDate,d).size;
+      const rem=Math.max(0,total-saved);
+      const label=rem===0 ? `${d} (✓ Completed)` : `${d} (${rem} left)`;
+      return `<option value="${escapeHtml(d)}">${escapeHtml(label)}</option>`;
+    }).join('');
+  if(current && depts.includes(current)) select.value=current;
+  else if(depts.length) select.value=depts[0];
+}
+
+function populateEntrySections(dept){
+  const select=document.getElementById('sectionInput');
+  const savedSet=getSavedSectionsSet(selectedDate,dept);
+  const available=CATALOG.filter(x=>x.department===dept && !savedSet.has(x.section));
+  if(!dept){
+    select.disabled=true;
+    select.innerHTML='<option value="">— Select Department First —</option>';
+    return;
+  }
+  if(!available.length){
+    select.disabled=true;
+    select.innerHTML='<option value="">✅ All sections completed for this date</option>';
+    return;
+  }
+  select.disabled=false;
+  select.innerHTML='<option value="">— Select Section —</option>'+
+    available.map(x=>`<option value="${escapeHtml(x.section)}">${escapeHtml(x.section)} — ${escapeHtml(x.ext)}</option>`).join('');
+}
+
+function refreshEntryDropdowns(preferredDept=''){
+  populateEntryDepartments(preferredDept);
+  const dept=document.getElementById('departmentInput').value;
+  populateEntrySections(dept);
+  populateEmployeeOptions();
+}
+
 function populateSections(dept,select,includeAll=false,selected=''){
   const rows=CATALOG.filter(x=>x.department===dept);
   select.innerHTML=(includeAll?'<option value="">All Sections</option>':'<option value="">— Select Section —</option>')+
     rows.map(x=>`<option value="${escapeHtml(x.section)}" ${x.section===selected?'selected':''}>${escapeHtml(x.section)} — ${escapeHtml(x.ext)}</option>`).join('');
 }
+
 function initDateFilters(){
   const y=document.getElementById('filterYear'),m=document.getElementById('filterMonth'),d=document.getElementById('filterDay');
   const now=new Date(),year=now.getFullYear();
@@ -433,8 +597,9 @@ function rebuildDays(){
 }
 async function syncDate(){
   selectedDate=`${document.getElementById('filterYear').value}-${document.getElementById('filterMonth').value}-${document.getElementById('filterDay').value}`;
-  document.getElementById('selectedDateText').textContent='📅 '+new Date(selectedDate+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('selectedDateText').textContent='📅 '+fmtDateLong(selectedDate);
   renderTable();
+  refreshEntryDropdowns();
 }
 function populateEmployeeOptions(){
   const dept=document.getElementById('departmentInput').value,section=document.getElementById('sectionInput').value;
@@ -467,11 +632,15 @@ async function syncEmployeeSettings(){
   for(const old of stored){const current=employeeRecords.find(x=>x.id===old.id);if(!current)await DB.delete(EMPLOYEE_COLLECTION,old.id);else if(JSON.stringify(old)!==JSON.stringify(current))await DB.update(EMPLOYEE_COLLECTION,current);}
 }
 async function persistCatalog(){
-  try{const old=await DB.getAll(CATALOG_COLLECTION)||[];for(const x of old){if(!CATALOG.some(c=>c.department===x.department&&c.section===x.section)&&x.isActive!==false)await DB.update(CATALOG_COLLECTION,{...x,isActive:false});}
+  try{
+    const old=await DB.getAll(CATALOG_COLLECTION)||[];
+    for(const x of old){if(!CATALOG.some(c=>c.department===x.department&&c.section===x.section)&&x.isActive!==false)await DB.update(CATALOG_COLLECTION,{...x,isActive:false});}
     for(const c of CATALOG){const found=old.find(x=>x.department===c.department&&x.section===c.section);if(found)await DB.update(CATALOG_COLLECTION,{...found,...c,isActive:true});else await DB.insert(CATALOG_COLLECTION,{id:`${c.department}::${c.section}`.replace(/\//g,'_'),...c,isActive:true,created_at:Date.now()});}
     await syncEmployeeSettings();
-    populateDepartments(document.getElementById('departmentInput'));populateDepartments(document.getElementById('departmentFilter'),true);populateDepartments(document.getElementById('editDepartment'));renderSettings();
-    const d=document.getElementById('departmentInput').value||CATALOG[0]?.department;populateSections(d,document.getElementById('sectionInput'));populateEmployeeOptions();
+    populateDepartments(document.getElementById('departmentFilter'),true);
+    populateDepartments(document.getElementById('editDepartment'));
+    renderSettings();
+    refreshEntryDropdowns();
   }catch(err){console.error(err);toast('Settings save failed: '+(err.message||''),'error');}
 }
 async function addDepartment(){const name=document.getElementById('newDepartmentName').value.trim();if(!name)return toast('Enter department name','error');if(CATALOG.some(x=>x.department.toLowerCase()===name.toLowerCase()))return toast('Department already exists','warn');CATALOG.push({department:name,section:'General',ext:'—'});document.getElementById('newDepartmentName').value='';await persistCatalog();toast('Department added');}
@@ -483,17 +652,24 @@ async function removeSection(dept,section){if(!confirm(`Remove ${section} from a
 async function addEmployee(){const department=document.getElementById('employeeDepartment').value,section=document.getElementById('employeeSection').value,name=document.getElementById('newEmployeeName').value.trim();if(!department||!section||!name)return toast('Complete all employee fields','error');if(employeeRecords.some(x=>x.department===department&&x.section===section&&x.name.toLowerCase()===name.toLowerCase()))return toast('Employee already exists for this section','warn');const record={id:makeId('emp'),department,section,name,isActive:true,created_at:Date.now()};try{await DB.insert(EMPLOYEE_COLLECTION,record);employeeRecords.push(record);document.getElementById('newEmployeeName').value='';renderEmployeeList();populateEmployeeOptions();toast('Employee added');}catch(err){console.error(err);toast('Could not add employee: '+err.message,'error');}}
 async function removeEmployee(id){const row=employeeRecords.find(x=>x.id===id);if(!row||!confirm(`Remove employee ${row.name}?`))return;try{await DB.delete(EMPLOYEE_COLLECTION,id);employeeRecords=employeeRecords.filter(x=>x.id!==id);renderEmployeeList();populateEmployeeOptions();toast('Employee removed');}catch(err){console.error(err);toast('Could not remove employee: '+err.message,'error');}}
 function toggleSettings(force){settingsVisible=typeof force==='boolean'?force:!settingsVisible;document.getElementById('settingsPanel').style.display=settingsVisible?'block':'none';document.getElementById('entrySection').style.display=settingsVisible?'none':'block';document.getElementById('recordsSection').style.display=settingsVisible?'none':'block';document.querySelector('.header-card').style.display=settingsVisible?'none':'block';document.querySelector('.summary-grid').style.display=settingsVisible?'none':'grid';if(settingsVisible)renderSettings();}
+
 function initUI(){
-  populateDepartments(document.getElementById('departmentInput'));
   populateDepartments(document.getElementById('departmentFilter'),true);
   populateDepartments(document.getElementById('editDepartment'));
-  const firstDept=CATALOG[0].department;
-  document.getElementById('departmentInput').value=firstDept;
-  populateSections(firstDept,document.getElementById('sectionInput'));
+  const firstDept=CATALOG[0]?.department || '';
+  refreshEntryDropdowns(firstDept);
   populateSections(firstDept,document.getElementById('editSection'));
-  document.getElementById('departmentInput').addEventListener('change',e=>{populateSections(e.target.value,document.getElementById('sectionInput'));populateEmployeeOptions();});
-  document.getElementById('sectionInput').addEventListener('change',()=>{document.getElementById('checkTime').value=new Date().toTimeString().slice(0,5);populateEmployeeOptions();});
-  document.getElementById('settingsDepartment').addEventListener('change',renderSettingsSections);document.getElementById('employeeDepartment').addEventListener('change',renderEmployeeSectionOptions);document.getElementById('employeeSection').addEventListener('change',renderEmployeeList);
+  document.getElementById('departmentInput').addEventListener('change',e=>{
+    populateEntrySections(e.target.value);
+    populateEmployeeOptions();
+  });
+  document.getElementById('sectionInput').addEventListener('change',()=>{
+    document.getElementById('checkTime').value=new Date().toTimeString().slice(0,5);
+    populateEmployeeOptions();
+  });
+  document.getElementById('settingsDepartment').addEventListener('change',renderSettingsSections);
+  document.getElementById('employeeDepartment').addEventListener('change',renderEmployeeSectionOptions);
+  document.getElementById('employeeSection').addEventListener('change',renderEmployeeList);
   document.getElementById('editDepartment').addEventListener('change',e=>populateSections(e.target.value,document.getElementById('editSection')));
   document.getElementById('departmentFilter').addEventListener('change',()=>{populateSections(document.getElementById('departmentFilter').value,document.getElementById('sectionFilter'),true);renderTable();});
   document.getElementById('sectionFilter').addEventListener('change',renderTable);
@@ -506,13 +682,16 @@ function initUI(){
   document.getElementById('rings').value=1;
   document.getElementById('reply').value='Satisfactory';
 }
+
 async function loadRecords(){
   try{
     if(DB.refresh) await DB.refresh(COLLECTION).catch(()=>null);
     allRecords=await DB.getAll(COLLECTION)||[];
     renderTable();
+    refreshEntryDropdowns();
   }catch(err){console.error(err);toast('Could not load telephone check records','error');}
 }
+
 function getVisibleRecords(){
   const dept=document.getElementById('departmentFilter').value;
   const section=document.getElementById('sectionFilter').value;
@@ -521,12 +700,14 @@ function getVisibleRecords(){
     (!q||[r.name,r.extension,r.section,r.department].some(v=>String(v||'').toLowerCase().includes(q))))
     .sort((a,b)=>a.department.localeCompare(b.department)||a.section.localeCompare(b.section)||String(a.time).localeCompare(String(b.time)));
 }
+
 function replyClass(reply){
   if(reply==='Satisfactory')return 'satisfactory';
   if(reply==='Needs Improvement')return 'needs';
   if(reply==='Not Satisfactory')return 'not';
   return 'na';
 }
+
 function renderTable(){
   const rows=getVisibleRecords(),body=document.getElementById('recordsBody');
   document.getElementById('recordCount').textContent=`${rows.length} records`;
@@ -537,7 +718,10 @@ function renderTable(){
   document.getElementById('statNeeds').textContent=counts['Needs Improvement']||0;
   document.getElementById('statNot').textContent=counts['Not Satisfactory']||0;
   document.getElementById('statNA').textContent=counts['N.A']||0;
-  const total=rows.length;[['statTotal',total],['statGood',counts['Satisfactory']||0],['statNeeds',counts['Needs Improvement']||0],['statNot',counts['Not Satisfactory']||0],['statNA',counts['N.A']||0]].forEach(([id,n])=>{document.getElementById(id+'Pct').textContent=(total?((n/total)*100).toFixed(1):'0.0')+'%';});
+  const total=rows.length;
+  [['statTotal',total],['statGood',counts['Satisfactory']||0],['statNeeds',counts['Needs Improvement']||0],['statNot',counts['Not Satisfactory']||0],['statNA',counts['N.A']||0]].forEach(([id,n])=>{
+    document.getElementById(id+'Pct').textContent=(total?((n/total)*100).toFixed(1):'0.0')+'%';
+  });
   if(!rows.length){body.innerHTML='<tr><td colspan="7" class="empty">No telephone checks found for this date.</td></tr>';return;}
   let html='',lastDept='';
   rows.forEach(r=>{
@@ -553,6 +737,7 @@ function renderTable(){
   });
   body.innerHTML=html;
 }
+
 async function saveRecord(e){
   e.preventDefault();
   const dept=document.getElementById('departmentInput').value,section=document.getElementById('sectionInput').value;
@@ -570,19 +755,25 @@ async function saveRecord(e){
   };
   const btn=document.getElementById('saveBtn');btn.disabled=true;
   try{
-    await DB.insert(COLLECTION,record);allRecords.push(record);renderTable();resetForm();
+    await DB.insert(COLLECTION,record);
+    allRecords.push(record);
+    renderTable();
+    // ✅ الحفاظ على الإدارة المختارة وإخفاء القسم المحفوظ فورًا
+    resetForm(dept);
     toast('Telephone check saved successfully');
   }catch(err){console.error(err);toast('Save failed: '+(err.message||''),'error');}
   finally{btn.disabled=false;}
 }
-function resetForm(){
+
+function resetForm(keepDept=''){
+  const targetDept = keepDept || document.getElementById('departmentInput').value || CATALOG[0]?.department || '';
   document.getElementById('checkForm').reset();
-  document.getElementById('departmentInput').value=CATALOG[0].department;
-  populateSections(CATALOG[0].department,document.getElementById('sectionInput'));
+  refreshEntryDropdowns(targetDept);
   document.getElementById('checkTime').value='';
-  populateEmployeeOptions();
-  document.getElementById('rings').value=1;document.getElementById('reply').value='Satisfactory';
+  document.getElementById('rings').value=1;
+  document.getElementById('reply').value='Satisfactory';
 }
+
 function openEdit(id){
   const r=allRecords.find(x=>String(x.id)===String(id));if(!r)return;
   editingId=id;
@@ -601,28 +792,39 @@ async function saveEdit(){
   if(!item||!name||!time||!Number.isInteger(rings)||rings<1||rings>10||!reply){toast('Please check the entered data','error');return;}
   if(allRecords.some(x=>x.id!==r.id&&x.date===r.date&&x.department===dept&&x.section===section)){toast('This section already has a check on this date.','error');return;}
   const updated={...r,department:dept,section,extension:item.ext,name,time,rings,reply,updated_at:Date.now()};
-  try{await DB.update(COLLECTION,updated);const i=allRecords.findIndex(x=>String(x.id)===String(editingId));if(i>=0)allRecords[i]=updated;closeEditModal();renderTable();toast('Record updated');}
-  catch(err){console.error(err);toast('Update failed: '+(err.message||''),'error');}
+  try{
+    await DB.update(COLLECTION,updated);
+    const i=allRecords.findIndex(x=>String(x.id)===String(editingId));
+    if(i>=0)allRecords[i]=updated;
+    closeEditModal();
+    renderTable();
+    refreshEntryDropdowns();
+    toast('Record updated');
+  }catch(err){console.error(err);toast('Update failed: '+(err.message||''),'error');}
 }
+
 async function deleteRecord(id){
   const r=allRecords.find(x=>String(x.id)===String(id));if(!r)return;
   if(!confirm(`Delete telephone check for ${r.name}?`))return;
-  try{await DB.delete(COLLECTION,id);allRecords=allRecords.filter(x=>String(x.id)!==String(id));renderTable();toast('Record deleted');}
-  catch(err){console.error(err);toast('Delete failed: '+(err.message||''),'error');}
+  try{
+    await DB.delete(COLLECTION,id);
+    allRecords=allRecords.filter(x=>String(x.id)!==String(id));
+    renderTable();
+    // ✅ إعادة إظهار القسم المحذوف في قائمة الإدخال فورًا
+    refreshEntryDropdowns();
+    toast('Record deleted');
+  }catch(err){console.error(err);toast('Delete failed: '+(err.message||''),'error');}
 }
+
 async function refreshData(){toast('Refreshing records...','info');await loadRecords();toast('Data refreshed');}
+
+/* =====================================================================
+   EXPORT EXCEL
+   ===================================================================== */
 function exportExcel() {
     const rows = getVisibleRecords();
-
-    if (!rows.length) {
-        toast('No records to export', 'warn');
-        return;
-    }
-
-    if (!window.XLSX) {
-        toast('Excel library is not loaded', 'error');
-        return;
-    }
+    if (!rows.length) { toast('No records to export', 'warn'); return; }
+    if (!window.XLSX) { toast('Excel library is not loaded', 'error'); return; }
 
     const data = [
         ['☎️ Daily Check Telephone Manners'],
@@ -642,21 +844,9 @@ function exportExcel() {
     });
 
     const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+    ws['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 22 }, { wch: 15 }, { wch: 16 }, { wch: 24 }];
 
-    ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }
-    ];
-
-    ws['!cols'] = [
-        { wch: 28 },
-        { wch: 12 },
-        { wch: 22 },
-        { wch: 15 },
-        { wch: 16 },
-        { wch: 24 }
-    ];
-
-    // تنسيق العنوان
     if (ws['A1']) {
         ws['A1'].s = {
             font: { bold: true, sz: 16, color: { rgb: '1E3A5F' } },
@@ -664,7 +854,6 @@ function exportExcel() {
         };
     }
 
-    // تنسيق رؤوس الأعمدة
     for (let c = 0; c < 6; c++) {
         const cell = ws[XLSX.utils.encode_cell({ r: 2, c })];
         if (cell) {
@@ -672,24 +861,15 @@ function exportExcel() {
                 font: { bold: true, color: { rgb: 'FFFFFF' } },
                 fill: { fgColor: { rgb: '1E3A5F' } },
                 alignment: { horizontal: 'center', vertical: 'center' },
-                border: {
-                    top: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    left: { style: 'thin' },
-                    right: { style: 'thin' }
-                }
+                border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
             };
         }
     }
 
-    // تلوين خلايا Reply
     rows.forEach((r, i) => {
         const cell = ws[XLSX.utils.encode_cell({ r: i + 3, c: 5 })];
-
         if (!cell) return;
-
         let color = 'E2E8F0';
-
         if (r.reply === 'Satisfactory') color = 'C6F6D5';
         else if (r.reply === 'Needs Improvement') color = 'FEEBC8';
         else if (r.reply === 'Not Satisfactory') color = 'FED7D7';
@@ -697,33 +877,269 @@ function exportExcel() {
         cell.s = {
             fill: { fgColor: { rgb: color } },
             alignment: { horizontal: 'center', vertical: 'center' },
-            border: {
-                top: { style: 'thin' },
-                bottom: { style: 'thin' },
-                left: { style: 'thin' },
-                right: { style: 'thin' }
-            }
+            border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
         };
     });
 
-    ws['!rows'] = [
-        { hpt: 30 },
-        { hpt: 8 },
-        { hpt: 24 }
-    ];
-
+    ws['!rows'] = [{ hpt: 30 }, { hpt: 8 }, { hpt: 24 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Telephone Manners');
-
-    XLSX.writeFile(wb, 'Daily_Check_Telephone_Manners.xlsx');
+    XLSX.writeFile(wb, `Daily_Check_Telephone_Manners_${selectedDate}.xlsx`);
 }
+
+/* =====================================================================
+   ✅ محرك تقسيم الصفحات الديناميكي (1920×1080 بهوامش 20px وبدون قطع)
+   ===================================================================== */
+function createExportPageElement() {
+  const page = document.createElement('div');
+  page.className = 'exp-page';
+  page.innerHTML = `
+    <div class="exp-header">
+      <h1>Daily Check – Telephone Manners</h1>
+      <div class="exp-sub">${escapeHtml(fmtDateLong(selectedDate))}</div>
+    </div>
+    <div class="exp-body">
+      <table class="exp-table">
+        <thead>
+          <tr>
+            <th style="width:23%">Section</th>
+            <th style="width:15%">Ext.</th>
+            <th style="width:24%">Name</th>
+            <th style="width:10%">Time</th>
+            <th style="width:11%">No. of rings</th>
+            <th style="width:17%">Reply</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  `;
+  return page;
+}
+
+function createExportDeptRow(dept, isContinued = false) {
+  const tr = document.createElement('tr');
+  tr.className = 'exp-dept-row';
+  tr.innerHTML = `<td colspan="6">${escapeHtml(dept)}${isContinued ? ' (Continued)' : ''}</td>`;
+  return tr;
+}
+
+function createExportDataRow(r) {
+  const cls = replyClass(r.reply);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="exp-sec">${escapeHtml(r.section)}</td>
+    <td>${escapeHtml(r.extension)}</td>
+    <td>${escapeHtml(r.name)}</td>
+    <td>${escapeHtml(r.time)}</td>
+    <td>${Number(r.rings)}</td>
+    <td class="exp-${cls}">${escapeHtml(r.reply)}</td>
+  `;
+  return tr;
+}
+
+async function buildExportPages(records) {
+  if (document.fonts && document.fonts.ready) {
+    await document.fonts.ready;
+  }
+
+  const container = document.getElementById('exportContainer');
+  container.innerHTML = '';
+
+  const stats = {
+    total: records.length,
+    good: records.filter(r => r.reply === 'Satisfactory').length,
+    needs: records.filter(r => r.reply === 'Needs Improvement').length,
+    not: records.filter(r => r.reply === 'Not Satisfactory').length,
+    na: records.filter(r => r.reply === 'N.A').length
+  };
+
+  const generatedAt = new Date().toLocaleString();
+  const pages = [];
+
+  const startNewPage = () => {
+    const p = createExportPageElement(generatedAt, stats);
+    container.appendChild(p);
+    pages.push(p);
+    return {
+      page: p,
+      bodyWrap: p.querySelector('.exp-body'),
+      table: p.querySelector('.exp-table'),
+      tbody: p.querySelector('tbody')
+    };
+  };
+
+  let ctx = startNewPage();
+  let lastDept = '';
+
+  for (let i = 0; i < records.length; i++) {
+    const r = records[i];
+    const isNewDept = r.department !== lastDept;
+    let deptRow = null;
+
+    if (isNewDept) {
+      deptRow = createExportDeptRow(r.department, false);
+      ctx.tbody.appendChild(deptRow);
+    }
+
+    const dataRow = createExportDataRow(r);
+    ctx.tbody.appendChild(dataRow);
+
+    // إذا تجاوز ارتفاع الجدول المساحة المتاحة في الصفحة الحالية
+    if (ctx.table.offsetHeight > ctx.bodyWrap.clientHeight && ctx.tbody.children.length > (isNewDept ? 2 : 1)) {
+      ctx.tbody.removeChild(dataRow);
+      if (deptRow) ctx.tbody.removeChild(deptRow);
+
+      // فتح صفحة جديدة ونقل الصف (مع عنوان الإدارة) إليها بدون قطع
+      ctx = startNewPage();
+      const nextDeptRow = createExportDeptRow(r.department, !isNewDept);
+      ctx.tbody.appendChild(nextDeptRow);
+      ctx.tbody.appendChild(dataRow);
+    }
+
+    lastDept = r.department;
+  }
+
+  pages.forEach((p, idx) => {
+    const badge = p.querySelector('.exp-page-num');
+    if (badge) badge.textContent = `Page ${idx + 1} of ${pages.length}`;
+  });
+
+  await new Promise(res => requestAnimationFrame(() => setTimeout(res, 150)));
+  return pages;
+}
+
+/* =====================================================================
+   ✅ EXPORT IMAGE (1920×1080 — متعدد الصفحات تلقائيًا)
+   ===================================================================== */
+async function exportImage() {
+  const rows = getVisibleRecords();
+  if (!rows.length) { toast('No records to export', 'warn'); return; }
+
+  showLoading('Preparing pages for image export...');
+  try {
+    const pages = await buildExportPages(rows);
+
+    for (let i = 0; i < pages.length; i++) {
+      showLoading(`Rendering image ${i + 1} of ${pages.length}...`);
+
+      const canvas = await html2canvas(pages[i], {
+        backgroundColor: '#ffffff',
+        scale: 1,
+        width: 1920,
+        height: 1080,
+        windowWidth: 1920,
+        windowHeight: 1080,
+        useCORS: true,
+        logging: false
+      });
+
+      const suffix = pages.length > 1 ? `_Page${i + 1}_of_${pages.length}` : '';
+      const link = document.createElement('a');
+      link.download = `Telephone_Manners_${selectedDate}${suffix}.png`;
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      if (i < pages.length - 1) {
+        await new Promise(res => setTimeout(res, 400));
+      }
+    }
+
+    document.getElementById('exportContainer').innerHTML = '';
+    toast(`✅ Exported ${pages.length} image${pages.length > 1 ? 's' : ''} (1920×1080)`);
+  } catch (err) {
+    console.error(err);
+    toast('Image export failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* =====================================================================
+   ✅ EXPORT PDF (1920×1080 — متعدد الصفحات تلقائيًا)
+   ===================================================================== */
+async function exportPDF() {
+  const rows = getVisibleRecords();
+  if (!rows.length) { toast('No records to export', 'warn'); return; }
+
+  showLoading('Preparing pages for PDF...');
+  try {
+    const pages = await buildExportPages(rows);
+    const { jsPDF } = window.jspdf;
+
+    // 1920×1080 px = 1440×810 pt
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: [1440, 810]
+    });
+
+    for (let i = 0; i < pages.length; i++) {
+      showLoading(`Rendering PDF page ${i + 1} of ${pages.length}...`);
+
+      const canvas = await html2canvas(pages[i], {
+        backgroundColor: '#ffffff',
+        scale: 1,
+        width: 1920,
+        height: 1080,
+        windowWidth: 1920,
+        windowHeight: 1080,
+        useCORS: true,
+        logging: false
+      });
+
+      if (i > 0) pdf.addPage([1440, 810], 'landscape');
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 1440, 810);
+    }
+
+    pdf.save(`Telephone_Manners_${selectedDate}.pdf`);
+    document.getElementById('exportContainer').innerHTML = '';
+    toast(`✅ PDF exported (${pages.length} page${pages.length > 1 ? 's' : ''}, 1920×1080)`);
+  } catch (err) {
+    console.error(err);
+    toast('PDF export failed: ' + (err.message || ''), 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+/* =====================================================================
+   ✅ PRINT (1920×1080 landscape بهوامش 20px وتقسيم الصفحات)
+   ===================================================================== */
+async function printReport() {
+  const rows = getVisibleRecords();
+  if (!rows.length) { toast('No records to print', 'warn'); return; }
+  showLoading('Preparing print layout...');
+  try {
+    await buildExportPages(rows);
+  } finally {
+    hideLoading();
+  }
+  window.print();
+}
+
+window.addEventListener('beforeprint', () => {
+  const container = document.getElementById('exportContainer');
+  const rows = getVisibleRecords();
+  if (!container.children.length && rows.length) {
+    buildExportPages(rows);
+  }
+});
+window.addEventListener('afterprint', () => {
+  document.getElementById('exportContainer').innerHTML = '';
+});
+
 async function logout(){
   if(!confirm('Log out?'))return;
   try{await signOut(auth);window.location.href='login.html';}catch(err){toast('Logout failed','error');}
 }
+
 window.openEdit=openEdit;window.closeEditModal=closeEditModal;window.saveEdit=saveEdit;
 window.deleteRecord=deleteRecord;window.resetForm=resetForm;window.refreshData=refreshData;
-window.exportExcel=exportExcel;window.logout=logout;window.toggleSettings=toggleSettings;window.addDepartment=addDepartment;window.renameDepartment=renameDepartment;window.removeDepartment=removeDepartment;window.addSection=addSection;window.editSection=editSection;window.removeSection=removeSection;window.addEmployee=addEmployee;window.removeEmployee=removeEmployee;
+window.exportExcel=exportExcel;window.exportImage=exportImage;window.exportPDF=exportPDF;window.printReport=printReport;
+window.logout=logout;window.toggleSettings=toggleSettings;window.addDepartment=addDepartment;window.renameDepartment=renameDepartment;window.removeDepartment=removeDepartment;window.addSection=addSection;window.editSection=editSection;window.removeSection=removeSection;window.addEmployee=addEmployee;window.removeEmployee=removeEmployee;
 
 onAuthStateChanged(auth,async user=>{
   if(!user){window.location.href='login.html';return;}
