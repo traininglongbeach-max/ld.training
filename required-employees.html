@@ -264,23 +264,44 @@
 
                 if (!selectedDepts.includes(empDept) || !selectedLevels.includes(empLevel)) return;
                 
-                if (isFoodSafetyCourse) {
-                    const empPosition = String(emp.position || '').trim().toLowerCase();
-                    const allowedDepts = ['f&b', 'kit', 'stew', 'engineering'];
-                    const allowedPositions = [
-                        'shift leader team rest.', 'team rest. supervisor', 'team res. att.', 
-                        'Shift Leader Housing' , 'Team Restaurant Shift Leader' , 'Staff Housing Att.',
-                        'Senior Supervisor Staff Housing' , 'Team Restaurant S.Supervisor','Team Rest. Supervisor',
-                        'Team Restaurant Attendant',
-                        'head store keeper', 'porter', 'receving clerk', 'store keeper', 
-                        'stors manager', 'asst .cost controller mgr.', 'cost controller mgr.',
-                        'a/c forman', 'a/c tech.', 'a/c shift leader', 'a/c supervisor',
-                        'plumber forman', 'shift leader plumber', 'plumber senior supervisor', 
-                        'plumber supervisor', 'staff housing att.', 's.supervisor staff housing', 
-                        'shift leader housing'
-                    ];
-                    if (!allowedDepts.includes(empDept) && !allowedPositions.includes(empPosition)) return;
-                }
+if (isFoodSafetyCourse) {
+    const empPosition = String(emp.position || '').trim().toLowerCase();
+
+    const allowedDepts = ['f&b', 'kit', 'stew', 'eng'];
+
+    const allowedPositions = [
+        'shift leader team rest.',
+        'team rest. supervisor',
+        'team res. att.',
+        'shift leader housing',
+        'team restaurant shift leader',
+        'staff housing att.',
+        'senior supervisor staff housing',
+        'team restaurant s.supervisor',
+        'team restaurant attendant',
+        'head store keeper',
+        'porter',
+        'receving clerk',
+        'store keeper',
+        'stors manager',
+        'asst .cost controller mgr.',
+        'cost controller mgr.',
+        'a/c forman',
+        'a/c tech.',
+        'a/c shift leader',
+        'a/c supervisor',
+        'plumber forman',
+        'shift leader plumber',
+        'plumber senior supervisor',
+        'plumber supervisor',
+        's.supervisor staff housing'
+    ];
+
+    if (
+        !allowedDepts.includes(empDept) &&
+        !allowedPositions.includes(empPosition)
+    ) return;
+}
 
                 if (effectiveNewHireOnly && !isNewHire(emp)) return;
                 if (excludeNewHire && !isNewHireCourse && hasAttendedNewHireInduction(empIdStr)) return;
